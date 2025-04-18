@@ -1,0 +1,390 @@
+"""
+Base agent class for modular agent system.
+"""
+
+import logging
+import json
+from typing import List, Dict, Any, Optional, Tuple
+
+from langchain_openai import AzureChatOpenAI
+import config
+
+class Agent:
+    """Base agent class for modular agent system."""
+    
+    def __init__(self, 
+                 role: str, 
+                 expertise_description: str,
+                 use_team_leadership: bool = False,
+                 use_closed_loop_comm: bool = False,
+                 use_mutual_monitoring: bool = False,
+                 use_shared_mental_model: bool = False,
+                 examples: Optional[List[Dict[str, str]]] = None):
+        """
+        Initialize an LLM-based agent with a specific role.
+        
+        Args:
+            role: The role of the agent (e.g., "Critical Analyst")
+            expertise_description: Description of the agent's expertise
+            use_team_leadership: Whether this agent uses team leadership behaviors
+            use_closed_loop_comm: Whether this agent uses closed-loop communication
+            use_mutual_monitoring: Whether this agent uses mutual performance monitoring
+            use_shared_mental_model: Whether this agent uses shared mental models
+            examples: Optional examples to include in the prompt
+        """
+        self.role = role
+        self.expertise_description = expertise_description
+        self.use_team_leadership = use_team_leadership
+        self.use_closed_loop_comm = use_closed_loop_comm
+        self.use_mutual_monitoring = use_mutual_monitoring
+        self.use_shared_mental_model = use_shared_mental_model
+        self.examples = examples or []
+        self.conversation_history = []
+        self.knowledge_base = {}
+        
+        # Initialize logger
+        self.logger = logging.getLogger(f"agent.{role}")
+        
+        # Initialize LLM
+        self.client = AzureChatOpenAI(
+            azure_deployment=config.AZURE_DEPLOYMENT,
+            api_key=config.AZURE_API_KEY,
+            api_version=config.AZURE_API_VERSION,
+            azure_endpoint=config.AZURE_ENDPOINT,
+            temperature=config.TEMPERATURE
+        )
+        
+        # Build initial system message
+        self.messages = [
+            {"role": "system", "content": self._build_system_prompt()}
+        ]
+        
+        # Add example conversations if provided
+        if self.examples:
+            for example in self.examples:
+                self.messages.append({"role": "user", "content": example['question']})
+                self.messages.append({
+                    "role": "assistant", 
+                    "content": example['answer'] + "\n\n" + example.get('reason', '')
+                })
+                
+        self.logger.info(f"Initialized {self.role} agent")
+    
+    def _build_system_prompt(self) -> str:
+        """Build the system prompt for the agent."""
+        prompt = f"You are a {self.role} who {self.expertise_description}. "
+        prompt += f"You are part of the {config.TEAM_NAME}. Your goal is to {config.TEAM_GOAL}. "
+
+        # Add information about the task
+        prompt += f"""
+        You are working on the following task: {config.TASK['name']}
+        
+        {config.TASK['description']}
+        
+        This is a {config.TASK['type']} task, and your output should be in the format: {config.TASK.get('expected_output_format', 'not specified')}
+        """
+
+        # Add team leadership component if enabled
+        if self.use_team_leadership:
+            prompt += """
+            As part of this team, you should demonstrate effective team leadership by:
+            1. Facilitating team problem solving
+            2. Providing performance expectations and acceptable interaction patterns
+            3. Synchronizing and combining individual team member contributions
+            4. Seeking and evaluating information that affects team functioning
+            5. Clarifying team member roles
+            6. Engaging in preparatory discussions and feedback sessions with the team
+            """
+        
+        # Add closed-loop communication component if enabled
+        if self.use_closed_loop_comm:
+            prompt += """
+            When communicating with your teammates, you should use closed-loop communication:
+            1. When you send information, make it clear and specific
+            2. When you receive information, acknowledge receipt and confirm understanding
+            3. When your sent information is acknowledged, verify that it was understood correctly
+            
+            This three-step process ensures that critical information is properly exchanged.
+            """
+            
+        # Add mutual performance monitoring if enabled
+        if self.use_mutual_monitoring:
+            prompt += """
+            You should engage in mutual performance monitoring by:
+            1. Tracking the performance of your teammates
+            2. Checking for errors or omissions in their reasoning
+            3. Providing constructive feedback when you identify issues
+            4. Ensuring the overall quality of the team's work
+            
+            Do this respectfully and with the goal of improving the team's decision-making.
+            """
+            
+        # Add shared mental model if enabled
+        if self.use_shared_mental_model:
+            prompt += """
+            You should actively contribute to the team's shared mental model by:
+            1. Explicitly stating your understanding of key concepts
+            2. Checking alignment on how the team interprets the task
+            3. Establishing shared terminology and frameworks
+            4. Clarifying your reasoning process so others can follow it
+            
+            This helps ensure all team members are aligned in their understanding.
+            """
+        
+        return prompt
+    
+    def add_to_knowledge_base(self, key: str, value: Any) -> None:
+        """
+        Add information to the agent's knowledge base.
+        
+        Args:
+            key: The key for the knowledge
+            value: The value of the knowledge
+        """
+        self.knowledge_base[key] = value
+        self.logger.info(f"Added to knowledge base: {key}")
+    
+    def get_from_knowledge_base(self, key: str) -> Any:
+        """
+        Retrieve information from the agent's knowledge base.
+        
+        Args:
+            key: The key for the knowledge
+            
+        Returns:
+            The value of the knowledge, or None if not found
+        """
+        return self.knowledge_base.get(key)
+    
+    def chat(self, message: str) -> str:
+        """
+        Send a message to the agent and get a response.
+        
+        Args:
+            message: The message to send to the agent
+            
+        Returns:
+            The agent's response
+        """
+        self.logger.info(f"Received message: {message[:100]}...")
+        
+        # Add the user message to the conversation
+        self.messages.append({"role": "user", "content": message})
+        
+        # Get response from LLM
+        response = self.client.predict_messages(
+            messages=self.messages
+        )
+        
+        # Extract and store the response
+        assistant_message = response.content
+        self.messages.append({"role": "assistant", "content": assistant_message})
+        self.conversation_history.append({"user": message, "assistant": assistant_message})
+        
+        self.logger.info(f"Responded: {assistant_message[:100]}...")
+        
+        return assistant_message
+    
+    def get_conversation_history(self) -> List[Dict[str, str]]:
+        """Get the conversation history."""
+        return self.conversation_history
+    
+    def extract_response(self, message=None) -> Dict[str, Any]:
+        """
+        Extract the agent's response to the task from their message.
+        
+        Args:
+            message: Optional message to analyze, defaults to last response
+            
+        Returns:
+            Structured response based on task type
+        """
+        if message is None:
+            if not self.conversation_history:
+                return {}
+            message = self.conversation_history[-1]["assistant"]
+        
+        task_type = config.TASK["type"]
+        
+        if task_type == "ranking":
+            return self.extract_ranking(message)
+        elif task_type == "mcq":
+            return self.extract_mcq_answer(message)
+        elif task_type in ["open_ended", "estimation", "selection"]:
+            return {"response": message, "confidence": self.extract_confidence(message)}
+        else:
+            return {"raw_response": message}
+    
+    def extract_ranking(self, message):
+        """
+        Extract a ranking from the agent's response.
+        
+        Args:
+            message: Message to analyze
+            
+        Returns:
+            List of ranked items and confidence level
+        """
+        ranking = []
+        lines = message.split('\n')
+        
+        # Look for numbered items (1. Item, 2. Item, etc.)
+        for line in lines:
+            for i in range(1, len(config.TASK["options"]) + 1):
+                if f"{i}." in line or f"{i}:" in line:
+                    for item in config.TASK["options"]:
+                        if item.lower() in line.lower():
+                            ranking.append(item)
+                            break
+        
+        # Check for duplicates and missing items
+        seen_items = set()
+        valid_ranking = []
+        
+        for item in ranking:
+            if item not in seen_items:
+                seen_items.add(item)
+                valid_ranking.append(item)
+        
+        # Add any missing items at the end
+        for item in config.TASK["options"]:
+            if item not in seen_items:
+                valid_ranking.append(item)
+                seen_items.add(item)
+        
+        # Extract confidence level
+        confidence = self.extract_confidence(message)
+        
+        return {
+            "ranking": valid_ranking[:len(config.TASK["options"])],
+            "confidence": confidence
+        }
+    
+    def extract_mcq_answer(self, message):
+        """
+        Extract an MCQ answer from the agent's response.
+        
+        Args:
+            message: Message to analyze
+            
+        Returns:
+            MCQ answer and confidence level
+        """
+        # Look for option identifiers (A, B, C, D, etc.)
+        for line in message.split('\n'):
+            line = line.strip()
+            for option in config.TASK["options"]:
+                option_id = option.split('.')[0].strip() if '.' in option else None
+                if option_id and (line.startswith(option_id) or f"Option {option_id}" in line or f"Answer: {option_id}" in line):
+                    # Extract confidence level
+                    confidence = self.extract_confidence(message)
+                    return {"answer": option_id, "confidence": confidence}
+        
+        # Extract confidence level
+        confidence = self.extract_confidence(message)
+        
+        # If no explicit option identifier is found, look for the full option text
+        for line in message.split('\n'):
+            for option in config.TASK["options"]:
+                # Extract option identifier (A, B, C, etc.)
+                option_id = option.split('.')[0].strip() if '.' in option else None
+                # Check if the full option text is in the line
+                if option[2:].strip().lower() in line.lower():
+                    return {"answer": option_id, "confidence": confidence}
+        
+        # If still not found, try to determine if there's any indication of an answer
+        lower_message = message.lower()
+        for option in config.TASK["options"]:
+            option_id = option.split('.')[0].strip() if '.' in option else None
+            if option_id and f"select {option_id.lower()}" in lower_message or f"choose {option_id.lower()}" in lower_message:
+                return {"answer": option_id, "confidence": confidence}
+        
+        # No clear answer found
+        return {"answer": None, "confidence": confidence}
+    
+    def extract_confidence(self, message):
+        """
+        Extract a confidence level from the agent's response.
+        
+        Args:
+            message: Message to analyze
+            
+        Returns:
+            Confidence level (0.0-1.0)
+        """
+        confidence = 0.7  # Default medium-high confidence
+        
+        # Look for explicit confidence statements
+        lower_message = message.lower()
+        
+        if "confidence: " in lower_message:
+            # Try to extract numeric confidence
+            confidence_parts = lower_message.split("confidence: ")[1].split()
+            if confidence_parts:
+                try:
+                    # Handle percentage format
+                    if "%" in confidence_parts[0]:
+                        confidence_value = float(confidence_parts[0].replace("%", "")) / 100
+                        confidence = min(max(confidence_value, 0.0), 1.0)
+                    else:
+                        # Handle decimal format
+                        confidence_value = float(confidence_parts[0])
+                        # If it's on a 0-10 scale, convert to 0-1
+                        if confidence_value > 1.0:
+                            confidence_value /= 10
+                        confidence = min(max(confidence_value, 0.0), 1.0)
+                except ValueError:
+                    # If conversion fails, use linguistic markers
+                    pass
+        
+        # Check for linguistic confidence markers if no explicit value found
+        if confidence == 0.7:
+            high_confidence_markers = ["certainly", "definitely", "absolutely", "strongly believe", "confident", "sure"]
+            medium_confidence_markers = ["likely", "probably", "think", "believe", "reasonable", "should be"]
+            low_confidence_markers = ["uncertain", "might", "possibly", "guess", "not sure", "doubtful", "maybe"]
+            
+            # Count markers in each category
+            high_count = sum(1 for marker in high_confidence_markers if marker in lower_message)
+            medium_count = sum(1 for marker in medium_confidence_markers if marker in lower_message)
+            low_count = sum(1 for marker in low_confidence_markers if marker in lower_message)
+            
+            # Determine confidence based on most prevalent markers
+            if high_count > medium_count and high_count > low_count:
+                confidence = 0.9
+            elif medium_count > low_count:
+                confidence = 0.7
+            elif low_count > 0:
+                confidence = 0.4
+            
+        return confidence
+
+    def share_knowledge(self, other_agent):
+        """
+        Share knowledge with another agent.
+        
+        Args:
+            other_agent: Agent to share knowledge with
+            
+        Returns:
+            Shared knowledge dictionary
+        """
+        # Implement shared knowledge - focus on task-relevant information
+        shared_knowledge = {}
+        
+        # Share task understanding
+        if "task_understanding" in self.knowledge_base:
+            shared_knowledge["task_understanding"] = self.knowledge_base["task_understanding"]
+            other_agent.add_to_knowledge_base("task_understanding", self.knowledge_base["task_understanding"])
+        
+        # Share domain knowledge
+        if "domain_knowledge" in self.knowledge_base:
+            shared_knowledge["domain_knowledge"] = self.knowledge_base["domain_knowledge"]
+            other_agent.add_to_knowledge_base("domain_knowledge", self.knowledge_base["domain_knowledge"])
+        
+        # Share reasoning approaches
+        if "reasoning_approaches" in self.knowledge_base:
+            shared_knowledge["reasoning_approaches"] = self.knowledge_base["reasoning_approaches"]
+            other_agent.add_to_knowledge_base("reasoning_approaches", self.knowledge_base["reasoning_approaches"])
+        
+        self.logger.info(f"Agent {self.role} shared knowledge with {other_agent.role}")
+        return shared_knowledge
