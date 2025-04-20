@@ -9,9 +9,9 @@ from typing import Dict, List, Any, Optional
 load_dotenv()
 
 # Azure OpenAI settings
-AZURE_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
+AZURE_API_KEY = "428KgVArXb6sFyseVYDjElDDYZnlCnx8pNa8CfU5dCic6gjOK89WJQQJ99BBACYeBjFXJ3w3AAABACOG5gtQ" #os.environ.get('AZURE_OPENAI_API_KEY')
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
-AZURE_DEPLOYMENT = "gpt-4o"
+AZURE_DEPLOYMENT = "VARELab-GPT4o"
 AZURE_API_VERSION = "2024-08-01-preview"
 
 # Model settings
@@ -32,7 +32,7 @@ TEAM_NAME = "Multi-Agent Decision Team"
 TEAM_GOAL = "Collaborate to solve tasks through structured reasoning and consensus-building"
 
 # Task definition structure - customize for each run
-TASK = {
+RANKING_TASK = {
     "name": "NASA Lunar Survival",
     "description": """
     You are a member of a space crew originally scheduled to rendezvous with a mother ship on the lighted surface of the moon. 
@@ -99,6 +99,26 @@ TASK = {
 
 # Example of an MCQ task configuration
 MCQ_TASK_EXAMPLE = {
+    "name": "Climate Science Question",
+    "description": """
+    What is the primary greenhouse gas responsible for human-induced climate change?
+    """,
+    "type": "mcq",
+    "options": [
+        "A. Carbon dioxide (CO2)",
+        "B. Methane (CH4)",
+        "C. Water vapor (H2O)",
+        "D. Nitrous oxide (N2O)"
+    ],
+    "expected_output_format": "Single letter selection with rationale",
+    "ground_truth": "A",
+    "rationale": {
+        "A": "While other gases like methane have stronger warming effects per molecule, carbon dioxide is the primary driver of human-induced climate change due to its much larger quantity in the atmosphere and long atmospheric lifetime."
+    }
+}
+
+# Example of an MCQ task configuration
+TASK = {
     "name": "Climate Science Question",
     "description": """
     What is the primary greenhouse gas responsible for human-induced climate change?

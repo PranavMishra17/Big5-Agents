@@ -1,0 +1,997 @@
+2025-04-18 14:26:08,262 [INFO] root: Running single simulation
+2025-04-18 14:26:08,264 [INFO] simulation.sim_20250418_142608: Event logged: simulation_started
+2025-04-18 14:26:08,264 [INFO] simulation.sim_20250418_142608: SimulationLogger initialized for sim_20250418_142608 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-18 14:26:08,746 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-18 14:26:08,746 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-18 14:26:08,746 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-18 14:26:08,746 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-18 14:26:08,748 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-18 14:26:09,198 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-18 14:26:09,198 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-18 14:26:09,199 [INFO] agent.Domain Expert: Added to knowledge base: lunar_environment
+2025-04-18 14:26:09,199 [INFO] agent.Domain Expert: Added to knowledge base: survival_principles
+2025-04-18 14:26:09,199 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-18 14:26:09,629 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-18 14:26:09,629 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-18 14:26:09,630 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-18 14:26:09,630 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-18 14:26:09,630 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-18 14:26:10,046 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-18 14:26:10,047 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-18 14:26:10,047 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-18 14:26:10,047 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-18 14:26:10,047 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-18 14:26:10,047 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-18 14:26:10,047 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-18 14:26:10,047 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-18 14:26:10,048 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-18 14:26:10,048 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-18 14:26:10,048 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-18 14:26:10,048 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-18 14:26:10,048 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-18 14:26:10,048 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-18 14:26:10,048 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-18 14:26:10,048 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-18 14:26:10,048 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-18 14:26:10,048 [INFO] root: Created agent team with configuration:
+2025-04-18 14:26:10,049 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-18 14:26:10,049 [INFO] root:   Closed-loop Communication: True
+2025-04-18 14:26:10,049 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-18 14:26:10,049 [INFO] root:   Shared Mental Model: True
+2025-04-18 14:26:10,049 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-18 14:26:10,049 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-18 14:26:10,049 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-18 14:26:10,049 [INFO] decision.methods: Initialized decision methods handler
+2025-04-18 14:26:10,049 [INFO] teamwork.shared_mental_model: Initialized task mental model for NASA Lunar Survival
+2025-04-18 14:26:10,049 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-18 14:26:10,049 [INFO] simulation.sim_20250418_142608: Initialized simulation sim_20250418_142608
+2025-04-18 14:26:10,050 [INFO] simulation.sim_20250418_142608: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-18 14:26:10,050 [INFO] simulation.sim_20250418_142608: Starting task analysis phase
+2025-04-18 14:26:10,058 [INFO] simulation.sim_20250418_142608: Getting initial analysis from Critical Analyst
+2025-04-18 14:26:10,059 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following ranking task:
+  ...
+2025-04-18 14:26:11,046 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/gpt-4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 401 PermissionDenied"
+2025-04-18 14:29:58,910 [INFO] root: Running single simulation
+2025-04-18 14:29:58,911 [INFO] simulation.sim_20250418_142958: Event logged: simulation_started
+2025-04-18 14:29:58,911 [INFO] simulation.sim_20250418_142958: SimulationLogger initialized for sim_20250418_142958 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-18 14:29:59,391 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-18 14:29:59,392 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-18 14:29:59,392 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-18 14:29:59,392 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-18 14:29:59,392 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-18 14:29:59,823 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-18 14:29:59,823 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-18 14:29:59,824 [INFO] agent.Domain Expert: Added to knowledge base: lunar_environment
+2025-04-18 14:29:59,824 [INFO] agent.Domain Expert: Added to knowledge base: survival_principles
+2025-04-18 14:29:59,824 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-18 14:30:00,263 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-18 14:30:00,263 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-18 14:30:00,263 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-18 14:30:00,264 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-18 14:30:00,264 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-18 14:30:00,678 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-18 14:30:00,678 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-18 14:30:00,678 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-18 14:30:00,678 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-18 14:30:00,679 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-18 14:30:00,679 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-18 14:30:00,679 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-18 14:30:00,679 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-18 14:30:00,679 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-18 14:30:00,679 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-18 14:30:00,680 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-18 14:30:00,680 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-18 14:30:00,680 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-18 14:30:00,680 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-18 14:30:00,680 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-18 14:30:00,680 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-18 14:30:00,680 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-18 14:30:00,680 [INFO] root: Created agent team with configuration:
+2025-04-18 14:30:00,680 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-18 14:30:00,681 [INFO] root:   Closed-loop Communication: True
+2025-04-18 14:30:00,681 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-18 14:30:00,681 [INFO] root:   Shared Mental Model: True
+2025-04-18 14:30:00,681 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-18 14:30:00,681 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-18 14:30:00,681 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-18 14:30:00,681 [INFO] decision.methods: Initialized decision methods handler
+2025-04-18 14:30:00,681 [INFO] teamwork.shared_mental_model: Initialized task mental model for NASA Lunar Survival
+2025-04-18 14:30:00,681 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-18 14:30:00,681 [INFO] simulation.sim_20250418_142958: Initialized simulation sim_20250418_142958
+2025-04-18 14:30:00,682 [INFO] simulation.sim_20250418_142958: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-18 14:30:00,682 [INFO] simulation.sim_20250418_142958: Starting task analysis phase
+2025-04-18 14:30:00,682 [INFO] simulation.sim_20250418_142958: Getting initial analysis from Critical Analyst
+2025-04-18 14:30:00,682 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following ranking task:
+  ...
+2025-04-18 14:30:00,947 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 401 PermissionDenied"
+2025-04-18 14:33:54,503 [INFO] root: Running single simulation
+2025-04-18 14:33:54,503 [INFO] simulation.sim_20250418_143354: Event logged: simulation_started
+2025-04-18 14:33:54,503 [INFO] simulation.sim_20250418_143354: SimulationLogger initialized for sim_20250418_143354 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-18 14:33:54,974 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-18 14:33:54,974 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-18 14:33:54,974 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-18 14:33:54,974 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-18 14:33:54,974 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-18 14:33:55,401 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-18 14:33:55,401 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-18 14:33:55,401 [INFO] agent.Domain Expert: Added to knowledge base: lunar_environment
+2025-04-18 14:33:55,401 [INFO] agent.Domain Expert: Added to knowledge base: survival_principles
+2025-04-18 14:33:55,401 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-18 14:33:55,840 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-18 14:33:55,840 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-18 14:33:55,840 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-18 14:33:55,840 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-18 14:33:55,840 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-18 14:33:56,290 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-18 14:33:56,290 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-18 14:33:56,290 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-18 14:33:56,290 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-18 14:33:56,290 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-18 14:33:56,290 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-18 14:33:56,290 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-18 14:33:56,290 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-18 14:33:56,290 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-18 14:33:56,290 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-18 14:33:56,290 [INFO] root: Created agent team with configuration:
+2025-04-18 14:33:56,290 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-18 14:33:56,290 [INFO] root:   Closed-loop Communication: True
+2025-04-18 14:33:56,290 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-18 14:33:56,290 [INFO] root:   Shared Mental Model: True
+2025-04-18 14:33:56,290 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-18 14:33:56,290 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-18 14:33:56,290 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-18 14:33:56,290 [INFO] decision.methods: Initialized decision methods handler
+2025-04-18 14:33:56,290 [INFO] teamwork.shared_mental_model: Initialized task mental model for NASA Lunar Survival
+2025-04-18 14:33:56,290 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-18 14:33:56,290 [INFO] simulation.sim_20250418_143354: Initialized simulation sim_20250418_143354
+2025-04-18 14:33:56,290 [INFO] simulation.sim_20250418_143354: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-18 14:33:56,290 [INFO] simulation.sim_20250418_143354: Starting task analysis phase
+2025-04-18 14:33:56,303 [INFO] simulation.sim_20250418_143354: Getting initial analysis from Critical Analyst
+2025-04-18 14:33:56,304 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following ranking task:
+  ...
+2025-04-18 14:33:56,645 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 401 PermissionDenied"
+2025-04-18 14:36:30,563 [INFO] root: Running single simulation
+2025-04-18 14:36:30,563 [INFO] simulation.sim_20250418_143630: Event logged: simulation_started
+2025-04-18 14:36:30,580 [INFO] simulation.sim_20250418_143630: SimulationLogger initialized for sim_20250418_143630 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-18 14:36:31,036 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-18 14:36:31,036 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-18 14:36:31,036 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-18 14:36:31,036 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-18 14:36:31,036 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-18 14:36:31,453 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-18 14:36:31,453 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-18 14:36:31,453 [INFO] agent.Domain Expert: Added to knowledge base: lunar_environment
+2025-04-18 14:36:31,453 [INFO] agent.Domain Expert: Added to knowledge base: survival_principles
+2025-04-18 14:36:31,453 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-18 14:36:31,887 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-18 14:36:31,887 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-18 14:36:31,887 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-18 14:36:31,887 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-18 14:36:31,887 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-18 14:36:32,323 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-18 14:36:32,323 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-18 14:36:32,323 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-18 14:36:32,323 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-18 14:36:32,323 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-18 14:36:32,323 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-18 14:36:32,323 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-18 14:36:32,323 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-18 14:36:32,323 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-18 14:36:32,323 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-18 14:36:32,323 [INFO] root: Created agent team with configuration:
+2025-04-18 14:36:32,323 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-18 14:36:32,323 [INFO] root:   Closed-loop Communication: True
+2025-04-18 14:36:32,323 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-18 14:36:32,323 [INFO] root:   Shared Mental Model: True
+2025-04-18 14:36:32,323 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-18 14:36:32,323 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-18 14:36:32,323 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-18 14:36:32,323 [INFO] decision.methods: Initialized decision methods handler
+2025-04-18 14:36:32,323 [INFO] teamwork.shared_mental_model: Initialized task mental model for NASA Lunar Survival
+2025-04-18 14:36:32,323 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-18 14:36:32,339 [INFO] simulation.sim_20250418_143630: Initialized simulation sim_20250418_143630
+2025-04-18 14:36:32,339 [INFO] simulation.sim_20250418_143630: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-18 14:36:32,339 [INFO] simulation.sim_20250418_143630: Starting task analysis phase
+2025-04-18 14:36:32,347 [INFO] simulation.sim_20250418_143630: Getting initial analysis from Critical Analyst
+2025-04-18 14:36:32,347 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following ranking task:
+  ...
+2025-04-18 14:36:32,635 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 401 PermissionDenied"
+2025-04-18 14:37:30,961 [INFO] root: Running single simulation
+2025-04-18 14:37:30,961 [INFO] simulation.sim_20250418_143730: Event logged: simulation_started
+2025-04-18 14:37:30,961 [INFO] simulation.sim_20250418_143730: SimulationLogger initialized for sim_20250418_143730 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-18 14:37:31,469 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-18 14:37:31,469 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-18 14:37:31,470 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-18 14:37:31,470 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-18 14:37:31,470 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-18 14:37:31,894 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-18 14:37:31,894 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-18 14:37:31,894 [INFO] agent.Domain Expert: Added to knowledge base: lunar_environment
+2025-04-18 14:37:31,894 [INFO] agent.Domain Expert: Added to knowledge base: survival_principles
+2025-04-18 14:37:31,894 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-18 14:37:32,327 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-18 14:37:32,327 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-18 14:37:32,327 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-18 14:37:32,327 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-18 14:37:32,327 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-18 14:37:32,758 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-18 14:37:32,758 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-18 14:37:32,758 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-18 14:37:32,758 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-18 14:37:32,758 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-18 14:37:32,758 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-18 14:37:32,758 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-18 14:37:32,758 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-18 14:37:32,758 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-18 14:37:32,758 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-18 14:37:32,758 [INFO] root: Created agent team with configuration:
+2025-04-18 14:37:32,758 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-18 14:37:32,758 [INFO] root:   Closed-loop Communication: True
+2025-04-18 14:37:32,758 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-18 14:37:32,758 [INFO] root:   Shared Mental Model: True
+2025-04-18 14:37:32,758 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-18 14:37:32,758 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-18 14:37:32,758 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-18 14:37:32,758 [INFO] decision.methods: Initialized decision methods handler
+2025-04-18 14:37:32,758 [INFO] teamwork.shared_mental_model: Initialized task mental model for NASA Lunar Survival
+2025-04-18 14:37:32,758 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-18 14:37:32,758 [INFO] simulation.sim_20250418_143730: Initialized simulation sim_20250418_143730
+2025-04-18 14:37:32,758 [INFO] simulation.sim_20250418_143730: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-18 14:37:32,758 [INFO] simulation.sim_20250418_143730: Starting task analysis phase
+2025-04-18 14:37:32,778 [INFO] simulation.sim_20250418_143730: Getting initial analysis from Critical Analyst
+2025-04-18 14:37:32,778 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following ranking task:
+  ...
+2025-04-18 14:37:41,212 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:37:41,244 [INFO] agent.Critical Analyst: Responded: ### **1. Analytical Approach to the Ranking Task**
+To rank the 15 items, I will:
+- **Prioritize surv...
+2025-04-18 14:37:41,244 [INFO] teamwork.shared_mental_model: Updated shared understanding from Critical Analyst
+2025-04-18 14:37:41,244 [INFO] simulation.sim_20250418_143730: Mental model update from Critical Analyst, convergence: 0.00
+2025-04-18 14:37:41,249 [INFO] simulation.sim_20250418_143730: Main discussion: task_analysis - Critical Analyst
+2025-04-18 14:37:41,249 [INFO] simulation.sim_20250418_143730: Getting initial analysis from Domain Expert
+2025-04-18 14:37:41,250 [INFO] agent.Domain Expert: Received message: 
+        As a Domain Expert with expertise in your domain, analyze the following ranking task:
+     ...
+2025-04-18 14:37:49,888 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:37:49,889 [INFO] agent.Domain Expert: Responded: ### Analytical Approach to the Ranking Task:
+
+1. **Prioritize Survival Essentials**: The moon lacks ...
+2025-04-18 14:37:49,889 [INFO] teamwork.shared_mental_model: Updated shared understanding from Domain Expert
+2025-04-18 14:37:49,891 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:37:49,896 [INFO] simulation.sim_20250418_143730: Mental model update from Domain Expert, convergence: 0.00
+2025-04-18 14:37:49,896 [INFO] simulation.sim_20250418_143730: Main discussion: task_analysis - Domain Expert
+2025-04-18 14:37:49,898 [INFO] simulation.sim_20250418_143730: Getting initial analysis from Creative Strategist
+2025-04-18 14:37:49,898 [INFO] agent.Creative Strategist: Received message: 
+        As a Creative Strategist with expertise in your domain, analyze the following ranking task:...
+2025-04-18 14:38:01,009 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:01,011 [INFO] agent.Creative Strategist: Responded: ### Analytical Approach:
+1. **Survival Prioritization Framework**: I will use the hierarchy of survi...
+2025-04-18 14:38:01,013 [INFO] teamwork.shared_mental_model: Updated shared understanding from Creative Strategist
+2025-04-18 14:38:01,013 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:38:01,013 [INFO] simulation.sim_20250418_143730: Mental model update from Creative Strategist, convergence: 0.00
+2025-04-18 14:38:01,013 [INFO] simulation.sim_20250418_143730: Main discussion: task_analysis - Creative Strategist
+2025-04-18 14:38:01,013 [INFO] simulation.sim_20250418_143730: Getting initial analysis from Process Facilitator
+2025-04-18 14:38:01,013 [INFO] agent.Process Facilitator: Received message: 
+        As a Process Facilitator with expertise in your domain, analyze the following ranking task:...
+2025-04-18 14:38:09,236 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:09,252 [INFO] agent.Process Facilitator: Responded: ### Analytical Approach to the Ranking Task:
+1. **Survival Priorities Framework**: I will prioritize...
+2025-04-18 14:38:09,254 [INFO] teamwork.shared_mental_model: Updated shared understanding from Process Facilitator
+2025-04-18 14:38:09,254 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:38:09,254 [INFO] simulation.sim_20250418_143730: Mental model update from Process Facilitator, convergence: 0.00
+2025-04-18 14:38:09,263 [INFO] simulation.sim_20250418_143730: Main discussion: task_analysis - Process Facilitator
+2025-04-18 14:38:09,265 [INFO] simulation.sim_20250418_143730: Leadership phase: Defining task approach
+2025-04-18 14:38:09,267 [INFO] communication.closed_loop: Starting closed-loop exchange: Process Facilitator -> Critical Analyst
+2025-04-18 14:38:09,267 [INFO] agent.Process Facilitator: Received message: 
+        As the leader, you should define the team's overall approach to solving this task:
+        ...
+2025-04-18 14:38:18,181 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:18,181 [INFO] agent.Process Facilitator: Responded: ### Team Approach to Solving the Task
+
+To ensure the task is completed effectively, we will follow a...
+2025-04-18 14:38:18,181 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Team Approach to Solving the Task
+
+To ensure t...
+2025-04-18 14:38:18,181 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Process Facilitator:
+        
+        "###...
+2025-04-18 14:38:24,354 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:24,370 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation
+
+Thank you, Process Facilitator, for providing this detailed bre...
+2025-04-18 14:38:24,370 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you, Pr...
+2025-04-18 14:38:24,370 [INFO] agent.Process Facilitator: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Team Approach...
+2025-04-18 14:38:29,693 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:29,693 [INFO] agent.Process Facilitator: Responded: ### Verification of Understanding
+
+Thank you, Critical Analyst, for your thorough acknowledgment and...
+2025-04-18 14:38:29,693 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you, Crit...
+2025-04-18 14:38:29,693 [INFO] simulation.sim_20250418_143730: Closed-loop communication: leader_definition - Process Facilitator -> Critical Analyst
+2025-04-18 14:38:29,693 [INFO] simulation.sim_20250418_143730: Leadership action: task_definition
+2025-04-18 14:38:29,703 [INFO] simulation.sim_20250418_143730: Starting collaborative discussion phase
+2025-04-18 14:38:29,704 [INFO] simulation.sim_20250418_143730: Running collaborative discussion for Critical Analyst
+2025-04-18 14:38:29,707 [INFO] teamwork.mutual_monitoring: Monitoring response from Domain Expert
+2025-04-18 14:38:29,708 [INFO] teamwork.mutual_monitoring: Detected 5 issues in Domain Expert's response
+2025-04-18 14:38:29,709 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (6 occurrences)
+2025-04-18 14:38:29,709 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,710 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,710 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,711 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:29,712 [INFO] teamwork.mutual_monitoring: Critical Analyst provided constructive feedback to Domain Expert on 5 issues
+2025-04-18 14:38:29,712 [INFO] simulation.sim_20250418_143730: Monitoring action: Critical Analyst monitored Domain Expert, issues: 5
+2025-04-18 14:38:29,716 [INFO] teamwork.mutual_monitoring: Monitoring response from Creative Strategist
+2025-04-18 14:38:29,720 [INFO] teamwork.mutual_monitoring: Detected 15 issues in Creative Strategist's response
+2025-04-18 14:38:29,720 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Oxygen tanks' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Solar-powered FM receiver-transmitter' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item '50 feet of nylon rope' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'First aid kit' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Life raft' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Signal flares' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Two .45 caliber pistols' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,721 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'One case of dehydrated milk' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,726 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Portable heating unit' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,726 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,727 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Box of matches' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,728 [INFO] teamwork.mutual_monitoring: Critical Analyst provided constructive feedback to Creative Strategist on 15 issues
+2025-04-18 14:38:29,730 [INFO] simulation.sim_20250418_143730: Monitoring action: Critical Analyst monitored Creative Strategist, issues: 15
+2025-04-18 14:38:29,731 [INFO] teamwork.mutual_monitoring: Monitoring response from Process Facilitator
+2025-04-18 14:38:29,735 [INFO] teamwork.mutual_monitoring: Detected 3 issues in Process Facilitator's response
+2025-04-18 14:38:29,735 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:38:29,735 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:29,735 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:29,735 [INFO] teamwork.mutual_monitoring: Critical Analyst provided constructive feedback to Process Facilitator on 3 issues
+2025-04-18 14:38:29,735 [INFO] simulation.sim_20250418_143730: Monitoring action: Critical Analyst monitored Process Facilitator, issues: 3
+2025-04-18 14:38:29,740 [INFO] communication.closed_loop: Starting closed-loop exchange: Critical Analyst -> Domain Expert
+2025-04-18 14:38:29,740 [INFO] agent.Critical Analyst: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:38:36,972 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:36,989 [INFO] agent.Critical Analyst: Responded: ### Final Ranking of Items for Lunar Survival
+
+Based on the shared team understanding, insights from...
+2025-04-18 14:38:36,989 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Ranking of Items for Lunar Survival
+
+Bas...
+2025-04-18 14:38:36,989 [INFO] agent.Domain Expert: Received message: 
+        You have received the following message from the Critical Analyst:
+        
+        "### Fi...
+2025-04-18 14:38:42,394 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:42,394 [INFO] agent.Domain Expert: Responded: ### Acknowledgment and Confirmation:
+
+I have received your message detailing the **Final Ranking of ...
+2025-04-18 14:38:42,394 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+
+I have recei...
+2025-04-18 14:38:42,394 [INFO] agent.Critical Analyst: Received message: 
+        You sent the following message to the Domain Expert:
+        
+        "### Final Ranking of...
+2025-04-18 14:38:47,539 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:47,555 [INFO] agent.Critical Analyst: Responded: ### Verification of Understanding
+
+Thank you for your acknowledgment and detailed response. I confir...
+2025-04-18 14:38:47,555 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you for y...
+2025-04-18 14:38:47,555 [INFO] simulation.sim_20250418_143730: Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-18 14:38:47,555 [INFO] teamwork.shared_mental_model: Updated shared understanding from Critical Analyst
+2025-04-18 14:38:47,555 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:38:47,555 [INFO] simulation.sim_20250418_143730: Mental model update from Critical Analyst, convergence: 0.00
+2025-04-18 14:38:47,560 [INFO] simulation.sim_20250418_143730: Running collaborative discussion for Domain Expert
+2025-04-18 14:38:47,561 [INFO] teamwork.mutual_monitoring: Monitoring response from Critical Analyst
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring: Detected 6 issues in Critical Analyst's response
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Solar-powered FM receiver-transmitter' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'First aid kit' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,562 [INFO] teamwork.mutual_monitoring: Domain Expert provided constructive feedback to Critical Analyst on 6 issues
+2025-04-18 14:38:47,564 [INFO] simulation.sim_20250418_143730: Monitoring action: Domain Expert monitored Critical Analyst, issues: 6
+2025-04-18 14:38:47,564 [INFO] teamwork.mutual_monitoring: Monitoring response from Creative Strategist
+2025-04-18 14:38:47,564 [INFO] teamwork.mutual_monitoring: Detected 15 issues in Creative Strategist's response
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Oxygen tanks' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Solar-powered FM receiver-transmitter' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item '50 feet of nylon rope' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'First aid kit' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Life raft' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Signal flares' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Two .45 caliber pistols' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'One case of dehydrated milk' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Portable heating unit' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Box of matches' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring: Domain Expert provided constructive feedback to Creative Strategist on 15 issues
+2025-04-18 14:38:47,566 [INFO] simulation.sim_20250418_143730: Monitoring action: Domain Expert monitored Creative Strategist, issues: 15
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring: Monitoring response from Process Facilitator
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring: Detected 3 issues in Process Facilitator's response
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (3 occurrences)
+2025-04-18 14:38:47,566 [INFO] teamwork.mutual_monitoring: Domain Expert provided constructive feedback to Process Facilitator on 3 issues
+2025-04-18 14:38:47,566 [INFO] simulation.sim_20250418_143730: Monitoring action: Domain Expert monitored Process Facilitator, issues: 3
+2025-04-18 14:38:47,570 [INFO] communication.closed_loop: Starting closed-loop exchange: Domain Expert -> Critical Analyst
+2025-04-18 14:38:47,570 [INFO] agent.Domain Expert: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:38:56,957 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:38:56,957 [INFO] agent.Domain Expert: Responded: ### Final Ranking of Items for Lunar Survival
+
+Based on the shared team understanding, feedback from...
+2025-04-18 14:38:56,957 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Ranking of Items for Lunar Survival
+
+Bas...
+2025-04-18 14:38:56,957 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Domain Expert:
+        
+        "### Final...
+2025-04-18 14:39:01,526 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:01,526 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation
+
+Thank you for providing the **Final Ranking of Items for Lunar ...
+2025-04-18 14:39:01,526 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-04-18 14:39:01,535 [INFO] agent.Domain Expert: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Final Ranking...
+2025-04-18 14:39:06,955 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:06,955 [INFO] agent.Domain Expert: Responded: ### Verification of Understanding
+
+Thank you for your acknowledgment and confirmation. I appreciate ...
+2025-04-18 14:39:06,955 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you for y...
+2025-04-18 14:39:06,964 [INFO] simulation.sim_20250418_143730: Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-18 14:39:06,971 [INFO] teamwork.shared_mental_model: Updated shared understanding from Domain Expert
+2025-04-18 14:39:06,971 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:39:06,971 [INFO] simulation.sim_20250418_143730: Mental model update from Domain Expert, convergence: 0.00
+2025-04-18 14:39:06,976 [INFO] simulation.sim_20250418_143730: Running collaborative discussion for Creative Strategist
+2025-04-18 14:39:06,978 [INFO] teamwork.mutual_monitoring: Monitoring response from Critical Analyst
+2025-04-18 14:39:06,982 [INFO] teamwork.mutual_monitoring: Detected 6 issues in Critical Analyst's response
+2025-04-18 14:39:06,983 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:39:06,983 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,984 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,984 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Solar-powered FM receiver-transmitter' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,984 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'First aid kit' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,984 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,984 [INFO] teamwork.mutual_monitoring: Creative Strategist provided constructive feedback to Critical Analyst on 6 issues
+2025-04-18 14:39:06,988 [INFO] simulation.sim_20250418_143730: Monitoring action: Creative Strategist monitored Critical Analyst, issues: 6
+2025-04-18 14:39:06,989 [INFO] teamwork.mutual_monitoring: Monitoring response from Domain Expert
+2025-04-18 14:39:06,991 [INFO] teamwork.mutual_monitoring: Detected 5 issues in Domain Expert's response
+2025-04-18 14:39:06,991 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (6 occurrences)
+2025-04-18 14:39:06,991 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,991 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,991 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:06,991 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:06,995 [INFO] teamwork.mutual_monitoring: Creative Strategist provided constructive feedback to Domain Expert on 5 issues
+2025-04-18 14:39:06,996 [INFO] simulation.sim_20250418_143730: Monitoring action: Creative Strategist monitored Domain Expert, issues: 5
+2025-04-18 14:39:06,998 [INFO] teamwork.mutual_monitoring: Monitoring response from Process Facilitator
+2025-04-18 14:39:07,002 [INFO] teamwork.mutual_monitoring: Detected 3 issues in Process Facilitator's response
+2025-04-18 14:39:07,002 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:39:07,003 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:07,003 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:07,003 [INFO] teamwork.mutual_monitoring: Creative Strategist provided constructive feedback to Process Facilitator on 3 issues
+2025-04-18 14:39:07,005 [INFO] simulation.sim_20250418_143730: Monitoring action: Creative Strategist monitored Process Facilitator, issues: 3
+2025-04-18 14:39:07,005 [INFO] communication.closed_loop: Starting closed-loop exchange: Creative Strategist -> Critical Analyst
+2025-04-18 14:39:07,006 [INFO] agent.Creative Strategist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:39:16,480 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:16,491 [INFO] agent.Creative Strategist: Responded: ### Final Ranking and Justifications:
+
+After integrating insights from my teammates and addressing i...
+2025-04-18 14:39:16,491 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Ranking and Justifications:
+
+After integ...
+2025-04-18 14:39:16,491 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Creative Strategist:
+        
+        "###...
+2025-04-18 14:39:23,213 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:23,213 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation
+
+Thank you for providing your **Final Ranking and Justifications...
+2025-04-18 14:39:23,213 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-04-18 14:39:23,213 [INFO] agent.Creative Strategist: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Final Ranking...
+2025-04-18 14:39:26,505 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:26,505 [INFO] agent.Creative Strategist: Responded: ### Verification of Understanding
+
+Thank you for your detailed acknowledgment and confirmation of my...
+2025-04-18 14:39:26,505 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you for y...
+2025-04-18 14:39:26,514 [INFO] simulation.sim_20250418_143730: Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-18 14:39:26,517 [INFO] teamwork.shared_mental_model: Updated shared understanding from Creative Strategist
+2025-04-18 14:39:26,518 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:39:26,520 [INFO] simulation.sim_20250418_143730: Mental model update from Creative Strategist, convergence: 0.00
+2025-04-18 14:39:26,523 [INFO] simulation.sim_20250418_143730: Running collaborative discussion for Process Facilitator
+2025-04-18 14:39:26,526 [INFO] teamwork.mutual_monitoring: Monitoring response from Critical Analyst
+2025-04-18 14:39:26,530 [INFO] teamwork.mutual_monitoring: Detected 6 issues in Critical Analyst's response
+2025-04-18 14:39:26,530 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:39:26,531 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,531 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,531 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Solar-powered FM receiver-transmitter' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,531 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'First aid kit' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,531 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,531 [INFO] teamwork.mutual_monitoring: Process Facilitator provided constructive feedback to Critical Analyst on 6 issues
+2025-04-18 14:39:26,535 [INFO] simulation.sim_20250418_143730: Monitoring action: Process Facilitator monitored Critical Analyst, issues: 6
+2025-04-18 14:39:26,538 [INFO] teamwork.mutual_monitoring: Monitoring response from Domain Expert
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring: Detected 5 issues in Domain Expert's response
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (6 occurrences)
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:26,539 [INFO] teamwork.mutual_monitoring: Process Facilitator provided constructive feedback to Domain Expert on 5 issues
+2025-04-18 14:39:26,542 [INFO] simulation.sim_20250418_143730: Monitoring action: Process Facilitator monitored Domain Expert, issues: 5
+2025-04-18 14:39:26,543 [INFO] teamwork.mutual_monitoring: Monitoring response from Creative Strategist
+2025-04-18 14:39:26,545 [INFO] teamwork.mutual_monitoring: Detected 15 issues in Creative Strategist's response
+2025-04-18 14:39:26,545 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Oxygen tanks' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,545 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Water' may be listed multiple times (4 occurrences)
+2025-04-18 14:39:26,545 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Stellar map' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:26,546 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Food concentrate' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:26,546 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Solar-powered FM receiver-transmitter' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,546 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item '50 feet of nylon rope' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,546 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'First aid kit' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,547 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Parachute silk' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:26,547 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Life raft' may be listed multiple times (3 occurrences)
+2025-04-18 14:39:26,547 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Signal flares' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,547 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Two .45 caliber pistols' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,548 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'One case of dehydrated milk' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,548 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Portable heating unit' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,548 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Magnetic compass' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,549 [INFO] teamwork.mutual_monitoring:   - potential_duplicate: Item 'Box of matches' may be listed multiple times (2 occurrences)
+2025-04-18 14:39:26,549 [INFO] teamwork.mutual_monitoring: Process Facilitator provided constructive feedback to Creative Strategist on 15 issues
+2025-04-18 14:39:26,550 [INFO] simulation.sim_20250418_143730: Monitoring action: Process Facilitator monitored Creative Strategist, issues: 15
+2025-04-18 14:39:26,551 [INFO] communication.closed_loop: Starting closed-loop exchange: Process Facilitator -> Critical Analyst
+2025-04-18 14:39:26,551 [INFO] agent.Process Facilitator: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:39:27,090 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-04-18 14:39:27,090 [INFO] openai._base_client: Retrying request to /chat/completions in 4.000000 seconds
+2025-04-18 14:39:37,676 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:37,688 [INFO] agent.Process Facilitator: Responded: ### Final Ranking of Items for NASA Lunar Survival Task
+
+After integrating insights from my teammate...
+2025-04-18 14:39:37,688 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Ranking of Items for NASA Lunar Survival...
+2025-04-18 14:39:37,688 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Process Facilitator:
+        
+        "###...
+2025-04-18 14:39:38,265 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-04-18 14:39:38,265 [INFO] openai._base_client: Retrying request to /chat/completions in 5.000000 seconds
+2025-04-18 14:39:49,682 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:39:49,682 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation
+
+Thank you for providing the **Final Ranking of Items for NASA L...
+2025-04-18 14:39:49,682 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-04-18 14:39:49,682 [INFO] agent.Process Facilitator: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Final Ranking...
+2025-04-18 14:39:50,148 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-04-18 14:39:50,149 [INFO] openai._base_client: Retrying request to /chat/completions in 8.000000 seconds
+2025-04-18 14:40:02,052 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:40:02,052 [INFO] agent.Process Facilitator: Responded: ### Verification of Understanding
+
+Thank you, Critical Analyst, for your detailed acknowledgment and...
+2025-04-18 14:40:02,052 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you, Crit...
+2025-04-18 14:40:02,052 [INFO] simulation.sim_20250418_143730: Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-18 14:40:02,063 [INFO] teamwork.shared_mental_model: Updated shared understanding from Process Facilitator
+2025-04-18 14:40:02,064 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:40:02,065 [INFO] simulation.sim_20250418_143730: Mental model update from Process Facilitator, convergence: 0.00
+2025-04-18 14:40:02,068 [INFO] agent.Process Facilitator: Received message: 
+                As the designated leader, synthesize the team's perspectives into a consensus solut...
+2025-04-18 14:40:12,603 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:40:12,605 [INFO] agent.Process Facilitator: Responded: ### Final Consensus Ranking of Items for NASA Lunar Survival Task
+
+After synthesizing insights from ...
+2025-04-18 14:40:12,606 [INFO] simulation.sim_20250418_143730: Leadership action: synthesis
+2025-04-18 14:40:12,607 [INFO] simulation.sim_20250418_143730: Main discussion: leadership_synthesis - Process Facilitator
+2025-04-18 14:40:12,608 [INFO] simulation.sim_20250418_143730: Applying decision methods
+2025-04-18 14:40:12,608 [INFO] decision.methods: Applying majority voting method
+2025-04-18 14:40:12,609 [INFO] simulation.sim_20250418_143730: Majority voting result: {'method': 'majority_voting', 'final_ranking': ['Oxygen tanks', 'Water', 'Stellar map', 'Solar-powered FM receiver-transmitter', 'Food concentrate', '50 feet of nylon rope', 'First aid kit', 'Signal flares', 'Parachute silk', 'Life raft', 'Portable heating unit', 'Two .45 caliber pistols', 'One case of dehydrated milk', 'Magnetic compass', 'Box of matches'], 'top_item': 'Oxygen tanks', 'top_votes': 4, 'total_votes': 4, 'confidence': 1.0}
+2025-04-18 14:40:12,609 [INFO] decision.methods: Applying weighted voting method
+2025-04-18 14:40:12,609 [INFO] simulation.sim_20250418_143730: Weighted voting result: {'method': 'weighted_voting', 'final_ranking': ['Oxygen tanks', 'Water', 'Stellar map', 'Solar-powered FM receiver-transmitter', 'Food concentrate', '50 feet of nylon rope', 'First aid kit', 'Signal flares', 'Parachute silk', 'Life raft', 'Portable heating unit', 'Two .45 caliber pistols', 'One case of dehydrated milk', 'Magnetic compass', 'Box of matches'], 'top_item': 'Oxygen tanks', 'top_weight': 3.2, 'total_weight': 3.2, 'confidence': 1.0, 'position_weights': {1: {'item': 'Oxygen tanks', 'weight': 3.2}, 2: {'item': 'Water', 'weight': 3.2}, 3: {'item': 'Stellar map', 'weight': 3.2}, 4: {'item': 'Solar-powered FM receiver-transmitter', 'weight': 3.2}, 5: {'item': 'Food concentrate', 'weight': 3.2}, 6: {'item': '50 feet of nylon rope', 'weight': 3.2}, 7: {'item': 'First aid kit', 'weight': 3.2}, 8: {'item': 'Signal flares', 'weight': 3.2}, 9: {'item': 'Parachute silk', 'weight': 3.2}, 10: {'item': 'Life raft', 'weight': 1.8}, 11: {'item': 'Portable heating unit', 'weight': 1.8}, 12: {'item': 'Two .45 caliber pistols', 'weight': 3.2}, 13: {'item': 'One case of dehydrated milk', 'weight': 3.2}, 14: {'item': 'Magnetic compass', 'weight': 3.2}, 15: {'item': 'Box of matches', 'weight': 3.2}}}
+2025-04-18 14:40:12,611 [INFO] decision.methods: Applying Borda count method
+2025-04-18 14:40:12,611 [INFO] simulation.sim_20250418_143730: Borda count result: {'method': 'borda_count', 'final_ranking': ['Oxygen tanks', 'Water', 'Stellar map', 'Solar-powered FM receiver-transmitter', 'Food concentrate', '50 feet of nylon rope', 'First aid kit', 'Signal flares', 'Parachute silk', 'Life raft', 'Portable heating unit', 'Two .45 caliber pistols', 'One case of dehydrated milk', 'Magnetic compass', 'Box of matches'], 'borda_scores': {'Oxygen tanks': 56, 'Water': 52, 'Stellar map': 48, 'Food concentrate': 40, 'Solar-powered FM receiver-transmitter': 44, '50 feet of nylon rope': 36, 'First aid kit': 32, 'Parachute silk': 24, 'Life raft': 18, 'Signal flares': 28, 'Two .45 caliber pistols': 12, 'One case of dehydrated milk': 8, 'Portable heating unit': 18, 'Magnetic compass': 4, 'Box of matches': 0}, 'top_item': 'Oxygen tanks', 'top_score': 56, 'total_possible_score': 420.0, 'confidence': 0.08508482110633775}
+2025-04-18 14:40:12,619 [INFO] simulation.sim_20250418_143730: Closed-loop communication metrics collected
+2025-04-18 14:40:12,619 [INFO] teamwork.mutual_monitoring: Team performance analysis completed: low effectiveness
+2025-04-18 14:40:12,619 [INFO] simulation.sim_20250418_143730: Mutual monitoring metrics collected
+2025-04-18 14:40:12,619 [INFO] teamwork.shared_mental_model: Mental model effectiveness analysis: low effectiveness
+2025-04-18 14:40:12,619 [INFO] simulation.sim_20250418_143730: Shared mental model metrics collected
+2025-04-18 14:40:12,622 [INFO] simulation.sim_20250418_143730: Results saved to output\sim_20250418_143730_results.json
+2025-04-18 14:40:12,623 [INFO] simulation.sim_20250418_143730: Results saved to output\sim_20250418_143730_results.json
+2025-04-18 14:45:50,977 [INFO] root: Running single simulation
+2025-04-18 14:45:50,977 [INFO] simulation.sim_20250418_144550: Event logged: simulation_started
+2025-04-18 14:45:50,977 [INFO] simulation.sim_20250418_144550: SimulationLogger initialized for sim_20250418_144550 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-18 14:45:51,461 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-18 14:45:51,461 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-18 14:45:51,461 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-18 14:45:51,461 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-18 14:45:51,461 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-18 14:45:51,876 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-18 14:45:51,876 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-18 14:45:51,876 [INFO] agent.Domain Expert: Added to knowledge base: climate_science
+2025-04-18 14:45:51,876 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-18 14:45:52,329 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-18 14:45:52,329 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-18 14:45:52,329 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-18 14:45:52,329 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-18 14:45:52,329 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-18 14:45:52,752 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-18 14:45:52,752 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-18 14:45:52,752 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-18 14:45:52,752 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-18 14:45:52,752 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-18 14:45:52,752 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-18 14:45:52,752 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-18 14:45:52,752 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-18 14:45:52,752 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-18 14:45:52,752 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-18 14:45:52,752 [INFO] root: Created agent team with configuration:
+2025-04-18 14:45:52,752 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-18 14:45:52,752 [INFO] root:   Closed-loop Communication: True
+2025-04-18 14:45:52,752 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-18 14:45:52,752 [INFO] root:   Shared Mental Model: True
+2025-04-18 14:45:52,752 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-18 14:45:52,752 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-18 14:45:52,752 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-18 14:45:52,752 [INFO] decision.methods: Initialized decision methods handler
+2025-04-18 14:45:52,752 [INFO] teamwork.shared_mental_model: Initialized task mental model for Climate Science Question
+2025-04-18 14:45:52,752 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-18 14:45:52,752 [INFO] simulation.sim_20250418_144550: Initialized simulation sim_20250418_144550
+2025-04-18 14:45:52,752 [INFO] simulation.sim_20250418_144550: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-18 14:45:52,752 [INFO] simulation.sim_20250418_144550: Starting task analysis phase
+2025-04-18 14:45:52,765 [INFO] simulation.sim_20250418_144550: Getting initial analysis from Critical Analyst
+2025-04-18 14:45:52,765 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following multiple-choice ...
+2025-04-18 14:46:02,148 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:02,183 [INFO] agent.Critical Analyst: Responded: ### Analysis of Each Option:
+
+#### **A. Carbon dioxide (CO2):**
+- **Strengths:**
+  - Carbon dioxide ...
+2025-04-18 14:46:02,189 [INFO] teamwork.shared_mental_model: Updated shared understanding from Critical Analyst
+2025-04-18 14:46:02,190 [INFO] simulation.sim_20250418_144550: Mental model update from Critical Analyst, convergence: 0.00
+2025-04-18 14:46:02,191 [INFO] simulation.sim_20250418_144550: Main discussion: task_analysis - Critical Analyst
+2025-04-18 14:46:02,191 [INFO] simulation.sim_20250418_144550: Getting initial analysis from Domain Expert
+2025-04-18 14:46:02,191 [INFO] agent.Domain Expert: Received message: 
+        As a Domain Expert with expertise in your domain, analyze the following multiple-choice que...
+2025-04-18 14:46:09,874 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:09,874 [INFO] agent.Domain Expert: Responded: ### Systematic Analysis of Options:
+
+#### **Option A: Carbon dioxide (CO2)**
+- **Strengths**: Carbon...
+2025-04-18 14:46:09,881 [INFO] teamwork.shared_mental_model: Updated shared understanding from Domain Expert
+2025-04-18 14:46:09,881 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:46:09,881 [INFO] simulation.sim_20250418_144550: Mental model update from Domain Expert, convergence: 0.00
+2025-04-18 14:46:09,886 [INFO] simulation.sim_20250418_144550: Main discussion: task_analysis - Domain Expert
+2025-04-18 14:46:09,888 [INFO] simulation.sim_20250418_144550: Getting initial analysis from Creative Strategist
+2025-04-18 14:46:09,889 [INFO] agent.Creative Strategist: Received message: 
+        As a Creative Strategist with expertise in your domain, analyze the following multiple-choi...
+2025-04-18 14:46:17,049 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:17,058 [INFO] agent.Creative Strategist: Responded: ### Analysis of Each Option:
+
+#### **Option A: Carbon dioxide (CO2)**
+- **Strengths**: Carbon dioxid...
+2025-04-18 14:46:17,058 [INFO] teamwork.shared_mental_model: Updated shared understanding from Creative Strategist
+2025-04-18 14:46:17,058 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:46:17,058 [INFO] simulation.sim_20250418_144550: Mental model update from Creative Strategist, convergence: 0.00
+2025-04-18 14:46:17,066 [INFO] simulation.sim_20250418_144550: Main discussion: task_analysis - Creative Strategist
+2025-04-18 14:46:17,067 [INFO] simulation.sim_20250418_144550: Getting initial analysis from Process Facilitator
+2025-04-18 14:46:17,068 [INFO] agent.Process Facilitator: Received message: 
+        As a Process Facilitator with expertise in your domain, analyze the following multiple-choi...
+2025-04-18 14:46:26,384 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:26,384 [INFO] agent.Process Facilitator: Responded: ### Analysis of the Question and Options:
+
+To ensure a structured and methodical evaluation of the q...
+2025-04-18 14:46:26,390 [INFO] teamwork.shared_mental_model: Updated shared understanding from Process Facilitator
+2025-04-18 14:46:26,390 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:46:26,395 [INFO] simulation.sim_20250418_144550: Mental model update from Process Facilitator, convergence: 0.00
+2025-04-18 14:46:26,397 [INFO] simulation.sim_20250418_144550: Main discussion: task_analysis - Process Facilitator
+2025-04-18 14:46:26,398 [INFO] simulation.sim_20250418_144550: Leadership phase: Defining task approach
+2025-04-18 14:46:26,398 [INFO] communication.closed_loop: Starting closed-loop exchange: Process Facilitator -> Critical Analyst
+2025-04-18 14:46:26,398 [INFO] agent.Process Facilitator: Received message: 
+        As the leader, you should define the team's overall approach to solving this task:
+        ...
+2025-04-18 14:46:34,110 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:34,113 [INFO] agent.Process Facilitator: Responded: ### Team Approach to Solving the Task
+
+To ensure effective collaboration and optimize the decision-m...
+2025-04-18 14:46:34,114 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Team Approach to Solving the Task
+
+To ensure e...
+2025-04-18 14:46:34,114 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Process Facilitator:
+        
+        "###...
+2025-04-18 14:46:38,395 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:38,395 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation:
+I acknowledge receipt of the message from the Process Facilitat...
+2025-04-18 14:46:38,395 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I acknowledge...
+2025-04-18 14:46:38,395 [INFO] agent.Process Facilitator: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Team Approach...
+2025-04-18 14:46:44,223 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:44,223 [INFO] agent.Process Facilitator: Responded: ### Verification of Understanding  
+
+Thank you for your detailed acknowledgment and confirmation of ...
+2025-04-18 14:46:44,223 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding  
+
+Thank you for...
+2025-04-18 14:46:44,241 [INFO] simulation.sim_20250418_144550: Closed-loop communication: leader_definition - Process Facilitator -> Critical Analyst
+2025-04-18 14:46:44,241 [INFO] simulation.sim_20250418_144550: Leadership action: task_definition
+2025-04-18 14:46:44,247 [INFO] simulation.sim_20250418_144550: Starting collaborative discussion phase
+2025-04-18 14:46:44,248 [INFO] simulation.sim_20250418_144550: Running collaborative discussion for Critical Analyst
+2025-04-18 14:46:44,249 [INFO] teamwork.mutual_monitoring: Monitoring response from Domain Expert
+2025-04-18 14:46:44,250 [INFO] teamwork.mutual_monitoring: No issues detected in Domain Expert's response
+2025-04-18 14:46:44,250 [INFO] teamwork.mutual_monitoring: Monitoring response from Creative Strategist
+2025-04-18 14:46:44,252 [INFO] teamwork.mutual_monitoring: No issues detected in Creative Strategist's response
+2025-04-18 14:46:44,252 [INFO] teamwork.mutual_monitoring: Monitoring response from Process Facilitator
+2025-04-18 14:46:44,254 [INFO] teamwork.mutual_monitoring: No issues detected in Process Facilitator's response
+2025-04-18 14:46:44,254 [INFO] communication.closed_loop: Starting closed-loop exchange: Critical Analyst -> Domain Expert
+2025-04-18 14:46:44,254 [INFO] agent.Critical Analyst: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:46:52,235 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:52,235 [INFO] agent.Critical Analyst: Responded: ### Final Answer: **A**
+
+### Rationale:
+After integrating my analysis with the insights provided by ...
+2025-04-18 14:46:52,235 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **A**
+
+### Rationale:
+After inte...
+2025-04-18 14:46:52,235 [INFO] agent.Domain Expert: Received message: 
+        You have received the following message from the Critical Analyst:
+        
+        "### Fi...
+2025-04-18 14:46:55,545 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:55,545 [INFO] agent.Domain Expert: Responded: ### Acknowledgment and Confirmation:
+
+I have received your message and confirm my understanding of t...
+2025-04-18 14:46:55,545 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+
+I have recei...
+2025-04-18 14:46:55,545 [INFO] agent.Critical Analyst: Received message: 
+        You sent the following message to the Domain Expert:
+        
+        "### Final Answer: **...
+2025-04-18 14:46:57,955 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:46:57,967 [INFO] agent.Critical Analyst: Responded: ### Verification of Understanding:
+Thank you for your acknowledgment and confirmation. I verify that...
+2025-04-18 14:46:57,967 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-04-18 14:46:57,967 [INFO] simulation.sim_20250418_144550: Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-18 14:46:57,967 [INFO] teamwork.shared_mental_model: Updated shared understanding from Critical Analyst
+2025-04-18 14:46:57,967 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:46:57,967 [INFO] simulation.sim_20250418_144550: Mental model update from Critical Analyst, convergence: 0.00
+2025-04-18 14:46:57,975 [INFO] simulation.sim_20250418_144550: Running collaborative discussion for Domain Expert
+2025-04-18 14:46:57,976 [INFO] teamwork.mutual_monitoring: Monitoring response from Critical Analyst
+2025-04-18 14:46:57,978 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Critical Analyst's response
+2025-04-18 14:46:57,979 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-04-18 14:46:57,979 [INFO] teamwork.mutual_monitoring: Domain Expert provided constructive feedback to Critical Analyst on 1 issues
+2025-04-18 14:46:57,981 [INFO] simulation.sim_20250418_144550: Monitoring action: Domain Expert monitored Critical Analyst, issues: 1
+2025-04-18 14:46:57,982 [INFO] teamwork.mutual_monitoring: Monitoring response from Creative Strategist
+2025-04-18 14:46:57,984 [INFO] teamwork.mutual_monitoring: No issues detected in Creative Strategist's response
+2025-04-18 14:46:57,985 [INFO] teamwork.mutual_monitoring: Monitoring response from Process Facilitator
+2025-04-18 14:46:57,986 [INFO] teamwork.mutual_monitoring: No issues detected in Process Facilitator's response
+2025-04-18 14:46:57,986 [INFO] communication.closed_loop: Starting closed-loop exchange: Domain Expert -> Critical Analyst
+2025-04-18 14:46:57,986 [INFO] agent.Domain Expert: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:47:04,196 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:04,196 [INFO] agent.Domain Expert: Responded: ### Final Answer: **A**
+
+### Rationale:
+
+After integrating my own analysis with the insights provide...
+2025-04-18 14:47:04,196 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **A**
+
+### Rationale:
+
+After int...
+2025-04-18 14:47:04,196 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Domain Expert:
+        
+        "### Final...
+2025-04-18 14:47:10,198 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:10,198 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation:
+I acknowledge receipt of your message and confirm my understand...
+2025-04-18 14:47:10,198 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I acknowledge...
+2025-04-18 14:47:10,198 [INFO] agent.Domain Expert: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Final Answer:...
+2025-04-18 14:47:15,687 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:15,687 [INFO] agent.Domain Expert: Responded: ### Verification of Understanding:
+
+Thank you for your acknowledgment and confirmation. I verify tha...
+2025-04-18 14:47:15,687 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+
+Thank you for ...
+2025-04-18 14:47:15,687 [INFO] simulation.sim_20250418_144550: Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-18 14:47:15,703 [INFO] teamwork.shared_mental_model: Updated shared understanding from Domain Expert
+2025-04-18 14:47:15,705 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:47:15,707 [INFO] simulation.sim_20250418_144550: Mental model update from Domain Expert, convergence: 0.00
+2025-04-18 14:47:15,708 [INFO] simulation.sim_20250418_144550: Running collaborative discussion for Creative Strategist
+2025-04-18 14:47:15,710 [INFO] teamwork.mutual_monitoring: Monitoring response from Critical Analyst
+2025-04-18 14:47:15,712 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Critical Analyst's response
+2025-04-18 14:47:15,712 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-04-18 14:47:15,713 [INFO] teamwork.mutual_monitoring: Creative Strategist provided constructive feedback to Critical Analyst on 1 issues
+2025-04-18 14:47:15,716 [INFO] simulation.sim_20250418_144550: Monitoring action: Creative Strategist monitored Critical Analyst, issues: 1
+2025-04-18 14:47:15,718 [INFO] teamwork.mutual_monitoring: Monitoring response from Domain Expert
+2025-04-18 14:47:15,718 [INFO] teamwork.mutual_monitoring: No issues detected in Domain Expert's response
+2025-04-18 14:47:15,719 [INFO] teamwork.mutual_monitoring: Monitoring response from Process Facilitator
+2025-04-18 14:47:15,721 [INFO] teamwork.mutual_monitoring: No issues detected in Process Facilitator's response
+2025-04-18 14:47:15,721 [INFO] communication.closed_loop: Starting closed-loop exchange: Creative Strategist -> Critical Analyst
+2025-04-18 14:47:15,722 [INFO] agent.Creative Strategist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:47:20,838 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:20,838 [INFO] agent.Creative Strategist: Responded: ### Final Answer: **A**
+
+#### Rationale:
+After reviewing my initial analysis and integrating the ins...
+2025-04-18 14:47:20,838 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **A**
+
+#### Rationale:
+After rev...
+2025-04-18 14:47:20,838 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Creative Strategist:
+        
+        "###...
+2025-04-18 14:47:26,944 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:26,944 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation:
+I acknowledge receipt of your message and confirm my understand...
+2025-04-18 14:47:26,944 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I acknowledge...
+2025-04-18 14:47:26,944 [INFO] agent.Creative Strategist: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Final Answer:...
+2025-04-18 14:47:30,780 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:30,780 [INFO] agent.Creative Strategist: Responded: ### Verification of Understanding:
+
+Thank you for your detailed acknowledgment and summary. I confir...
+2025-04-18 14:47:30,780 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+
+Thank you for ...
+2025-04-18 14:47:30,780 [INFO] simulation.sim_20250418_144550: Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-18 14:47:30,780 [INFO] teamwork.shared_mental_model: Updated shared understanding from Creative Strategist
+2025-04-18 14:47:30,780 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:47:30,780 [INFO] simulation.sim_20250418_144550: Mental model update from Creative Strategist, convergence: 0.00
+2025-04-18 14:47:30,780 [INFO] simulation.sim_20250418_144550: Running collaborative discussion for Process Facilitator
+2025-04-18 14:47:30,791 [INFO] teamwork.mutual_monitoring: Monitoring response from Critical Analyst
+2025-04-18 14:47:30,792 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Critical Analyst's response
+2025-04-18 14:47:30,792 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-04-18 14:47:30,793 [INFO] teamwork.mutual_monitoring: Process Facilitator provided constructive feedback to Critical Analyst on 1 issues
+2025-04-18 14:47:30,793 [INFO] simulation.sim_20250418_144550: Monitoring action: Process Facilitator monitored Critical Analyst, issues: 1
+2025-04-18 14:47:30,794 [INFO] teamwork.mutual_monitoring: Monitoring response from Domain Expert
+2025-04-18 14:47:30,795 [INFO] teamwork.mutual_monitoring: No issues detected in Domain Expert's response
+2025-04-18 14:47:30,795 [INFO] teamwork.mutual_monitoring: Monitoring response from Creative Strategist
+2025-04-18 14:47:30,795 [INFO] teamwork.mutual_monitoring: No issues detected in Creative Strategist's response
+2025-04-18 14:47:30,797 [INFO] communication.closed_loop: Starting closed-loop exchange: Process Facilitator -> Critical Analyst
+2025-04-18 14:47:30,797 [INFO] agent.Process Facilitator: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-04-18 14:47:35,543 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:35,543 [INFO] agent.Process Facilitator: Responded: ### Final Answer: **A**
+
+### Rationale:
+After integrating the analyses provided by all team members ...
+2025-04-18 14:47:35,543 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **A**
+
+### Rationale:
+After inte...
+2025-04-18 14:47:35,543 [INFO] agent.Critical Analyst: Received message: 
+        You have received the following message from the Process Facilitator:
+        
+        "###...
+2025-04-18 14:47:35,903 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-04-18 14:47:35,903 [INFO] openai._base_client: Retrying request to /chat/completions in 3.000000 seconds
+2025-04-18 14:47:45,137 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:47:45,137 [INFO] agent.Critical Analyst: Responded: ### Acknowledgment and Confirmation:
+I acknowledge receipt of your message and confirm my understand...
+2025-04-18 14:47:45,137 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I acknowledge...
+2025-04-18 14:47:45,137 [INFO] agent.Process Facilitator: Received message: 
+        You sent the following message to the Critical Analyst:
+        
+        "### Final Answer:...
+2025-04-18 14:47:45,495 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-04-18 14:47:45,495 [INFO] openai._base_client: Retrying request to /chat/completions in 11.000000 seconds
+2025-04-18 14:48:02,776 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:48:02,776 [INFO] agent.Process Facilitator: Responded: ### Verification of Understanding  
+
+Thank you for your thoughtful response and acknowledgment of th...
+2025-04-18 14:48:02,776 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding  
+
+Thank you for...
+2025-04-18 14:48:02,785 [INFO] simulation.sim_20250418_144550: Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-18 14:48:02,785 [INFO] teamwork.shared_mental_model: Updated shared understanding from Process Facilitator
+2025-04-18 14:48:02,785 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-04-18 14:48:02,785 [INFO] simulation.sim_20250418_144550: Mental model update from Process Facilitator, convergence: 0.00
+2025-04-18 14:48:02,791 [INFO] agent.Process Facilitator: Received message: 
+                As the designated leader, synthesize the team's perspectives into a consensus solut...
+2025-04-18 14:48:17,058 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-18 14:48:17,058 [INFO] agent.Process Facilitator: Responded: ### Final Answer: **A**
+
+---
+
+### Comprehensive Justification:
+
+After synthesizing the insights from...
+2025-04-18 14:48:17,058 [INFO] simulation.sim_20250418_144550: Leadership action: synthesis
+2025-04-18 14:48:17,072 [INFO] simulation.sim_20250418_144550: Main discussion: leadership_synthesis - Process Facilitator
+2025-04-18 14:48:17,075 [INFO] simulation.sim_20250418_144550: Applying decision methods
+2025-04-18 14:48:17,076 [INFO] decision.methods: Applying majority voting method
+2025-04-18 14:48:17,076 [INFO] simulation.sim_20250418_144550: Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-18 14:48:17,077 [INFO] decision.methods: Applying weighted voting method
+2025-04-18 14:48:17,078 [INFO] simulation.sim_20250418_144550: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 3.1999999999999997}, 'total_weight': 3.2, 'confidence': 0.9999999999999999}
+2025-04-18 14:48:17,079 [INFO] decision.methods: Applying Borda count method
+2025-04-18 14:48:17,080 [INFO] simulation.sim_20250418_144550: Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 8, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-18 14:48:17,081 [INFO] simulation.sim_20250418_144550: Closed-loop communication metrics collected
+2025-04-18 14:48:17,082 [INFO] teamwork.mutual_monitoring: Team performance analysis completed: low effectiveness
+2025-04-18 14:48:17,082 [INFO] simulation.sim_20250418_144550: Mutual monitoring metrics collected
+2025-04-18 14:48:17,083 [INFO] teamwork.shared_mental_model: Mental model effectiveness analysis: low effectiveness
+2025-04-18 14:48:17,083 [INFO] simulation.sim_20250418_144550: Shared mental model metrics collected
+2025-04-18 14:48:17,086 [INFO] simulation.sim_20250418_144550: Results saved to output\sim_20250418_144550_results.json
+2025-04-18 14:48:17,092 [INFO] simulation.sim_20250418_144550: Results saved to output\sim_20250418_144550_results.json

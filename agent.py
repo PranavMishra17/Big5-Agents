@@ -44,7 +44,15 @@ class Agent:
         
         # Initialize logger
         self.logger = logging.getLogger(f"agent.{role}")
-        
+
+
+        #print("Azure Deployment:", config.AZURE_DEPLOYMENT)
+        #print("API Key:", config.AZURE_API_KEY)
+        #print("API Version:", config.AZURE_API_VERSION)
+        #print("Azure Endpoint:", config.AZURE_ENDPOINT)
+        #print("Temperature:", config.TEMPERATURE)
+
+
         # Initialize LLM
         self.client = AzureChatOpenAI(
             azure_deployment=config.AZURE_DEPLOYMENT,
