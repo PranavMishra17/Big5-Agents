@@ -1,0 +1,70 @@
+{
+  "simulation_id": "medqa_baseline_36",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Critical Analyst",
+      "message": "**B. Cyclic vomiting syndrome**\n\n### Final Rationale:\nAfter integrating the analyses from all team members, the consensus strongly supports **cyclic vomiting syndrome (CVS)** as the most likely diagnosis. The patient's presentation aligns perfectly with the hallmark features of CVS: recurrent, stereotyped episodes of severe vomiting separated by symptom-free intervals, early-morning onset, associated pallor and lethargy, and a family history of migraines. Additionally, the normal physical examination and unremarkable laboratory and imaging findings further confirm CVS as a functional disorder rather than a structural or metabolic cause.\n\nOther options, such as intracranial mass, GERD, and intussusception, were systematically ruled out due to inconsistencies with the clinical presentation, lack of supporting findings, and the episodic nature of the symptoms.\n\nThus, the most likely diagnosis is **B. Cyclic vomiting syndrome**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Domain Expert",
+      "message": "**B. Cyclic vomiting syndrome**\n\n### Final Rationale:\nAfter integrating my analysis with the insights of my teammates, it is clear that the most likely diagnosis is **cyclic vomiting syndrome (CVS)**. The patient presents with a classic history of recurrent, stereotyped episodes of severe vomiting lasting 24 hours, separated by symptom-free intervals. The early-morning onset, associated pallor, and lethargy are hallmark features of CVS. Additionally, the family history of migraines strongly supports this diagnosis, as CVS is often associated with migraine disorders. \n\nOther options, such as intracranial mass, GERD, and intussusception, are less consistent with the clinical presentation due to the absence of progressive neurological findings, chronic symptoms, or acute abdominal findings, respectively. The normal physical examination, unremarkable lab results, and imaging findings further rule out these alternative diagnoses. Therefore, the most appropriate and evidence-supported answer is **B. Cyclic vomiting syndrome**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Creative Strategist",
+      "message": "**B. Cyclic vomiting syndrome**\n\n### Rationale:\nAfter integrating my analysis with the insights from my teammates, the consensus strongly supports **B. Cyclic vomiting syndrome** as the most likely diagnosis. The episodic nature of the vomiting, with complete resolution between episodes, is characteristic of CVS. The early morning onset, associated pallor, lethargy, and severe nausea further align with the typical presentation of CVS. The family history of migraines is a significant clue, as CVS is often associated with migraine disorders. The normal physical examination, unremarkable laboratory results, and imaging findings rule out other potential causes such as intracranial mass, GERD, or intussusception. This diagnosis fits the clinical picture best."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "**B. Cyclic vomiting syndrome**  \n\n### Rationale:  \nAll analyses, including my own and those of the teammates, converge on **cyclic vomiting syndrome (CVS)** as the most likely diagnosis. The key features supporting this diagnosis include:  \n1. **Episodic vomiting**: The recurrent pattern of severe vomiting episodes separated by symptom-free intervals is characteristic of CVS.  \n2. **Morning onset and associated symptoms**: Early-morning nausea and vomiting, along with pallor and lethargy, align with the typical presentation of CVS.  \n3. **Family history of migraines**: The association between CVS and migraine disorders provides a strong clue, as migraines are a common comorbidity or familial link in CVS cases.  \n4. **Exclusion of other causes**: The absence of neurological deficits, chronic symptoms, or acute abdominal findings rules out other options such as intracranial mass, GERD, or intussusception.  \n5. **Normal examination and tests**: The unremarkable physical examination, lab results, and imaging further support a functional diagnosis like CVS, rather than a structural or metabolic cause.  \n\nThus, **B. Cyclic vomiting syndrome** is the most consistent and evidence-supported diagnosis."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.8
+      },
+      "total_weight": 2.8,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "teamwork_metrics": {}
+}

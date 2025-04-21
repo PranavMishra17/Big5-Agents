@@ -1,0 +1,70 @@
+{
+  "simulation_id": "medqa_baseline_14",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Critical Analyst",
+      "message": "**A. Tuberculosis screening**\n\n### Final Rationale:\nAfter integrating all analyses, it is clear that tuberculosis screening is the most relevant and necessary diagnostic test before initiating etanercept, a TNF inhibitor. TNF inhibitors suppress immune function, increasing the risk of reactivating latent tuberculosis. Screening for TB using a tuberculin skin test or interferon-gamma release assay is universally recommended by clinical guidelines and is standard practice to mitigate this risk. \n\nThe other options (ANA level, endoscopy, malignancy screening) are either irrelevant to the safety concerns of TNF inhibitors or not routinely indicated in this context. Therefore, **A. Tuberculosis screening** is the correct choice."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Domain Expert",
+      "message": "**A. Tuberculosis screening**\n\n### Final Rationale:\nThe consensus across all analyses is that tuberculosis (TB) screening is the most appropriate and necessary diagnostic test before starting etanercept, a TNF-\u03b1 inhibitor. TNF-\u03b1 inhibitors suppress the immune system, increasing the risk of reactivating latent TB, which can lead to severe complications. Screening for TB (via tuberculin skin test or interferon-gamma release assay) is a universally recommended guideline and standard clinical practice prior to initiating TNF inhibitors.\n\nOther options, such as ANA testing, endoscopy, and malignancy screening, are either irrelevant or not routinely required in this context. TB screening directly addresses the safety concerns of using etanercept and ensures the patient's well-being during treatment."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Creative Strategist",
+      "message": "**A. Tuberculosis screening**\n\n**Rationale**:  \nAll perspectives align on the necessity of tuberculosis screening before initiating etanercept, a TNF-\u03b1 inhibitor. TNF-\u03b1 inhibitors suppress immune function, increasing the risk of reactivating latent tuberculosis, which can lead to serious complications. Screening for TB using a tuberculin skin test or interferon-gamma release assay is a universally recommended guideline and standard of care in rheumatology. Other options (ANA level, endoscopy, malignancy screening) are either irrelevant or not routinely required in this context. Therefore, tuberculosis screening is the correct diagnostic test to ensure the safe initiation of etanercept."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "**A. Tuberculosis screening**\n\n### Rationale:\nThe addition of etanercept, a tumor necrosis factor-alpha (TNF-\u03b1) inhibitor, requires screening for latent tuberculosis (TB) due to the immunosuppressive effects of the drug and the risk of reactivating latent TB. This is a universally recommended guideline and standard of care in rheumatology before initiating TNF inhibitors. The other options (ANA level, endoscopy, malignancy screening) are either irrelevant to the risks associated with etanercept or not routinely required in this context. Screening for TB ensures patient safety and prevents serious complications."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 3.4
+      },
+      "total_weight": 3.4,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "teamwork_metrics": {}
+}

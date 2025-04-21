@@ -251,3 +251,30 @@ Detailed logs available at: logs/leadership_closed_loop_mutual_monitoring/sim_20
 - Add new agent roles in `config.AGENT_ROLES`
 - Implement new task types in `agent.extract_response()`
 - Create additional decision methods in `decision_methods.py`
+
+
+## How to Use the Dataset Runner
+```bash
+# Run 50 random MedQA questions with all teamwork components
+python dataset_runner.py --dataset medqa --num-questions 50 --leadership --closedloop --mutual --mental
+
+# Run all configurations (baseline, individual components, all components) on PubMedQA
+python dataset_runner.py --dataset pubmedqa --num-questions 25 --all
+
+# Specify custom output directory and random seed
+python dataset_runner.py --dataset medqa --output-dir ./results --seed 123 --all
+```
+## Key Features
+
+Flexible Dataset Support: The system automatically formats different dataset structures into the appropriate task format for your agent system.
+Modular Configuration: You can run with any combination of the Big Five teamwork components.
+Results Analysis: For each configuration, you get accuracy metrics for all three decision methods.
+Structured Output: Results are saved in a hierarchical format with summary statistics and detailed per-question results.
+Progress Tracking: Uses tqdm to show progress during long runs with many questions.
+
+The dataset runner integrates smoothly with your existing agent system by directly configuring the config.TASK for each question. The results are stored in a structured format that facilitates further analysis and comparison.
+If you want to add more datasets in the future, you would just need to:
+
+### Add a new load_X_dataset function
+Create a new format_X_for_task function to convert to your standard task format
+Add the dataset type to the command-line choices

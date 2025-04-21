@@ -1,0 +1,8 @@
+2025-04-21 17:36:46,679 - simulation.medqa_leadership_1 - INFO - Event logged: simulation_started
+2025-04-21 17:36:46,679 - simulation.medqa_leadership_1 - INFO - SimulationLogger initialized for medqa_leadership_1 with configuration: leadership
+2025-04-21 17:36:48,454 - simulation.medqa_leadership_1 - INFO - Initialized simulation medqa_leadership_1
+2025-04-21 17:36:48,454 - simulation.medqa_leadership_1 - INFO - Components enabled: Team Leadership: Process Facilitator
+2025-04-21 17:36:48,454 - simulation.medqa_leadership_1 - INFO - Starting task analysis phase
+2025-04-21 17:36:48,454 - simulation.medqa_leadership_1 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 17:36:55,879 - simulation.medqa_leadership_1 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 17:36:55,881 - simulation.medqa_leadership_1 - INFO - Getting initial analysis from Domain Expert

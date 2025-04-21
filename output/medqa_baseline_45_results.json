@@ -1,0 +1,70 @@
+{
+  "simulation_id": "medqa_baseline_45",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Critical Analyst",
+      "message": "**Final Answer: B**\n\n### Rationale:\nAll team analyses, including my own, converge on the diagnosis of early Lyme disease based on the patient\u2019s clinical presentation: a bull\u2019s-eye rash (erythema migrans), systemic symptoms (fever, headache, joint pain, neck stiffness), and recent travel to an endemic region (Connecticut). Lyme disease, caused by *Borrelia burgdorferi*, is transmitted by Ixodes ticks and can progress to disseminated stages if untreated.\n\nAmong the options provided:\n- **Bell\u2019s palsy** is a well-documented neurological complication of untreated Lyme disease, particularly in the disseminated stage, making **B** the correct answer.\n- The other options (necrotizing fasciitis, pseudomembranous colitis, and mitral valve prolapse) are unrelated to Lyme disease and inconsistent with the clinical scenario.\n\nThus, the most accurate and evidence-based choice is **B. Bell\u2019s palsy**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Domain Expert",
+      "message": "### Final Answer: **B**\n\n#### Rationale:\nThe patient\u2019s presentation, including the bull\u2019s-eye rash (erythema migrans), systemic symptoms (fever, headache, joint pain, neck stiffness), and recent history of camping in an endemic area, strongly suggests **early Lyme disease** caused by *Borrelia burgdorferi*. If untreated, Lyme disease can progress to disseminated stages, which frequently involve neurological complications such as **Bell\u2019s palsy** (facial nerve paralysis). Bell\u2019s palsy is a well-documented complication of untreated Lyme disease, making it the correct answer.\n\nThe other options\u2014necrotizing fasciitis, pseudomembranous colitis, and mitral valve prolapse\u2014are unrelated to Lyme disease and inconsistent with its progression or complications. All teammates\u2019 analyses align with this conclusion, reinforcing the validity of the answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Creative Strategist",
+      "message": "### Final Answer: **B. Bell\u2019s palsy**\n\n#### Rationale:\nThe patient presents with symptoms and findings consistent with **early Lyme disease**, including the hallmark **erythema migrans rash** and systemic symptoms such as fever, headache, joint pain, and neck stiffness. Her recent camping trip to Connecticut, an area endemic for Lyme disease, further supports this diagnosis. Lyme disease, if untreated, can progress to disseminated stages, leading to complications such as **Bell\u2019s palsy**, a well-documented neurological manifestation of Lyme neuroborreliosis.\n\nThe other options:\n- **A. Necrotizing fasciitis**: Unrelated to Lyme disease; caused by different bacteria and presents with distinct symptoms.\n- **C. Pseudomembranous colitis**: Associated with *Clostridioides difficile* infection, not Lyme disease.\n- **D. Mitral valve prolapse**: A structural heart condition unrelated to Lyme disease.\n\nBell\u2019s palsy is the most plausible complication of untreated Lyme disease, making **B** the correct answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "**Final Answer: B**  \n\n**Rationale:**  \nThe patient's presentation is strongly indicative of early Lyme disease, characterized by the hallmark erythema migrans rash and systemic symptoms such as fever, headache, joint pain, and neck stiffness. Lyme disease is endemic in Connecticut, where the patient recently camped, further supporting this diagnosis. If untreated, Lyme disease can progress to disseminated stages, leading to complications such as **Bell\u2019s palsy**, a well-documented neurological manifestation of Lyme neuroborreliosis. None of the other options (necrotizing fasciitis, pseudomembranous colitis, or mitral valve prolapse) are associated with Lyme disease or its progression. Therefore, the correct answer is **B**."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "weighted_votes": {
+        "B": 2.8
+      },
+      "total_weight": 2.8,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 8,
+        "B": 12,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "teamwork_metrics": {}
+}

@@ -1,0 +1,56 @@
+{
+  "question": "A 74-year-old male is brought to the emergency department 1 hour after he fell from the top of the staircase at home. He reports pain in his neck as well as weakness of his upper extremities. He is alert and immobilized in a cervical collar. He has hypertension treated with hydrochlorthiazide. His pulse is 90/min and regular, respirations are 18/min, and blood pressure is 140/70 mmHg. Examination shows bruising and midline cervical tenderness. Neurologic examination shows diminished strength and sensation to pain and temperature in the upper extremities, particularly in the hands. Upper extremity deep tendon reflexes are absent. Strength, sensation, and reflexes in the lower extremities are intact. Anal sensation and tone are present. Babinski's sign is absent bilaterally. Which of the following is most likely to confirm the cause of this patient's neurologic examination findings?",
+  "options": [
+    "A. CT angiography of the neck",
+    "B. Cervical myelography",
+    "C. X-ray of the cervical spine",
+    "D. MRI of the cervical spine without contrast"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "weighted_votes": {
+        "D": 2.8
+      },
+      "total_weight": 2.8,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 8,
+        "B": 4,
+        "C": 0,
+        "D": 12
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.5
+    }
+  }
+}

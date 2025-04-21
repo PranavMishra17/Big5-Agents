@@ -1,0 +1,58 @@
+{
+  "question": "A 30-year-old gravida 1 woman comes to the office for a prenatal visit. She is at 20 weeks gestation with no complaints. She is taking her prenatal vitamins but stopped the prescribed ferrous sulfate because it was making her constipated. Urinalysis shows trace protein. Uterine fundus is the expected size for a 20-week gestation. Just before leaving the examination room, she stops the physician and admits to eating laundry detergent. She is embarrassed and fears she is going crazy. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Brief psychotic disorder",
+    "B. Iron deficiency anemia",
+    "C. Pre-eclampsia",
+    "D. Plummer-Vinson syndrome"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "A": 1,
+        "B": 3
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "weighted_votes": {
+        "A": 0.7,
+        "B": 2.0999999999999996
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 9,
+        "B": 11,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

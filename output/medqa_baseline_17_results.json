@@ -1,0 +1,72 @@
+{
+  "simulation_id": "medqa_baseline_17",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Critical Analyst",
+      "message": "**Final Answer: A**  \n\n### Rationale:  \nOption A describes a 37-year-old male with a positive PPD test and no clinical signs or radiographic evidence of disease, which is consistent with **latent tuberculosis infection (LTBI)**. Isoniazid monotherapy is the standard treatment for LTBI to prevent progression to active tuberculosis.  \n\nOptions B, C, and D are inappropriate for isoniazid monotherapy:  \n- **Option B** involves a Ghon complex, which requires further evaluation to rule out active disease before considering monotherapy.  \n- **Option C** describes active tuberculosis confirmed by acid-fast bacilli on sputum stain, requiring a multidrug regimen.  \n- **Option D** involves active TB with poor compliance, which necessitates strategies like directly observed therapy (DOT) for multidrug treatment rather than monotherapy.  \n\nThus, **Option A** is the most appropriate choice for isoniazid monotherapy."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Domain Expert",
+      "message": "**A.**  \n\n**Rationale:**  \nThe 37-year-old male with a positive PPD and no clinical signs or radiographic evidence of disease is the ideal candidate for isoniazid monotherapy. This presentation is consistent with latent tuberculosis infection (LTBI), which is the primary indication for this treatment. The goal of isoniazid monotherapy is to prevent the progression of LTBI to active tuberculosis.  \n\nOther options involve scenarios where isoniazid monotherapy is inappropriate:  \n- **Option B** includes a Ghon complex, which requires further evaluation to rule out active TB.  \n- **Option C** describes active TB with acid-fast bacilli on sputum stain, necessitating multidrug therapy.  \n- **Option D** involves active TB with compliance issues, requiring multidrug therapy and adherence strategies like directly observed therapy (DOT).  \n\nThus, **A** is the most appropriate and correct choice."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Creative Strategist",
+      "message": "**Final Answer: A**  \n\n**Rationale:**  \nAfter integrating the analyses from all perspectives, it is clear that **Option A** (37-year-old male with positive PPD and no clinical signs or radiographic evidence of disease) is the most appropriate choice for isoniazid monotherapy. This patient has **latent tuberculosis infection (LTBI)**, which is the primary indication for isoniazid monotherapy. The goal is to prevent progression to active tuberculosis.  \n\nOther options are inappropriate:  \n- **Option B** involves a Ghon complex, which raises uncertainty about active disease and requires further evaluation before considering isoniazid monotherapy.  \n- **Option C** confirms active TB (acid-fast bacilli on sputum stain), which necessitates a multidrug regimen, not monotherapy.  \n- **Option D** also involves active TB with compliance issues, requiring a multidrug regimen and strategies like directly observed therapy (DOT), not monotherapy.  \n\nThus, **A** is the correct and most appropriate answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "**Final Answer: A**  \n\n**Rationale:**  \nBased on the collective analyses, Option A is the most appropriate choice. A 37-year-old male with a positive PPD test and no clinical signs or radiographic evidence of disease is the ideal candidate for isoniazid monotherapy. This presentation is consistent with **latent tuberculosis infection (LTBI)**, for which isoniazid monotherapy is the standard treatment to prevent progression to active tuberculosis.  \n\nOptions B, C, and D are not suitable for isoniazid monotherapy:  \n- **Option B** involves a Ghon complex, which requires further evaluation to rule out active disease.  \n- **Option C** describes active tuberculosis (positive acid-fast bacilli on sputum stain), which requires a multidrug regimen.  \n- **Option D** also involves active tuberculosis, and poor compliance to multidrug therapy should be addressed through methods like directly observed therapy (DOT), not monotherapy.  \n\nThus, **Option A** is the correct and most appropriate choice."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "B": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 1.8,
+        "B": 0.7
+      },
+      "total_weight": 2.5,
+      "confidence": 0.72
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 9,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "teamwork_metrics": {}
+}

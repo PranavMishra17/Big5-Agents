@@ -1,0 +1,58 @@
+{
+  "question": "A 45-year-old African American male presents to his primary care physician complaining of difficulty swallowing that was initially limited to solids but has now progressed to liquids. Biopsy of the esophagus reveals dysplastic cells, but does not show evidence of glands or increased mucin. Which of the following patient behaviors most contributed to his condition?",
+  "options": [
+    "A. Obesity",
+    "B. Smoking",
+    "C. Gastroesophageal reflux disease",
+    "D. Radiation exposure in the past 6 months"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 2,
+        "A": 2
+      },
+      "total_votes": 4,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "weighted_votes": {
+        "B": 1.6,
+        "A": 1.6
+      },
+      "total_weight": 3.2,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 10,
+        "B": 10,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4166666666666667
+    }
+  }
+}

@@ -1,0 +1,27 @@
+2025-04-21 16:57:42,342 - simulation.medqa_baseline_5 - INFO - Event logged: simulation_started
+2025-04-21 16:57:42,342 - simulation.medqa_baseline_5 - INFO - SimulationLogger initialized for medqa_baseline_5 with configuration: baseline
+2025-04-21 16:57:44,019 - simulation.medqa_baseline_5 - INFO - Initialized simulation medqa_baseline_5
+2025-04-21 16:57:44,020 - simulation.medqa_baseline_5 - INFO - Components enabled: No teamwork components
+2025-04-21 16:57:44,020 - simulation.medqa_baseline_5 - INFO - Starting task analysis phase
+2025-04-21 16:57:44,020 - simulation.medqa_baseline_5 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 16:57:51,902 - simulation.medqa_baseline_5 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 16:57:51,911 - simulation.medqa_baseline_5 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 16:58:01,797 - simulation.medqa_baseline_5 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 16:58:01,799 - simulation.medqa_baseline_5 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 16:58:07,554 - simulation.medqa_baseline_5 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 16:58:07,555 - simulation.medqa_baseline_5 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 16:58:16,938 - simulation.medqa_baseline_5 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 16:58:16,939 - simulation.medqa_baseline_5 - INFO - Starting collaborative discussion phase
+2025-04-21 16:58:16,941 - simulation.medqa_baseline_5 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 16:58:19,288 - simulation.medqa_baseline_5 - INFO - Main discussion: collaborative_discussion - Critical Analyst
+2025-04-21 16:58:19,289 - simulation.medqa_baseline_5 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 16:58:23,218 - simulation.medqa_baseline_5 - INFO - Main discussion: collaborative_discussion - Domain Expert
+2025-04-21 16:58:23,218 - simulation.medqa_baseline_5 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 16:58:26,370 - simulation.medqa_baseline_5 - INFO - Main discussion: collaborative_discussion - Creative Strategist
+2025-04-21 16:58:26,371 - simulation.medqa_baseline_5 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 16:58:28,557 - simulation.medqa_baseline_5 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-21 16:58:28,558 - simulation.medqa_baseline_5 - INFO - Applying decision methods
+2025-04-21 16:58:28,559 - simulation.medqa_baseline_5 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 3, 'C': 1}, 'total_votes': 4, 'confidence': 0.75}
+2025-04-21 16:58:28,560 - simulation.medqa_baseline_5 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.0999999999999996, 'C': 0.7}, 'total_weight': 2.8, 'confidence': 0.7499999999999999}
+2025-04-21 16:58:28,561 - simulation.medqa_baseline_5 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 11, 'B': 7, 'C': 6, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.4583333333333333}
+2025-04-21 16:58:28,564 - simulation.medqa_baseline_5 - INFO - Results saved to output\medqa_baseline_5_results.json

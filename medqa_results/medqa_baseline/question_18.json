@@ -1,0 +1,58 @@
+{
+  "question": "A 66-year-old man is brought to the emergency department by his daughter because of 3 days of fever, chills, cough, and shortness of breath. The cough is productive of yellow sputum. His symptoms have not improved with rest and guaifenesin. His past medical history is significant for hypertension, for which he takes hydrochlorothiazide. He has a 30-pack-year history of smoking. His temperature is 38.9 C (102.0 F), blood pressure 88/56 mm Hg, and heart rate 105/min. Following resuscitation with normal saline, his blood pressure improves to 110/70 mm Hg. His arterial blood gas is as follows:\n\nBlood pH 7.52, PaO2 74 mm Hg, PaCO2 28 mm Hg, and HCO3- 21 mEq/L.\n\nWhich of the following acid-base disturbances best characterizes this patient's condition?",
+  "options": [
+    "A. Normal acid-base status",
+    "B. Metabolic acidosis",
+    "C. Respiratory acidosis",
+    "D. Respiratory alkalosis"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 3,
+        "A": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "weighted_votes": {
+        "D": 2.0999999999999996,
+        "A": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 9,
+        "B": 5,
+        "C": 1,
+        "D": 9
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.375
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.375
+    }
+  }
+}

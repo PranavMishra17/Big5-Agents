@@ -1,0 +1,32 @@
+2025-04-21 17:35:38,069 - simulation.medqa_leadership_0 - INFO - Event logged: simulation_started
+2025-04-21 17:35:38,069 - simulation.medqa_leadership_0 - INFO - SimulationLogger initialized for medqa_leadership_0 with configuration: leadership
+2025-04-21 17:35:39,849 - simulation.medqa_leadership_0 - INFO - Initialized simulation medqa_leadership_0
+2025-04-21 17:35:39,850 - simulation.medqa_leadership_0 - INFO - Components enabled: Team Leadership: Process Facilitator
+2025-04-21 17:35:39,850 - simulation.medqa_leadership_0 - INFO - Starting task analysis phase
+2025-04-21 17:35:39,850 - simulation.medqa_leadership_0 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 17:35:50,007 - simulation.medqa_leadership_0 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 17:35:50,016 - simulation.medqa_leadership_0 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 17:35:58,590 - simulation.medqa_leadership_0 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 17:35:58,591 - simulation.medqa_leadership_0 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 17:36:06,413 - simulation.medqa_leadership_0 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 17:36:06,414 - simulation.medqa_leadership_0 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 17:36:15,823 - simulation.medqa_leadership_0 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 17:36:15,824 - simulation.medqa_leadership_0 - INFO - Leadership phase: Defining task approach
+2025-04-21 17:36:24,761 - simulation.medqa_leadership_0 - INFO - Main discussion: leadership_definition - Process Facilitator
+2025-04-21 17:36:24,762 - simulation.medqa_leadership_0 - INFO - Leadership action: task_definition
+2025-04-21 17:36:24,762 - simulation.medqa_leadership_0 - INFO - Starting collaborative discussion phase
+2025-04-21 17:36:24,763 - simulation.medqa_leadership_0 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 17:36:26,974 - simulation.medqa_leadership_0 - INFO - Main discussion: collaborative_discussion - Critical Analyst
+2025-04-21 17:36:26,975 - simulation.medqa_leadership_0 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 17:36:30,044 - simulation.medqa_leadership_0 - INFO - Main discussion: collaborative_discussion - Domain Expert
+2025-04-21 17:36:30,044 - simulation.medqa_leadership_0 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 17:36:33,678 - simulation.medqa_leadership_0 - INFO - Main discussion: collaborative_discussion - Creative Strategist
+2025-04-21 17:36:33,678 - simulation.medqa_leadership_0 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 17:36:37,116 - simulation.medqa_leadership_0 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-21 17:36:46,674 - simulation.medqa_leadership_0 - INFO - Leadership action: synthesis
+2025-04-21 17:36:46,675 - simulation.medqa_leadership_0 - INFO - Main discussion: leadership_synthesis - Process Facilitator
+2025-04-21 17:36:46,675 - simulation.medqa_leadership_0 - INFO - Applying decision methods
+2025-04-21 17:36:46,676 - simulation.medqa_leadership_0 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'D', 'vote_counts': {'D': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-21 17:36:46,676 - simulation.medqa_leadership_0 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'D', 'weighted_votes': {'D': 3.0}, 'total_weight': 3.0, 'confidence': 1.0}
+2025-04-21 17:36:46,676 - simulation.medqa_leadership_0 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'D', 'borda_scores': {'A': 8, 'B': 4, 'C': 0, 'D': 12}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-21 17:36:46,677 - simulation.medqa_leadership_0 - INFO - Results saved to output\medqa_leadership_0_results.json

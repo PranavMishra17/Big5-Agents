@@ -1,0 +1,84 @@
+{
+  "simulation_id": "medqa_custom_configuration_1",
+  "config": {
+    "use_team_leadership": true,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "leadership_definition",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "### Overall Approach for Solving the Task\n\nTo effectively solve this clinical question, the process must be broken into structured subtasks that systematically address the problem. Each subtask builds on the previous one, ensuring logical reasoning and consensus-building throughout.\n\n---\n\n### **Subtask 1: Identify Key Clinical Features**\n- **Objective**: Extract and analyze the critical clinical details from the vignette, including symptoms, timeline, and relevant history.\n- **Sequence**:\n  1. Identify symptoms: **eye redness, mucoid discharge, eyelid swelling, cough, nasal discharge, crackles, radiographic findings**.\n  2. Note the timeline: **13-day-old neonate** with symptoms appearing after birth.\n  3. Review maternal history: **limited prenatal care** in the third trimester.\n  4. Recognize interventions at birth: **silver nitrate drops and vitamin K**.\n- **Evaluation Criteria**: Successful completion involves identifying the key features that point toward the underlying diagnosis (e.g., conjunctivitis, respiratory symptoms, timeline, and prenatal care).\n\n---\n\n### **Subtask 2: Determine the Likely Etiology**\n- **Objective**: Use the clinical features to hypothesize the most likely cause of the patient\u2019s condition.\n- **Sequence**:\n  1. Review differential diagnoses for neonatal conjunctivitis (e.g., **Chlamydia trachomatis**, **Neisseria gonorrhoeae**, **HSV**, bacterial conjunctivitis).\n  2. Correlate the timeline of symptom onset with known etiologies:\n     - **Chlamydia trachomatis**: Symptoms appear 5\u201314 days after birth.\n     - **Neisseria gonorrhoeae**: Symptoms appear within the first 2\u20135 days.\n     - **HSV**: Typically presents within the first week and includes vesicular skin lesions or keratoconjunctivitis.\n  3. Assess systemic findings (respiratory symptoms and radiographic infiltrates) to narrow the diagnosis.\n- **Evaluation Criteria**: Successful completion involves identifying **Chlamydia trachomatis** as the most likely etiology based on the timeline, conjunctivitis findings, and systemic respiratory involvement.\n\n---\n\n### **Subtask 3: Evaluate Treatment Options**\n- **Objective**: Analyze each pharmacotherapy option systematically to determine the best treatment for the identified etiology.\n- **Sequence**:\n  1. Review the mechanism of action and indications for each option:\n     - **Artificial tears**: Symptomatic relief for non-infectious irritation.\n     - **Topical erythromycin**: Effective for localized bacterial conjunctivitis but insufficient for systemic infections.\n     - **Oral erythromycin**: First-line treatment for **Chlamydia trachomatis** conjunctivitis and pneumonia.\n     - **Intravenous acyclovir**: Used for neonatal HSV infection.\n  2. Match the treatment to the identified etiology and clinical presentation.\n  3. Consider risks and benefits of the selected treatment (e.g., risk of pyloric stenosis with oral erythromycin).\n- **Evaluation Criteria**: Successful completion involves selecting **oral erythromycin** as the most appropriate treatment for **Chlamydia trachomatis** conjunctivitis and pneumonia.\n\n---\n\n### **Subtask 4: Justify the Final Answer**\n- **Objective**: Provide a clear rationale for the selected treatment based on clinical reasoning and evidence-based guidelines.\n- **Sequence**:\n  1. Summarize the clinical findings and diagnosis.\n  2. Explain why other options are inappropriate.\n  3. Highlight evidence supporting the selected treatment (e.g., guidelines for treating neonatal chlamydial infections).\n- **Evaluation Criteria**: Successful completion involves articulating a logical and evidence-based rationale for choosing **oral erythromycin**.\n\n---\n\n### **Subtask 5: Consensus Building**\n- **Objective**: Ensure team agreement on the diagnosis and selected treatment through discussion and evaluation.\n- **Sequence**:\n  1. Present findings from each subtask to the team.\n  2. Encourage team members to question and validate the reasoning.\n  3. Resolve any disagreements by revisiting clinical evidence and guidelines.\n- **Evaluation Criteria**: Successful completion involves achieving consensus on the final answer (**C. Oral erythromycin**) and rationale.\n\n---\n\n### **Final Instructions**\n1. Follow the subtasks sequentially, ensuring each step is completed before moving to the next.\n2. Use structured reasoning and evidence-based guidelines at each stage.\n3. Evaluate success by confirming that the team reaches a consensus on the diagnosis (**Chlamydia trachomatis**) and treatment (**oral erythromycin**).\n\nBy adhering to this process, the team will arrive at a well-reasoned and accurate answer to the clinical question."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Critical Analyst",
+      "message": "**Final Answer:** **C**\n\n### Rationale:\nThe clinical presentation of a 13-day-old neonate with **mucoid ocular discharge, eyelid swelling**, and systemic symptoms including **cough, nasal discharge, crackles**, and radiographic findings of **hyperinflation with bilateral infiltrates** is most consistent with **neonatal chlamydial conjunctivitis and pneumonia** caused by **Chlamydia trachomatis**. \n\nAll team members agree that:\n1. **Chlamydia trachomatis** is the most likely etiology given the timeline (5\u201314 days postpartum onset) and the combination of ocular and respiratory findings.\n2. **Oral erythromycin** is the first-line treatment for neonatal chlamydial infections, as it addresses both the conjunctivitis and systemic involvement (pneumonia). Topical erythromycin alone would be insufficient, artificial tears are merely supportive, and intravenous acyclovir is inappropriate for this bacterial infection.\n\nThe consensus among all analyses supports **Option C: Oral erythromycin** as the correct choice."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Domain Expert",
+      "message": "**C. Oral erythromycin**\n\n### Final Rationale:\nThe clinical presentation of a 13-day-old neonate with **mucoid ocular discharge, eyelid swelling**, and **systemic respiratory symptoms (cough, crackles, hyperinflation, and bilateral infiltrates on chest radiograph)** strongly suggests **Chlamydia trachomatis infection**, which commonly causes **neonatal conjunctivitis** and **chlamydial pneumonia**. \n\n- **Artificial tears (Option A)** provide symptomatic relief but do not treat the underlying bacterial infection.\n- **Topical erythromycin (Option B)** addresses localized ocular symptoms but fails to treat systemic involvement, which is critical in this case.\n- **Intravenous acyclovir (Option D)** is used for neonatal herpes simplex virus (HSV), which is not consistent with this patient's presentation.\n- **Oral erythromycin (Option C)** is the treatment of choice as it addresses both ocular and systemic manifestations of **Chlamydia trachomatis**. While it carries a small risk of **pyloric stenosis**, the benefit of treating this serious infection outweighs the risk.\n\nThus, the best pharmacotherapy for this patient's underlying condition is **oral erythromycin**, making **Option C** the correct choice."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Creative Strategist",
+      "message": "**C. Oral erythromycin**\n\n### Final Rationale:\nThe clinical presentation of a 13-day-old neonate with **mucoid ocular discharge, eyelid swelling**, and **respiratory symptoms (cough, nasal discharge, crackles, and chest radiograph findings of hyperinflation and bilateral infiltrates)** strongly suggests **neonatal chlamydial conjunctivitis and pneumonia** caused by **Chlamydia trachomatis**, a vertically transmitted infection. \n\n**Key Points:**\n1. **Etiology**: The timeline (5\u201314 days postpartum) and systemic findings strongly point to Chlamydia trachomatis, as opposed to other causes of neonatal conjunctivitis such as gonococcal infection (prevented by silver nitrate drops) or herpes simplex virus (which typically involves vesicular lesions and keratoconjunctivitis).\n2. **Systemic Involvement**: The respiratory symptoms and radiographic findings indicate systemic infection (chlamydial pneumonia), which requires systemic treatment.\n3. **Treatment of Choice**: Oral erythromycin is the first-line therapy, as it effectively treats both the ocular and systemic manifestations of chlamydial infection. While topical erythromycin would address only the conjunctivitis, it would not treat the pneumonia. Artificial tears and intravenous acyclovir are inappropriate for this bacterial infection.\n\nThe consensus among all analyses is that **oral erythromycin** is the most appropriate pharmacotherapy for this patient\u2019s underlying condition."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "**Final Answer: C. Oral erythromycin**\n\n### Rationale:\nBased on the collective analyses and insights:\n\n1. **Clinical Presentation**: The neonate presents with **mucoid ocular discharge, eyelid swelling**, and **respiratory symptoms** (cough, nasal discharge, crackles, and radiographic findings of hyperinflation and bilateral infiltrates). These findings strongly suggest **neonatal chlamydial conjunctivitis and pneumonia** caused by **Chlamydia trachomatis**, a vertically transmitted infection.\n\n2. **Timeline**: The onset of symptoms at 13 days old aligns with the typical presentation of **Chlamydia trachomatis infection** (5\u201314 days postpartum), distinguishing it from other causes of neonatal conjunctivitis such as **gonococcal conjunctivitis** (2\u20135 days postpartum) or **HSV** (first week postpartum with vesicular lesions).\n\n3. **Systemic Involvement**: The presence of respiratory symptoms (crackles, hyperinflation, and bilateral infiltrates) confirms systemic involvement, which requires systemic treatment.\n\n4. **Treatment Options**:\n   - **Artificial tears (A)**: Symptomatic relief only; does not treat the infection.\n   - **Topical erythromycin (B)**: Treats localized ocular symptoms but does not address systemic involvement.\n   - **Oral erythromycin (C)**: The first-line treatment for **Chlamydia trachomatis**, addressing both conjunctivitis and pneumonia effectively.\n   - **Intravenous acyclovir (D)**: Used for HSV infections, which are not consistent with this presentation.\n\n5. **Guidelines**: Evidence-based guidelines recommend **oral erythromycin** as the treatment of choice for neonatal chlamydial infections, addressing both ocular and systemic manifestations.\n\n6. **Risk-Benefit Analysis**: While oral erythromycin carries a small risk of **pyloric stenosis**, the benefits of treating this serious infection far outweigh the risks.\n\n### Final Conclusion:\nThe best pharmacotherapy for this patient\u2019s underlying condition is **oral erythromycin (C)**, as it effectively treats both the conjunctivitis and pneumonia caused by **Chlamydia trachomatis**."
+    },
+    {
+      "type": "leadership_synthesis",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "### Final Consensus Solution: **C. Oral erythromycin**\n\n---\n\n### **Synthesis of Team Insights**\n\nAll team members have provided detailed and consistent analyses of the clinical scenario, leading to a unified conclusion. The following key points summarize the consensus:\n\n1. **Diagnosis**:\n   - The patient is a 13-day-old neonate presenting with **mucoid ocular discharge, eyelid swelling**, and **respiratory symptoms (cough, nasal discharge, crackles, and bilateral infiltrates on chest radiograph)**.\n   - The timeline (13 days postpartum) and clinical findings strongly suggest **neonatal chlamydial conjunctivitis** with **chlamydial pneumonia**, caused by **Chlamydia trachomatis**, a vertically transmitted infection.\n\n2. **Etiology and Timeline**:\n   - **Chlamydia trachomatis** is the most likely etiology based on the timeline (5\u201314 days postpartum) and the combination of conjunctivitis and systemic respiratory symptoms.\n   - Other causes such as **gonococcal conjunctivitis** (typically presents earlier, 2\u20135 days postpartum) and **herpes simplex virus (HSV)** (associated with vesicular lesions and keratoconjunctivitis) are ruled out based on the patient's presentation and history (e.g., prophylactic silver nitrate drops at birth).\n\n3. **Systemic Involvement**:\n   - The presence of respiratory symptoms (crackles, hyperinflation, and bilateral infiltrates) confirms systemic involvement (chlamydial pneumonia), necessitating systemic treatment.\n\n4. **Treatment Options**:\n   - **Artificial tears (Option A)**: Symptomatic relief only; does not address the bacterial etiology or systemic involvement.\n   - **Topical erythromycin (Option B)**: Treats localized conjunctivitis but fails to address systemic disease (pneumonia), making it insufficient.\n   - **Oral erythromycin (Option C)**: The first-line treatment for **neonatal chlamydial infections**, addressing both conjunctivitis and pneumonia. This is the most appropriate therapy.\n   - **Intravenous acyclovir (Option D)**: Used for neonatal HSV infections, which are not consistent with this patient's presentation. Acyclovir is ineffective against **Chlamydia trachomatis**.\n\n5. **Guidelines and Evidence**:\n   - Evidence-based guidelines recommend **oral erythromycin** as the treatment of choice for **neonatal chlamydial conjunctivitis and pneumonia**, as it effectively eradicates the infection systemically.\n\n6. **Risk-Benefit Analysis**:\n   - While oral erythromycin carries a small risk of **pyloric stenosis** in neonates, the benefits of treating this serious infection far outweigh the risks.\n\n---\n\n### **Final Justification**\n\nThe patient\u2019s clinical presentation is classic for **neonatal chlamydial conjunctivitis and pneumonia**, which requires systemic treatment to address both the ocular and pulmonary manifestations. Among the options provided:\n- **Artificial tears** and **topical erythromycin** fail to treat the systemic infection.\n- **Intravenous acyclovir** is inappropriate for this bacterial etiology.\n- **Oral erythromycin** is the only option that provides effective systemic coverage, making it the most appropriate pharmacotherapy.\n\n---\n\n### **Final Answer: C. Oral erythromycin**\n\nThis treatment is supported by:\n- The clinical presentation and timeline.\n- Evidence-based guidelines for managing neonatal chlamydial infections.\n- The need to address both ocular and systemic manifestations of the disease."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "C": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.0999999999999996,
+        "C": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 7,
+        "C": 6,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "teamwork_metrics": {}
+}

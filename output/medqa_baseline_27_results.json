@@ -1,0 +1,72 @@
+{
+  "simulation_id": "medqa_baseline_27",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Critical Analyst",
+      "message": "**C. 3.75%**\n\n### Final Rationale:\nAfter integrating my analysis with the insights provided by my teammates, it is clear that the absolute risk reduction (ARR) is calculated as the difference between the risk in the control group (standard of care) and the risk in the treatment group (new vaccine). Using the formula:\n\n\\[\nARR = \\text{Risk in control group} - \\text{Risk in treatment group}\n\\]\n\nThe calculated risks are:\n- Risk in the control group: \\( \\frac{30}{480} = 0.0625 \\, \\text{(6.25%)} \\)\n- Risk in the treatment group: \\( \\frac{13}{520} = 0.025 \\, \\text{(2.5%)} \\)\n\n\\[\nARR = 6.25\\% - 2.5\\% = 3.75\\%\n\\]\n\nThis matches **Option C (3.75%)**, which is the correct answer. All teammates' analyses confirm this conclusion, and the rationale is consistent with standard epidemiological principles."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Domain Expert",
+      "message": "**C. 3.75%**\n\n**Rationale:**  \nAfter analyzing the problem and integrating the insights from all teammates, the absolute risk reduction (ARR) is calculated as the difference in risk between the standard of care group (6.25%) and the new vaccine group (2.5%). Using the formula \\( ARR = Rc - Rt \\), the ARR is \\( 6.25\\% - 2.5\\% = 3.75\\% \\). This matches Option C, which is the correct answer. All other options either underestimate or overestimate the ARR, or confuse it with the risk in one group rather than the difference between groups."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Creative Strategist",
+      "message": "**Final Answer: C**\n\n**Rationale:**  \nAfter integrating the analyses from all perspectives, the absolute risk reduction (ARR) is calculated as the difference between the risk in the control group (standard of care) and the risk in the treatment group (new vaccine). Using the formula:\n\n\\[\nARR = \\text{Risk}_{\\text{standard}} - \\text{Risk}_{\\text{vaccine}}\n\\]\n\nThe risks are:\n- **Standard of care group:** \\( \\frac{30}{480} = 6.25\\% \\)\n- **New vaccine group:** \\( \\frac{13}{520} = 2.5\\% \\)\n\nThus:\n\\[\nARR = 6.25\\% - 2.5\\% = 3.75\\%\n\\]\n\nOption **C (3.75%)** correctly reflects the calculated ARR, making it the correct answer. This conclusion is consistent with all analyses provided, demonstrating systematic reasoning and consensus."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Process Facilitator",
+      "message": "**Final Answer: C**  \n\n**Rationale:**  \nAll analyses, including mine and those of my teammates, consistently calculated the absolute risk reduction (ARR) as the difference between the risk of contracting RSV in the standard of care group (6.25%) and the new vaccine group (2.5%). The ARR was determined to be **3.75%**, which directly corresponds to Option C. This calculation adheres to standard epidemiological principles and accurately interprets the provided data. Therefore, Option C is the correct choice."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 2,
+        "C": 2
+      },
+      "total_votes": 4,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 1.4,
+        "C": 1.4
+      },
+      "total_weight": 2.8,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 10,
+        "B": 6,
+        "C": 8,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "teamwork_metrics": {}
+}
