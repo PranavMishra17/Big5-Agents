@@ -1,0 +1,56 @@
+{
+  "question": "A 2-month-old baby boy and his mother present to his pediatrician for vaccination as per the immunization schedule. His mother denies any active complaints but mentions that he has not smiled yet. The boy was born at 39 weeks gestation via spontaneous vaginal delivery. His mother received minimal prenatal care. On physical examination, his vitals are stable, but a general examination shows the presence of generalized hypotonia. His face is characterized by upwardly slanting palpebral fissures, small dysplastic ears, and a flat face. His little fingers are short, with clinodactyly, and both palms have single palmar creases. The results of a karyotype are shown in the image. If this infant has also inherited a mutation in the GATA1 gene, for which of the following conditions is he most likely to be at increased risk?",
+  "options": [
+    "A. Acute megakaryoblastic leukemia",
+    "B. Celiac disease",
+    "C. Congenital cataracts",
+    "D. Endocardial cushion defect"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.8
+      },
+      "total_weight": 2.8,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.5
+    }
+  }
+}

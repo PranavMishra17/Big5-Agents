@@ -1,0 +1,58 @@
+{
+  "question": "A 42-year-old man comes to the physician because of a 6-week history of intermittent fever, abdominal pain, bloody diarrhea, and sensation of incomplete rectal emptying. He also has had a 4.5-kg (10-lb) weight loss over the past 3 months. Abdominal examination shows diffuse tenderness. Colonoscopy shows circumferential erythematous lesions that extend without interruption from the anal verge to the cecum. A biopsy specimen taken from the rectum shows mucosal and submucosal inflammation with crypt abscesses. This patient is most likely at risk of developing colon cancer with which of the following characteristics?",
+  "options": [
+    "A. Unifocal lesion",
+    "B. Late p53 mutation",
+    "C. Non-polypoid dysplasia",
+    "D. Low-grade lesion"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3,
+        "A": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "weighted_votes": {
+        "C": 2.0999999999999996,
+        "A": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 9,
+        "B": 5,
+        "C": 10,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.4166666666666667
+    }
+  }
+}

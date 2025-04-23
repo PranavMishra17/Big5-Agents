@@ -1,0 +1,43 @@
+2025-04-22 00:18:34,095 - simulation.medqa_custom_configuration_22 - INFO - Event logged: simulation_started
+2025-04-22 00:18:34,097 - simulation.medqa_custom_configuration_22 - INFO - SimulationLogger initialized for medqa_custom_configuration_22 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-22 00:18:39,215 - simulation.medqa_custom_configuration_22 - INFO - Initialized simulation medqa_custom_configuration_22
+2025-04-22 00:18:39,217 - simulation.medqa_custom_configuration_22 - INFO - Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-22 00:18:39,217 - simulation.medqa_custom_configuration_22 - INFO - Starting task analysis phase
+2025-04-22 00:18:39,229 - simulation.medqa_custom_configuration_22 - INFO - Getting initial analysis from Critical Analyst
+2025-04-22 00:18:47,302 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-22 00:18:47,316 - simulation.medqa_custom_configuration_22 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-22 00:18:47,317 - simulation.medqa_custom_configuration_22 - INFO - Getting initial analysis from Domain Expert
+2025-04-22 00:18:57,228 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-22 00:18:57,230 - simulation.medqa_custom_configuration_22 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-22 00:18:57,232 - simulation.medqa_custom_configuration_22 - INFO - Getting initial analysis from Creative Strategist
+2025-04-22 00:19:03,990 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-22 00:19:03,993 - simulation.medqa_custom_configuration_22 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-22 00:19:03,996 - simulation.medqa_custom_configuration_22 - INFO - Getting initial analysis from Process Facilitator
+2025-04-22 00:19:11,010 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-22 00:19:11,012 - simulation.medqa_custom_configuration_22 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-22 00:19:11,012 - simulation.medqa_custom_configuration_22 - INFO - Leadership phase: Defining task approach
+2025-04-22 00:19:28,697 - simulation.medqa_custom_configuration_22 - INFO - Closed-loop communication: leader_definition - Process Facilitator -> Critical Analyst
+2025-04-22 00:19:28,699 - simulation.medqa_custom_configuration_22 - INFO - Leadership action: task_definition
+2025-04-22 00:19:28,702 - simulation.medqa_custom_configuration_22 - INFO - Starting collaborative discussion phase
+2025-04-22 00:19:28,704 - simulation.medqa_custom_configuration_22 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-22 00:19:43,539 - simulation.medqa_custom_configuration_22 - INFO - Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-22 00:19:43,546 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-22 00:19:43,547 - simulation.medqa_custom_configuration_22 - INFO - Running collaborative discussion for Domain Expert
+2025-04-22 00:20:00,026 - simulation.medqa_custom_configuration_22 - INFO - Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-22 00:20:00,036 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-22 00:20:00,038 - simulation.medqa_custom_configuration_22 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-22 00:20:14,148 - simulation.medqa_custom_configuration_22 - INFO - Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-22 00:20:14,152 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-22 00:20:14,152 - simulation.medqa_custom_configuration_22 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-22 00:20:42,356 - simulation.medqa_custom_configuration_22 - INFO - Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-22 00:20:42,367 - simulation.medqa_custom_configuration_22 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-22 00:20:56,062 - simulation.medqa_custom_configuration_22 - INFO - Leadership action: synthesis
+2025-04-22 00:20:56,072 - simulation.medqa_custom_configuration_22 - INFO - Main discussion: leadership_synthesis - Process Facilitator
+2025-04-22 00:20:56,077 - simulation.medqa_custom_configuration_22 - INFO - Applying decision methods
+2025-04-22 00:20:56,078 - simulation.medqa_custom_configuration_22 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-22 00:20:56,080 - simulation.medqa_custom_configuration_22 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.8}, 'total_weight': 2.8, 'confidence': 1.0}
+2025-04-22 00:20:56,089 - simulation.medqa_custom_configuration_22 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 8, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-22 00:20:56,091 - simulation.medqa_custom_configuration_22 - INFO - Closed-loop communication metrics collected
+2025-04-22 00:20:56,095 - simulation.medqa_custom_configuration_22 - INFO - Mutual monitoring metrics collected
+2025-04-22 00:20:56,098 - simulation.medqa_custom_configuration_22 - INFO - Shared mental model metrics collected
+2025-04-22 00:20:56,107 - simulation.medqa_custom_configuration_22 - INFO - Results saved to output\medqa_custom_configuration_22_results.json

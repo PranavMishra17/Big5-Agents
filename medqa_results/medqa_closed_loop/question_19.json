@@ -1,0 +1,58 @@
+{
+  "question": "A 70-year-old man presents to the emergency department with severe substernal chest pain of one hour\u2019s duration. The patient was taking a morning walk when the onset of pain led him to seek care. His past medical history includes coronary artery disease, hyperlipidemia, and hypertension. Medications include aspirin, losartan, and atorvastatin. An electrocardiogram reveals ST elevations in the inferior leads II, III, and avF as well as in leads V5 and V6. The ST elevations found in leads V5-V6 are most indicative of pathology in which of the following areas of the heart?",
+  "options": [
+    "A. Interventricular septum, left anterior descending coronary artery",
+    "B. Lateral wall of left ventricle, left circumflex coronary artery",
+    "C. Left atrium, left main coronary artery",
+    "D. Right ventricle, left main coronary artery"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 3,
+        "A": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "weighted_votes": {
+        "B": 2.0999999999999996,
+        "A": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 9,
+        "B": 11,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

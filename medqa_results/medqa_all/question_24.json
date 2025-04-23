@@ -1,0 +1,58 @@
+{
+  "question": "A 34-year-old Ethiopian woman who recently moved to the United States presents for evaluation to a surgical outpatient clinic with painful ulceration in her right breast for the last 2 months. She is worried because the ulcer is increasing in size. On further questioning, she says that she also has a discharge from her right nipple. She had her 2nd child 4 months ago and was breastfeeding the baby until the pain started getting worse in the past few weeks, and is now unbearable. According to her health records from Africa, her physician prescribed antimicrobials multiple times with a diagnosis of mastitis, but she did not improve significantly. Her mother and aunt died of breast cancer at 60 and 58 years of age, respectively. On examination, the right breast is enlarged and firm, with thickened skin, diffuse erythema, edema, and an ulcer measuring 3 \u00d7 3 cm. White-Gray nipple discharge is present. The breast is tender with axillary and cervical adenopathy. Mammography is ordered, which shows a mass with a large area of calcifications, parenchymal distortion, and extensive soft tissue and trabecular thickening in the affected breast. The patient subsequently undergoes core-needle and full-thickness skin punch biopsies. The pathology report states a clear dermal lymphatic invasion by tumor cells. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Lobular carcinoma in situ (LCIS)",
+    "B. Inflammatory breast cancer",
+    "C. Infiltrating lobular carcinoma",
+    "D. Infiltrating ductal carcinoma"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "B": 1,
+        "A": 3
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "B": 0.7,
+        "A": 2.0999999999999996
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 9,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

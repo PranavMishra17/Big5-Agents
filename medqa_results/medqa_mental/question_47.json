@@ -1,0 +1,58 @@
+{
+  "question": "A 58-year-old female comes to the physician because of generalized fatigue and malaise for 3 months. Four months ago, she was treated for a urinary tract infection with trimethoprim-sulfamethoxazole. She has hypertension, asthma, chronic lower back pain, and chronic headaches. Current medications include hydrochlorothiazide, an albuterol inhaler, naproxen, and an aspirin-caffeine combination. Examination shows conjunctival pallor. Laboratory studies show:\nHemoglobin 8.9 g/dL\nSerum\nUrea nitrogen 46 mg/dL\nCreatinine 2.4 mg/dL\nCalcium 9.8 mg/dL\nUrine\nProtein 1+\nBlood 1+\nRBCs none\nWBCs 9-10/hpf\nUrine cultures are negative. Ultrasound shows shrunken kidneys with irregular contours and papillary calcifications. Which of the following is the most likely underlying mechanism of this patient's renal failure?\"",
+  "options": [
+    "A. Overproduction of light chains",
+    "B. Hypersensitivity reaction",
+    "C. Inhibition of prostaglandin I2 production",
+    "D. Precipitation of drugs within the renal tubules"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "C": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 1.7999999999999998,
+        "C": 0.7
+      },
+      "total_weight": 2.5,
+      "confidence": 0.72
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 7,
+        "C": 6,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.72
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

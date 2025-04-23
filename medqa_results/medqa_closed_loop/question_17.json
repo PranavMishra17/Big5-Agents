@@ -1,0 +1,58 @@
+{
+  "question": "For which patient would isoniazid monotherapy be most appropriate?",
+  "options": [
+    "A. 37-year-old male with positive PPD and no clinical signs or radiographic evidence of disease",
+    "B. 41-year-old female with positive PPD and a Ghon complex on chest radiograph",
+    "C. 25-year-old female with positive PPD and acid-fast bacilli on sputum stain",
+    "D. 50-year-old male with positive PPD, active tuberculosis and poor compliance to multidrug regimens"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "null": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.3,
+        "null": 0.7
+      },
+      "total_weight": 3.0,
+      "confidence": 0.7666666666666666
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7666666666666666
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.5
+    }
+  }
+}

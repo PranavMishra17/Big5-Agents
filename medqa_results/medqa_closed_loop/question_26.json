@@ -1,0 +1,58 @@
+{
+  "question": "A 29-year-old woman comes to the physician because of intermittent episodes of sharp chest pain and palpitations. She appears nervous. Her pulse is 115/min and irregularly irregular, and blood pressure is 139/86 mmHg. Examination shows a fine tremor on both hands and digital swelling; the extremities are warm. There is retraction of the right upper eyelid. Which of the following is the most appropriate next step in the management of this patient?",
+  "options": [
+    "A. Propylthiouracil",
+    "B. Warfarin",
+    "C. Methimazole",
+    "D. Propranolol"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "A": 1,
+        "D": 3
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "weighted_votes": {
+        "A": 0.7,
+        "D": 2.0999999999999996
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 9,
+        "B": 5,
+        "C": 1,
+        "D": 9
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.375
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.375
+    }
+  }
+}

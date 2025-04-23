@@ -1,0 +1,32 @@
+2025-04-21 18:46:27,273 - simulation.medqa_custom_configuration_29 - INFO - Event logged: simulation_started
+2025-04-21 18:46:27,274 - simulation.medqa_custom_configuration_29 - INFO - SimulationLogger initialized for medqa_custom_configuration_29 with configuration: leadership
+2025-04-21 18:46:32,613 - simulation.medqa_custom_configuration_29 - INFO - Initialized simulation medqa_custom_configuration_29
+2025-04-21 18:46:32,613 - simulation.medqa_custom_configuration_29 - INFO - Components enabled: Team Leadership: Process Facilitator
+2025-04-21 18:46:32,615 - simulation.medqa_custom_configuration_29 - INFO - Starting task analysis phase
+2025-04-21 18:46:32,616 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 18:46:39,912 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 18:46:39,912 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 18:46:48,783 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 18:46:48,783 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 18:46:58,786 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 18:46:58,787 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 18:47:07,726 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 18:47:07,728 - simulation.medqa_custom_configuration_29 - INFO - Leadership phase: Defining task approach
+2025-04-21 18:47:19,543 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: leadership_definition - Process Facilitator
+2025-04-21 18:47:19,545 - simulation.medqa_custom_configuration_29 - INFO - Leadership action: task_definition
+2025-04-21 18:47:19,546 - simulation.medqa_custom_configuration_29 - INFO - Starting collaborative discussion phase
+2025-04-21 18:47:19,546 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 18:47:21,978 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: collaborative_discussion - Critical Analyst
+2025-04-21 18:47:21,979 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 18:47:32,431 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: collaborative_discussion - Domain Expert
+2025-04-21 18:47:32,432 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 18:47:36,082 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: collaborative_discussion - Creative Strategist
+2025-04-21 18:47:36,083 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 18:47:39,432 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-21 18:47:50,015 - simulation.medqa_custom_configuration_29 - INFO - Leadership action: synthesis
+2025-04-21 18:47:50,016 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: leadership_synthesis - Process Facilitator
+2025-04-21 18:47:50,016 - simulation.medqa_custom_configuration_29 - INFO - Applying decision methods
+2025-04-21 18:47:50,017 - simulation.medqa_custom_configuration_29 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 2, 'C': 2}, 'total_votes': 4, 'confidence': 0.5}
+2025-04-21 18:47:50,018 - simulation.medqa_custom_configuration_29 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 1.4, 'C': 1.4}, 'total_weight': 2.8, 'confidence': 0.5}
+2025-04-21 18:47:50,019 - simulation.medqa_custom_configuration_29 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 10, 'B': 6, 'C': 8, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.4166666666666667}
+2025-04-21 18:47:50,022 - simulation.medqa_custom_configuration_29 - INFO - Results saved to output\medqa_custom_configuration_29_results.json

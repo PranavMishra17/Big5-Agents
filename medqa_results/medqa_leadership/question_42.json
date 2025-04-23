@@ -1,0 +1,58 @@
+{
+  "question": "A 49-year-old man is brought to the emergency department by his wife because he is vomiting blood. His wife reports that he has been nauseous for the past day and that he has had 2 episodes of vomiting bright red blood over the past 2 hours. He has never experienced this before. He has not had any bloody stool, melena, or abdominal pain. He was diagnosed with alcoholic cirrhosis 6 months ago. He drank approximately 1 liter of vodka over the past day, which is typical for him. He takes no medications. He is confused and disoriented to place and time. Physical examination shows ascites. Vital signs are within normal limits. His hemoglobin concentration is 9.5 g/dL. Intravenous fluid resuscitation is begun. He starts to vomit bright red blood again intermittently, which continues for 10 minutes. When vital signs are measured again, his pulse is 95/min and blood pressure is 109/80 mm/Hg. Which of the following is the most appropriate initial step in management?",
+  "options": [
+    "A. Place nasogastric tube",
+    "B. Perform endotracheal intubation",
+    "C. Administer intravenous octreotide",
+    "D. Perform upper endoscopy"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 2,
+        "A": 2
+      },
+      "total_votes": 4,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "weighted_votes": {
+        "C": 1.4,
+        "A": 1.4
+      },
+      "total_weight": 2.8,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 10,
+        "B": 6,
+        "C": 8,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4166666666666667
+    }
+  }
+}

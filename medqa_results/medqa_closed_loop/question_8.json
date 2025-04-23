@@ -1,0 +1,58 @@
+{
+  "question": "A randomized controlled trial is conducted investigating the effects of different diagnostic imaging modalities on breast cancer mortality. 8,000 women are randomized to receive either conventional mammography or conventional mammography with breast MRI. The primary outcome is survival from the time of breast cancer diagnosis. The conventional mammography group has a median survival after diagnosis of 17.0 years. The MRI plus conventional mammography group has a median survival of 19.5 years. If this difference is statistically significant, which form of bias may be affecting the results?",
+  "options": [
+    "A. Misclassification bias",
+    "B. Lead-time bias",
+    "C. Recall bias",
+    "D. Because this study is a randomized controlled trial, it is free of bias"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 2,
+        "B": 2
+      },
+      "total_votes": 4,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 1.4,
+        "B": 1.4
+      },
+      "total_weight": 2.8,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 10,
+        "B": 10,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4166666666666667
+    }
+  }
+}

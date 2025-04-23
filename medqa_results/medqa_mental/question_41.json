@@ -1,0 +1,56 @@
+{
+  "question": "A 2850-g (6-lb 5-oz) newborn is delivered at term to a 19-year-old primigravid woman via normal spontaneous vaginal delivery. The mother has had no prenatal care. Examination of the newborn in the delivery room shows a small, retracted jaw and hypoplasia of the zygomatic arch. This patient's condition is most likely caused by abnormal development of the structure that also gives rise to which of the following?",
+  "options": [
+    "A. Facial nerve",
+    "B. Incus",
+    "C. Greater horn of hyoid",
+    "D. Platysma"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.8
+      },
+      "total_weight": 2.8,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.5
+    }
+  }
+}

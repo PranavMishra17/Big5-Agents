@@ -1,0 +1,58 @@
+{
+  "question": "A 6-year-old boy is brought to the physician because of right hip pain that started that afternoon. His mother reports that he has also been limping since the pain developed. He says that the pain worsens when he moves or walks. He participated in a dance recital yesterday, but his mother believes that he was not injured at the time. He was born at term and has been healthy except for an episode of nasal congestion and mild cough 10 days ago. His mother has rheumatoid arthritis and his grandmother has osteoporosis. He is at the 50th percentile for height and 50th percentile for weight. His temperature is 37.5\u00b0C (99.6\u00b0F), pulse is 105/min, respirations are 16/min, and blood pressure is 90/78 mm Hg. His right hip is slightly abducted and externally rotated. Examination shows no tenderness, warmth, or erythema. He is able to bear weight. The remainder of the examination shows no abnormalities. Laboratory studies show a hemoglobin concentration of 12.3 g/dL, a leukocyte count of 8,500/mm3, and an erythrocyte sedimentation rate of 12 mm/h. Ultrasound of the right hip shows increased fluid within the joint. X-ray of the hips shows no abnormalities. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Slipped capital femoral epiphysis",
+    "B. Transient synovitis",
+    "C. Legg-Calve-Perthes disease",
+    "D. Developmental dysplasia of the hip"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 2,
+        "B": 2
+      },
+      "total_votes": 4,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 1.4,
+        "B": 1.4
+      },
+      "total_weight": 2.8,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 10,
+        "B": 10,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.5
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.5
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4166666666666667
+    }
+  }
+}

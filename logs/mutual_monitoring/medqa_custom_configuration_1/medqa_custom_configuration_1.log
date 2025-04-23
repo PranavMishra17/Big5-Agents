@@ -1,0 +1,31 @@
+2025-04-21 21:17:11,775 - simulation.medqa_custom_configuration_1 - INFO - Event logged: simulation_started
+2025-04-21 21:17:11,775 - simulation.medqa_custom_configuration_1 - INFO - SimulationLogger initialized for medqa_custom_configuration_1 with configuration: mutual_monitoring
+2025-04-21 21:17:13,476 - simulation.medqa_custom_configuration_1 - INFO - Initialized simulation medqa_custom_configuration_1
+2025-04-21 21:17:13,476 - simulation.medqa_custom_configuration_1 - INFO - Components enabled: Mutual Performance Monitoring
+2025-04-21 21:17:13,476 - simulation.medqa_custom_configuration_1 - INFO - Starting task analysis phase
+2025-04-21 21:17:13,476 - simulation.medqa_custom_configuration_1 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 21:17:22,202 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 21:17:22,202 - simulation.medqa_custom_configuration_1 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 21:17:30,003 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 21:17:30,003 - simulation.medqa_custom_configuration_1 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 21:17:36,106 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 21:17:36,106 - simulation.medqa_custom_configuration_1 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 21:17:43,292 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 21:17:43,292 - simulation.medqa_custom_configuration_1 - INFO - Starting collaborative discussion phase
+2025-04-21 21:17:43,297 - simulation.medqa_custom_configuration_1 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 21:17:43,314 - simulation.medqa_custom_configuration_1 - INFO - Monitoring action: Critical Analyst monitored Process Facilitator, issues: 1
+2025-04-21 21:17:49,120 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: collaborative_discussion - Critical Analyst
+2025-04-21 21:17:49,120 - simulation.medqa_custom_configuration_1 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 21:17:49,168 - simulation.medqa_custom_configuration_1 - INFO - Monitoring action: Domain Expert monitored Process Facilitator, issues: 1
+2025-04-21 21:17:52,312 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: collaborative_discussion - Domain Expert
+2025-04-21 21:17:52,312 - simulation.medqa_custom_configuration_1 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 21:17:52,329 - simulation.medqa_custom_configuration_1 - INFO - Monitoring action: Creative Strategist monitored Process Facilitator, issues: 1
+2025-04-21 21:17:56,506 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: collaborative_discussion - Creative Strategist
+2025-04-21 21:17:56,507 - simulation.medqa_custom_configuration_1 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 21:17:59,312 - simulation.medqa_custom_configuration_1 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-21 21:17:59,312 - simulation.medqa_custom_configuration_1 - INFO - Applying decision methods
+2025-04-21 21:17:59,318 - simulation.medqa_custom_configuration_1 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 2, 'C': 1, 'B': 1}, 'total_votes': 4, 'confidence': 0.5}
+2025-04-21 21:17:59,320 - simulation.medqa_custom_configuration_1 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 1.4, 'C': 0.7, 'B': 0.7}, 'total_weight': 2.8, 'confidence': 0.5}
+2025-04-21 21:17:59,321 - simulation.medqa_custom_configuration_1 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 10, 'B': 8, 'C': 6, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.4166666666666667}
+2025-04-21 21:17:59,323 - simulation.medqa_custom_configuration_1 - INFO - Mutual monitoring metrics collected
+2025-04-21 21:17:59,327 - simulation.medqa_custom_configuration_1 - INFO - Results saved to output\medqa_custom_configuration_1_results.json

@@ -84,7 +84,7 @@ def load_pubmedqa_dataset(num_questions: int = 50, random_seed: int = 42) -> Lis
     
     # Load the dataset
     try:
-        ds = load_dataset("pubmed_qa", "pqa_labeled")
+        ds = load_dataset("qiaojin/PubMedQA", "pqa_labeled")
         
         # Convert to list for easier processing
         questions = list(ds["train"])
@@ -514,3 +514,5 @@ if __name__ == "__main__":
 
 # Specify custom output directory and random seed
 #python dataset_runner.py --dataset medqa --output-dir ./results --seed 123 --all
+
+# python dataset_runner.py --dataset medqa --output-dir ./medqa_results --seed 123 --num-questions 50 --leadership --closedloop --mutual --mental --all

@@ -1,0 +1,28 @@
+2025-04-21 20:58:50,662 - simulation.medqa_custom_configuration_46 - INFO - Event logged: simulation_started
+2025-04-21 20:58:50,662 - simulation.medqa_custom_configuration_46 - INFO - SimulationLogger initialized for medqa_custom_configuration_46 with configuration: closed_loop
+2025-04-21 20:58:52,417 - simulation.medqa_custom_configuration_46 - INFO - Initialized simulation medqa_custom_configuration_46
+2025-04-21 20:58:52,417 - simulation.medqa_custom_configuration_46 - INFO - Components enabled: Closed-loop Communication
+2025-04-21 20:58:52,417 - simulation.medqa_custom_configuration_46 - INFO - Starting task analysis phase
+2025-04-21 20:58:52,418 - simulation.medqa_custom_configuration_46 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 20:59:00,913 - simulation.medqa_custom_configuration_46 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 20:59:00,914 - simulation.medqa_custom_configuration_46 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 20:59:09,781 - simulation.medqa_custom_configuration_46 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 20:59:09,783 - simulation.medqa_custom_configuration_46 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 20:59:19,098 - simulation.medqa_custom_configuration_46 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 20:59:19,098 - simulation.medqa_custom_configuration_46 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 20:59:27,108 - simulation.medqa_custom_configuration_46 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 20:59:27,108 - simulation.medqa_custom_configuration_46 - INFO - Starting collaborative discussion phase
+2025-04-21 20:59:27,109 - simulation.medqa_custom_configuration_46 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 20:59:35,541 - simulation.medqa_custom_configuration_46 - INFO - Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-21 20:59:35,542 - simulation.medqa_custom_configuration_46 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 20:59:45,602 - simulation.medqa_custom_configuration_46 - INFO - Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-21 20:59:45,603 - simulation.medqa_custom_configuration_46 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 20:59:56,320 - simulation.medqa_custom_configuration_46 - INFO - Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-21 20:59:56,321 - simulation.medqa_custom_configuration_46 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 21:00:08,360 - simulation.medqa_custom_configuration_46 - INFO - Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-21 21:00:08,361 - simulation.medqa_custom_configuration_46 - INFO - Applying decision methods
+2025-04-21 21:00:08,361 - simulation.medqa_custom_configuration_46 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'D', 'vote_counts': {'D': 3, 'A': 1}, 'total_votes': 4, 'confidence': 0.75}
+2025-04-21 21:00:08,361 - simulation.medqa_custom_configuration_46 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'D', 'weighted_votes': {'D': 2.0999999999999996, 'A': 0.7}, 'total_weight': 2.8, 'confidence': 0.7499999999999999}
+2025-04-21 21:00:08,361 - simulation.medqa_custom_configuration_46 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 9, 'B': 5, 'C': 1, 'D': 9}, 'total_possible_score': 24.0, 'confidence': 0.375}
+2025-04-21 21:00:08,361 - simulation.medqa_custom_configuration_46 - INFO - Closed-loop communication metrics collected
+2025-04-21 21:00:08,370 - simulation.medqa_custom_configuration_46 - INFO - Results saved to output\medqa_custom_configuration_46_results.json

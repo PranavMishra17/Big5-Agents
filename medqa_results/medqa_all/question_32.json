@@ -1,0 +1,58 @@
+{
+  "question": "Following a gastric surgery, a 45-year-old woman complains of severe nausea and vomiting on the second post-operative day. On physical examination, her vitals are stable and examination of the abdomen reveals no significant abnormality. As she is already receiving an appropriate dosage of ondansetron, the surgeon adds metoclopramide to her treatment orders. Following addition of the drug, she experiences significant relief from nausea and vomiting. Which of the following mechanisms best explains the action of this drug?",
+  "options": [
+    "A. Enhancement of small intestinal and colonic motility by dopamine antagonism",
+    "B. Inhibition of dopamine receptors in the area postrema",
+    "C. Decreased esophageal peristaltic amplitude",
+    "D. Stimulation of motilin receptors in gastrointestinal smooth muscle"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "B": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.3,
+        "B": 0.7
+      },
+      "total_weight": 3.0,
+      "confidence": 0.7666666666666666
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 9,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.7666666666666666
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

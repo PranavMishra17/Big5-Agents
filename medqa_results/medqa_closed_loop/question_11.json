@@ -1,0 +1,58 @@
+{
+  "question": "A 50-year-old man visits his primary care practitioner for a general health check-up. He was recently hired as a fitness instructor at a local fitness center. His father died of advanced colorectal cancer, however, his personal medical history is significant for the use of performance-enhancing drugs during his 20\u2019s when he competed in bodybuilding and powerlifting competitions. As part of the paperwork associated with his new position, he received an order for a hemoglobin and hematocrit, occult blood in stool, and serum iron and ferritin level, shown below:\nHemoglobin  11.8 g/dL\nHematocrit  35%\nIron 40 \u00b5g/dL\nFerritin 8 ng/mL\nHis fecal occult blood test was positive. Which of the following is the most recommended follow-up action?",
+  "options": [
+    "A. Endoscopy only",
+    "B. Colonoscopy only",
+    "C. Endoscopy and colonoscopy",
+    "D. Transfusion"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "C": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.0999999999999996,
+        "C": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 7,
+        "C": 6,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

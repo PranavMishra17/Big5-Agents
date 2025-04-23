@@ -1,0 +1,58 @@
+{
+  "question": "A 7-month-old boy presents to the emergency room with three episodes of vomiting and severe abdominal pain that comes and goes for the past two hours. The patient's most recent vomit in the hospital appears bilious, and the patient had one stool that appears bloody and full of mucous. The mother explains that one stool at home appear to be \"jelly-like.\" On physical exam, a palpable mass is felt in the right lower quadrant of the abdomen. What is the next best diagnostic test for this patient?",
+  "options": [
+    "A. Peripheral blood culture",
+    "B. Kidney, ureter, bladder radiograph",
+    "C. Complete blood count with differential",
+    "D. Abdominal ultrasound"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "D": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.0999999999999996,
+        "D": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 7,
+        "C": 3,
+        "D": 3
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

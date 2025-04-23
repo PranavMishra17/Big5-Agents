@@ -1,0 +1,58 @@
+{
+  "question": "A 57-year-old nulliparous woman comes to the physician 2 weeks after noticing a lump in her right breast. Her last mammogram was performed 4 years ago and showed no abnormalities. Menopause began 2 years ago, during which time the patient was prescribed hormone replacement therapy for severe hot flashes and vaginal dryness. Vital signs are within normal limits. Examination of the right breast shows a firm, nontender mass close to the nipple. There are no changes in the skin or nipple, and there is no palpable axillary adenopathy. The abdomen is soft and nontender; there is no organomegaly. Mammography shows a suspicious 2-cm mass adjacent to the nipple. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. Bone scan",
+    "B. Measurement of serum CA 15\u20133",
+    "C. Mastectomy",
+    "D. Core needle biopsy\n\""
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3,
+        "D": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.7,
+        "D": 0.7
+      },
+      "total_weight": 3.4,
+      "confidence": 0.7941176470588236
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 7,
+        "C": 3,
+        "D": 3
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 0.7941176470588236
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

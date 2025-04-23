@@ -1,0 +1,56 @@
+{
+  "question": "A 59-year-old man comes to the physician for evaluation of progressively worsening back pain that began about 2 months ago. It started as a dull pain that has now developed into a constant throbbing pain that makes falling asleep difficult. Ibuprofen and acetaminophen do not provide relief. The patient has not had any bowel incontinence, limb weakness, or paresthesias. He has metastatic prostate cancer with known metastasis to the sacrum and left ilium, but has had minimal pain related to these sites. He underwent bilateral orchiectomy two years ago, complicated by urinary incontinence. He currently takes no medications. Vital signs are within normal limits. There is midline tenderness to palpation over the lower lumbar spine. MRI scan of the spine shows a new sclerotic lesion at the L5 vertebral body. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. Flutamide",
+    "B. Spinal surgery",
+    "C. Prostatectomy",
+    "D. Local radiation"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 2.8
+      },
+      "total_weight": 2.8,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.5
+    }
+  }
+}

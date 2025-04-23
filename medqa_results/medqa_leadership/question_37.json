@@ -1,0 +1,58 @@
+{
+  "question": "A 27-year-old woman presents to your office complaining of right arm numbness and weakness. Her past medical history is unremarkable. Her family history, however, is significant for the unexpected death of both her parents at age 59 in a motor vehicle accident last week. On physical exam, her bicep, brachioradialis, and patellar reflexes are 2+ bilaterally. CNS imaging shows no abnormalities. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Conversion disorder",
+    "B. Amyotrophic lateral sclerosis",
+    "C. Arnold-Chiari malformation",
+    "D. Multiple sclerosis"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "C": 1,
+        "A": 3
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "C": 0.7,
+        "A": 2.0999999999999996
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 11,
+        "B": 7,
+        "C": 6,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4583333333333333
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.4583333333333333
+    }
+  }
+}

@@ -1,0 +1,28 @@
+2025-04-21 20:36:47,422 - simulation.medqa_custom_configuration_29 - INFO - Event logged: simulation_started
+2025-04-21 20:36:47,424 - simulation.medqa_custom_configuration_29 - INFO - SimulationLogger initialized for medqa_custom_configuration_29 with configuration: closed_loop
+2025-04-21 20:36:52,358 - simulation.medqa_custom_configuration_29 - INFO - Initialized simulation medqa_custom_configuration_29
+2025-04-21 20:36:52,362 - simulation.medqa_custom_configuration_29 - INFO - Components enabled: Closed-loop Communication
+2025-04-21 20:36:52,363 - simulation.medqa_custom_configuration_29 - INFO - Starting task analysis phase
+2025-04-21 20:36:52,364 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 20:37:01,966 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 20:37:01,967 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 20:37:08,599 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 20:37:08,600 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 20:37:14,691 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 20:37:14,691 - simulation.medqa_custom_configuration_29 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 20:37:23,006 - simulation.medqa_custom_configuration_29 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 20:37:23,006 - simulation.medqa_custom_configuration_29 - INFO - Starting collaborative discussion phase
+2025-04-21 20:37:23,008 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 20:37:31,220 - simulation.medqa_custom_configuration_29 - INFO - Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-21 20:37:31,221 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 20:37:40,272 - simulation.medqa_custom_configuration_29 - INFO - Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-21 20:37:40,273 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 20:37:48,855 - simulation.medqa_custom_configuration_29 - INFO - Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-21 20:37:48,855 - simulation.medqa_custom_configuration_29 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 20:37:58,030 - simulation.medqa_custom_configuration_29 - INFO - Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-21 20:37:58,030 - simulation.medqa_custom_configuration_29 - INFO - Applying decision methods
+2025-04-21 20:37:58,031 - simulation.medqa_custom_configuration_29 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'C', 'vote_counts': {'C': 3, 'A': 1}, 'total_votes': 4, 'confidence': 0.75}
+2025-04-21 20:37:58,031 - simulation.medqa_custom_configuration_29 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'C', 'weighted_votes': {'C': 2.0999999999999996, 'A': 0.7}, 'total_weight': 2.8, 'confidence': 0.7499999999999999}
+2025-04-21 20:37:58,032 - simulation.medqa_custom_configuration_29 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'C', 'borda_scores': {'A': 9, 'B': 5, 'C': 10, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.4166666666666667}
+2025-04-21 20:37:58,032 - simulation.medqa_custom_configuration_29 - INFO - Closed-loop communication metrics collected
+2025-04-21 20:37:58,039 - simulation.medqa_custom_configuration_29 - INFO - Results saved to output\medqa_custom_configuration_29_results.json

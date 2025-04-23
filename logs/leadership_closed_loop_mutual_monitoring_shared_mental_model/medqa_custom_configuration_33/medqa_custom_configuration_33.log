@@ -1,0 +1,46 @@
+2025-04-22 00:44:40,832 - simulation.medqa_custom_configuration_33 - INFO - Event logged: simulation_started
+2025-04-22 00:44:40,832 - simulation.medqa_custom_configuration_33 - INFO - SimulationLogger initialized for medqa_custom_configuration_33 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-22 00:44:45,679 - simulation.medqa_custom_configuration_33 - INFO - Initialized simulation medqa_custom_configuration_33
+2025-04-22 00:44:45,680 - simulation.medqa_custom_configuration_33 - INFO - Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-22 00:44:45,680 - simulation.medqa_custom_configuration_33 - INFO - Starting task analysis phase
+2025-04-22 00:44:45,681 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Critical Analyst
+2025-04-22 00:44:55,201 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-22 00:44:55,214 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-22 00:44:55,216 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Domain Expert
+2025-04-22 00:45:04,457 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-22 00:45:04,460 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-22 00:45:04,462 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Creative Strategist
+2025-04-22 00:45:14,072 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-22 00:45:14,075 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-22 00:45:14,076 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Process Facilitator
+2025-04-22 00:45:21,650 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-22 00:45:21,651 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-22 00:45:21,652 - simulation.medqa_custom_configuration_33 - INFO - Leadership phase: Defining task approach
+2025-04-22 00:45:38,866 - simulation.medqa_custom_configuration_33 - INFO - Closed-loop communication: leader_definition - Process Facilitator -> Critical Analyst
+2025-04-22 00:45:38,869 - simulation.medqa_custom_configuration_33 - INFO - Leadership action: task_definition
+2025-04-22 00:45:38,870 - simulation.medqa_custom_configuration_33 - INFO - Starting collaborative discussion phase
+2025-04-22 00:45:38,872 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-22 00:45:38,889 - simulation.medqa_custom_configuration_33 - INFO - Monitoring action: Critical Analyst monitored Creative Strategist, issues: 1
+2025-04-22 00:45:51,891 - simulation.medqa_custom_configuration_33 - INFO - Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-22 00:45:51,896 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-22 00:45:51,898 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Domain Expert
+2025-04-22 00:45:51,914 - simulation.medqa_custom_configuration_33 - INFO - Monitoring action: Domain Expert monitored Creative Strategist, issues: 1
+2025-04-22 00:46:06,138 - simulation.medqa_custom_configuration_33 - INFO - Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-22 00:46:06,143 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-22 00:46:06,145 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-22 00:46:23,410 - simulation.medqa_custom_configuration_33 - INFO - Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-22 00:46:23,419 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-22 00:46:23,420 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-22 00:46:23,430 - simulation.medqa_custom_configuration_33 - INFO - Monitoring action: Process Facilitator monitored Creative Strategist, issues: 1
+2025-04-22 00:46:54,299 - simulation.medqa_custom_configuration_33 - INFO - Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-22 00:46:54,305 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-22 00:47:09,702 - simulation.medqa_custom_configuration_33 - INFO - Leadership action: synthesis
+2025-04-22 00:47:09,703 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: leadership_synthesis - Process Facilitator
+2025-04-22 00:47:09,706 - simulation.medqa_custom_configuration_33 - INFO - Applying decision methods
+2025-04-22 00:47:09,707 - simulation.medqa_custom_configuration_33 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-22 00:47:09,709 - simulation.medqa_custom_configuration_33 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.9000000000000004}, 'total_weight': 2.9, 'confidence': 1.0000000000000002}
+2025-04-22 00:47:09,710 - simulation.medqa_custom_configuration_33 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 8, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-22 00:47:09,711 - simulation.medqa_custom_configuration_33 - INFO - Closed-loop communication metrics collected
+2025-04-22 00:47:09,712 - simulation.medqa_custom_configuration_33 - INFO - Mutual monitoring metrics collected
+2025-04-22 00:47:09,716 - simulation.medqa_custom_configuration_33 - INFO - Shared mental model metrics collected
+2025-04-22 00:47:09,721 - simulation.medqa_custom_configuration_33 - INFO - Results saved to output\medqa_custom_configuration_33_results.json

@@ -1,0 +1,36 @@
+2025-04-21 22:34:19,400 - simulation.medqa_custom_configuration_33 - INFO - Event logged: simulation_started
+2025-04-21 22:34:19,402 - simulation.medqa_custom_configuration_33 - INFO - SimulationLogger initialized for medqa_custom_configuration_33 with configuration: shared_mental_model
+2025-04-21 22:34:21,153 - simulation.medqa_custom_configuration_33 - INFO - Initialized simulation medqa_custom_configuration_33
+2025-04-21 22:34:21,153 - simulation.medqa_custom_configuration_33 - INFO - Components enabled: Shared Mental Model
+2025-04-21 22:34:21,153 - simulation.medqa_custom_configuration_33 - INFO - Starting task analysis phase
+2025-04-21 22:34:21,153 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Critical Analyst
+2025-04-21 22:34:33,682 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-21 22:34:33,686 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-21 22:34:33,688 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Domain Expert
+2025-04-21 22:34:45,496 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-21 22:34:45,498 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-21 22:34:45,500 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Creative Strategist
+2025-04-21 22:34:53,739 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-21 22:34:53,742 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-21 22:34:53,744 - simulation.medqa_custom_configuration_33 - INFO - Getting initial analysis from Process Facilitator
+2025-04-21 22:35:04,968 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-21 22:35:04,971 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-21 22:35:04,973 - simulation.medqa_custom_configuration_33 - INFO - Starting collaborative discussion phase
+2025-04-21 22:35:04,975 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-21 22:35:10,882 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: collaborative_discussion - Critical Analyst
+2025-04-21 22:35:10,889 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-21 22:35:10,890 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Domain Expert
+2025-04-21 22:35:17,358 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: collaborative_discussion - Domain Expert
+2025-04-21 22:35:17,364 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-21 22:35:17,365 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-21 22:35:21,170 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: collaborative_discussion - Creative Strategist
+2025-04-21 22:35:21,175 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-21 22:35:21,177 - simulation.medqa_custom_configuration_33 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 22:35:25,279 - simulation.medqa_custom_configuration_33 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-21 22:35:25,285 - simulation.medqa_custom_configuration_33 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-21 22:35:25,286 - simulation.medqa_custom_configuration_33 - INFO - Applying decision methods
+2025-04-21 22:35:25,288 - simulation.medqa_custom_configuration_33 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 3, 'B': 1}, 'total_votes': 4, 'confidence': 0.75}
+2025-04-21 22:35:25,290 - simulation.medqa_custom_configuration_33 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.0999999999999996, 'B': 0.9}, 'total_weight': 3.0, 'confidence': 0.6999999999999998}
+2025-04-21 22:35:25,292 - simulation.medqa_custom_configuration_33 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 11, 'B': 9, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.4583333333333333}
+2025-04-21 22:35:25,294 - simulation.medqa_custom_configuration_33 - INFO - Shared mental model metrics collected
+2025-04-21 22:35:25,298 - simulation.medqa_custom_configuration_33 - INFO - Results saved to output\medqa_custom_configuration_33_results.json

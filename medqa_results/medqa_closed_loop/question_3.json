@@ -1,0 +1,58 @@
+{
+  "question": "A 58-year-old man presents to the emergency department following a motor vehicle accident where he was an unrestrained passenger. On initial presentation in the field, he had diffuse abdominal tenderness and his blood pressure is 70/50 mmHg and pulse is 129/min. Following administration of 2 L of normal saline, his blood pressure is 74/58 mmHg. He undergoes emergency laparotomy and the source of the bleeding is controlled. On the second post-operative day, his blood pressure is 110/71 mmHg and pulse is 90/min. There is a midline abdominal scar with no erythema and mild tenderness. Cardiopulmonary examination is unremarkable. He has had 300 mL of urine output over the last 24 hours. Urinalysis shows 12-15 RBC/hpf, 2-5 WBC/hpf, and trace protein. What additional finding would you expect to see on urinalysis?",
+  "options": [
+    "A. WBC casts",
+    "B. RBC casts",
+    "C. Muddy brown casts",
+    "D. Fatty casts"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3,
+        "A": 1
+      },
+      "total_votes": 4,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "weighted_votes": {
+        "C": 2.0999999999999996,
+        "A": 0.7
+      },
+      "total_weight": 2.8,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 9,
+        "B": 5,
+        "C": 10,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.4166666666666667
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 0.75
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 0.7499999999999999
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 0.4166666666666667
+    }
+  }
+}

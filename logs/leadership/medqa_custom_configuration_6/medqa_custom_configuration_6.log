@@ -22,3 +22,11 @@
 2025-04-21 18:20:22,933 - simulation.medqa_custom_configuration_6 - INFO - Running collaborative discussion for Creative Strategist
 2025-04-21 18:20:27,610 - simulation.medqa_custom_configuration_6 - INFO - Main discussion: collaborative_discussion - Creative Strategist
 2025-04-21 18:20:27,617 - simulation.medqa_custom_configuration_6 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-21 18:20:32,089 - simulation.medqa_custom_configuration_6 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-21 18:20:41,231 - simulation.medqa_custom_configuration_6 - INFO - Leadership action: synthesis
+2025-04-21 18:20:41,231 - simulation.medqa_custom_configuration_6 - INFO - Main discussion: leadership_synthesis - Process Facilitator
+2025-04-21 18:20:41,231 - simulation.medqa_custom_configuration_6 - INFO - Applying decision methods
+2025-04-21 18:20:41,231 - simulation.medqa_custom_configuration_6 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-21 18:20:41,231 - simulation.medqa_custom_configuration_6 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.8}, 'total_weight': 2.8, 'confidence': 1.0}
+2025-04-21 18:20:41,238 - simulation.medqa_custom_configuration_6 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 8, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-21 18:20:41,239 - simulation.medqa_custom_configuration_6 - INFO - Results saved to output\medqa_custom_configuration_6_results.json

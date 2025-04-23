@@ -1,0 +1,56 @@
+{
+  "question": "A 29-year-old woman presents with a skin rash that has spread on her arm over the last few days. She also complains of fever, headache, joint pain, and stiffness of the neck associated with the onset of the rash. On physical examination, there is an annular, red rash with a clear area in the center similar to a bull\u2019s-eye (see image). The patient says she went on a camping trip to Connecticut last month but does not remember being bitten by an insect. Which of the following could result if this condition remains untreated in this patient?",
+  "options": [
+    "A. Necrotizing fasciitis",
+    "B. Bell\u2019s palsy",
+    "C. Pseudomembranous colitis",
+    "D. Mitral valve prolapse"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 4
+      },
+      "total_votes": 4,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 3.0
+      },
+      "total_weight": 3.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 12,
+        "B": 8,
+        "C": 4,
+        "D": 0
+      },
+      "total_possible_score": 24.0,
+      "confidence": 0.5
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 0.5
+    }
+  }
+}
