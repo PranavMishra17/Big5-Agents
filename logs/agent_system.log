@@ -995,3 +995,55 @@ After synthesizing the insights from...
 2025-04-18 14:48:17,083 [INFO] simulation.sim_20250418_144550: Shared mental model metrics collected
 2025-04-18 14:48:17,086 [INFO] simulation.sim_20250418_144550: Results saved to output\sim_20250418_144550_results.json
 2025-04-18 14:48:17,092 [INFO] simulation.sim_20250418_144550: Results saved to output\sim_20250418_144550_results.json
+2025-04-29 19:45:28,905 [INFO] root: Running single simulation
+2025-04-29 19:45:28,905 [INFO] simulation.sim_20250429_194528: Event logged: simulation_started
+2025-04-29 19:45:28,905 [INFO] simulation.sim_20250429_194528: SimulationLogger initialized for sim_20250429_194528 with configuration: baseline
+2025-04-29 19:45:29,495 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-04-29 19:45:29,496 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    What is t...
+2025-04-29 19:45:30,826 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-29 19:45:30,832 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification: 1) basic**
+
+**Explanation:** 
+The question, "What is the primary greenh...
+2025-04-29 19:45:31,285 [INFO] agent.Recruiter: Initialized Recruiter agent
+2025-04-29 19:45:31,285 [INFO] agent.Recruiter: Received message: 
+    Given the following task/question:
+    
+    
+    What is the primary greenhouse gas responsible...
+2025-04-29 19:45:31,988 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-29 19:45:31,998 [INFO] agent.Recruiter: Responded: "Domain Expert - Provides specialized knowledge relevant to the task domain"...
+2025-04-29 19:45:32,488 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-29 19:45:32,493 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-29 19:45:32,493 [INFO] agent.Domain Expert: Added to knowledge base: climate_science
+2025-04-29 19:45:32,493 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-29 19:45:32,493 [INFO] root: Basic complexity: Recruited single expert 'Domain Expert'
+2025-04-29 19:45:32,493 [INFO] decision.methods: Initialized decision methods handler
+2025-04-29 19:45:32,493 [INFO] simulation.sim_20250429_194528: Initialized simulation sim_20250429_194528
+2025-04-29 19:45:32,493 [INFO] simulation.sim_20250429_194528: Components enabled: Agent Recruitment (adaptive)
+2025-04-29 19:45:32,493 [INFO] simulation.sim_20250429_194528: Starting task analysis phase
+2025-04-29 19:45:32,493 [INFO] simulation.sim_20250429_194528: Getting initial analysis from Domain Expert
+2025-04-29 19:45:32,493 [INFO] agent.Domain Expert: Received message: 
+        As a Domain Expert with expertise in your domain, analyze the following multiple-choice que...
+2025-04-29 19:45:40,978 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-29 19:45:40,978 [INFO] agent.Domain Expert: Responded: ### Analysis of Options:
+
+#### **A. Carbon dioxide (CO2):**
+- **Strengths:** 
+  - Carbon dioxide is ...
+2025-04-29 19:45:40,978 [INFO] simulation.sim_20250429_194528: Main discussion: task_analysis - Domain Expert
+2025-04-29 19:45:40,993 [INFO] simulation.sim_20250429_194528: Starting collaborative discussion phase
+2025-04-29 19:45:40,996 [INFO] simulation.sim_20250429_194528: Running collaborative discussion for Domain Expert
+2025-04-29 19:45:40,998 [INFO] simulation.sim_20250429_194528: Applying decision methods
+2025-04-29 19:45:40,999 [INFO] decision.methods: Applying majority voting method
+2025-04-29 19:45:41,000 [INFO] simulation.sim_20250429_194528: Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 1}, 'total_votes': 1, 'confidence': 1.0}
+2025-04-29 19:45:41,001 [INFO] decision.methods: Applying weighted voting method
+2025-04-29 19:45:41,001 [INFO] simulation.sim_20250429_194528: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 0.7}, 'total_weight': 0.7, 'confidence': 1.0}
+2025-04-29 19:45:41,002 [INFO] decision.methods: Applying Borda count method
+2025-04-29 19:45:41,003 [INFO] simulation.sim_20250429_194528: Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 3, 'B': 2, 'C': 1, 'D': 0}, 'total_possible_score': 6.0, 'confidence': 0.5}
+2025-04-29 19:45:41,006 [INFO] simulation.sim_20250429_194528: Results saved to output\sim_20250429_194528_results.json
+2025-04-29 19:45:41,008 [INFO] simulation.sim_20250429_194528: Results saved to output\sim_20250429_194528_results.json

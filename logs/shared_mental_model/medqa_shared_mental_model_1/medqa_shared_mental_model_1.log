@@ -1,0 +1,36 @@
+2025-04-29 20:43:15,757 - simulation.medqa_shared_mental_model_1 - INFO - Event logged: simulation_started
+2025-04-29 20:43:15,765 - simulation.medqa_shared_mental_model_1 - INFO - SimulationLogger initialized for medqa_shared_mental_model_1 with configuration: shared_mental_model
+2025-04-29 20:43:20,988 - simulation.medqa_shared_mental_model_1 - INFO - Initialized simulation medqa_shared_mental_model_1
+2025-04-29 20:43:20,988 - simulation.medqa_shared_mental_model_1 - INFO - Components enabled: Shared Mental Model
+2025-04-29 20:43:20,989 - simulation.medqa_shared_mental_model_1 - INFO - Starting task analysis phase
+2025-04-29 20:43:20,989 - simulation.medqa_shared_mental_model_1 - INFO - Getting initial analysis from Critical Analyst
+2025-04-29 20:43:28,691 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-29 20:43:28,729 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-29 20:43:28,731 - simulation.medqa_shared_mental_model_1 - INFO - Getting initial analysis from Domain Expert
+2025-04-29 20:43:36,974 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-29 20:43:36,975 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-29 20:43:36,976 - simulation.medqa_shared_mental_model_1 - INFO - Getting initial analysis from Creative Strategist
+2025-04-29 20:43:45,451 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-29 20:43:45,453 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-29 20:43:45,454 - simulation.medqa_shared_mental_model_1 - INFO - Getting initial analysis from Process Facilitator
+2025-04-29 20:43:55,550 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Process Facilitator, convergence: 0.01
+2025-04-29 20:43:55,552 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-29 20:43:55,554 - simulation.medqa_shared_mental_model_1 - INFO - Starting collaborative discussion phase
+2025-04-29 20:43:55,555 - simulation.medqa_shared_mental_model_1 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-29 20:43:59,863 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: collaborative_discussion - Critical Analyst
+2025-04-29 20:43:59,865 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Critical Analyst, convergence: 0.01
+2025-04-29 20:43:59,866 - simulation.medqa_shared_mental_model_1 - INFO - Running collaborative discussion for Domain Expert
+2025-04-29 20:44:06,512 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: collaborative_discussion - Domain Expert
+2025-04-29 20:44:06,517 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Domain Expert, convergence: 0.01
+2025-04-29 20:44:06,518 - simulation.medqa_shared_mental_model_1 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-29 20:44:12,620 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: collaborative_discussion - Creative Strategist
+2025-04-29 20:44:12,622 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-29 20:44:12,622 - simulation.medqa_shared_mental_model_1 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-29 20:44:18,187 - simulation.medqa_shared_mental_model_1 - INFO - Main discussion: collaborative_discussion - Process Facilitator
+2025-04-29 20:44:18,191 - simulation.medqa_shared_mental_model_1 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-29 20:44:18,192 - simulation.medqa_shared_mental_model_1 - INFO - Applying decision methods
+2025-04-29 20:44:18,194 - simulation.medqa_shared_mental_model_1 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-29 20:44:18,195 - simulation.medqa_shared_mental_model_1 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.8}, 'total_weight': 2.8, 'confidence': 1.0}
+2025-04-29 20:44:18,197 - simulation.medqa_shared_mental_model_1 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 8, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-29 20:44:18,198 - simulation.medqa_shared_mental_model_1 - INFO - Shared mental model metrics collected
+2025-04-29 20:44:18,202 - simulation.medqa_shared_mental_model_1 - INFO - Results saved to output\medqa_shared_mental_model_1_results.json

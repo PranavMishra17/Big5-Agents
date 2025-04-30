@@ -1,0 +1,6 @@
+2025-04-29 20:09:46,944 - simulation.medqa_mutual_monitoring_1 - INFO - Event logged: simulation_started
+2025-04-29 20:09:46,944 - simulation.medqa_mutual_monitoring_1 - INFO - SimulationLogger initialized for medqa_mutual_monitoring_1 with configuration: mutual_monitoring
+2025-04-29 20:09:49,434 - simulation.medqa_mutual_monitoring_1 - INFO - Initialized simulation medqa_mutual_monitoring_1
+2025-04-29 20:09:49,434 - simulation.medqa_mutual_monitoring_1 - INFO - Components enabled: Mutual Performance Monitoring
+2025-04-29 20:09:49,436 - simulation.medqa_mutual_monitoring_1 - INFO - Starting task analysis phase
+2025-04-29 20:09:49,437 - simulation.medqa_mutual_monitoring_1 - INFO - Getting initial analysis from Critical Analyst

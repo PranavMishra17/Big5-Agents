@@ -384,52 +384,99 @@ class SharedMentalModel:
         if "current_task" in self.task_knowledge:
             task_model = self.task_knowledge["current_task"]
             
-            # Add shared understanding of the task objective
-            task_info = f"\n\nOur team's shared understanding of the task:\n"
-            task_info += f"Objective: {task_model.get('objective', 'Not specified')}\n"
+            # Determine if this is a team task or individual task
+            is_team_task = len(self.shared_understanding) > 1
             
-            # Add evaluation criteria
-            criteria_info = "Key evaluation criteria:\n"
-            for aspect, description in task_model.get("evaluation_criteria", {}).items():
-                criteria_info += f"- {aspect.capitalize()}: {description}\n"
-            
-            # Add task procedure
-            procedure_info = "\nOur agreed approach to this task:\n"
-            for i, step in enumerate(task_model.get("task_procedure", [])):
-                procedure_info += f"{i+1}. {step}\n"
-            
-            # Add expected output
-            output_info = f"\nExpected output format: {task_model.get('expected_output', 'Not specified')}\n"
-            
-            # Combine shared mental model elements
-            shared_model_info = f"{task_info}\n{criteria_info}\n{procedure_info}\n{output_info}"
-            
-            # Add role-specific guidance
-            if "current_team" in self.team_knowledge and agent_role in self.team_knowledge["current_team"]["roles"]:
-                role_info = self.team_knowledge["current_team"]["roles"][agent_role]
-                
-                role_guidance = f"\nAs the {agent_role}, your specific expertise is valued for this task.\n"
-                role_guidance += "Your key responsibilities include:\n"
-                for resp in role_info.get("responsibilities", []):
-                    role_guidance += f"- {resp}\n"
-                
-                role_guidance += "\nYou should seek from your teammates:\n"
-                for need in role_info.get("information_needs", []):
-                    role_guidance += f"- {need}\n"
-                
-                shared_model_info += f"\n{role_guidance}"
-            
-            # Add convergence information if available
-            if self.convergence_metrics:
-                latest_convergence = self.convergence_metrics[-1]
-                convergence_info = f"\nOur team's mental models have converged to a level of {latest_convergence['overall_convergence']:.2f} out of 1.0."
-                shared_model_info += convergence_info
+            if is_team_task:
+                # Use team-focused shared mental model
+                shared_model_info = self._create_team_mental_model(agent_role, task_model)
+            else:
+                # Use individual-focused shared mental model
+                shared_model_info = self._create_individual_mental_model(agent_role, task_model)
             
             # Add the shared mental model information to the prompt
-            enhanced_prompt += f"\n\n=== SHARED TEAM UNDERSTANDING ===\n{shared_model_info}"
+            enhanced_prompt += f"\n\n=== SHARED MENTAL MODEL ===\n{shared_model_info}"
         
         return enhanced_prompt
-    
+
+    def _create_team_mental_model(self, agent_role: str, task_model: dict) -> str:
+        """Create a shared mental model for team tasks."""
+        import config
+        
+        # Get task description
+        task_description = config.TASK.get("description", "Not specified")
+        
+        team_mental_model = f"""Collaboratively and accurately answer the following question, considering all provided options: {task_description}. 
+        
+    Maintain shared mental models to support collaboration:
+
+    Team-related mental models:
+    1. Each expert understands the other's specialty and defers appropriately. Example: The pathologist handles histo slides, labs, and biopsy findings; the internist interprets clinical presentation and management strategies.
+    2. Use clear, structured communication with confirmation and clarifying questions.
+    3. Agree on how to approach each question: e.g., one summarizes the case, the other analyzes the key findings, then they jointly choose the best answer.
+    4. A shared attitude of psychological safety—both are open to being wrong and correcting each other without ego. Each expert is open to changing their professional opinion if compelling evidence or reasoning is presented by other experts. When sharing their views, clearly state their current decision and reasoning. If their opinion changes during the discussion, explicitly acknowledge this change and explain why.
+    5. Efficient division of labor: e.g., one expert takes lead on clinical scenario interpretation, the other cross-checks with pathology or physiology knowledge.
+
+    Task-specific understanding:
+    Objective: {task_model.get('objective', 'Not specified')}
+
+    Key evaluation criteria:
+    """
+        
+        # Add evaluation criteria
+        for aspect, description in task_model.get("evaluation_criteria", {}).items():
+            team_mental_model += f"- {aspect.capitalize()}: {description}\n"
+        
+        # Add role-specific guidance
+        if "current_team" in self.team_knowledge and agent_role in self.team_knowledge["current_team"]["roles"]:
+            role_info = self.team_knowledge["current_team"]["roles"][agent_role]
+            
+            team_mental_model += f"\nAs the {agent_role}, your specific expertise is valued for this task.\n"
+            team_mental_model += "Your key responsibilities include:\n"
+            for resp in role_info.get("responsibilities", []):
+                team_mental_model += f"- {resp}\n"
+        
+        # Add convergence information if available
+        if self.convergence_metrics:
+            latest_convergence = self.convergence_metrics[-1]
+            team_mental_model += f"\nYour team's mental models have converged to a level of {latest_convergence['overall_convergence']:.2f} out of 1.0."
+        
+        return team_mental_model
+
+    def _create_individual_mental_model(self, agent_role: str, task_model: dict) -> str:
+        """Create a shared mental model for individual tasks."""
+        import config
+        
+        # Get task description
+        task_description = config.TASK.get("description", "Not specified")
+        
+        individual_mental_model = f"""You are working on the following task: {task_description}
+
+    Task-related mental models:
+    1. Be aligned on what the question is asking: diagnosis, next best step, mechanism, prognosis, etc.
+    2. Eliminate obviously wrong options and discuss remaining choices based on evidence.
+    3. Maintain a shared baseline of question content scope—understand that questions test integration of disciplines, not isolated facts.
+    4. Prioritize findings appropriately: e.g., which symptoms are more diagnostic, what labs carry more weight, etc.
+    5. You are not allowed to consult external sources.
+    6. You do not have any additional information other than what is provided in the question.
+    7. Reflect on how different perspectives affect initial assessment of the question: If your answer changed based on this reflection, provide your decision and a brief explanation that includes whether your opinion has changed and why.
+
+    Task-specific understanding:
+    Objective: {task_model.get('objective', 'Not specified')}
+
+    Key evaluation criteria:
+    """
+        
+        # Add evaluation criteria
+        for aspect, description in task_model.get("evaluation_criteria", {}).items():
+            individual_mental_model += f"- {aspect.capitalize()}: {description}\n"
+        
+        # Add role-specific information
+        individual_mental_model += f"\nAs a {agent_role}, apply your specialized knowledge to this task."
+        
+        return individual_mental_model
+
+
     def extract_understanding_from_message(self, message: str) -> Dict[str, Any]:
         """
         Extract an agent's understanding from their message.

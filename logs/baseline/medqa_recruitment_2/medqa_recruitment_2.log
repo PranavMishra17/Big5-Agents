@@ -1,0 +1,31 @@
+2025-04-29 20:48:43,219 - simulation.medqa_recruitment_2 - INFO - Event logged: simulation_started
+2025-04-29 20:48:43,221 - simulation.medqa_recruitment_2 - INFO - SimulationLogger initialized for medqa_recruitment_2 with configuration: baseline
+2025-04-29 20:48:50,570 - simulation.medqa_recruitment_2 - INFO - Initialized simulation medqa_recruitment_2
+2025-04-29 20:48:50,586 - simulation.medqa_recruitment_2 - INFO - Components enabled: Agent Recruitment (adaptive)
+2025-04-29 20:48:50,586 - simulation.medqa_recruitment_2 - INFO - Starting task analysis phase
+2025-04-29 20:48:50,586 - simulation.medqa_recruitment_2 - INFO - Getting initial analysis from Cardiologist
+2025-04-29 20:49:01,793 - simulation.medqa_recruitment_2 - INFO - Main discussion: task_analysis - Cardiologist
+2025-04-29 20:49:01,795 - simulation.medqa_recruitment_2 - INFO - Getting initial analysis from Endocrinologist
+2025-04-29 20:49:12,441 - simulation.medqa_recruitment_2 - INFO - Main discussion: task_analysis - Endocrinologist
+2025-04-29 20:49:12,441 - simulation.medqa_recruitment_2 - INFO - Getting initial analysis from Hematologist
+2025-04-29 20:49:23,438 - simulation.medqa_recruitment_2 - INFO - Main discussion: task_analysis - Hematologist
+2025-04-29 20:49:23,438 - simulation.medqa_recruitment_2 - INFO - Getting initial analysis from Pulmonologist
+2025-04-29 20:49:31,887 - simulation.medqa_recruitment_2 - INFO - Main discussion: task_analysis - Pulmonologist
+2025-04-29 20:49:31,887 - simulation.medqa_recruitment_2 - INFO - Getting initial analysis from Gastroenterologist
+2025-04-29 20:49:38,818 - simulation.medqa_recruitment_2 - INFO - Main discussion: task_analysis - Gastroenterologist
+2025-04-29 20:49:38,818 - simulation.medqa_recruitment_2 - INFO - Starting collaborative discussion phase
+2025-04-29 20:49:38,818 - simulation.medqa_recruitment_2 - INFO - Running collaborative discussion for Cardiologist
+2025-04-29 20:49:43,612 - simulation.medqa_recruitment_2 - INFO - Main discussion: collaborative_discussion - Cardiologist
+2025-04-29 20:49:43,612 - simulation.medqa_recruitment_2 - INFO - Running collaborative discussion for Endocrinologist
+2025-04-29 20:49:48,320 - simulation.medqa_recruitment_2 - INFO - Main discussion: collaborative_discussion - Endocrinologist
+2025-04-29 20:49:48,320 - simulation.medqa_recruitment_2 - INFO - Running collaborative discussion for Hematologist
+2025-04-29 20:49:52,086 - simulation.medqa_recruitment_2 - INFO - Main discussion: collaborative_discussion - Hematologist
+2025-04-29 20:49:52,086 - simulation.medqa_recruitment_2 - INFO - Running collaborative discussion for Pulmonologist
+2025-04-29 20:49:56,797 - simulation.medqa_recruitment_2 - INFO - Main discussion: collaborative_discussion - Pulmonologist
+2025-04-29 20:49:56,797 - simulation.medqa_recruitment_2 - INFO - Running collaborative discussion for Gastroenterologist
+2025-04-29 20:50:00,467 - simulation.medqa_recruitment_2 - INFO - Main discussion: collaborative_discussion - Gastroenterologist
+2025-04-29 20:50:00,467 - simulation.medqa_recruitment_2 - INFO - Applying decision methods
+2025-04-29 20:50:00,477 - simulation.medqa_recruitment_2 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 5}, 'total_votes': 5, 'confidence': 1.0}
+2025-04-29 20:50:00,478 - simulation.medqa_recruitment_2 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 3.5}, 'total_weight': 3.5, 'confidence': 1.0}
+2025-04-29 20:50:00,480 - simulation.medqa_recruitment_2 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 15, 'B': 10, 'C': 5, 'D': 0}, 'total_possible_score': 30.0, 'confidence': 0.5}
+2025-04-29 20:50:00,483 - simulation.medqa_recruitment_2 - INFO - Results saved to output\medqa_recruitment_2_results.json

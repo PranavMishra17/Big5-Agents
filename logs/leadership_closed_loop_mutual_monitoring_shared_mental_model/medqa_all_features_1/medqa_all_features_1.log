@@ -1,0 +1,46 @@
+2025-04-29 20:54:43,052 - simulation.medqa_all_features_1 - INFO - Event logged: simulation_started
+2025-04-29 20:54:43,052 - simulation.medqa_all_features_1 - INFO - SimulationLogger initialized for medqa_all_features_1 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-29 20:54:45,064 - simulation.medqa_all_features_1 - INFO - Initialized simulation medqa_all_features_1
+2025-04-29 20:54:45,065 - simulation.medqa_all_features_1 - INFO - Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-29 20:54:45,065 - simulation.medqa_all_features_1 - INFO - Starting task analysis phase
+2025-04-29 20:54:45,073 - simulation.medqa_all_features_1 - INFO - Getting initial analysis from Critical Analyst
+2025-04-29 20:54:52,680 - simulation.medqa_all_features_1 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-29 20:54:52,681 - simulation.medqa_all_features_1 - INFO - Main discussion: task_analysis - Critical Analyst
+2025-04-29 20:54:52,682 - simulation.medqa_all_features_1 - INFO - Getting initial analysis from Domain Expert
+2025-04-29 20:54:59,944 - simulation.medqa_all_features_1 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-29 20:54:59,945 - simulation.medqa_all_features_1 - INFO - Main discussion: task_analysis - Domain Expert
+2025-04-29 20:54:59,945 - simulation.medqa_all_features_1 - INFO - Getting initial analysis from Creative Strategist
+2025-04-29 20:55:08,462 - simulation.medqa_all_features_1 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-29 20:55:08,463 - simulation.medqa_all_features_1 - INFO - Main discussion: task_analysis - Creative Strategist
+2025-04-29 20:55:08,464 - simulation.medqa_all_features_1 - INFO - Getting initial analysis from Process Facilitator
+2025-04-29 20:55:18,586 - simulation.medqa_all_features_1 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-29 20:55:18,587 - simulation.medqa_all_features_1 - INFO - Main discussion: task_analysis - Process Facilitator
+2025-04-29 20:55:18,587 - simulation.medqa_all_features_1 - INFO - Leadership phase: Defining task approach
+2025-04-29 20:55:35,488 - simulation.medqa_all_features_1 - INFO - Closed-loop communication: leader_definition - Process Facilitator -> Critical Analyst
+2025-04-29 20:55:35,489 - simulation.medqa_all_features_1 - INFO - Leadership action: task_definition
+2025-04-29 20:55:35,489 - simulation.medqa_all_features_1 - INFO - Starting collaborative discussion phase
+2025-04-29 20:55:35,489 - simulation.medqa_all_features_1 - INFO - Running collaborative discussion for Critical Analyst
+2025-04-29 20:55:35,492 - simulation.medqa_all_features_1 - INFO - Monitoring action: Critical Analyst monitored Creative Strategist, issues: 1
+2025-04-29 20:55:53,132 - simulation.medqa_all_features_1 - INFO - Closed-loop communication: collaborative_discussion - Critical Analyst -> Domain Expert
+2025-04-29 20:55:53,132 - simulation.medqa_all_features_1 - INFO - Mental model update from Critical Analyst, convergence: 0.00
+2025-04-29 20:55:53,132 - simulation.medqa_all_features_1 - INFO - Running collaborative discussion for Domain Expert
+2025-04-29 20:55:53,154 - simulation.medqa_all_features_1 - INFO - Monitoring action: Domain Expert monitored Creative Strategist, issues: 1
+2025-04-29 20:56:08,494 - simulation.medqa_all_features_1 - INFO - Closed-loop communication: collaborative_discussion - Domain Expert -> Critical Analyst
+2025-04-29 20:56:08,494 - simulation.medqa_all_features_1 - INFO - Mental model update from Domain Expert, convergence: 0.00
+2025-04-29 20:56:08,494 - simulation.medqa_all_features_1 - INFO - Running collaborative discussion for Creative Strategist
+2025-04-29 20:56:21,639 - simulation.medqa_all_features_1 - INFO - Closed-loop communication: collaborative_discussion - Creative Strategist -> Critical Analyst
+2025-04-29 20:56:21,639 - simulation.medqa_all_features_1 - INFO - Mental model update from Creative Strategist, convergence: 0.00
+2025-04-29 20:56:21,639 - simulation.medqa_all_features_1 - INFO - Running collaborative discussion for Process Facilitator
+2025-04-29 20:56:21,651 - simulation.medqa_all_features_1 - INFO - Monitoring action: Process Facilitator monitored Creative Strategist, issues: 1
+2025-04-29 20:56:51,769 - simulation.medqa_all_features_1 - INFO - Closed-loop communication: collaborative_discussion - Process Facilitator -> Critical Analyst
+2025-04-29 20:56:51,769 - simulation.medqa_all_features_1 - INFO - Mental model update from Process Facilitator, convergence: 0.00
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Leadership action: synthesis
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Main discussion: leadership_synthesis - Process Facilitator
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Applying decision methods
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 4}, 'total_votes': 4, 'confidence': 1.0}
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 2.8}, 'total_weight': 2.8, 'confidence': 1.0}
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 8, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.5}
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Closed-loop communication metrics collected
+2025-04-29 20:57:10,748 - simulation.medqa_all_features_1 - INFO - Mutual monitoring metrics collected
+2025-04-29 20:57:10,765 - simulation.medqa_all_features_1 - INFO - Shared mental model metrics collected
+2025-04-29 20:57:10,768 - simulation.medqa_all_features_1 - INFO - Results saved to output\medqa_all_features_1_results.json

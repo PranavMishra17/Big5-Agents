@@ -1,0 +1,57 @@
+2025-04-29 21:05:23,632 - simulation.medqa_all_features_with_recruitment_1 - INFO - Event logged: simulation_started
+2025-04-29 21:05:23,633 - simulation.medqa_all_features_with_recruitment_1 - INFO - SimulationLogger initialized for medqa_all_features_with_recruitment_1 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-29 21:05:34,255 - simulation.medqa_all_features_with_recruitment_1 - INFO - Initialized simulation medqa_all_features_with_recruitment_1
+2025-04-29 21:05:34,255 - simulation.medqa_all_features_with_recruitment_1 - INFO - Components enabled: Team Leadership: **Pediatrician**, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model, Agent Recruitment (adaptive)
+2025-04-29 21:05:34,266 - simulation.medqa_all_features_with_recruitment_1 - INFO - Starting task analysis phase
+2025-04-29 21:05:34,266 - simulation.medqa_all_features_with_recruitment_1 - INFO - Getting initial analysis from **Pediatrician**
+2025-04-29 21:05:42,065 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Pediatrician**, convergence: 0.00
+2025-04-29 21:05:42,086 - simulation.medqa_all_features_with_recruitment_1 - INFO - Main discussion: task_analysis - **Pediatrician**
+2025-04-29 21:05:42,087 - simulation.medqa_all_features_with_recruitment_1 - INFO - Getting initial analysis from **Pulmonologist**
+2025-04-29 21:05:47,832 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Pulmonologist**, convergence: 0.00
+2025-04-29 21:05:47,841 - simulation.medqa_all_features_with_recruitment_1 - INFO - Main discussion: task_analysis - **Pulmonologist**
+2025-04-29 21:05:47,842 - simulation.medqa_all_features_with_recruitment_1 - INFO - Getting initial analysis from **Infectious Disease Specialist (not listed but implicitly relevant)**
+2025-04-29 21:05:55,299 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Infectious Disease Specialist (not listed but implicitly relevant)**, convergence: 0.00
+2025-04-29 21:05:55,301 - simulation.medqa_all_features_with_recruitment_1 - INFO - Main discussion: task_analysis - **Infectious Disease Specialist (not listed but implicitly relevant)**
+2025-04-29 21:05:55,302 - simulation.medqa_all_features_with_recruitment_1 - INFO - Getting initial analysis from **Ophthalmologist (not listed but implicitly relevant)**
+2025-04-29 21:06:01,812 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Ophthalmologist (not listed but implicitly relevant)**, convergence: 0.00
+2025-04-29 21:06:01,812 - simulation.medqa_all_features_with_recruitment_1 - INFO - Main discussion: task_analysis - **Ophthalmologist (not listed but implicitly relevant)**
+2025-04-29 21:06:01,828 - simulation.medqa_all_features_with_recruitment_1 - INFO - Getting initial analysis from **Obstetrician (not listed but implicitly relevant)**
+2025-04-29 21:06:08,869 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Obstetrician (not listed but implicitly relevant)**, convergence: 0.00
+2025-04-29 21:06:08,877 - simulation.medqa_all_features_with_recruitment_1 - INFO - Main discussion: task_analysis - **Obstetrician (not listed but implicitly relevant)**
+2025-04-29 21:06:08,879 - simulation.medqa_all_features_with_recruitment_1 - INFO - Leadership phase: Defining task approach
+2025-04-29 21:06:26,166 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication: leader_definition - **Pediatrician** -> **Pulmonologist**
+2025-04-29 21:06:26,166 - simulation.medqa_all_features_with_recruitment_1 - INFO - Leadership action: task_definition
+2025-04-29 21:06:26,166 - simulation.medqa_all_features_with_recruitment_1 - INFO - Starting collaborative discussion phase
+2025-04-29 21:06:26,166 - simulation.medqa_all_features_with_recruitment_1 - INFO - Running collaborative discussion for **Pediatrician**
+2025-04-29 21:06:26,172 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Pediatrician** monitored **Obstetrician (not listed but implicitly relevant)**, issues: 1
+2025-04-29 21:06:41,957 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication: collaborative_discussion - **Pediatrician** -> **Pulmonologist**
+2025-04-29 21:06:41,971 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Pediatrician**, convergence: 0.00
+2025-04-29 21:06:41,973 - simulation.medqa_all_features_with_recruitment_1 - INFO - Running collaborative discussion for **Pulmonologist**
+2025-04-29 21:06:41,977 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Pulmonologist** monitored **Pediatrician**, issues: 1
+2025-04-29 21:06:41,988 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Pulmonologist** monitored **Obstetrician (not listed but implicitly relevant)**, issues: 1
+2025-04-29 21:06:57,290 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication: collaborative_discussion - **Pulmonologist** -> **Pediatrician**
+2025-04-29 21:06:57,297 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Pulmonologist**, convergence: 0.00
+2025-04-29 21:06:57,299 - simulation.medqa_all_features_with_recruitment_1 - INFO - Running collaborative discussion for **Infectious Disease Specialist (not listed but implicitly relevant)**
+2025-04-29 21:06:57,303 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Infectious Disease Specialist (not listed but implicitly relevant)** monitored **Pediatrician**, issues: 1
+2025-04-29 21:06:57,315 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Infectious Disease Specialist (not listed but implicitly relevant)** monitored **Obstetrician (not listed but implicitly relevant)**, issues: 1
+2025-04-29 21:07:23,632 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication: collaborative_discussion - **Infectious Disease Specialist (not listed but implicitly relevant)** -> **Pediatrician**
+2025-04-29 21:07:23,650 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Infectious Disease Specialist (not listed but implicitly relevant)**, convergence: 0.00
+2025-04-29 21:07:23,651 - simulation.medqa_all_features_with_recruitment_1 - INFO - Running collaborative discussion for **Ophthalmologist (not listed but implicitly relevant)**
+2025-04-29 21:07:23,657 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Ophthalmologist (not listed but implicitly relevant)** monitored **Pediatrician**, issues: 1
+2025-04-29 21:07:23,667 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Ophthalmologist (not listed but implicitly relevant)** monitored **Obstetrician (not listed but implicitly relevant)**, issues: 1
+2025-04-29 21:07:51,840 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication: collaborative_discussion - **Ophthalmologist (not listed but implicitly relevant)** -> **Pediatrician**
+2025-04-29 21:07:51,853 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Ophthalmologist (not listed but implicitly relevant)**, convergence: 0.00
+2025-04-29 21:07:51,854 - simulation.medqa_all_features_with_recruitment_1 - INFO - Running collaborative discussion for **Obstetrician (not listed but implicitly relevant)**
+2025-04-29 21:07:51,859 - simulation.medqa_all_features_with_recruitment_1 - INFO - Monitoring action: **Obstetrician (not listed but implicitly relevant)** monitored **Pediatrician**, issues: 1
+2025-04-29 21:08:05,938 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication: collaborative_discussion - **Obstetrician (not listed but implicitly relevant)** -> **Pediatrician**
+2025-04-29 21:08:05,950 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mental model update from **Obstetrician (not listed but implicitly relevant)**, convergence: 0.00
+2025-04-29 21:08:21,980 - simulation.medqa_all_features_with_recruitment_1 - INFO - Leadership action: synthesis
+2025-04-29 21:08:21,980 - simulation.medqa_all_features_with_recruitment_1 - INFO - Main discussion: leadership_synthesis - **Pediatrician**
+2025-04-29 21:08:21,987 - simulation.medqa_all_features_with_recruitment_1 - INFO - Applying decision methods
+2025-04-29 21:08:21,988 - simulation.medqa_all_features_with_recruitment_1 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'C', 'vote_counts': {'A': 2, 'C': 3}, 'total_votes': 5, 'confidence': 0.6}
+2025-04-29 21:08:21,990 - simulation.medqa_all_features_with_recruitment_1 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'C', 'weighted_votes': {'A': 1.4, 'C': 2.0999999999999996}, 'total_weight': 3.5, 'confidence': 0.5999999999999999}
+2025-04-29 21:08:21,992 - simulation.medqa_all_features_with_recruitment_1 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 12, 'B': 7, 'C': 11, 'D': 0}, 'total_possible_score': 30.0, 'confidence': 0.4}
+2025-04-29 21:08:21,993 - simulation.medqa_all_features_with_recruitment_1 - INFO - Closed-loop communication metrics collected
+2025-04-29 21:08:21,995 - simulation.medqa_all_features_with_recruitment_1 - INFO - Mutual monitoring metrics collected
+2025-04-29 21:08:21,997 - simulation.medqa_all_features_with_recruitment_1 - INFO - Shared mental model metrics collected
+2025-04-29 21:08:22,001 - simulation.medqa_all_features_with_recruitment_1 - INFO - Results saved to output\medqa_all_features_with_recruitment_1_results.json

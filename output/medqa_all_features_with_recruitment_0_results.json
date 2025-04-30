@@ -1,0 +1,79 @@
+{
+  "simulation_id": "medqa_all_features_with_recruitment_0",
+  "config": {
+    "use_team_leadership": true,
+    "use_closed_loop_comm": true,
+    "use_mutual_monitoring": true,
+    "use_shared_mental_model": true,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "leadership_synthesis",
+      "communication": "standard",
+      "sender": "Gastroenterologist",
+      "message": "### Final Solution: **D. Variceal ligation**\n\n### Comprehensive Justification:\n\nAfter synthesizing the information provided and analyzing each option systematically, the consensus solution is that **variceal ligation** is the most appropriate recommendation to prevent future morbidity and mortality from variceal bleeding in this patient.\n\n### Key Insights Incorporated:\n1. **Acute vs. Secondary Prophylaxis**:\n   - Team analysis highlighted that options like **Octreotide (A)** and **Terlipressin (B)** are primarily used for acute management of variceal bleeding. While effective during the initial bleeding episode, they do not play a role in long-term secondary prophylaxis. This insight rules out these options for the current clinical scenario.\n   \n2. **Role of TIPS**:\n   - The team acknowledged that **Transjugular intrahepatic portosystemic shunt (TIPS)** is highly effective in reducing portal hypertension but is reserved for patients with recurrent bleeding despite optimal medical and endoscopic therapy or for those with refractory ascites. Given that this patient has had successful band ligation and is committed to abstaining from alcohol, TIPS is not indicated at this stage. This aligns with the consensus that TIPS is a rescue therapy rather than a first-line prophylactic measure.\n\n3. **Variceal Ligation and Beta-Blockers**:\n   - The team emphasized that **variceal ligation** is a cornerstone of secondary prophylaxis when combined with non-selective beta-blockers (e.g., propranolol or nadolol). This combination therapy reduces portal pressure and eradicates varices, significantly decreasing the risk of rebleeding and improving survival. The patient is already receiving beta-blocker therapy, making variceal ligation the most appropriate next step.\n\n### Balanced Perspective:\n- The team considered the strengths and weaknesses of all options, ensuring that the decision was evidence-based and aligned with current guidelines for secondary prophylaxis in cirrhosis-related variceal bleeding.\n- The patient's readiness to abstain from alcohol further supports the use of less invasive measures like variceal ligation, as alcohol cessation can improve liver function and reduce portal hypertension over time.\n\n### Final Recommendation:\nThe patient should undergo **scheduled variceal ligation sessions** at regular intervals until the varices are eradicated. This should be combined with continued non-selective beta-blocker therapy to reduce portal pressure. Abstinence from alcohol is critical to improving his overall prognosis and reducing the risk of future complications.\n\n### Conclusion:\nThe combination of non-selective beta-blockers and variceal ligation is the gold standard for secondary prophylaxis in patients with cirrhosis and a history of variceal bleeding. This approach is evidence-based, reduces recurrence risk, and improves survival, making **D. Variceal ligation** the most appropriate choice."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "weighted_votes": {
+        "A": 0.7
+      },
+      "total_weight": 0.7,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 3,
+        "B": 2,
+        "C": 1,
+        "D": 0
+      },
+      "total_possible_score": 6.0,
+      "confidence": 0.5
+    }
+  },
+  "teamwork_metrics": {
+    "closed_loop_communication": {
+      "total_exchanges": 0,
+      "misunderstanding_rate": 0,
+      "clarification_rate": 0,
+      "effectiveness_rating": "N/A"
+    },
+    "mutual_monitoring": {
+      "total_monitoring_exchanges": 0,
+      "total_issues_detected": 0,
+      "avg_issues_per_exchange": 0.0,
+      "issue_types": {},
+      "issue_resolution_rate": 0.0,
+      "team_monitoring_effectiveness": "low"
+    },
+    "shared_mental_model": {
+      "convergence_trend": "unknown",
+      "final_convergence": 0.0,
+      "understanding_completeness": {
+        "Gastroenterologist": 0.0
+      },
+      "avg_completeness": 0.0,
+      "effectiveness_rating": "low"
+    }
+  }
+}

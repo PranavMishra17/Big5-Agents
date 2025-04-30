@@ -172,18 +172,22 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
     
     # Create prompt for team selection
     selection_prompt = f"""
+    You are an experienced medical expert who recruits a group of experts with diverse identity and ask them to discuss and solve the given medical query.
+    
+    IMPORTANT: Select experts with DISTINCT and NON-OVERLAPPING specialties that are directly relevant to the medical question. Each expert should bring a unique perspective or knowledge domain.
+
     Given the following task/question:
-    
+
     {question}
-    
+
     Select {num_agents} experts to form a team, assigning a leader and specifying relationships:
     {agent_options_text}
-    
+
     Return your choices in this format:
     1. [Expert Role] - [Expertise] - Hierarchy: [Leader/SubordinateTo:[Other Expert]/Independent]
     2. [Expert Role] - [Expertise] - Hierarchy: [Leader/SubordinateTo:[Other Expert]/Independent]
     ...
-    
+
     Make only one expert the Leader, and ensure that hierarchical relationships are clear.
     """
     

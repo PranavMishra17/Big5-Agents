@@ -1,0 +1,17 @@
+{
+  "majority_voting": {
+    "correct": 1,
+    "total": 3,
+    "accuracy": 0.3333333333333333
+  },
+  "weighted_voting": {
+    "correct": 0,
+    "total": 3,
+    "accuracy": 0.0
+  },
+  "borda_count": {
+    "correct": 0,
+    "total": 3,
+    "accuracy": 0.0
+  }
+}

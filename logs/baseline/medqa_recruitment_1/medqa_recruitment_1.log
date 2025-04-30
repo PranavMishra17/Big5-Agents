@@ -1,0 +1,31 @@
+2025-04-29 20:47:39,044 - simulation.medqa_recruitment_1 - INFO - Event logged: simulation_started
+2025-04-29 20:47:39,045 - simulation.medqa_recruitment_1 - INFO - SimulationLogger initialized for medqa_recruitment_1 with configuration: baseline
+2025-04-29 20:47:47,979 - simulation.medqa_recruitment_1 - INFO - Initialized simulation medqa_recruitment_1
+2025-04-29 20:47:47,980 - simulation.medqa_recruitment_1 - INFO - Components enabled: Agent Recruitment (adaptive)
+2025-04-29 20:47:47,980 - simulation.medqa_recruitment_1 - INFO - Starting task analysis phase
+2025-04-29 20:47:47,980 - simulation.medqa_recruitment_1 - INFO - Getting initial analysis from Pediatrician
+2025-04-29 20:47:56,619 - simulation.medqa_recruitment_1 - INFO - Main discussion: task_analysis - Pediatrician
+2025-04-29 20:47:56,622 - simulation.medqa_recruitment_1 - INFO - Getting initial analysis from Pulmonologist
+2025-04-29 20:48:03,145 - simulation.medqa_recruitment_1 - INFO - Main discussion: task_analysis - Pulmonologist
+2025-04-29 20:48:03,145 - simulation.medqa_recruitment_1 - INFO - Getting initial analysis from Infectious Disease Specialist (added role)
+2025-04-29 20:48:11,296 - simulation.medqa_recruitment_1 - INFO - Main discussion: task_analysis - Infectious Disease Specialist (added role)
+2025-04-29 20:48:11,296 - simulation.medqa_recruitment_1 - INFO - Getting initial analysis from Ophthalmologist (added role)
+2025-04-29 20:48:17,218 - simulation.medqa_recruitment_1 - INFO - Main discussion: task_analysis - Ophthalmologist (added role)
+2025-04-29 20:48:17,219 - simulation.medqa_recruitment_1 - INFO - Getting initial analysis from Neonatologist (added role)
+2025-04-29 20:48:26,508 - simulation.medqa_recruitment_1 - INFO - Main discussion: task_analysis - Neonatologist (added role)
+2025-04-29 20:48:26,509 - simulation.medqa_recruitment_1 - INFO - Starting collaborative discussion phase
+2025-04-29 20:48:26,511 - simulation.medqa_recruitment_1 - INFO - Running collaborative discussion for Pediatrician
+2025-04-29 20:48:29,532 - simulation.medqa_recruitment_1 - INFO - Main discussion: collaborative_discussion - Pediatrician
+2025-04-29 20:48:29,532 - simulation.medqa_recruitment_1 - INFO - Running collaborative discussion for Pulmonologist
+2025-04-29 20:48:32,739 - simulation.medqa_recruitment_1 - INFO - Main discussion: collaborative_discussion - Pulmonologist
+2025-04-29 20:48:32,739 - simulation.medqa_recruitment_1 - INFO - Running collaborative discussion for Infectious Disease Specialist (added role)
+2025-04-29 20:48:36,333 - simulation.medqa_recruitment_1 - INFO - Main discussion: collaborative_discussion - Infectious Disease Specialist (added role)
+2025-04-29 20:48:36,334 - simulation.medqa_recruitment_1 - INFO - Running collaborative discussion for Ophthalmologist (added role)
+2025-04-29 20:48:39,104 - simulation.medqa_recruitment_1 - INFO - Main discussion: collaborative_discussion - Ophthalmologist (added role)
+2025-04-29 20:48:39,106 - simulation.medqa_recruitment_1 - INFO - Running collaborative discussion for Neonatologist (added role)
+2025-04-29 20:48:43,201 - simulation.medqa_recruitment_1 - INFO - Main discussion: collaborative_discussion - Neonatologist (added role)
+2025-04-29 20:48:43,201 - simulation.medqa_recruitment_1 - INFO - Applying decision methods
+2025-04-29 20:48:43,201 - simulation.medqa_recruitment_1 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'C', 'vote_counts': {'A': 1, 'C': 4}, 'total_votes': 5, 'confidence': 0.8}
+2025-04-29 20:48:43,207 - simulation.medqa_recruitment_1 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'C', 'weighted_votes': {'A': 0.7, 'C': 2.8}, 'total_weight': 3.5, 'confidence': 0.7999999999999999}
+2025-04-29 20:48:43,209 - simulation.medqa_recruitment_1 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'C', 'borda_scores': {'A': 11, 'B': 6, 'C': 13, 'D': 0}, 'total_possible_score': 30.0, 'confidence': 0.43333333333333335}
+2025-04-29 20:48:43,212 - simulation.medqa_recruitment_1 - INFO - Results saved to output\medqa_recruitment_1_results.json

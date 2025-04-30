@@ -5,6 +5,9 @@
     "use_closed_loop_comm": false,
     "use_mutual_monitoring": false,
     "use_shared_mental_model": false,
+    "use_recruitment": false,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "general",
     "random_leader": false,
     "task": "MedQA Question"
   },
@@ -13,25 +16,25 @@
       "type": "collaborative_discussion",
       "communication": "standard",
       "sender": "Critical Analyst",
-      "message": "### Final Answer: **D. Variceal ligation**\n\n#### **Rationale**:\nAfter integrating my analysis with the insights from my teammates, it is clear that the most appropriate recommendation for preventing future morbidity and mortality in this patient is **variceal ligation**. \n\n- **Key Points**:\n  - The patient has Child class B cirrhosis and has experienced a variceal bleeding episode. He has already undergone band ligation for acute bleeding, achieving hemostasis.\n  - For **secondary prophylaxis**, the combination of **non-selective beta-blockers** and **endoscopic variceal ligation** is the standard of care, as it significantly reduces the risk of recurrent bleeding and improves survival.\n  - Other options, such as **octreotide** and **terlipressin**, are limited to acute management and have no role in long-term prevention. **TIPS**, while effective in refractory cases, is not indicated at this stage as the patient has responded well to initial therapy.\n\n- **Conclusion**: Variceal ligation, performed periodically as part of secondary prevention, is the most evidence-based and appropriate intervention for this patient. It aligns with clinical guidelines and minimizes future morbidity and mortality.\n\n### Final Answer: **D**"
+      "message": "**D. Variceal ligation**\n\n### Final Rationale:\nThe most appropriate recommendation for preventing future morbidity and mortality in this patient is **endoscopic variceal ligation (EVL)**, in conjunction with non-selective beta-blocker therapy. This conclusion is supported by:\n1. **Guideline-Based Management**: Current clinical guidelines recommend EVL combined with beta-blockers as the first-line therapy for secondary prophylaxis of variceal bleeding in cirrhotic patients.\n2. **Mechanism of Action**: EVL directly obliterates varices, reducing the risk of rebleeding, which is critical in preventing complications and improving survival.\n3. **Exclusion of Other Options**:\n   - **Octreotide (A)** and **Terlipressin (B)** are acute-phase therapies and not suitable for long-term prophylaxis.\n   - **TIPS (C)**, while effective in refractory cases, is invasive and associated with significant risks, making it inappropriate as a first-line prophylactic measure in this patient who has not failed standard therapy.\n\nGiven the evidence and expert consensus, **D. Variceal ligation** is the correct choice."
     },
     {
       "type": "collaborative_discussion",
       "communication": "standard",
       "sender": "Domain Expert",
-      "message": "**Final Answer: D**\n\n### Rationale:\nAfter integrating the analyses from all perspectives, the consensus is that **variceal ligation** is the most appropriate recommendation for preventing future morbidity and mortality in this patient. \n\nThe patient has already undergone band ligation for actively bleeding varices and has agreed to abstain from alcohol, which is critical for reducing the progression of cirrhosis. In addition to non-selective beta-blocker therapy, **endoscopic variceal ligation (EVL)** is the standard of care for secondary prevention of variceal bleeding. EVL is highly effective in reducing the risk of recurrence and improving survival in patients with cirrhosis and prior variceal bleeding. \n\nOther options:\n- **Octreotide (A)** and **Terlipressin (B)** are limited to acute management and do not play a role in long-term prevention.\n- **TIPS (C)** is reserved for refractory cases or patients who fail standard therapy, which is not applicable to this stable patient.\n\nThus, the correct choice is **D. Variceal ligation**."
+      "message": "**D. Variceal ligation**\n\n### Final Rationale:\nThe consensus among all analyses is that **variceal ligation** is the most appropriate additional recommendation for this patient to prevent future morbidity and mortality from recurrent variceal bleeding. This conclusion is supported by the following key points:\n\n1. **Guideline-Based Approach**: Current clinical guidelines for secondary prophylaxis of variceal bleeding recommend the combination of **non-selective beta-blockers** (already prescribed for this patient) and **endoscopic variceal ligation (EVL)**. This combination significantly reduces the risk of recurrent bleeding and improves survival.\n\n2. **Role of EVL**: EVL directly addresses the varices by mechanically obliterating them, thereby preventing future bleeding episodes. While it requires periodic endoscopic procedures, it is highly effective and safe for long-term management.\n\n3. **Inappropriateness of Other Options**:\n   - **Octreotide (A)** and **Terlipressin (B)** are limited to the acute management of variceal bleeding and have no role in long-term prophylaxis.\n   - **TIPS (C)**, while effective in reducing portal pressure, is reserved for patients with refractory variceal bleeding or those who fail standard therapies (e.g., beta-blockers and EVL). This patient has not yet failed these first-line measures, so TIPS is not appropriate at this stage.\n\nGiven the patient's clinical scenario, **D. Variceal ligation** is the best choice to prevent recurrence of variceal bleeding and reduce future morbidity and mortality."
     },
     {
       "type": "collaborative_discussion",
       "communication": "standard",
       "sender": "Creative Strategist",
-      "message": "**Final Answer: D**\n\n### Rationale:\nAfter integrating the analyses provided by all team members, it is clear that **D. Variceal ligation** is the most appropriate recommendation for preventing future morbidity and mortality in this patient. The rationale is as follows:\n\n1. **Standard of Care for Secondary Prevention**: The combination of non-selective beta-blockers and endoscopic variceal ligation (EVL) is the evidence-based standard for secondary prevention of variceal bleeding. EVL is effective in eradicating varices and reducing the risk of recurrence.\n\n2. **Role of Other Options**:\n   - **Octreotide (A)** and **Terlipressin (B)** are used only for acute management of variceal bleeding and have no role in long-term prevention.\n   - **TIPS (C)** is reserved for patients with recurrent bleeding despite optimal medical and endoscopic therapy or those who cannot tolerate these interventions. It is not indicated as a first-line preventive measure in this stable patient.\n\n3. **Patient Status**: The patient has successfully undergone band ligation for acute bleeding, is hemodynamically stable, and has agreed to abstain from alcohol. These factors make EVL, in conjunction with beta-blockers, the most appropriate next step.\n\nBy continuing with repeated sessions of EVL, the patient will have the best chance of preventing recurrence and improving overall survival. This approach aligns with clinical guidelines and minimizes risks associated with more invasive interventions like TIPS."
+      "message": "**D. Variceal ligation**\n\n### Final Rationale:\nAfter integrating insights from all analyses, it is clear that **endoscopic variceal ligation (EVL)** is the most appropriate additional recommendation for preventing future morbidity and mortality in this patient with Child class B cirrhosis and a history of variceal bleeding. \n\n- **Guideline-based approach**: EVL, in combination with non-selective beta-blockers, is the established first-line therapy for secondary prophylaxis of variceal bleeding. It directly addresses the varices, significantly reducing the risk of recurrence.\n- **Other options**: Both octreotide and terlipressin are effective in the acute setting but have no role in long-term prevention. TIPS, while effective in refractory cases, is invasive and associated with higher risks, making it unsuitable as a first-line measure in this patient.\n\nThus, **D. Variceal ligation** is the best choice for preventing future episodes of variceal bleeding and improving long-term outcomes."
     },
     {
       "type": "collaborative_discussion",
       "communication": "standard",
       "sender": "Process Facilitator",
-      "message": "**Final Answer: D**\n\n**Rationale:**  \nThe patient has experienced an episode of variceal bleeding, which was successfully managed with band ligation. For secondary prevention of variceal bleeding, the standard of care includes the use of non-selective beta-blockers (already initiated) and **repeated endoscopic variceal ligation (EVL)**. EVL is a minimally invasive and effective strategy to reduce the risk of recurrence and associated morbidity and mortality. It is supported by clinical guidelines as the first-line approach for secondary prophylaxis in patients with cirrhosis and prior variceal bleeding. Other options (octreotide, terlipressin, and TIPS) are either inappropriate for long-term prevention or reserved for refractory cases."
+      "message": "**Final Answer: D. Variceal ligation**\n\n### Rationale:\nAfter integrating the analyses provided by all team members, the consensus is clear that **endoscopic variceal ligation (EVL)** is the most appropriate additional recommendation for preventing future morbidity and mortality in this patient. \n\n1. **Guideline-Based Care**: EVL, in combination with non-selective beta-blockers, is the standard of care for secondary prophylaxis of variceal bleeding in patients with cirrhosis. This approach effectively reduces the risk of recurrent bleeding and associated mortality.\n   \n2. **Limitations of Other Options**:\n   - **Octreotide (A)** and **Terlipressin (B)** are used in the acute management of variceal bleeding and are not suitable for long-term prevention.\n   - **TIPS (C)** is an invasive procedure reserved for refractory cases or patients who fail standard therapy (e.g., beta-blockers and EVL). It is not a first-line intervention for this patient, who has not yet failed these measures.\n\n3. **Evidence and Safety**: EVL is a well-established, effective, and safe method for obliterating varices and preventing recurrent bleeding. While it requires periodic endoscopic sessions, its benefits far outweigh the inconvenience.\n\nThus, **D. Variceal ligation** is the best choice for this patient, aligning with current clinical guidelines and evidence-based practices."
     }
   ],
   "decision_results": {
@@ -39,8 +42,8 @@
       "method": "majority_voting",
       "winning_option": "D",
       "vote_counts": {
-        "A": 1,
-        "D": 3
+        "D": 3,
+        "A": 1
       },
       "total_votes": 4,
       "confidence": 0.75
@@ -49,11 +52,11 @@
       "method": "weighted_voting",
       "winning_option": "D",
       "weighted_votes": {
-        "A": 0.7,
-        "D": 2.3
+        "D": 2.7,
+        "A": 0.9
       },
-      "total_weight": 3.0,
-      "confidence": 0.7666666666666666
+      "total_weight": 3.6,
+      "confidence": 0.75
     },
     "borda_count": {
       "method": "borda_count",

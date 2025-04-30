@@ -575,3 +575,5 @@ if __name__ == "__main__":
 #python dataset_runner.py --dataset medqa --output-dir ./results --seed 123 --all
 
 # python dataset_runner.py --dataset medqa --output-dir ./medqa_results --seed 123 --num-questions 50 --leadership --closedloop --mutual --mental --all
+
+# python dataset_runner.py --dataset medqa --output-dir ./medqa_results_rq --seed 123 --num-questions 5 --leadership --closedloop --mutual --mental --all --recruitment --recruitment-method adaptive --recruitment-pool medical

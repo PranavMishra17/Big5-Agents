@@ -1,0 +1,81 @@
+{
+  "simulation_id": "medqa_recruitment_1",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pediatrician",
+      "message": "**C. Oral erythromycin**\n\n### Final Rationale:\nAfter integrating my analysis with the insights provided by the Pulmonologist, Infectious Disease Specialist, Ophthalmologist, and Neonatologist, the consensus is clear that the most likely diagnosis is **neonatal chlamydial conjunctivitis and pneumonia** caused by **Chlamydia trachomatis**, acquired during vaginal delivery. The patient's symptoms (mucoid ocular discharge, eyelid swelling, cough, nasal discharge, crackles, hyperinflation, and bilateral infiltrates) align strongly with this condition.\n\n**Oral erythromycin** is the treatment of choice as it effectively addresses both the ocular and systemic manifestations of the infection. Topical therapy alone (e.g., topical erythromycin) would not treat the systemic pneumonia, and other options (artificial tears or intravenous acyclovir) are either supportive or inappropriate for this bacterial infection. While oral erythromycin carries a small risk of **infantile hypertrophic pyloric stenosis (IHPS)**, the benefits of eradicating the infection outweigh this risk."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pulmonologist",
+      "message": "**Final Answer: C. Oral erythromycin**\n\n**Rationale:**  \nThe patient's presentation, including **eye redness, mucoid ocular discharge, eyelid swelling**, and **respiratory symptoms (cough, nasal discharge, crackles, hyperinflation with bilateral infiltrates)**, is consistent with **neonatal chlamydial conjunctivitis and pneumonia** caused by **Chlamydia trachomatis**. This infection is acquired during vaginal delivery from an infected mother, and systemic therapy is required to address both the ocular and pulmonary manifestations.\n\n**Oral erythromycin** is the **treatment of choice** because it effectively eradicates Chlamydia trachomatis from both the conjunctiva and respiratory tract. While there is a small risk of **infantile hypertrophic pyloric stenosis (IHPS)** with erythromycin use, the benefits of treating the infection far outweigh the risks. Other options, such as **artificial tears** and **topical erythromycin**, do not address the systemic nature of the infection, and **intravenous acyclovir** is inappropriate as it targets viral infections like HSV, which is not indicated in this case. \n\nThis consensus aligns with the analyses provided by all team members, ensuring a comprehensive and accurate conclusion."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Infectious Disease Specialist (added role)",
+      "message": "**C. Oral erythromycin**\n\n### Final Rationale:\nThe collective analysis from all team members, including my own, supports the diagnosis of **neonatal chlamydial conjunctivitis and pneumonia** caused by **Chlamydia trachomatis**, acquired during delivery. The infant's symptoms of **mucoid ocular discharge, eyelid swelling, cough, nasal discharge, crackles**, and **radiographic findings of hyperinflation with bilateral infiltrates** are classic for this condition.\n\nThe best pharmacotherapy is **oral erythromycin**, as it effectively treats both the conjunctivitis and systemic pneumonia caused by Chlamydia trachomatis. Topical therapy (e.g., topical erythromycin) is insufficient for systemic involvement, artificial tears are only supportive, and intravenous acyclovir is irrelevant for this bacterial infection. While there is a small risk of **infantile hypertrophic pyloric stenosis (IHPS)** with erythromycin, the benefits of treating this potentially serious infection far outweigh the risks. \n\nThe consensus across all specialties confirms that **oral erythromycin** is the optimal choice."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Ophthalmologist (added role)",
+      "message": "**C. Oral erythromycin**\n\n**Rationale:**  \nThe patient presents with clinical features of **neonatal chlamydial conjunctivitis** (mucoid ocular discharge, eyelid swelling) and **chlamydial pneumonia** (cough, nasal discharge, crackles, hyperinflation, and bilateral infiltrates on chest radiograph). These findings strongly suggest **Chlamydia trachomatis infection**, which is transmitted perinatally during vaginal delivery. \n\nThe most effective treatment is **oral erythromycin**, as it addresses both the ocular and systemic manifestations of the infection. Topical therapy (e.g., topical erythromycin) is insufficient for systemic involvement, artificial tears provide only symptomatic relief, and intravenous acyclovir is inappropriate for this bacterial infection. While oral erythromycin carries a small risk of **infantile hypertrophic pyloric stenosis (IHPS)**, the benefits of treating the infection outweigh the risks."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Neonatologist (added role)",
+      "message": "**C. Oral erythromycin**\n\n### Final Rationale:\nThe clinical presentation of a 13-day-old neonate with **mucoid ocular discharge, eyelid swelling, cough, nasal discharge, and respiratory findings (crackles, hyperinflation, and bilateral infiltrates)** strongly indicates **Chlamydia trachomatis infection**, which causes both **neonatal conjunctivitis** and **pneumonia**. This infection is typically acquired during vaginal delivery from an infected mother, particularly in the context of limited prenatal care.\n\n**Oral erythromycin** is the treatment of choice because it effectively treats both the **ocular symptoms** (chlamydial conjunctivitis) and the **systemic infection** (chlamydial pneumonia). While there is a small risk of **infantile hypertrophic pyloric stenosis (IHPS)** with erythromycin use, the benefits of addressing the infection far outweigh this risk. \n\nOther options, such as **artificial tears** or **topical erythromycin**, are insufficient because they do not treat the systemic infection. **Intravenous acyclovir** is inappropriate as it targets viral infections, such as neonatal herpes simplex virus (HSV), which is not supported by the clinical findings in this case.\n\nThus, the most appropriate pharmacotherapy is **oral erythromycin**."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "A": 1,
+        "C": 4
+      },
+      "total_votes": 5,
+      "confidence": 0.8
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "weighted_votes": {
+        "A": 0.7,
+        "C": 2.8
+      },
+      "total_weight": 3.5,
+      "confidence": 0.7999999999999999
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 11,
+        "B": 6,
+        "C": 13,
+        "D": 0
+      },
+      "total_possible_score": 30.0,
+      "confidence": 0.43333333333333335
+    }
+  },
+  "teamwork_metrics": {}
+}

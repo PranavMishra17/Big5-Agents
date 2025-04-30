@@ -201,7 +201,17 @@ RECRUITMENT_POOLS = {
         "Psychiatrist - Focuses on mental health disorders",
         "Rheumatologist - Specializes in autoimmune and joint disorders",
         "Hematologist - Focuses on blood disorders and diseases"
+        "Medical Geneticist - Specializes in the study of genes and heredity",
+        "Neonatologist - Focuses on the care of newborn infants, especially those who are premature or have medical issues",
+        "Otolaryngologist - Specializes in ear, nose, and throat disorders (ENT Surgeon)",
+        "General Surgeon - Provides surgical expertise for a wide range of conditions",
+        "Anesthesiologist - Focuses on perioperative care and pain management",
+        "Speech-Language Pathologist - Specializes in communication and swallowing disorders",
+        "Physical Therapist - Offers rehabilitation services to improve movement and manage pain",
+        "Vocational Therapist - Assists patients in adapting to health changes affecting their occupation",
+        "Clinical Decision Specialist - Coordinates recommendations and formulates comprehensive treatment plans",
     ],
+    
     "general": [
         "Critical Analyst - Approaches problems with analytical rigor, questioning assumptions and evaluating evidence",
         "Domain Expert - Provides specialized knowledge relevant to the task domain",

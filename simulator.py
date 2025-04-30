@@ -115,6 +115,9 @@ class AgentSystemSimulator:
             
             # Initialize team model
             self.mental_model.initialize_team_model(list(self.agents.keys()))
+
+            # Set task description for mental model prompts
+            self.mental_model.task_description = config.TASK.get("description", "")
         
         # Store results
         self.results = {
