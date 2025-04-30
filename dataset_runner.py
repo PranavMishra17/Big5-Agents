@@ -8,6 +8,7 @@ import logging
 import os
 import json
 import random
+import sys
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from tqdm import tqdm
@@ -246,7 +247,10 @@ def run_questions_with_configuration(
             use_team_leadership=configuration.get("leadership", False),
             use_closed_loop_comm=configuration.get("closed_loop", False),
             use_mutual_monitoring=configuration.get("mutual_monitoring", False),
-            use_shared_mental_model=configuration.get("shared_mental_model", False)
+            use_shared_mental_model=configuration.get("shared_mental_model", False),
+            use_recruitment=configuration.get("recruitment", False),
+            recruitment_method=configuration.get("recruitment_method", "adaptive"),
+            recruitment_pool=configuration.get("recruitment_pool", "general")
         )
         
         try:
@@ -317,6 +321,8 @@ def run_questions_with_configuration(
     
     return results
 
+
+
 def run_dataset(
     dataset_type: str,
     num_questions: int = 50,
@@ -326,7 +332,10 @@ def run_dataset(
     leadership: bool = False,
     closed_loop: bool = False,
     mutual_monitoring: bool = False,
-    shared_mental_model: bool = False
+    shared_mental_model: bool = False,
+    recruitment: bool = False,
+    recruitment_method: str = "adaptive",
+    recruitment_pool: str = "general"
 ) -> Dict[str, Any]:
     """
     Run a dataset through the agent system.
@@ -341,6 +350,9 @@ def run_dataset(
         closed_loop: Use closed-loop communication
         mutual_monitoring: Use mutual performance monitoring
         shared_mental_model: Use shared mental model
+        recruitment: Use dynamic agent recruitment
+        recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
+        recruitment_pool: Pool of agent roles to recruit from
         
     Returns:
         Results dictionary
@@ -374,7 +386,8 @@ def run_dataset(
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
-                "shared_mental_model": False
+                "shared_mental_model": False,
+                "recruitment": False
             },
             # Single features
             {
@@ -382,28 +395,41 @@ def run_dataset(
                 "leadership": True, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
-                "shared_mental_model": False
+                "shared_mental_model": False,
+                "recruitment": False
             },
             {
                 "name": "Closed-loop", 
                 "leadership": False, 
                 "closed_loop": True,
                 "mutual_monitoring": False,
-                "shared_mental_model": False
+                "shared_mental_model": False,
+                "recruitment": False
             },
             {
                 "name": "Mutual Monitoring", 
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": True,
-                "shared_mental_model": False
+                "shared_mental_model": False,
+                "recruitment": False
             },
             {
                 "name": "Shared Mental Model", 
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
-                "shared_mental_model": True
+                "shared_mental_model": True,
+                "recruitment": False
+            },
+            # Recruitment feature
+            {
+                "name": "Recruitment", 
+                "leadership": False, 
+                "closed_loop": False,
+                "mutual_monitoring": False,
+                "shared_mental_model": False,
+                "recruitment": True
             },
             # All features
             {
@@ -411,7 +437,17 @@ def run_dataset(
                 "leadership": True, 
                 "closed_loop": True,
                 "mutual_monitoring": True,
-                "shared_mental_model": True
+                "shared_mental_model": True,
+                "recruitment": False
+            },
+            # All features with recruitment
+            {
+                "name": "All Features with Recruitment", 
+                "leadership": True, 
+                "closed_loop": True,
+                "mutual_monitoring": True,
+                "shared_mental_model": True,
+                "recruitment": True
             }
         ]
     else:
@@ -421,12 +457,18 @@ def run_dataset(
             "leadership": leadership,
             "closed_loop": closed_loop,
             "mutual_monitoring": mutual_monitoring,
-            "shared_mental_model": shared_mental_model
+            "shared_mental_model": shared_mental_model,
+            "recruitment": recruitment
         }]
     
     # Run each configuration
     all_results = []
     for config in configurations:
+        # Add recruitment settings to all configs
+        if config["recruitment"]:
+            config["recruitment_method"] = recruitment_method
+            config["recruitment_pool"] = recruitment_pool
+        
         result = run_questions_with_configuration(
             questions,
             dataset_type,
@@ -452,6 +494,7 @@ def run_dataset(
     
     return combined_results
 
+
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description='Run datasets through the agent system')
@@ -476,6 +519,18 @@ def main():
     parser.add_argument('--mental', action='store_true', 
                       help='Use shared mental model')
     
+    # Add recruitment arguments
+    parser.add_argument('--recruitment', action='store_true', 
+                      help='Use dynamic agent recruitment')
+    parser.add_argument('--recruitment-method', type=str, 
+                      choices=['adaptive', 'basic', 'intermediate', 'advanced'], 
+                      default='adaptive', 
+                      help='Recruitment method to use')
+    parser.add_argument('--recruitment-pool', type=str, 
+                      choices=['general', 'medical'], 
+                      default='medical' if '--dataset' in sys.argv and sys.argv[sys.argv.index('--dataset')+1] in ['medqa', 'pubmedqa'] else 'general', 
+                      help='Pool of roles to recruit from')
+    
     args = parser.parse_args()
     
     # Set up logging
@@ -491,8 +546,12 @@ def main():
         leadership=args.leadership,
         closed_loop=args.closedloop,
         mutual_monitoring=args.mutual,
-        shared_mental_model=args.mental
+        shared_mental_model=args.mental,
+        recruitment=args.recruitment,
+        recruitment_method=args.recruitment_method,
+        recruitment_pool=args.recruitment_pool
     )
+    
     
     # Print overall summary
     print("\nOverall Results:")

@@ -21,13 +21,17 @@ class AgentSystemSimulator:
     Simulator for running agent system with modular teamwork components.
     """
     
+    # Update the AgentSystemSimulator __init__ method to support recruitment
     def __init__(self, 
                 simulation_id: str = None,
                 use_team_leadership: bool = None,
                 use_closed_loop_comm: bool = None,
                 use_mutual_monitoring: bool = None,
                 use_shared_mental_model: bool = None,
-                random_leader: bool = False):
+                random_leader: bool = False,
+                use_recruitment: bool = None,
+                recruitment_method: str = None,
+                recruitment_pool: str = None):
         """
         Initialize the simulator.
         
@@ -38,6 +42,9 @@ class AgentSystemSimulator:
             use_mutual_monitoring: Whether to use mutual performance monitoring
             use_shared_mental_model: Whether to use shared mental models
             random_leader: Whether to randomly assign leadership
+            use_recruitment: Whether to use dynamic agent recruitment
+            recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
+            recruitment_pool: Pool of agent roles to recruit from
         """
         # Set simulation ID and configuration
         self.simulation_id = simulation_id or f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -47,6 +54,9 @@ class AgentSystemSimulator:
         self.use_closed_loop_comm = use_closed_loop_comm if use_closed_loop_comm is not None else config.USE_CLOSED_LOOP_COMM
         self.use_mutual_monitoring = use_mutual_monitoring if use_mutual_monitoring is not None else config.USE_MUTUAL_MONITORING
         self.use_shared_mental_model = use_shared_mental_model if use_shared_mental_model is not None else config.USE_SHARED_MENTAL_MODEL
+        self.use_recruitment = use_recruitment if use_recruitment is not None else config.USE_AGENT_RECRUITMENT
+        self.recruitment_method = recruitment_method or config.RECRUITMENT_METHOD
+        self.recruitment_pool = recruitment_pool or "general"
         self.random_leader = random_leader
         
         # Setup configuration
@@ -55,6 +65,9 @@ class AgentSystemSimulator:
             "use_closed_loop_comm": self.use_closed_loop_comm,
             "use_mutual_monitoring": self.use_mutual_monitoring,
             "use_shared_mental_model": self.use_shared_mental_model,
+            "use_recruitment": self.use_recruitment,
+            "recruitment_method": self.recruitment_method,
+            "recruitment_pool": self.recruitment_pool,
             "random_leader": self.random_leader,
             "task": config.TASK["name"]
         }
@@ -72,11 +85,20 @@ class AgentSystemSimulator:
             use_closed_loop_comm=self.use_closed_loop_comm,
             use_mutual_monitoring=self.use_mutual_monitoring,
             use_shared_mental_model=self.use_shared_mental_model,
-            random_leader=self.random_leader
+            random_leader=self.random_leader,
+            use_recruitment=self.use_recruitment,
+            question=config.TASK["description"] if self.use_recruitment else None,
+            recruitment_method=self.recruitment_method,
+            recruitment_pool=self.recruitment_pool
         )
         
-        self.agents = team_data["agents"]
-        self.leader = team_data["leader"]
+        # Handle returned team data structure
+        if isinstance(team_data, dict) and "agents" in team_data and "leader" in team_data:
+            self.agents = team_data["agents"]
+            self.leader = team_data["leader"]
+        else:
+            # Unpack tuple return value (agents, leader)
+            self.agents, self.leader = team_data
         
         # Initialize teamwork components
         self.comm_handler = ClosedLoopCommunication() if self.use_closed_loop_comm else None
@@ -120,10 +142,13 @@ class AgentSystemSimulator:
             component_config.append("Mutual Performance Monitoring")
         if self.use_shared_mental_model:
             component_config.append("Shared Mental Model")
+        if self.use_recruitment:
+            component_config.append(f"Agent Recruitment ({self.recruitment_method})")
             
         config_str = ", ".join(component_config) if component_config else "No teamwork components"
         self.logger.logger.info(f"Components enabled: {config_str}")
-    
+
+
     def run_simulation(self):
         """
         Run the full simulation process with all three decision methods.

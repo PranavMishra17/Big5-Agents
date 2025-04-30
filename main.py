@@ -32,7 +32,10 @@ def run_simulation(
     use_closed_loop_comm: bool = None,
     use_mutual_monitoring: bool = None,
     use_shared_mental_model: bool = None,
-    random_leader: bool = False
+    random_leader: bool = False,
+    use_recruitment: bool = None,
+    recruitment_method: str = None,
+    recruitment_pool: str = None
 ) -> Dict[str, Any]:
     """
     Run a single agent system simulation with selected teamwork components.
@@ -43,6 +46,9 @@ def run_simulation(
         use_mutual_monitoring: Whether to use mutual performance monitoring
         use_shared_mental_model: Whether to use shared mental models
         random_leader: Whether to randomly assign leadership
+        use_recruitment: Whether to use dynamic agent recruitment
+        recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
+        recruitment_pool: Pool of agent roles to recruit from
         
     Returns:
         Simulation results
@@ -53,7 +59,10 @@ def run_simulation(
         use_closed_loop_comm=use_closed_loop_comm,
         use_mutual_monitoring=use_mutual_monitoring,
         use_shared_mental_model=use_shared_mental_model,
-        random_leader=random_leader
+        random_leader=random_leader,
+        use_recruitment=use_recruitment,
+        recruitment_method=recruitment_method,
+        recruitment_pool=recruitment_pool
     )
     
     # Run the simulation
@@ -67,6 +76,7 @@ def run_simulation(
     simulator.save_results()
     
     return results
+
 
 def run_all_configurations(runs=1):
     """
@@ -309,6 +319,7 @@ def print_mcq_summary(performance_metrics):
             for config, confidence in sorted_configs:
                 print(f"    {config.ljust(20)}: {confidence:.2f}")
 
+# Add command-line arguments in main.py
 def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description='Run agent system simulations with teamwork components')
@@ -320,6 +331,13 @@ def main():
     parser.add_argument('--random-leader', action='store_true', help='Randomly assign leadership')
     parser.add_argument('--runs', type=int, default=1, help='Number of runs for each configuration')
     
+    # Add recruitment arguments
+    parser.add_argument('--recruitment', action='store_true', help='Use dynamic agent recruitment')
+    parser.add_argument('--recruitment-method', type=str, choices=['adaptive', 'basic', 'intermediate', 'advanced'], 
+                      default='adaptive', help='Recruitment method to use')
+    parser.add_argument('--recruitment-pool', type=str, choices=['general', 'medical'], 
+                      default='general', help='Pool of roles to recruit from')
+    
     args = parser.parse_args()
     
     # Set up logging
@@ -330,20 +348,23 @@ def main():
     print(f"Type: {config.TASK['type']}")
     
     if args.all:
-        logging.info(f"Running all feature configurations with {args.runs} runs per configuration")
+        logging.info(f"Running all feature combinations with {args.runs} runs per configuration")
         run_all_configurations(runs=args.runs)
     else:
         logging.info("Running single simulation")
         
         # Default to all components if none specified
-        use_any = args.leadership or args.closedloop or args.mutual or args.mental
+        use_any = args.leadership or args.closedloop or args.mutual or args.mental or args.recruitment
         
         result = run_simulation(
             use_team_leadership=args.leadership if use_any else None,
             use_closed_loop_comm=args.closedloop if use_any else None,
             use_mutual_monitoring=args.mutual if use_any else None,
             use_shared_mental_model=args.mental if use_any else None,
-            random_leader=args.random_leader
+            random_leader=args.random_leader,
+            use_recruitment=args.recruitment if use_any else None,
+            recruitment_method=args.recruitment_method,
+            recruitment_pool=args.recruitment_pool
         )
         
         # Determine which features were used

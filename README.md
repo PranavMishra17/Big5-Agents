@@ -1,5 +1,5 @@
 # Big5-Agents
- 
+
 ## Modular Agent System
 
 A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.
@@ -14,6 +14,8 @@ This system implements a multi-agent approach for collaborative problem solving 
 - Multiple decision aggregation methods
 - Comprehensive logging system with separate channels
 - Performance evaluation against ground truth
+- **Adaptive agent recruitment** based on task complexity
+- **Dataset processing** for batch evaluation
 
 The system is built around the Big Five teamwork model components:
 1. **Team Leadership** - Coordinating activities and defining approaches
@@ -26,8 +28,8 @@ The system is built around the Big Five teamwork model components:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/modular-agent-system.git
-cd modular-agent-system
+git clone https://github.com/yourusername/big5-agents.git
+cd big5-agents
 
 # Install dependencies
 pip install -r requirements.txt
@@ -47,6 +49,9 @@ python main.py
 
 # Run simulation with specific components
 python main.py --leadership --closedloop --mutual --mental
+
+# Run with dynamic agent recruitment
+python main.py --recruitment
 ```
 
 ### Command Line Options
@@ -59,6 +64,9 @@ python main.py --leadership --closedloop --mutual --mental
 --all             Run all feature combinations
 --random-leader   Randomly assign leadership
 --runs N          Number of runs for each configuration (default: 1)
+--recruitment     Enable dynamic agent recruitment
+--recruitment-method {adaptive|basic|intermediate|advanced}
+--recruitment-pool {general|medical}
 ```
 
 ### Running Multiple Configurations
@@ -67,6 +75,44 @@ python main.py --leadership --closedloop --mutual --mental
 # Run all possible combinations with 3 runs each
 python main.py --all --runs 3
 ```
+
+## Dataset Runner
+
+The dataset runner allows you to evaluate your agent system on datasets like MedQA and PubMedQA:
+
+```bash
+# Run 50 random MedQA questions with all teamwork components
+python dataset_runner.py --dataset medqa --num-questions 50 --leadership --closedloop --mutual --mental
+
+# Run with recruitment of medical specialists
+python dataset_runner.py --dataset medqa --recruitment --recruitment-pool medical
+
+# Run all configurations (baseline, individual components, all components) on PubMedQA
+python dataset_runner.py --dataset pubmedqa --num-questions 25 --all
+
+# Specify custom output directory and random seed
+python dataset_runner.py --dataset medqa --output-dir ./results --seed 123 --all
+```
+
+## Agent Recruitment
+
+The system supports dynamic agent team assembly based on task complexity:
+
+### Complexity Levels
+
+- **Basic**: Single expert for straightforward questions
+- **Intermediate**: Team of specialists (5 by default) with hierarchical relationships
+- **Advanced**: Multiple specialized teams (3 teams of 3 experts) with a chief coordinator
+
+### Recruitment Methods
+
+- **Adaptive**: Automatically determines complexity level based on question analysis
+- **Fixed**: Use pre-determined complexity level (basic, intermediate, advanced)
+
+### Recruitment Pools
+
+- **General**: Generic roles suitable for diverse tasks (Critical Analyst, Domain Expert, etc.)
+- **Medical**: Specialized medical roles for healthcare questions (Cardiologist, Neurologist, etc.)
 
 ## Configuration
 
@@ -88,15 +134,28 @@ TASK = {
 }
 ```
 
-### Agent Roles
+### Agent Roles & Recruitment Pools
 
-Define agent roles and their expertise:
+Define agent roles and recruitment pools:
 
 ```python
 AGENT_ROLES = {
     "Critical Analyst": "Approaches problems with analytical rigor...",
     "Domain Expert": "Provides specialized knowledge...",
     # Add/modify roles as needed
+}
+
+RECRUITMENT_POOLS = {
+    "medical": [
+        "Cardiologist - Specializes in the heart and cardiovascular system",
+        "Neurologist - Focuses on the brain and nervous system disorders",
+        # More specialists...
+    ],
+    "general": [
+        "Critical Analyst - Approaches problems with analytical rigor...",
+        "Domain Expert - Provides specialized knowledge...",
+        # More general roles...
+    ]
 }
 ```
 
@@ -124,31 +183,12 @@ The system generates detailed logs in the `logs/` directory with the following s
 logs/
 ├── baseline/                            # No teamwork components
 │   └── sim_20250417_123456/
-│       ├── sim_20250417_123456.log      # Main log file
-│       ├── sim_20250417_123456_events.jsonl           # General events
-│       ├── sim_20250417_123456_main_discussion.jsonl  # Primary agent interactions
 ├── leadership/                          # Only leadership enabled
-├── leadership_closed_loop/              # Two components enabled
+├── recruitment_basic/                   # Basic recruitment
+├── recruitment_intermediate/            # Intermediate recruitment
 ├── leadership_closed_loop_mutual_monitoring_shared_mental_model/  # All components
-    └── sim_20250417_789012/
-        ├── sim_20250417_789012.log                    # Main log file
-        ├── sim_20250417_789012_events.jsonl           # General events
-        ├── sim_20250417_789012_main_discussion.jsonl  # Primary agent interactions
-        ├── sim_20250417_789012_closed_loop.jsonl      # Closed-loop communications
-        ├── sim_20250417_789012_leadership.jsonl       # Leadership actions
-        ├── sim_20250417_789012_monitoring.jsonl       # Monitoring actions
-        ├── sim_20250417_789012_mental_model.jsonl     # Mental model updates
-        ├── sim_20250417_789012_decision.jsonl         # Decision method outputs
+└── leadership_closed_loop_mutual_monitoring_shared_mental_model_recruitment/  # All with recruitment
 ```
-
-### Log Channels Explained
-
-1. **Main Discussion** - Core dialogue between agents
-2. **Closed-Loop** - Three-step communication exchanges (message, acknowledgment, verification)
-3. **Leadership** - Leader-specific actions (task definition, synthesis)
-4. **Monitoring** - Feedback and issue detection between agents
-5. **Mental Model** - Shared understanding and convergence tracking
-6. **Decision** - Results from different decision aggregation methods
 
 ## Results Output
 
@@ -158,34 +198,19 @@ Simulation results are saved to the `output/` directory:
 output/
 ├── sim_20250417_123456_results.json   # Individual simulation results
 ├── all_configurations_results.json    # Aggregated results from --all runs
+├── medqa_results/                     # Dataset runner results
+│   ├── baseline/
+│   ├── recruitment_adaptive/
+│   └── combined_results.json
 ```
-
-### Evaluation Metrics
-
-For ranking tasks:
-- **Correlation**: Spearman's rank correlation with ground truth (-1 to 1)
-- **Error**: Sum of absolute position differences (lower is better)
-
-For MCQ tasks:
-- **Accuracy**: Ratio of correct answers
-- **Confidence**: Agent's confidence in the answer
-
-## Decision Methods
-
-The system implements three decision methods:
-
-1. **Majority Voting** - Each agent gets one vote of equal weight
-2. **Weighted Voting** - Votes are weighted by agent expertise and confidence
-3. **Borda Count** - Points assigned based on preference ranking
-
-Each method is applied independently, allowing comparison of results.
 
 ## Project Structure
 
 ```
-modular_agent_system/
+big5_agents/
 ├── agent.py                 # Base agent class
 ├── modular_agent.py         # Specialized agent implementation
+├── agent_recruitment.py     # Dynamic agent team assembly
 ├── closed_loop.py           # Closed-loop communication
 ├── mutual_monitoring.py     # Performance monitoring
 ├── shared_mental_model.py   # Shared understanding management
@@ -193,88 +218,15 @@ modular_agent_system/
 ├── simulator.py             # Main simulation orchestration
 ├── logger.py                # Enhanced logging system
 ├── main.py                  # Command-line interface
+├── dataset_runner.py        # Dataset processing utility
 ├── config.py                # Configuration settings
 ├── requirements.txt         # Dependencies
 └── README.md                # This file
 ```
 
-## Example Output
-
-When running a simulation, you'll see output like:
-
-```
-Task: NASA Lunar Survival
-Type: ranking
-
-Results Summary:
-Teamwork Features: Team Leadership, Closed-loop Communication, Mutual Performance Monitoring
-  
-Decision Method Results:
-
-Majority Voting:
-  Top 3 items:
-    1. Oxygen tanks
-    2. Water
-    3. Stellar map
-  Confidence: 0.83
-
-Weighted Voting:
-  Top 3 items:
-    1. Oxygen tanks
-    2. Water
-    3. Stellar map
-  Confidence: 0.91
-
-Borda Count:
-  Top 3 items:
-    1. Oxygen tanks
-    2. Water
-    3. Stellar map
-  Confidence: 0.87
-
-Performance Summary:
-  Majority Voting:
-    Correlation: 0.9524
-    Error: 4
-  Weighted Voting:
-    Correlation: 0.9762
-    Error: 2
-  Borda Count:
-    Correlation: 0.9643
-    Error: 3
-
-Detailed logs available at: logs/leadership_closed_loop_mutual_monitoring/sim_20250417_123456
-```
-
 ## Extending the System
 
-- Add new agent roles in `config.AGENT_ROLES`
+- Add new agent roles in `config.AGENT_ROLES` or `config.RECRUITMENT_POOLS`
 - Implement new task types in `agent.extract_response()`
 - Create additional decision methods in `decision_methods.py`
-
-
-## How to Use the Dataset Runner
-```bash
-# Run 50 random MedQA questions with all teamwork components
-python dataset_runner.py --dataset medqa --num-questions 50 --leadership --closedloop --mutual --mental
-
-# Run all configurations (baseline, individual components, all components) on PubMedQA
-python dataset_runner.py --dataset pubmedqa --num-questions 25 --all
-
-# Specify custom output directory and random seed
-python dataset_runner.py --dataset medqa --output-dir ./results --seed 123 --all
-```
-## Key Features
-
-Flexible Dataset Support: The system automatically formats different dataset structures into the appropriate task format for your agent system.
-Modular Configuration: You can run with any combination of the Big Five teamwork components.
-Results Analysis: For each configuration, you get accuracy metrics for all three decision methods.
-Structured Output: Results are saved in a hierarchical format with summary statistics and detailed per-question results.
-Progress Tracking: Uses tqdm to show progress during long runs with many questions.
-
-The dataset runner integrates smoothly with your existing agent system by directly configuring the config.TASK for each question. The results are stored in a structured format that facilitates further analysis and comparison.
-If you want to add more datasets in the future, you would just need to:
-
-### Add a new load_X_dataset function
-Create a new format_X_for_task function to convert to your standard task format
-Add the dataset type to the command-line choices
+- Add new recruitment strategies in `agent_recruitment.py`

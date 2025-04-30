@@ -9,6 +9,8 @@ import logging
 from agent import Agent
 import config
 
+from typing import Tuple
+
 class ModularAgent(Agent):
     """
     Modular agent with specialization capabilities.
@@ -405,11 +407,17 @@ class ModularAgent(Agent):
             return f"Unknown leadership action: {action_type}"
 
 
+
+# Modify the create_agent_team function to support recruitment
 def create_agent_team(use_team_leadership=True, 
                       use_closed_loop_comm=False, 
                       use_mutual_monitoring=False,
                       use_shared_mental_model=False,
-                      random_leader=False):
+                      random_leader=False,
+                      use_recruitment=False,
+                      question=None,
+                      recruitment_method="adaptive",
+                      recruitment_pool="general") -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
     Create a team of agents with different specializations.
     
@@ -419,10 +427,26 @@ def create_agent_team(use_team_leadership=True,
         use_mutual_monitoring: Whether to use mutual performance monitoring
         use_shared_mental_model: Whether to use shared mental models
         random_leader: Whether to randomly assign leadership
+        use_recruitment: Whether to use dynamic agent recruitment
+        question: The question or task (required if use_recruitment is True)
+        recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
+        recruitment_pool: Pool of agent roles to recruit from
         
     Returns:
-        Dictionary of created agents
+        Tuple of (agents dictionary, leader agent)
     """
+    # Use recruitment if enabled
+    if use_recruitment and question:
+        # Import here to avoid circular imports
+        from agent_recruitment import determine_complexity, recruit_agents
+        
+        # Determine complexity
+        complexity = determine_complexity(question, recruitment_method)
+        
+        # Recruit appropriate agents
+        return recruit_agents(question, complexity, recruitment_pool)
+    
+    # Default to original implementation if recruitment not enabled
     # Determine leadership assignment
     if random_leader:
         # Randomly choose one agent to be leader
@@ -469,7 +493,4 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f"  Mutual Performance Monitoring: {use_mutual_monitoring}")
     logging.info(f"  Shared Mental Model: {use_shared_mental_model}")
     
-    return {
-        "agents": agents,
-        "leader": leader
-    }
+    return {"agents": agents, "leader": leader}

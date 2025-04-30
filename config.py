@@ -187,8 +187,38 @@ DECISION_METHODS = {
     }
 }
 
+# Agent recruitment settings
+RECRUITMENT_METHOD = "adaptive"  # Options: "adaptive", "fixed", "basic", "intermediate", "advanced"
+RECRUITMENT_POOLS = {
+    "medical": [
+        "Cardiologist - Specializes in the heart and cardiovascular system",
+        "Neurologist - Focuses on the brain and nervous system disorders",
+        "Pulmonologist - Specializes in respiratory system and lung diseases",
+        "Endocrinologist - Focuses on hormonal systems and metabolic disorders",
+        "Gastroenterologist - Specializes in digestive system disorders",
+        "Oncologist - Focuses on cancer diagnosis and treatment",
+        "Pediatrician - Specializes in child and adolescent health",
+        "Psychiatrist - Focuses on mental health disorders",
+        "Rheumatologist - Specializes in autoimmune and joint disorders",
+        "Hematologist - Focuses on blood disorders and diseases"
+    ],
+    "general": [
+        "Critical Analyst - Approaches problems with analytical rigor, questioning assumptions and evaluating evidence",
+        "Domain Expert - Provides specialized knowledge relevant to the task domain",
+        "Creative Strategist - Offers innovative perspectives and approaches to problem solving",
+        "Process Facilitator - Focuses on optimizing the collaborative process and ensuring methodical evaluation",
+        "Systems Thinker - Analyzes how different components interact and affect each other",
+        "Data Specialist - Evaluates quantitative information and statistical patterns",
+        "Risk Assessor - Identifies potential problems and evaluates their likelihood and impact",
+        "Implementation Expert - Focuses on practical execution and operational constraints"
+    ]
+}
+
 # Configure which teamwork components to use
 USE_TEAM_LEADERSHIP = True
 USE_CLOSED_LOOP_COMM = True
 USE_MUTUAL_MONITORING = True
 USE_SHARED_MENTAL_MODEL = True
+
+
+USE_AGENT_RECRUITMENT = False  # Default disabled
