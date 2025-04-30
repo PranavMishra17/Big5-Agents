@@ -9,7 +9,7 @@ from typing import Dict, List, Any, Optional
 load_dotenv()
 
 # Azure OpenAI settings
-AZURE_API_KEY = "428KgVArXb6sFyseVYDjElDDYZnlCnx8pNa8CfU5dCic6gjOK89WJQQJ99BBACYeBjFXJ3w3AAABACOG5gtQ" #os.environ.get('AZURE_OPENAI_API_KEY')
+AZURE_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
 AZURE_DEPLOYMENT = "VARELab-GPT4o"
 AZURE_API_VERSION = "2024-08-01-preview"
@@ -211,7 +211,7 @@ RECRUITMENT_POOLS = {
         "Vocational Therapist - Assists patients in adapting to health changes affecting their occupation",
         "Clinical Decision Specialist - Coordinates recommendations and formulates comprehensive treatment plans",
     ],
-    
+
     "general": [
         "Critical Analyst - Approaches problems with analytical rigor, questioning assumptions and evaluating evidence",
         "Domain Expert - Provides specialized knowledge relevant to the task domain",

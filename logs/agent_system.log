@@ -1047,3 +1047,65 @@ The question, "What is the primary greenh...
 2025-04-29 19:45:41,003 [INFO] simulation.sim_20250429_194528: Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 3, 'B': 2, 'C': 1, 'D': 0}, 'total_possible_score': 6.0, 'confidence': 0.5}
 2025-04-29 19:45:41,006 [INFO] simulation.sim_20250429_194528: Results saved to output\sim_20250429_194528_results.json
 2025-04-29 19:45:41,008 [INFO] simulation.sim_20250429_194528: Results saved to output\sim_20250429_194528_results.json
+2025-04-30 12:17:51,647 [INFO] root: Running single simulation
+2025-04-30 12:17:51,648 [INFO] simulation.sim_20250430_121751: Event logged: simulation_started
+2025-04-30 12:17:51,649 [INFO] simulation.sim_20250430_121751: SimulationLogger initialized for sim_20250430_121751 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
+2025-04-30 12:17:52,217 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-04-30 12:17:52,218 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-04-30 12:17:52,218 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-04-30 12:17:52,218 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-04-30 12:17:52,219 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-04-30 12:17:52,634 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-04-30 12:17:52,634 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-04-30 12:17:52,635 [INFO] agent.Domain Expert: Added to knowledge base: climate_science
+2025-04-30 12:17:52,635 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-04-30 12:17:53,076 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-04-30 12:17:53,077 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-04-30 12:17:53,077 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-04-30 12:17:53,077 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-04-30 12:17:53,077 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-04-30 12:17:53,508 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-04-30 12:17:53,509 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-04-30 12:17:53,509 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-04-30 12:17:53,509 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-04-30 12:17:53,509 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-04-30 12:17:53,509 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-04-30 12:17:53,510 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-04-30 12:17:53,510 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-04-30 12:17:53,510 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-04-30 12:17:53,510 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-04-30 12:17:53,510 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-04-30 12:17:53,510 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-04-30 12:17:53,510 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-04-30 12:17:53,510 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-04-30 12:17:53,511 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-04-30 12:17:53,511 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-04-30 12:17:53,511 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-04-30 12:17:53,511 [INFO] root: Created agent team with configuration:
+2025-04-30 12:17:53,511 [INFO] root:   Team Leadership: True (Leader: Process Facilitator)
+2025-04-30 12:17:53,511 [INFO] root:   Closed-loop Communication: True
+2025-04-30 12:17:53,511 [INFO] root:   Mutual Performance Monitoring: True
+2025-04-30 12:17:53,511 [INFO] root:   Shared Mental Model: True
+2025-04-30 12:17:53,512 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-04-30 12:17:53,512 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-04-30 12:17:53,512 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-04-30 12:17:53,512 [INFO] decision.methods: Initialized decision methods handler
+2025-04-30 12:17:53,512 [INFO] teamwork.shared_mental_model: Initialized task mental model for Climate Science Question
+2025-04-30 12:17:53,512 [INFO] teamwork.shared_mental_model: Initialized team mental model with 4 roles
+2025-04-30 12:17:53,512 [INFO] simulation.sim_20250430_121751: Initialized simulation sim_20250430_121751
+2025-04-30 12:17:53,512 [INFO] simulation.sim_20250430_121751: Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
+2025-04-30 12:17:53,512 [INFO] simulation.sim_20250430_121751: Starting task analysis phase
+2025-04-30 12:17:53,512 [INFO] simulation.sim_20250430_121751: Getting initial analysis from Critical Analyst
+2025-04-30 12:17:53,512 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following multiple-choice ...
+2025-04-30 12:18:00,237 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-04-30 12:18:00,258 [INFO] agent.Critical Analyst: Responded: **Analysis of Options:**
+
+### **Option A: Carbon dioxide (CO2)**
+- **Strengths:** Carbon dioxide is ...
+2025-04-30 12:18:00,264 [INFO] teamwork.shared_mental_model: Updated shared understanding from Critical Analyst
+2025-04-30 12:18:00,266 [INFO] simulation.sim_20250430_121751: Mental model update from Critical Analyst, convergence: 0.00
+2025-04-30 12:18:00,267 [INFO] simulation.sim_20250430_121751: Main discussion: task_analysis - Critical Analyst
+2025-04-30 12:18:00,268 [INFO] simulation.sim_20250430_121751: Getting initial analysis from Domain Expert
+2025-04-30 12:18:00,268 [INFO] agent.Domain Expert: Received message: 
+        As a Domain Expert with expertise in your domain, analyze the following multiple-choice que...
