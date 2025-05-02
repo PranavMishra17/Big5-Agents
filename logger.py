@@ -12,9 +12,9 @@ class SimulationLogger:
     """Enhanced logger for tracking simulation progress and results."""
     
     def __init__(self, 
-                 simulation_id: str, 
-                 log_dir: str,
-                 config: Dict[str, bool] = None):
+                simulation_id: str, 
+                log_dir: str,
+                config: Dict[str, bool] = None):
         """
         Initialize the simulation logger.
         
@@ -37,6 +37,12 @@ class SimulationLogger:
             config_str.append("mutual_monitoring")
         if self.config.get("use_shared_mental_model"):
             config_str.append("shared_mental_model")
+        if self.config.get("use_team_orientation"):
+            config_str.append("team_orientation")
+        if self.config.get("use_mutual_trust"):
+            config_str.append("mutual_trust")
+        if self.config.get("use_recruitment"):
+            config_str.append("recruitment")
         self.config_name = "_".join(config_str) if config_str else "baseline"
         
         # Create folder structure: logs/[config_name]/[simulation_id]/
@@ -67,6 +73,9 @@ class SimulationLogger:
         self.monitoring_file = os.path.join(self.run_dir, f"{simulation_id}_monitoring.jsonl")
         self.mental_model_file = os.path.join(self.run_dir, f"{simulation_id}_mental_model.jsonl")
         self.decision_file = os.path.join(self.run_dir, f"{simulation_id}_decision.jsonl")
+        self.team_orientation_file = os.path.join(self.run_dir, f"{simulation_id}_team_orientation.jsonl")
+        self.mutual_trust_file = os.path.join(self.run_dir, f"{simulation_id}_mutual_trust.jsonl")
+
     
     def _setup_logger(self) -> logging.Logger:
         """Set up the file and console loggers."""
@@ -93,6 +102,7 @@ class SimulationLogger:
         
         return logger
     
+
     def log_agent_message(self, agent_role: str, message_type: str, content: str) -> None:
         """
         Log a complete agent message.
@@ -112,6 +122,7 @@ class SimulationLogger:
             "content_length": len(content)
         })
     
+
     def log_simulation_complete(self, results: Dict[str, Any]) -> None:
         """
         Log the completion of the simulation.
@@ -129,6 +140,7 @@ class SimulationLogger:
         
         self.logger.info(f"Simulation {self.simulation_id} completed successfully")
 
+
     def log_event(self, event_type, data):
         """Log a structured event to the events file."""
         event = {
@@ -142,6 +154,7 @@ class SimulationLogger:
         
         self.logger.info(f"Event logged: {event_type}")
     
+
     def log_main_discussion(self, stage, agent_role, message):
         """
         Log main discussion between agents.
@@ -163,6 +176,7 @@ class SimulationLogger:
         
         self.logger.info(f"Main discussion: {stage} - {agent_role}")
     
+
     def log_closed_loop(self, stage, sender_role, receiver_role, initial_message, acknowledgment, verification):
         """
         Log closed-loop communication events.
@@ -190,6 +204,7 @@ class SimulationLogger:
         
         self.logger.info(f"Closed-loop communication: {stage} - {sender_role} -> {receiver_role}")
     
+
     def log_leadership_action(self, action_type, content):
         """
         Log leader-specific actions.
@@ -209,6 +224,7 @@ class SimulationLogger:
         
         self.logger.info(f"Leadership action: {action_type}")
         
+
     def log_monitoring_action(self, monitor_role, target_role, issues, feedback):
         """
         Log mutual monitoring actions and feedback.
@@ -233,6 +249,7 @@ class SimulationLogger:
         
         self.logger.info(f"Monitoring action: {monitor_role} monitored {target_role}, issues: {len(issues)}")
         
+
     def log_mental_model_update(self, agent_role, understanding, convergence):
         """
         Log shared mental model updates and convergence metrics.
@@ -253,6 +270,7 @@ class SimulationLogger:
             f.write(json.dumps(event) + '\n')
         
         self.logger.info(f"Mental model update from {agent_role}, convergence: {convergence:.2f}")
+    
     
     def log_decision_output(self, method, result):
         """
@@ -281,3 +299,50 @@ class SimulationLogger:
         # For other tasks
         else:
             self.logger.info(f"Decision output: {method} - Result logged")
+
+
+    def log_team_orientation_action(self, agent_role, action_type, details):
+        """
+        Log team orientation actions.
+        
+        Args:
+            agent_role: Role of the agent
+            action_type: Type of team orientation action
+            details: Details of the action
+        """
+        event = {
+            "agent_role": agent_role,
+            "timestamp": datetime.now().isoformat(),
+            "action_type": action_type,
+            "details": details
+        }
+        
+        with open(self.team_orientation_file, 'a') as f:
+            f.write(json.dumps(event) + '\n')
+        
+        self.logger.info(f"Team orientation action: {action_type} by {agent_role}")
+
+    def log_mutual_trust_event(self, from_role, to_role, event_type, trust_level, details):
+        """
+        Log mutual trust events.
+        
+        Args:
+            from_role: Role of the agent giving trust
+            to_role: Role of the agent receiving trust
+            event_type: Type of trust event
+            trust_level: Current trust level
+            details: Details of the event
+        """
+        event = {
+            "from_role": from_role,
+            "to_role": to_role,
+            "timestamp": datetime.now().isoformat(),
+            "event_type": event_type,
+            "trust_level": trust_level,
+            "details": details
+        }
+        
+        with open(self.mutual_trust_file, 'a') as f:
+            f.write(json.dumps(event) + '\n')
+        
+        self.logger.info(f"Mutual trust event: {from_role} -> {to_role}, {event_type}, trust: {trust_level:.2f}")

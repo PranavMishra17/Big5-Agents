@@ -15,6 +15,10 @@ from shared_mental_model import SharedMentalModel
 from decision_methods import DecisionMethods
 from logger import SimulationLogger
 import config
+from team_orientation import TeamOrientation
+from mutual_trust import MutualTrust
+
+
 
 class AgentSystemSimulator:
     """
@@ -23,15 +27,18 @@ class AgentSystemSimulator:
     
     # Update the AgentSystemSimulator __init__ method to support recruitment
     def __init__(self, 
-                simulation_id: str = None,
-                use_team_leadership: bool = None,
-                use_closed_loop_comm: bool = None,
-                use_mutual_monitoring: bool = None,
-                use_shared_mental_model: bool = None,
-                random_leader: bool = False,
-                use_recruitment: bool = None,
-                recruitment_method: str = None,
-                recruitment_pool: str = None):
+             simulation_id: str = None,
+             use_team_leadership: bool = None,
+             use_closed_loop_comm: bool = None,
+             use_mutual_monitoring: bool = None,
+             use_shared_mental_model: bool = None,
+             use_team_orientation: bool = None,
+             use_mutual_trust: bool = None,
+             mutual_trust_factor: float = None,
+             random_leader: bool = False,
+             use_recruitment: bool = None,
+             recruitment_method: str = None,
+             recruitment_pool: str = None):
         """
         Initialize the simulator.
         
@@ -41,6 +48,9 @@ class AgentSystemSimulator:
             use_closed_loop_comm: Whether to use closed-loop communication
             use_mutual_monitoring: Whether to use mutual performance monitoring
             use_shared_mental_model: Whether to use shared mental models
+            use_team_orientation: Whether to use team orientation
+            use_mutual_trust: Whether to use mutual trust
+            mutual_trust_factor: Trust factor for mutual trust (0.0-1.0)
             random_leader: Whether to randomly assign leadership
             use_recruitment: Whether to use dynamic agent recruitment
             recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
@@ -54,6 +64,9 @@ class AgentSystemSimulator:
         self.use_closed_loop_comm = use_closed_loop_comm if use_closed_loop_comm is not None else config.USE_CLOSED_LOOP_COMM
         self.use_mutual_monitoring = use_mutual_monitoring if use_mutual_monitoring is not None else config.USE_MUTUAL_MONITORING
         self.use_shared_mental_model = use_shared_mental_model if use_shared_mental_model is not None else config.USE_SHARED_MENTAL_MODEL
+        self.use_team_orientation = use_team_orientation if use_team_orientation is not None else config.USE_TEAM_ORIENTATION
+        self.use_mutual_trust = use_mutual_trust if use_mutual_trust is not None else config.USE_MUTUAL_TRUST
+        self.mutual_trust_factor = mutual_trust_factor if mutual_trust_factor is not None else config.MUTUAL_TRUST_FACTOR
         self.use_recruitment = use_recruitment if use_recruitment is not None else config.USE_AGENT_RECRUITMENT
         self.recruitment_method = recruitment_method or config.RECRUITMENT_METHOD
         self.recruitment_pool = recruitment_pool or "general"
@@ -65,6 +78,9 @@ class AgentSystemSimulator:
             "use_closed_loop_comm": self.use_closed_loop_comm,
             "use_mutual_monitoring": self.use_mutual_monitoring,
             "use_shared_mental_model": self.use_shared_mental_model,
+            "use_team_orientation": self.use_team_orientation,
+            "use_mutual_trust": self.use_mutual_trust,
+            "mutual_trust_factor": self.mutual_trust_factor,
             "use_recruitment": self.use_recruitment,
             "recruitment_method": self.recruitment_method,
             "recruitment_pool": self.recruitment_pool,
@@ -85,6 +101,8 @@ class AgentSystemSimulator:
             use_closed_loop_comm=self.use_closed_loop_comm,
             use_mutual_monitoring=self.use_mutual_monitoring,
             use_shared_mental_model=self.use_shared_mental_model,
+            use_team_orientation=self.use_team_orientation,
+            use_mutual_trust=self.use_mutual_trust,
             random_leader=self.random_leader,
             use_recruitment=self.use_recruitment,
             question=config.TASK["description"] if self.use_recruitment else None,
@@ -104,6 +122,12 @@ class AgentSystemSimulator:
         self.comm_handler = ClosedLoopCommunication() if self.use_closed_loop_comm else None
         self.mutual_monitor = MutualMonitoring() if self.use_mutual_monitoring else None
         self.mental_model = SharedMentalModel() if self.use_shared_mental_model else None
+        self.team_orientation = TeamOrientation() if self.use_team_orientation else None
+        self.mutual_trust = MutualTrust(self.mutual_trust_factor) if self.use_mutual_trust else None
+        
+        # Initialize mutual trust network if enabled
+        if self.mutual_trust:
+            self.mutual_trust.initialize_trust_network(list(self.agents.keys()))
         
         # Initialize decision methods
         self.decision_methods = DecisionMethods()
@@ -115,9 +139,6 @@ class AgentSystemSimulator:
             
             # Initialize team model
             self.mental_model.initialize_team_model(list(self.agents.keys()))
-
-            # Set task description for mental model prompts
-            self.mental_model.task_description = config.TASK.get("description", "")
         
         # Store results
         self.results = {
@@ -145,6 +166,10 @@ class AgentSystemSimulator:
             component_config.append("Mutual Performance Monitoring")
         if self.use_shared_mental_model:
             component_config.append("Shared Mental Model")
+        if self.use_team_orientation:
+            component_config.append("Team Orientation")
+        if self.use_mutual_trust:
+            component_config.append(f"Mutual Trust (factor: {self.mutual_trust_factor:.1f})")
         if self.use_recruitment:
             component_config.append(f"Agent Recruitment ({self.recruitment_method})")
             
@@ -191,12 +216,23 @@ class AgentSystemSimulator:
         if self.use_shared_mental_model and self.mental_model:
             self.results["teamwork_metrics"]["shared_mental_model"] = self.mental_model.analyze_mental_model_effectiveness()
             self.logger.logger.info("Shared mental model metrics collected")
+
+        # Add team orientation metrics
+        if self.use_team_orientation and self.team_orientation:
+            self.results["teamwork_metrics"]["team_orientation"] = self.team_orientation.get_team_orientation_metrics()
+            self.logger.logger.info("Team orientation metrics collected")
+        
+        # Add mutual trust metrics
+        if self.use_mutual_trust and self.mutual_trust:
+            self.results["teamwork_metrics"]["mutual_trust"] = self.mutual_trust.get_trust_metrics()
+            self.logger.logger.info("Mutual trust metrics collected")
         
         # Save results
         self.save_results()
         
         return self.results
     
+
     def _run_task_analysis(self) -> Dict[str, Dict[str, Any]]:
         """
         Run initial task analysis by each agent.
@@ -240,7 +276,8 @@ class AgentSystemSimulator:
             }
         
         return agent_analyses
-    
+
+
     def _run_leadership_definition(self) -> str:
         """
         Have the leader define the team's approach.
@@ -336,6 +373,7 @@ class AgentSystemSimulator:
             
             return leader_definition
     
+
     def _run_collaborative_discussion(self, agent_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         """
         Run collaborative discussion between agents.
@@ -550,6 +588,7 @@ class AgentSystemSimulator:
         
         return agent_decisions
     
+
     def _apply_decision_methods(self, agent_decisions: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """
         Apply all decision methods to the agent decisions.
@@ -560,33 +599,147 @@ class AgentSystemSimulator:
         Returns:
             Dictionary with results from each decision method
         """
-        # Extract agent response data for decision methods
-        agent_responses = {}
+        # Check if this is an advanced query with multiple teams
+        is_advanced_query = any("team" in role.lower() for role in agent_decisions.keys())
+        
+        if is_advanced_query:
+            return self._apply_mdt_decision_methods(agent_decisions)
+        else:
+            # Standard decision method application
+            # Extract agent response data for decision methods
+            agent_responses = {}
+            for role, decision_data in agent_decisions.items():
+                if "extract" in decision_data:
+                    agent_responses[role] = decision_data["extract"]
+            
+            # Apply majority voting
+            majority_result = self.decision_methods.majority_voting(agent_responses)
+            self.logger.logger.info(f"Majority voting result: {majority_result}")
+            
+            # Apply weighted voting
+            weighted_result = self.decision_methods.weighted_voting(agent_responses)
+            self.logger.logger.info(f"Weighted voting result: {weighted_result}")
+            
+            # Apply Borda count
+            borda_result = self.decision_methods.borda_count(agent_responses)
+            self.logger.logger.info(f"Borda count result: {borda_result}")
+            
+            # Compile results
+            decision_results = {
+                "majority_voting": majority_result,
+                "weighted_voting": weighted_result,
+                "borda_count": borda_result
+            }
+            
+            return decision_results
+
+
+    def _apply_mdt_decision_methods(self, agent_decisions: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+        """
+        Apply decision methods for advanced queries with multiple teams.
+        
+        Args:
+            agent_decisions: Dictionary mapping agent roles to their decisions
+            
+        Returns:
+            Dictionary with results from each decision method
+        """
+        self.logger.logger.info("Using MDT decision process for advanced query")
+        
+        # Organize decisions by team
+        team_decisions = {}
         for role, decision_data in agent_decisions.items():
-            if "extract" in decision_data:
-                agent_responses[role] = decision_data["extract"]
+            if "_" not in role:
+                continue
+                
+            # Extract team identifier from role
+            parts = role.split("_", 2)
+            if len(parts) < 2:
+                continue
+                
+            team_id = f"{parts[0]}_{parts[1]}"
+            
+            if team_id not in team_decisions:
+                team_decisions[team_id] = {}
+                
+            team_decisions[team_id][role] = decision_data
+        
+        # Get team-level decisions
+        team_responses = {}
+        for team_id, decisions in team_decisions.items():
+            team_agent_responses = {}
+            for role, decision_data in decisions.items():
+                if "extract" in decision_data:
+                    team_agent_responses[role] = decision_data["extract"]
+            
+            # Apply majority voting for this team
+            if team_agent_responses:
+                team_result = self.decision_methods.majority_voting(team_agent_responses)
+                team_responses[team_id] = {
+                    "team_result": team_result,
+                    "agents": team_agent_responses
+                }
+        
+        # Now treat each team as an "agent" for final decision
+        final_agent_responses = {}
+        for team_id, team_data in team_responses.items():
+            if "team_result" in team_data:
+                # Filter to just contain the answer, not the full team result
+                if "winning_option" in team_data["team_result"]:
+                    final_agent_responses[team_id] = {
+                        "answer": team_data["team_result"]["winning_option"],
+                        "confidence": team_data["team_result"].get("confidence", 0.5)
+                    }
+                elif "final_ranking" in team_data["team_result"]:
+                    final_agent_responses[team_id] = {
+                        "ranking": team_data["team_result"]["final_ranking"],
+                        "confidence": team_data["team_result"].get("confidence", 0.5)
+                    }
+                else:
+                    # Handle other task types
+                    final_agent_responses[team_id] = {
+                        "response": str(team_data["team_result"]),
+                        "confidence": team_data["team_result"].get("confidence", 0.5)
+                    }
+        
+        # Give extra weight to the Final Review and Decision Team
+        decision_team_id = None
+        for team_id in team_responses:
+            if "final" in team_id.lower() or "frdt" in team_id.lower():
+                decision_team_id = team_id
+                break
+        
+        # Apply standard decision methods with the team-level responses
+        decision_results = {}
         
         # Apply majority voting
-        majority_result = self.decision_methods.majority_voting(agent_responses)
-        self.logger.logger.info(f"Majority voting result: {majority_result}")
+        majority_result = self.decision_methods.majority_voting(final_agent_responses)
+        self.logger.logger.info(f"MDT Majority voting result: {majority_result}")
+        decision_results["majority_voting"] = majority_result
         
-        # Apply weighted voting
-        weighted_result = self.decision_methods.weighted_voting(agent_responses)
-        self.logger.logger.info(f"Weighted voting result: {weighted_result}")
+        # Apply weighted voting with team weights
+        team_weights = {team_id: 1.0 for team_id in final_agent_responses}
+        if decision_team_id:
+            team_weights[decision_team_id] = 1.5  # Give more weight to final decision team
+        
+        weighted_result = self.decision_methods.weighted_voting(final_agent_responses, team_weights)
+        self.logger.logger.info(f"MDT Weighted voting result: {weighted_result}")
+        decision_results["weighted_voting"] = weighted_result
         
         # Apply Borda count
-        borda_result = self.decision_methods.borda_count(agent_responses)
-        self.logger.logger.info(f"Borda count result: {borda_result}")
+        borda_result = self.decision_methods.borda_count(final_agent_responses)
+        self.logger.logger.info(f"MDT Borda count result: {borda_result}")
+        decision_results["borda_count"] = borda_result
         
-        # Compile results
-        decision_results = {
-            "majority_voting": majority_result,
-            "weighted_voting": weighted_result,
-            "borda_count": borda_result
+        # Add MDT-specific info
+        decision_results["mdt_process"] = {
+            "team_decisions": {team_id: team_data["team_result"] for team_id, team_data in team_responses.items()},
+            "decision_team": decision_team_id
         }
         
-        return decision_results
-    
+        return decision_results 
+
+
     def save_results(self) -> str:
         """
         Save simulation results to file.
@@ -602,6 +755,7 @@ class AgentSystemSimulator:
         self.logger.logger.info(f"Results saved to {output_path}")
         return output_path
     
+
     def evaluate_performance(self) -> Dict[str, Any]:
         """
         Evaluate the performance of the simulation.
@@ -616,6 +770,7 @@ class AgentSystemSimulator:
         
         return performance
     
+
     def _evaluate_task_performance(self) -> Dict[str, Any]:
         """
         Evaluate performance on the task itself.
@@ -632,6 +787,7 @@ class AgentSystemSimulator:
         else:
             return {"metric": "qualitative", "note": "No quantitative metric for this task type"}
     
+
     def _evaluate_ranking_performance(self) -> Dict[str, Any]:
         """Evaluate performance on ranking tasks."""
         ground_truth = config.TASK.get("ground_truth", [])
@@ -659,6 +815,7 @@ class AgentSystemSimulator:
         
         return metrics
     
+
     def _evaluate_mcq_performance(self) -> Dict[str, Any]:
         """Evaluate performance on MCQ tasks."""
         ground_truth = config.TASK.get("ground_truth")
@@ -683,6 +840,7 @@ class AgentSystemSimulator:
         
         return metrics
     
+
     def _evaluate_teamwork_performance(self) -> Dict[str, Any]:
         """
         Evaluate performance of the teamwork components.
@@ -732,6 +890,7 @@ class AgentSystemSimulator:
         
         return teamwork_metrics
     
+
     def _calculate_rank_correlation(self, ranking1: List[str], ranking2: List[str]) -> float:
         """
         Calculate Spearman's rank correlation between two rankings.
@@ -762,6 +921,7 @@ class AgentSystemSimulator:
         
         return correlation
     
+
     def _calculate_ranking_error(self, ranking1: List[str], ranking2: List[str]) -> int:
         """
         Calculate error between two rankings (sum of absolute position differences).

@@ -399,6 +399,8 @@ class SharedMentalModel:
         
         return enhanced_prompt
 
+
+
     def _create_team_mental_model(self, agent_role: str, task_model: dict) -> str:
         """Create a shared mental model for team tasks."""
         import config
@@ -442,6 +444,7 @@ class SharedMentalModel:
             team_mental_model += f"\nYour team's mental models have converged to a level of {latest_convergence['overall_convergence']:.2f} out of 1.0."
         
         return team_mental_model
+
 
     def _create_individual_mental_model(self, agent_role: str, task_model: dict) -> str:
         """Create a shared mental model for individual tasks."""
@@ -581,6 +584,7 @@ class SharedMentalModel:
         
         return understanding
     
+
     def analyze_mental_model_effectiveness(self) -> Dict[str, Any]:
         """
         Analyze the effectiveness of the shared mental model.

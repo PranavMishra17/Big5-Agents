@@ -413,6 +413,8 @@ def create_agent_team(use_team_leadership=True,
                       use_closed_loop_comm=False, 
                       use_mutual_monitoring=False,
                       use_shared_mental_model=False,
+                      use_team_orientation=False,
+                      use_mutual_trust=False,
                       random_leader=False,
                       use_recruitment=False,
                       question=None,
@@ -426,6 +428,8 @@ def create_agent_team(use_team_leadership=True,
         use_closed_loop_comm: Whether to use closed-loop communication
         use_mutual_monitoring: Whether to use mutual performance monitoring
         use_shared_mental_model: Whether to use shared mental models
+        use_team_orientation: Whether to use team orientation
+        use_mutual_trust: Whether to use mutual trust
         random_leader: Whether to randomly assign leadership
         use_recruitment: Whether to use dynamic agent recruitment
         question: The question or task (required if use_recruitment is True)
@@ -435,6 +439,7 @@ def create_agent_team(use_team_leadership=True,
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
+
     # Use recruitment if enabled
     if use_recruitment and question:
         # Import here to avoid circular imports
@@ -471,7 +476,9 @@ def create_agent_team(use_team_leadership=True,
             use_team_leadership=is_leader and use_team_leadership,
             use_closed_loop_comm=use_closed_loop_comm,
             use_mutual_monitoring=use_mutual_monitoring,
-            use_shared_mental_model=use_shared_mental_model
+            use_shared_mental_model=use_shared_mental_model,
+            use_team_orientation=use_team_orientation,
+            use_mutual_trust=use_mutual_trust
         )
         
         agents[role] = agent
@@ -492,5 +499,7 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f"  Closed-loop Communication: {use_closed_loop_comm}")
     logging.info(f"  Mutual Performance Monitoring: {use_mutual_monitoring}")
     logging.info(f"  Shared Mental Model: {use_shared_mental_model}")
+    logging.info(f"  Team Orientation: {use_team_orientation}")
+    logging.info(f"  Mutual Trust: {use_mutual_trust}")
     
     return {"agents": agents, "leader": leader}

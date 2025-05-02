@@ -327,11 +327,12 @@ def main():
     parser.add_argument('--closedloop', action='store_true', help='Use closed-loop communication')
     parser.add_argument('--mutual', action='store_true', help='Use mutual performance monitoring')
     parser.add_argument('--mental', action='store_true', help='Use shared mental model')
+    parser.add_argument('--orientation', action='store_true', help='Use team orientation')
+    parser.add_argument('--trust', action='store_true', help='Use mutual trust')
+    parser.add_argument('--trust-factor', type=float, default=0.8, help='Mutual trust factor (0.0-1.0)')
     parser.add_argument('--all', action='store_true', help='Run all feature combinations')
     parser.add_argument('--random-leader', action='store_true', help='Randomly assign leadership')
     parser.add_argument('--runs', type=int, default=1, help='Number of runs for each configuration')
-    
-    # Add recruitment arguments
     parser.add_argument('--recruitment', action='store_true', help='Use dynamic agent recruitment')
     parser.add_argument('--recruitment-method', type=str, choices=['adaptive', 'basic', 'intermediate', 'advanced'], 
                       default='adaptive', help='Recruitment method to use')
@@ -354,13 +355,16 @@ def main():
         logging.info("Running single simulation")
         
         # Default to all components if none specified
-        use_any = args.leadership or args.closedloop or args.mutual or args.mental or args.recruitment
+        use_any = args.leadership or args.closedloop or args.mutual or args.mental or args.orientation or args.trust or args.recruitment
         
         result = run_simulation(
             use_team_leadership=args.leadership if use_any else None,
             use_closed_loop_comm=args.closedloop if use_any else None,
             use_mutual_monitoring=args.mutual if use_any else None,
             use_shared_mental_model=args.mental if use_any else None,
+            use_team_orientation=args.orientation if use_any else None,
+            use_mutual_trust=args.trust if use_any else None,
+            mutual_trust_factor=args.trust_factor,
             random_leader=args.random_leader,
             use_recruitment=args.recruitment if use_any else None,
             recruitment_method=args.recruitment_method,
@@ -377,6 +381,12 @@ def main():
             features.append("Mutual Performance Monitoring")
         if result["config"]["use_shared_mental_model"]:
             features.append("Shared Mental Model")
+        if result["config"]["use_team_orientation"]:
+            features.append("Team Orientation")
+        if result["config"]["use_mutual_trust"]:
+            features.append(f"Mutual Trust (factor: {result['config']['mutual_trust_factor']:.1f})")
+        if result["config"]["use_recruitment"]:
+            features.append(f"Agent Recruitment ({result['config']['recruitment_method']})")
         
         features_str = ", ".join(features) if features else "None"
         

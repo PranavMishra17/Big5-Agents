@@ -48,7 +48,10 @@ cp .env.example .env
 python main.py
 
 # Run simulation with specific components
-python main.py --leadership --closedloop --mutual --mental
+python main.py --leadership --closedloop --mutual --mental --orientation
+
+# Run with mutual trust and custom trust factor
+python main.py --trust --trust-factor 0.6
 
 # Run with dynamic agent recruitment
 python main.py --recruitment
@@ -61,6 +64,9 @@ python main.py --recruitment
 --closedloop      Enable closed-loop communication
 --mutual          Enable mutual performance monitoring
 --mental          Enable shared mental model
+--orientation     Enable Team Orientataion
+--trust           Enable Mutual Trust
+--trust-factor    Custom trust factor[0-1]
 --all             Run all feature combinations
 --random-leader   Randomly assign leadership
 --runs N          Number of runs for each configuration (default: 1)

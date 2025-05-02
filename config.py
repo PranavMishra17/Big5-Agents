@@ -225,10 +225,13 @@ RECRUITMENT_POOLS = {
 }
 
 # Configure which teamwork components to use
-USE_TEAM_LEADERSHIP = True
-USE_CLOSED_LOOP_COMM = True
-USE_MUTUAL_MONITORING = True
-USE_SHARED_MENTAL_MODEL = True
+USE_TEAM_LEADERSHIP = False
+USE_CLOSED_LOOP_COMM = False
+USE_MUTUAL_MONITORING = False
+USE_SHARED_MENTAL_MODEL = False
+USE_TEAM_ORIENTATION = False  # Default disabled
+USE_MUTUAL_TRUST = False  # Default disabled
 
+MUTUAL_TRUST_FACTOR = 0.8  # Default trust level (0.0-1.0)
 
 USE_AGENT_RECRUITMENT = False  # Default disabled

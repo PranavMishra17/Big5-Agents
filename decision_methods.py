@@ -287,8 +287,10 @@ class DecisionMethods:
             "position_weights": position_winners
         }
     
+
+
     def _weighted_voting_mcq(self, agent_responses: Dict[str, Dict[str, Any]], 
-                           agent_weights: Dict[str, float]) -> Dict[str, Any]:
+                        agent_weights: Dict[str, float]) -> Dict[str, Any]:
         """Apply weighted voting to MCQ tasks."""
         weighted_votes = {}
         
@@ -300,11 +302,24 @@ class DecisionMethods:
                     weighted_votes[answer] = 0
                 
                 # Get agent weight and confidence
-                weight = agent_weights.get(agent_role, 1.0)
+                base_weight = agent_weights.get(agent_role, 1.0)
                 confidence = response_data.get("confidence", 0.7)  # Default confidence if not provided
                 
-                # Combined weight based on agent expertise and confidence
-                weighted_votes[answer] += weight * confidence
+                # Apply hierarchical weight adjustment
+                hierarchy_multiplier = 1.0
+                
+                # Check if this is a leader/chief role
+                if "lead" in agent_role.lower() or "chief" in agent_role.lower():
+                    hierarchy_multiplier = 1.5
+                # Check if this is from a final decision team
+                elif "final" in agent_role.lower() or "decision" in agent_role.lower() or "frdt" in agent_role.lower():
+                    hierarchy_multiplier = 1.3
+                # Check if this is a subordinate role
+                elif "subordinate" in response_data.get("hierarchy", "").lower():
+                    hierarchy_multiplier = 0.8
+                
+                # Combined weight based on agent expertise, confidence, and hierarchy
+                weighted_votes[answer] += base_weight * confidence * hierarchy_multiplier
         
         # Find the option with the most weighted votes
         max_votes = 0
@@ -317,7 +332,7 @@ class DecisionMethods:
         
         # Calculate total weight for confidence calculation
         total_weight = sum(agent_weights.get(role, 1.0) * response.get("confidence", 0.7) 
-                          for role, response in agent_responses.items())
+                        for role, response in agent_responses.items())
         
         return {
             "method": "weighted_voting",
@@ -326,7 +341,8 @@ class DecisionMethods:
             "total_weight": total_weight,
             "confidence": max_votes / max(0.001, total_weight) if max_votes > 0 else 0
         }
-    
+
+
     def _weighted_voting_general(self, agent_responses: Dict[str, Dict[str, Any]], 
                                agent_weights: Dict[str, float]) -> Dict[str, Any]:
         """Apply weighted voting to general tasks."""
@@ -370,6 +386,8 @@ class DecisionMethods:
             "normalized_confidence": confidence / max(0.001, total_weight)
         }
     
+
+
     def borda_count(self, agent_responses: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """
         Apply Borda count to determine the winning response.
@@ -391,6 +409,8 @@ class DecisionMethods:
         else:
             return self._borda_count_general(agent_responses)
     
+
+
     def _borda_count_ranking(self, agent_responses: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Apply Borda count to ranking tasks."""
         n_items = len(config.TASK["options"])
@@ -440,6 +460,8 @@ class DecisionMethods:
             "confidence": normalized_entropy
         }
     
+
+
     def _borda_count_mcq(self, agent_responses: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Apply Borda count to MCQ tasks."""
         # For MCQ tasks, we need explicit rankings from agents
@@ -508,6 +530,8 @@ class DecisionMethods:
             "confidence": winner_score / max(0.001, total_possible_score) if winner_score > 0 else 0
         }
     
+
+
     def _borda_count_general(self, agent_responses: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
         """Apply Borda count to general tasks."""
         # For general tasks, Borda count isn't directly applicable

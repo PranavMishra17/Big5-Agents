@@ -322,7 +322,6 @@ def run_questions_with_configuration(
     return results
 
 
-
 def run_dataset(
     dataset_type: str,
     num_questions: int = 50,
@@ -333,6 +332,9 @@ def run_dataset(
     closed_loop: bool = False,
     mutual_monitoring: bool = False,
     shared_mental_model: bool = False,
+    team_orientation: bool = False,
+    mutual_trust: bool = False,
+    mutual_trust_factor: float = 0.8,
     recruitment: bool = False,
     recruitment_method: str = "adaptive",
     recruitment_pool: str = "general"
@@ -350,6 +352,9 @@ def run_dataset(
         closed_loop: Use closed-loop communication
         mutual_monitoring: Use mutual performance monitoring
         shared_mental_model: Use shared mental model
+        team_orientation: Use team orientation
+        mutual_trust: Use mutual trust
+        mutual_trust_factor: Mutual trust factor (0.0-1.0)
         recruitment: Use dynamic agent recruitment
         recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
         recruitment_pool: Pool of agent roles to recruit from
@@ -387,6 +392,8 @@ def run_dataset(
                 "closed_loop": False,
                 "mutual_monitoring": False,
                 "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": False,
                 "recruitment": False
             },
             # Single features
@@ -396,6 +403,8 @@ def run_dataset(
                 "closed_loop": False,
                 "mutual_monitoring": False,
                 "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": False,
                 "recruitment": False
             },
             {
@@ -404,6 +413,8 @@ def run_dataset(
                 "closed_loop": True,
                 "mutual_monitoring": False,
                 "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": False,
                 "recruitment": False
             },
             {
@@ -412,6 +423,8 @@ def run_dataset(
                 "closed_loop": False,
                 "mutual_monitoring": True,
                 "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": False,
                 "recruitment": False
             },
             {
@@ -420,6 +433,28 @@ def run_dataset(
                 "closed_loop": False,
                 "mutual_monitoring": False,
                 "shared_mental_model": True,
+                "team_orientation": False,
+                "mutual_trust": False,
+                "recruitment": False
+            },
+            {
+                "name": "Team Orientation", 
+                "leadership": False, 
+                "closed_loop": False,
+                "mutual_monitoring": False,
+                "shared_mental_model": False,
+                "team_orientation": True,
+                "mutual_trust": False,
+                "recruitment": False
+            },
+            {
+                "name": "Mutual Trust", 
+                "leadership": False, 
+                "closed_loop": False,
+                "mutual_monitoring": False,
+                "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": True,
                 "recruitment": False
             },
             # Recruitment feature
@@ -429,6 +464,8 @@ def run_dataset(
                 "closed_loop": False,
                 "mutual_monitoring": False,
                 "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": False,
                 "recruitment": True
             },
             # All features
@@ -438,6 +475,8 @@ def run_dataset(
                 "closed_loop": True,
                 "mutual_monitoring": True,
                 "shared_mental_model": True,
+                "team_orientation": True,
+                "mutual_trust": True,
                 "recruitment": False
             },
             # All features with recruitment
@@ -447,6 +486,8 @@ def run_dataset(
                 "closed_loop": True,
                 "mutual_monitoring": True,
                 "shared_mental_model": True,
+                "team_orientation": True,
+                "mutual_trust": True,
                 "recruitment": True
             }
         ]
@@ -458,6 +499,8 @@ def run_dataset(
             "closed_loop": closed_loop,
             "mutual_monitoring": mutual_monitoring,
             "shared_mental_model": shared_mental_model,
+            "team_orientation": team_orientation,
+            "mutual_trust": mutual_trust,
             "recruitment": recruitment
         }]
     
@@ -518,8 +561,14 @@ def main():
                       help='Use mutual performance monitoring')
     parser.add_argument('--mental', action='store_true', 
                       help='Use shared mental model')
+    parser.add_argument('--orientation', action='store_true', 
+                      help='Use team orientation')
+    parser.add_argument('--trust', action='store_true', 
+                      help='Use mutual trust')
+    parser.add_argument('--trust-factor', type=float, default=0.8, 
+                      help='Mutual trust factor (0.0-1.0)')
     
-    # Add recruitment arguments
+    # Recruitment arguments
     parser.add_argument('--recruitment', action='store_true', 
                       help='Use dynamic agent recruitment')
     parser.add_argument('--recruitment-method', type=str, 
@@ -547,11 +596,13 @@ def main():
         closed_loop=args.closedloop,
         mutual_monitoring=args.mutual,
         shared_mental_model=args.mental,
+        team_orientation=args.orientation,
+        mutual_trust=args.trust,
+        mutual_trust_factor=args.trust_factor,
         recruitment=args.recruitment,
         recruitment_method=args.recruitment_method,
         recruitment_pool=args.recruitment_pool
     )
-    
     
     # Print overall summary
     print("\nOverall Results:")
