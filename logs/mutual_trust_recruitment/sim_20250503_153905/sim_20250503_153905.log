@@ -1,0 +1,32 @@
+2025-05-03 15:39:05,181 - simulation.sim_20250503_153905 - INFO - Event logged: simulation_started
+2025-05-03 15:39:05,181 - simulation.sim_20250503_153905 - INFO - SimulationLogger initialized for sim_20250503_153905 with configuration: mutual_trust_recruitment
+2025-05-03 15:39:12,912 - simulation.sim_20250503_153905 - INFO - Initialized simulation sim_20250503_153905
+2025-05-03 15:39:12,912 - simulation.sim_20250503_153905 - INFO - Components enabled: Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-03 15:39:12,912 - simulation.sim_20250503_153905 - INFO - Starting task analysis phase
+2025-05-03 15:39:12,912 - simulation.sim_20250503_153905 - INFO - Getting initial analysis from Neurologist
+2025-05-03 15:39:22,395 - simulation.sim_20250503_153905 - INFO - Main discussion: task_analysis - Neurologist
+2025-05-03 15:39:22,395 - simulation.sim_20250503_153905 - INFO - Getting initial analysis from Immunologist
+2025-05-03 15:39:31,429 - simulation.sim_20250503_153905 - INFO - Main discussion: task_analysis - Immunologist
+2025-05-03 15:39:31,442 - simulation.sim_20250503_153905 - INFO - Getting initial analysis from Neuroradiologist
+2025-05-03 15:39:39,578 - simulation.sim_20250503_153905 - INFO - Main discussion: task_analysis - Neuroradiologist
+2025-05-03 15:39:39,582 - simulation.sim_20250503_153905 - INFO - Getting initial analysis from Clinical Pathologist
+2025-05-03 15:39:45,343 - simulation.sim_20250503_153905 - INFO - Main discussion: task_analysis - Clinical Pathologist
+2025-05-03 15:39:45,355 - simulation.sim_20250503_153905 - INFO - Getting initial analysis from Psychiatrist
+2025-05-03 15:39:54,226 - simulation.sim_20250503_153905 - INFO - Main discussion: task_analysis - Psychiatrist
+2025-05-03 15:39:54,229 - simulation.sim_20250503_153905 - INFO - Starting collaborative discussion phase
+2025-05-03 15:39:54,229 - simulation.sim_20250503_153905 - INFO - Running collaborative discussion for Neurologist
+2025-05-03 15:39:57,678 - simulation.sim_20250503_153905 - INFO - Main discussion: collaborative_discussion - Neurologist
+2025-05-03 15:39:57,678 - simulation.sim_20250503_153905 - INFO - Running collaborative discussion for Immunologist
+2025-05-03 15:40:02,370 - simulation.sim_20250503_153905 - INFO - Main discussion: collaborative_discussion - Immunologist
+2025-05-03 15:40:02,370 - simulation.sim_20250503_153905 - INFO - Running collaborative discussion for Neuroradiologist
+2025-05-03 15:40:06,165 - simulation.sim_20250503_153905 - INFO - Main discussion: collaborative_discussion - Neuroradiologist
+2025-05-03 15:40:06,165 - simulation.sim_20250503_153905 - INFO - Running collaborative discussion for Clinical Pathologist
+2025-05-03 15:40:08,420 - simulation.sim_20250503_153905 - INFO - Main discussion: collaborative_discussion - Clinical Pathologist
+2025-05-03 15:40:08,420 - simulation.sim_20250503_153905 - INFO - Running collaborative discussion for Psychiatrist
+2025-05-03 15:40:11,897 - simulation.sim_20250503_153905 - INFO - Main discussion: collaborative_discussion - Psychiatrist
+2025-05-03 15:40:11,899 - simulation.sim_20250503_153905 - INFO - Applying decision methods
+2025-05-03 15:40:11,902 - simulation.sim_20250503_153905 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 3, 'A': 2}, 'total_votes': 5, 'confidence': 0.6}
+2025-05-03 15:40:11,904 - simulation.sim_20250503_153905 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': None, 'vote_counts': {}, 'weighted_votes': {}, 'total_votes': 0, 'confidence': 0}
+2025-05-03 15:40:11,906 - simulation.sim_20250503_153905 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 12, 'B': 13, 'C': 5, 'D': 0}, 'total_possible_score': 30.0, 'confidence': 0.43333333333333335}
+2025-05-03 15:40:11,907 - simulation.sim_20250503_153905 - INFO - Mutual trust metrics collected
+2025-05-03 15:40:11,910 - simulation.sim_20250503_153905 - INFO - Results saved to output\sim_20250503_153905_results.json

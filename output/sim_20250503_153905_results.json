@@ -1,0 +1,121 @@
+{
+  "simulation_id": "sim_20250503_153905",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": true,
+    "mutual_trust_factor": 0.9,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "general",
+    "random_leader": false,
+    "task": "Autoimmune Encephalitis Diagnosis"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Neurologist",
+      "message": "**B. Anti-LGI1 antibodies**\n\n**Rationale:** After integrating my analysis with the perspectives of the Immunologist, Neuroradiologist, Clinical Pathologist, and Psychiatrist, the most likely autoantibody associated with this clinical presentation is **anti-LGI1 antibodies**. \n\nThe patient's subacute onset of memory deficits, confusion, and behavioral changes, along with MRI findings of bilateral medial temporal lobe hyperintensities, CSF lymphocytic pleocytosis, and EEG focal slowing in the temporal regions, are hallmark features of **limbic encephalitis**. Among the listed options, **anti-LGI1 antibodies** are the most strongly associated with this presentation. \n\nOther options, such as anti-NMDA receptor antibodies, anti-GABA-B receptor antibodies, and anti-AMPA receptor antibodies, are less likely due to either differences in typical clinical presentation, imaging findings, or demographic associations."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Immunologist",
+      "message": "**B. Anti-LGI1 antibodies**\n\n### Final Rationale:\nAfter integrating the analyses from all team members, the most likely autoantibody associated with this clinical presentation is **anti-LGI1 antibodies**. The patient\u2019s symptoms of subacute memory deficits, confusion, and behavioral changes, along with the MRI findings of bilateral medial temporal lobe hyperintensities, mild CSF lymphocytic pleocytosis, and EEG findings of focal slowing in the temporal regions, are classic for **limbic encephalitis** caused by anti-LGI1 antibodies.\n\nKey considerations include:\n1. **Anti-LGI1 encephalitis** is a well-established cause of limbic encephalitis, presenting with the described clinical and imaging findings.\n2. The patient\u2019s age and lack of malignancy make other options, such as anti-GABA-B receptor or anti-AMPA receptor encephalitides, less likely, as these are often associated with paraneoplastic syndromes or older age groups.\n3. Anti-NMDA receptor encephalitis typically presents with a broader spectrum of psychiatric and neurological symptoms and less commonly shows the characteristic MRI findings seen here.\n\nThus, **anti-LGI1 antibodies** are the most appropriate choice based on the clinical, radiological, and laboratory findings."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Neuroradiologist",
+      "message": "**Final Answer: B. Anti-LGI1 antibodies**\n\n### Rationale:\nAfter integrating my analysis with the insights provided by the Neurologist, Immunologist, Clinical Pathologist, and Psychiatrist, it is evident that the clinical presentation, imaging findings, and laboratory results are most consistent with **anti-LGI1 encephalitis**. This condition is a classic cause of limbic encephalitis and aligns perfectly with:\n1. **Clinical Presentation**: Subacute memory deficits, confusion, and behavioral changes.\n2. **MRI Findings**: Bilateral medial temporal lobe hyperintensities, a hallmark of limbic encephalitis.\n3. **CSF Analysis**: Mild lymphocytic pleocytosis, indicating CNS inflammation.\n4. **EEG Findings**: Focal slowing in the temporal regions, consistent with temporal lobe dysfunction.\n\nOther options, such as anti-NMDA receptor, anti-GABA-B receptor, and anti-AMPA receptor antibodies, are less likely due to differences in clinical features, imaging findings, and demographic profiles. Anti-LGI1 encephalitis is the most common cause of autoimmune limbic encephalitis in this age group and fits the case most closely."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Clinical Pathologist",
+      "message": "**B. Anti-LGI1 antibodies**\n\n**Rationale:** After integrating the analyses from all team members, the clinical presentation of subacute memory deficits, confusion, and behavioral changes, along with MRI findings of bilateral medial temporal lobe hyperintensities, CSF mild lymphocytic pleocytosis, and EEG focal slowing in the temporal regions, is most consistent with **limbic encephalitis**. Among the listed options, **anti-LGI1 antibodies** are the most strongly associated with this syndrome. Anti-LGI1 encephalitis is a well-known cause of autoimmune limbic encephalitis, particularly in middle-aged adults, and aligns perfectly with the patient's findings. Other options, such as anti-NMDA receptor, anti-GABA-B receptor, and anti-AMPA receptor antibodies, are less likely due to differences in typical clinical presentations, imaging findings, or demographic associations."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Psychiatrist",
+      "message": "**B. Anti-LGI1 antibodies**\n\n**Rationale:** After integrating the analyses from all team members, the consensus strongly supports that the clinical presentation, MRI findings (bilateral medial temporal lobe hyperintensities), CSF analysis (mild lymphocytic pleocytosis), and EEG findings (focal slowing in the temporal regions) are most consistent with **anti-LGI1 encephalitis**. This condition is a classic cause of autoimmune limbic encephalitis, presenting with subacute memory deficits, confusion, and behavioral changes, as seen in this case. \n\nAnti-NMDA receptor encephalitis, while common in young adults, typically does not present with the characteristic MRI findings described here. Anti-GABA-B and anti-AMPA receptor encephalitides are less likely due to their stronger associations with seizures, malignancies, and older age groups, none of which are prominent in this case. Therefore, **anti-LGI1 antibodies** are the most likely etiology."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 3,
+        "A": 2
+      },
+      "total_votes": 5,
+      "confidence": 0.6
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": null,
+      "vote_counts": {},
+      "weighted_votes": {},
+      "total_votes": 0,
+      "confidence": 0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 12,
+        "B": 13,
+        "C": 5,
+        "D": 0
+      },
+      "total_possible_score": 30.0,
+      "confidence": 0.43333333333333335
+    }
+  },
+  "teamwork_metrics": {
+    "mutual_trust": {
+      "average_trust_level": 0.9230550151378891,
+      "trust_network": {
+        "Neurologist": {
+          "Immunologist": 0.8502355885760662,
+          "Neuroradiologist": 0.8681118859774828,
+          "Clinical Pathologist": 0.9028189907618553,
+          "Psychiatrist": 0.9541020102097656
+        },
+        "Immunologist": {
+          "Neurologist": 0.9735052724122407,
+          "Neuroradiologist": 0.8878265835243813,
+          "Clinical Pathologist": 0.9827676057912487,
+          "Psychiatrist": 0.968670575236985
+        },
+        "Neuroradiologist": {
+          "Neurologist": 0.9432788963722758,
+          "Immunologist": 0.9798544513378422,
+          "Clinical Pathologist": 0.9276098910368001,
+          "Psychiatrist": 0.8358482162879073
+        },
+        "Clinical Pathologist": {
+          "Neurologist": 0.882684381803653,
+          "Immunologist": 0.9465655110200185,
+          "Neuroradiologist": 0.9618673002105136,
+          "Psychiatrist": 0.9656132384085241
+        },
+        "Psychiatrist": {
+          "Neurologist": 0.9407626057025564,
+          "Immunologist": 0.8318579789890096,
+          "Neuroradiologist": 0.9590435605878318,
+          "Clinical Pathologist": 0.8980757585108197
+        }
+      },
+      "mistake_admission_rates": {},
+      "feedback_acceptance_rates": {},
+      "trust_environment": "high"
+    }
+  }
+}

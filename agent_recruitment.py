@@ -10,52 +10,73 @@ from agent import Agent
 from modular_agent import ModularAgent, create_agent_team
 import config
 
-def determine_complexity(question: str, fixed_complexity: str = None) -> str:
+def determine_complexity(question, method="adaptive"):
     """
-    Determine the complexity of a given question.
+    Determine the complexity of a question to decide on team structure.
     
     Args:
-        question: The question to evaluate
-        fixed_complexity: Optional fixed complexity level
+        question: The question or task to analyze
+        method: Method for complexity determination
         
     Returns:
-        Complexity level (basic, intermediate, or advanced)
+        Complexity level ("basic", "intermediate", or "advanced")
     """
-    if fixed_complexity and fixed_complexity != "adaptive":
-        return fixed_complexity
+    if method == "basic":
+        return "basic"
+    elif method == "intermediate":
+        return "intermediate"
+    elif method == "advanced":
+        return "advanced"
     
-    # Create a basic agent to evaluate complexity
-    complexity_agent = Agent(
+    # For adaptive method, evaluate the question
+    evaluator = Agent(
         role="Complexity Evaluator",
-        expertise_description="Evaluates the complexity of questions to determine appropriate agent resources"
+        expertise_description="analyzes tasks to determine their complexity level"
     )
     
-    # Create prompt for complexity assessment
-    complexity_prompt = f"""
+    prompt = f"""
     Analyze the following task/question and determine its complexity level:
     
     {question}
     
-    Please classify the complexity as one of the following:
-    1) basic: A single expert can adequately answer this question.
-    2) intermediate: A team of specialists with different expertise should collaborate to address this question.
-    3) advanced: Multiple teams with different specializations need to coordinate to properly address this question.
+    Based on your analysis, classify this as one of:
+    1) basic - A single expert can handle this question (simpler questions, single domain)
+    2) intermediate - Requires a team approach (moderately complex, 2-3 domains involved)
+    3) advanced - Requires multiple experts with diverse knowledge (complex, interdisciplinary, novel)
     
-    Provide your classification and a brief explanation.
+    Consider these factors:
+    - Are multiple domains of expertise needed?
+    - Is there uncertainty or ambiguity requiring multiple perspectives?
+    - Are there competing considerations or complex tradeoffs?
+    - Does it require specialized medical knowledge?
+    - Are there diagnostic complexities or rare conditions?
+    - Does it involve analysis of imaging, laboratory results or complex symptom patterns?
+    
+    Format your response as:
+    **Complexity Classification:** [number]) [complexity level]
     """
     
-    response = complexity_agent.chat(complexity_prompt)
+    response = evaluator.chat(prompt)
     
-    # Determine complexity from response
-    if "basic" in response.lower() or "1)" in response.lower():
-        return "basic"
-    elif "intermediate" in response.lower() or "2)" in response.lower():
-        return "intermediate"
-    elif "advanced" in response.lower() or "3)" in response.lower():
-        return "advanced"
+    # Extract complexity classification
+    if "basic" in response.lower():
+        complexity = "basic"
+    elif "intermediate" in response.lower():
+        complexity = "intermediate"
+    elif "advanced" in response.lower():
+        complexity = "advanced"
     else:
-        # Default to intermediate if unclear
-        return "intermediate"
+        # Default to intermediate if parsing fails
+        complexity = "intermediate"
+    
+    # Override for medical/diagnostic questions to ensure at least intermediate complexity
+    if any(term in question.lower() for term in ["diagnosis", "diagnostic", "symptom", "clinical", "patient", "disease", "disorder", "syndrome", "encephalitis", "antibody", "autoimmune"]):
+        if complexity == "basic":
+            complexity = "intermediate"
+    
+    logging.info(f"{method.capitalize()} complexity: {complexity}")
+    
+    return complexity
 
 def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general") -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """

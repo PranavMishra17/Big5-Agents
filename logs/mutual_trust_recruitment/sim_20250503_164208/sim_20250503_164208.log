@@ -1,0 +1,28 @@
+2025-05-03 16:42:08,378 - simulation.sim_20250503_164208 - INFO - Event logged: simulation_started
+2025-05-03 16:42:08,378 - simulation.sim_20250503_164208 - INFO - SimulationLogger initialized for sim_20250503_164208 with configuration: mutual_trust_recruitment
+2025-05-03 16:42:16,260 - simulation.sim_20250503_164208 - INFO - Initialized simulation sim_20250503_164208
+2025-05-03 16:42:16,261 - simulation.sim_20250503_164208 - INFO - Components enabled: Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-03 16:42:16,261 - simulation.sim_20250503_164208 - INFO - Starting task analysis phase
+2025-05-03 16:42:16,261 - simulation.sim_20250503_164208 - INFO - Getting initial analysis from Neurologist
+2025-05-03 16:42:23,040 - simulation.sim_20250503_164208 - INFO - Main discussion: task_analysis - Neurologist
+2025-05-03 16:42:23,040 - simulation.sim_20250503_164208 - INFO - Getting initial analysis from Immunologist
+2025-05-03 16:42:31,608 - simulation.sim_20250503_164208 - INFO - Main discussion: task_analysis - Immunologist
+2025-05-03 16:42:31,609 - simulation.sim_20250503_164208 - INFO - Getting initial analysis from Neuroradiologist
+2025-05-03 16:42:40,802 - simulation.sim_20250503_164208 - INFO - Main discussion: task_analysis - Neuroradiologist
+2025-05-03 16:42:40,803 - simulation.sim_20250503_164208 - INFO - Getting initial analysis from Rheumatologist
+2025-05-03 16:42:46,906 - simulation.sim_20250503_164208 - INFO - Main discussion: task_analysis - Rheumatologist
+2025-05-03 16:42:46,907 - simulation.sim_20250503_164208 - INFO - Getting initial analysis from Neuropsychiatrist
+2025-05-03 16:42:56,398 - simulation.sim_20250503_164208 - INFO - Main discussion: task_analysis - Neuropsychiatrist
+2025-05-03 16:42:56,400 - simulation.sim_20250503_164208 - INFO - Starting collaborative discussion phase
+2025-05-03 16:42:56,400 - simulation.sim_20250503_164208 - INFO - Running collaborative discussion for Neurologist
+2025-05-03 16:43:02,579 - simulation.sim_20250503_164208 - INFO - Main discussion: collaborative_discussion - Neurologist
+2025-05-03 16:43:02,580 - simulation.sim_20250503_164208 - INFO - Running collaborative discussion for Immunologist
+2025-05-03 16:43:05,065 - simulation.sim_20250503_164208 - INFO - Main discussion: collaborative_discussion - Immunologist
+2025-05-03 16:43:05,066 - simulation.sim_20250503_164208 - INFO - Running collaborative discussion for Neuroradiologist
+2025-05-03 16:43:17,089 - simulation.sim_20250503_164208 - INFO - Main discussion: collaborative_discussion - Neuroradiologist
+2025-05-03 16:43:17,090 - simulation.sim_20250503_164208 - INFO - Running collaborative discussion for Rheumatologist
+2025-05-03 16:43:19,176 - simulation.sim_20250503_164208 - INFO - Main discussion: collaborative_discussion - Rheumatologist
+2025-05-03 16:43:19,177 - simulation.sim_20250503_164208 - INFO - Running collaborative discussion for Neuropsychiatrist
+2025-05-03 16:43:22,897 - simulation.sim_20250503_164208 - INFO - Main discussion: collaborative_discussion - Neuropsychiatrist
+2025-05-03 16:43:22,898 - simulation.sim_20250503_164208 - INFO - Applying decision methods
+2025-05-03 16:43:22,906 - simulation.sim_20250503_164208 - INFO - Results saved to output\sim_20250503_164208_results.json

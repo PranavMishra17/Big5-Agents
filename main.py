@@ -201,7 +201,9 @@ def run_all_configurations(runs=1):
             "leadership": False, 
             "closed_loop": False,
             "mutual_monitoring": False,
-            "shared_mental_model": False
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": False
         },
         # Single features
         {
@@ -209,36 +211,105 @@ def run_all_configurations(runs=1):
             "leadership": True, 
             "closed_loop": False,
             "mutual_monitoring": False,
-            "shared_mental_model": False
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": False
         },
         {
             "name": "Closed-loop", 
             "leadership": False, 
             "closed_loop": True,
             "mutual_monitoring": False,
-            "shared_mental_model": False
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": False
         },
         {
             "name": "Mutual Monitoring", 
             "leadership": False, 
             "closed_loop": False,
             "mutual_monitoring": True,
-            "shared_mental_model": False
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": False
         },
         {
             "name": "Shared Mental Model", 
             "leadership": False, 
             "closed_loop": False,
             "mutual_monitoring": False,
-            "shared_mental_model": True
+            "shared_mental_model": True,
+            "team_orientation": False,
+            "mutual_trust": False
+        },
+        # New single features
+        {
+            "name": "Team Orientation", 
+            "leadership": False, 
+            "closed_loop": False,
+            "mutual_monitoring": False,
+            "shared_mental_model": False,
+            "team_orientation": True,
+            "mutual_trust": False
+        },
+        {
+            "name": "Mutual Trust", 
+            "leadership": False, 
+            "closed_loop": False,
+            "mutual_monitoring": False,
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": True,
+            "mutual_trust_factor": 0.8
+        },
+        {
+            "name": "High Trust", 
+            "leadership": False, 
+            "closed_loop": False,
+            "mutual_monitoring": False,
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": True,
+            "mutual_trust_factor": 0.9
+        },
+        {
+            "name": "Low Trust", 
+            "leadership": False, 
+            "closed_loop": False,
+            "mutual_monitoring": False,
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": True,
+            "mutual_trust_factor": 0.3
+        },
+        # Combination features
+        {
+            "name": "Team Orientation + Trust", 
+            "leadership": False, 
+            "closed_loop": False,
+            "mutual_monitoring": False,
+            "shared_mental_model": False,
+            "team_orientation": True,
+            "mutual_trust": True
         },
         # All features
+        {
+            "name": "Original Big 5", 
+            "leadership": True, 
+            "closed_loop": True,
+            "mutual_monitoring": True,
+            "shared_mental_model": True,
+            "team_orientation": False,
+            "mutual_trust": False
+        },
         {
             "name": "All Features", 
             "leadership": True, 
             "closed_loop": True,
             "mutual_monitoring": True,
-            "shared_mental_model": True
+            "shared_mental_model": True,
+            "team_orientation": True,
+            "mutual_trust": True
         }
     ]
     
@@ -268,7 +339,10 @@ def run_all_configurations(runs=1):
                 use_team_leadership=config["leadership"],
                 use_closed_loop_comm=config["closed_loop"],
                 use_mutual_monitoring=config["mutual_monitoring"],
-                use_shared_mental_model=config["shared_mental_model"]
+                use_shared_mental_model=config["shared_mental_model"],
+                use_team_orientation=config.get("team_orientation", False),
+                use_mutual_trust=config.get("mutual_trust", False),
+                mutual_trust_factor=config.get("mutual_trust_factor", 0.8)
             )
             
             # Extract decision results for each method
@@ -311,6 +385,7 @@ def run_all_configurations(runs=1):
         print_mcq_summary(performance_metrics)
     
     return aggregated_results
+
 
 def calculate_ranking_performance(aggregated_results):
     """Calculate performance metrics for ranking tasks across methods and configurations."""
@@ -460,7 +535,12 @@ def main():
         logging.info("Running single simulation")
         
         # Default to all components if none specified
-        use_any = args.leadership or args.closedloop or args.mutual or args.mental or args.orientation or args.trust or args.recruitment
+        # Default to all components if none specified
+        use_any = args.leadership or args.closedloop or args.mutual or args.mental or args.orientation or args.trust
+        
+        # If recruitment method is specified, enable recruitment automatically
+        if args.recruitment_method != "adaptive":
+            args.recruitment = True
         
         result = run_simulation(
             use_team_leadership=args.leadership if use_any else None,
@@ -471,7 +551,7 @@ def main():
             use_mutual_trust=args.trust if use_any else None,
             mutual_trust_factor=args.trust_factor,
             random_leader=args.random_leader,
-            use_recruitment=args.recruitment if use_any else None,
+            use_recruitment=args.recruitment,
             recruitment_method=args.recruitment_method,
             recruitment_pool=args.recruitment_pool
         )

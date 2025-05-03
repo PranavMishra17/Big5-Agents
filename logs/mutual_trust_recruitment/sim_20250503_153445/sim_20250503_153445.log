@@ -1,0 +1,49 @@
+2025-05-03 15:34:45,863 - simulation.sim_20250503_153445 - INFO - Event logged: simulation_started
+2025-05-03 15:34:45,863 - simulation.sim_20250503_153445 - INFO - SimulationLogger initialized for sim_20250503_153445 with configuration: mutual_trust_recruitment
+2025-05-03 15:34:54,077 - simulation.sim_20250503_153445 - INFO - Initialized simulation sim_20250503_153445
+2025-05-03 15:34:54,077 - simulation.sim_20250503_153445 - INFO - Components enabled: Mutual Trust (factor: 0.9), Agent Recruitment (advanced)
+2025-05-03 15:34:54,077 - simulation.sim_20250503_153445 - INFO - Starting task analysis phase
+2025-05-03 15:34:54,078 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 1_Initial Assessment Team_Neurologist
+2025-05-03 15:35:03,059 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 1_Initial Assessment Team_Neurologist
+2025-05-03 15:35:03,060 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 1_Initial Assessment Team_Radiologist
+2025-05-03 15:35:11,130 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 1_Initial Assessment Team_Radiologist
+2025-05-03 15:35:11,131 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 1_Initial Assessment Team_Infectious Disease Specialist
+2025-05-03 15:35:21,390 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 1_Initial Assessment Team_Infectious Disease Specialist
+2025-05-03 15:35:21,390 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 2_Diagnostic Evidence Team_Immunologist
+2025-05-03 15:35:30,496 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 2_Diagnostic Evidence Team_Immunologist
+2025-05-03 15:35:30,498 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 2_Diagnostic Evidence Team_Psychiatrist
+2025-05-03 15:35:38,607 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 2_Diagnostic Evidence Team_Psychiatrist
+2025-05-03 15:35:38,609 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 2_Diagnostic Evidence Team_Pathologist
+2025-05-03 15:35:47,401 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 2_Diagnostic Evidence Team_Pathologist
+2025-05-03 15:35:47,401 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 3_Final Review and Decision Team_Neurologist
+2025-05-03 15:35:57,153 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 3_Final Review and Decision Team_Neurologist
+2025-05-03 15:35:57,154 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 3_Final Review and Decision Team_Rheumatologist
+2025-05-03 15:36:05,865 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 3_Final Review and Decision Team_Rheumatologist
+2025-05-03 15:36:05,866 - simulation.sim_20250503_153445 - INFO - Getting initial analysis from 3_Final Review and Decision Team_Clinical Pharmacologist
+2025-05-03 15:36:11,578 - simulation.sim_20250503_153445 - INFO - Main discussion: task_analysis - 3_Final Review and Decision Team_Clinical Pharmacologist
+2025-05-03 15:36:11,579 - simulation.sim_20250503_153445 - INFO - Starting collaborative discussion phase
+2025-05-03 15:36:11,579 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 1_Initial Assessment Team_Neurologist
+2025-05-03 15:36:15,907 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 1_Initial Assessment Team_Neurologist
+2025-05-03 15:36:15,908 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 1_Initial Assessment Team_Radiologist
+2025-05-03 15:36:21,225 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 1_Initial Assessment Team_Radiologist
+2025-05-03 15:36:21,226 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 1_Initial Assessment Team_Infectious Disease Specialist
+2025-05-03 15:36:25,109 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 1_Initial Assessment Team_Infectious Disease Specialist
+2025-05-03 15:36:25,110 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 2_Diagnostic Evidence Team_Immunologist
+2025-05-03 15:36:28,684 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 2_Diagnostic Evidence Team_Immunologist
+2025-05-03 15:36:28,685 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 2_Diagnostic Evidence Team_Psychiatrist
+2025-05-03 15:36:31,336 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 2_Diagnostic Evidence Team_Psychiatrist
+2025-05-03 15:36:31,336 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 2_Diagnostic Evidence Team_Pathologist
+2025-05-03 15:36:35,001 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 2_Diagnostic Evidence Team_Pathologist
+2025-05-03 15:36:35,002 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 3_Final Review and Decision Team_Neurologist
+2025-05-03 15:36:40,591 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 3_Final Review and Decision Team_Neurologist
+2025-05-03 15:36:40,592 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 3_Final Review and Decision Team_Rheumatologist
+2025-05-03 15:36:45,972 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 3_Final Review and Decision Team_Rheumatologist
+2025-05-03 15:36:45,972 - simulation.sim_20250503_153445 - INFO - Running collaborative discussion for 3_Final Review and Decision Team_Clinical Pharmacologist
+2025-05-03 15:37:02,588 - simulation.sim_20250503_153445 - INFO - Main discussion: collaborative_discussion - 3_Final Review and Decision Team_Clinical Pharmacologist
+2025-05-03 15:37:02,589 - simulation.sim_20250503_153445 - INFO - Applying decision methods
+2025-05-03 15:37:02,589 - simulation.sim_20250503_153445 - INFO - Using MDT decision process for advanced query
+2025-05-03 15:37:02,590 - simulation.sim_20250503_153445 - INFO - MDT Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 2, 'B': 1}, 'total_votes': 3, 'confidence': 0.6666666666666666}
+2025-05-03 15:37:02,590 - simulation.sim_20250503_153445 - INFO - MDT Weighted voting result: {'method': 'weighted_voting', 'winning_option': None, 'vote_counts': {}, 'weighted_votes': {}, 'total_votes': 0, 'confidence': 0}
+2025-05-03 15:37:02,590 - simulation.sim_20250503_153445 - INFO - MDT Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 8, 'B': 7, 'C': 3, 'D': 0}, 'total_possible_score': 18.0, 'confidence': 0.4444444444444444}
+2025-05-03 15:37:02,590 - simulation.sim_20250503_153445 - INFO - Mutual trust metrics collected
+2025-05-03 15:37:02,591 - simulation.sim_20250503_153445 - INFO - Results saved to output\sim_20250503_153445_results.json

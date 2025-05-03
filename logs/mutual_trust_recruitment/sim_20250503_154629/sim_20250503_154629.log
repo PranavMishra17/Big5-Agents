@@ -1,0 +1,49 @@
+2025-05-03 15:46:29,810 - simulation.sim_20250503_154629 - INFO - Event logged: simulation_started
+2025-05-03 15:46:29,810 - simulation.sim_20250503_154629 - INFO - SimulationLogger initialized for sim_20250503_154629 with configuration: mutual_trust_recruitment
+2025-05-03 15:46:39,263 - simulation.sim_20250503_154629 - INFO - Initialized simulation sim_20250503_154629
+2025-05-03 15:46:39,279 - simulation.sim_20250503_154629 - INFO - Components enabled: Mutual Trust (factor: 0.9), Agent Recruitment (advanced)
+2025-05-03 15:46:39,279 - simulation.sim_20250503_154629 - INFO - Starting task analysis phase
+2025-05-03 15:46:39,279 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 1_Initial Assessment Team_Internist
+2025-05-03 15:46:51,611 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 1_Initial Assessment Team_Internist
+2025-05-03 15:46:51,612 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 1_Initial Assessment Team_Radiologist
+2025-05-03 15:46:58,653 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 1_Initial Assessment Team_Radiologist
+2025-05-03 15:46:58,656 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 1_Initial Assessment Team_Pathologist
+2025-05-03 15:47:08,196 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 1_Initial Assessment Team_Pathologist
+2025-05-03 15:47:08,196 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 2_Domain Specialist Team_Cardiologist
+2025-05-03 15:47:15,873 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 2_Domain Specialist Team_Cardiologist
+2025-05-03 15:47:15,889 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 2_Domain Specialist Team_Neurologist
+2025-05-03 15:47:23,761 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 2_Domain Specialist Team_Neurologist
+2025-05-03 15:47:23,774 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 2_Domain Specialist Team_Endocrinologist
+2025-05-03 15:47:33,539 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 2_Domain Specialist Team_Endocrinologist
+2025-05-03 15:47:33,539 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 3_Final Review and Decision Team_Senior Consultant
+2025-05-03 15:47:42,622 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 3_Final Review and Decision Team_Senior Consultant
+2025-05-03 15:47:42,622 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 3_Final Review and Decision Team_Evidence-Based Medicine Specialist
+2025-05-03 15:47:51,635 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 3_Final Review and Decision Team_Evidence-Based Medicine Specialist
+2025-05-03 15:47:51,635 - simulation.sim_20250503_154629 - INFO - Getting initial analysis from 3_Final Review and Decision Team_Clinical Decision Maker
+2025-05-03 15:47:58,193 - simulation.sim_20250503_154629 - INFO - Main discussion: task_analysis - 3_Final Review and Decision Team_Clinical Decision Maker
+2025-05-03 15:47:58,196 - simulation.sim_20250503_154629 - INFO - Starting collaborative discussion phase
+2025-05-03 15:47:58,196 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 1_Initial Assessment Team_Internist
+2025-05-03 15:48:03,290 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 1_Initial Assessment Team_Internist
+2025-05-03 15:48:03,290 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 1_Initial Assessment Team_Radiologist
+2025-05-03 15:48:06,982 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 1_Initial Assessment Team_Radiologist
+2025-05-03 15:48:06,982 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 1_Initial Assessment Team_Pathologist
+2025-05-03 15:48:10,711 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 1_Initial Assessment Team_Pathologist
+2025-05-03 15:48:10,711 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 2_Domain Specialist Team_Cardiologist
+2025-05-03 15:48:14,292 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 2_Domain Specialist Team_Cardiologist
+2025-05-03 15:48:14,292 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 2_Domain Specialist Team_Neurologist
+2025-05-03 15:48:19,758 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 2_Domain Specialist Team_Neurologist
+2025-05-03 15:48:19,758 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 2_Domain Specialist Team_Endocrinologist
+2025-05-03 15:48:24,619 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 2_Domain Specialist Team_Endocrinologist
+2025-05-03 15:48:24,619 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 3_Final Review and Decision Team_Senior Consultant
+2025-05-03 15:48:29,893 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 3_Final Review and Decision Team_Senior Consultant
+2025-05-03 15:48:29,893 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 3_Final Review and Decision Team_Evidence-Based Medicine Specialist
+2025-05-03 15:48:34,459 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 3_Final Review and Decision Team_Evidence-Based Medicine Specialist
+2025-05-03 15:48:34,459 - simulation.sim_20250503_154629 - INFO - Running collaborative discussion for 3_Final Review and Decision Team_Clinical Decision Maker
+2025-05-03 15:48:55,979 - simulation.sim_20250503_154629 - INFO - Main discussion: collaborative_discussion - 3_Final Review and Decision Team_Clinical Decision Maker
+2025-05-03 15:48:55,979 - simulation.sim_20250503_154629 - INFO - Applying decision methods
+2025-05-03 15:48:55,979 - simulation.sim_20250503_154629 - INFO - Using MDT decision process for advanced query
+2025-05-03 15:48:55,985 - simulation.sim_20250503_154629 - INFO - MDT Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 3}, 'total_votes': 3, 'confidence': 1.0}
+2025-05-03 15:48:55,986 - simulation.sim_20250503_154629 - INFO - MDT Weighted voting result: {'method': 'weighted_voting', 'winning_option': None, 'vote_counts': {}, 'weighted_votes': {}, 'total_votes': 0, 'confidence': 0}
+2025-05-03 15:48:55,987 - simulation.sim_20250503_154629 - INFO - MDT Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 6, 'B': 9, 'C': 3, 'D': 0}, 'total_possible_score': 18.0, 'confidence': 0.5}
+2025-05-03 15:48:55,987 - simulation.sim_20250503_154629 - INFO - Mutual trust metrics collected
+2025-05-03 15:48:55,990 - simulation.sim_20250503_154629 - INFO - Results saved to output\sim_20250503_154629_results.json

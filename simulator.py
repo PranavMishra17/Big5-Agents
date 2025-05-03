@@ -216,23 +216,13 @@ class AgentSystemSimulator:
         if self.use_shared_mental_model and self.mental_model:
             self.results["teamwork_metrics"]["shared_mental_model"] = self.mental_model.analyze_mental_model_effectiveness()
             self.logger.logger.info("Shared mental model metrics collected")
-
-        # Add team orientation metrics
-        if self.use_team_orientation and self.team_orientation:
-            self.results["teamwork_metrics"]["team_orientation"] = self.team_orientation.get_team_orientation_metrics()
-            self.logger.logger.info("Team orientation metrics collected")
-        
-        # Add mutual trust metrics
-        if self.use_mutual_trust and self.mutual_trust:
-            self.results["teamwork_metrics"]["mutual_trust"] = self.mutual_trust.get_trust_metrics()
-            self.logger.logger.info("Mutual trust metrics collected")
         
         # Save results
         self.save_results()
         
         return self.results
     
-
+    
     def _run_task_analysis(self) -> Dict[str, Dict[str, Any]]:
         """
         Run initial task analysis by each agent.
@@ -589,155 +579,103 @@ class AgentSystemSimulator:
         return agent_decisions
     
 
-    def _apply_decision_methods(self, agent_decisions: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    def _apply_decision_methods(self, agent_decisions):
         """
-        Apply all decision methods to the agent decisions.
+        Apply appropriate decision methods based on task level.
         
         Args:
-            agent_decisions: Dictionary mapping agent roles to their decisions
+            agent_decisions: Dictionary of agent decisions
             
         Returns:
-            Dictionary with results from each decision method
+            Dictionary with decision results
         """
-        # Check if this is an advanced query with multiple teams
-        is_advanced_query = any("team" in role.lower() for role in agent_decisions.keys())
-        
-        if is_advanced_query:
-            return self._apply_mdt_decision_methods(agent_decisions)
-        else:
-            # Standard decision method application
-            # Extract agent response data for decision methods
-            agent_responses = {}
-            for role, decision_data in agent_decisions.items():
-                if "extract" in decision_data:
-                    agent_responses[role] = decision_data["extract"]
-            
-            # Apply majority voting
-            majority_result = self.decision_methods.majority_voting(agent_responses)
-            self.logger.logger.info(f"Majority voting result: {majority_result}")
-            
-            # Apply weighted voting
-            weighted_result = self.decision_methods.weighted_voting(agent_responses)
-            self.logger.logger.info(f"Weighted voting result: {weighted_result}")
-            
-            # Apply Borda count
-            borda_result = self.decision_methods.borda_count(agent_responses)
-            self.logger.logger.info(f"Borda count result: {borda_result}")
-            
-            # Compile results
-            decision_results = {
-                "majority_voting": majority_result,
-                "weighted_voting": weighted_result,
-                "borda_count": borda_result
-            }
-            
-            return decision_results
-
-
-    def _apply_mdt_decision_methods(self, agent_decisions: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
-        """
-        Apply decision methods for advanced queries with multiple teams.
-        
-        Args:
-            agent_decisions: Dictionary mapping agent roles to their decisions
-            
-        Returns:
-            Dictionary with results from each decision method
-        """
-        self.logger.logger.info("Using MDT decision process for advanced query")
-        
-        # Organize decisions by team
-        team_decisions = {}
-        for role, decision_data in agent_decisions.items():
-            if "_" not in role:
-                continue
-                
-            # Extract team identifier from role
-            parts = role.split("_", 2)
-            if len(parts) < 2:
-                continue
-                
-            team_id = f"{parts[0]}_{parts[1]}"
-            
-            if team_id not in team_decisions:
-                team_decisions[team_id] = {}
-                
-            team_decisions[team_id][role] = decision_data
-        
-        # Get team-level decisions
-        team_responses = {}
-        for team_id, decisions in team_decisions.items():
-            team_agent_responses = {}
-            for role, decision_data in decisions.items():
-                if "extract" in decision_data:
-                    team_agent_responses[role] = decision_data["extract"]
-            
-            # Apply majority voting for this team
-            if team_agent_responses:
-                team_result = self.decision_methods.majority_voting(team_agent_responses)
-                team_responses[team_id] = {
-                    "team_result": team_result,
-                    "agents": team_agent_responses
-                }
-        
-        # Now treat each team as an "agent" for final decision
-        final_agent_responses = {}
-        for team_id, team_data in team_responses.items():
-            if "team_result" in team_data:
-                # Filter to just contain the answer, not the full team result
-                if "winning_option" in team_data["team_result"]:
-                    final_agent_responses[team_id] = {
-                        "answer": team_data["team_result"]["winning_option"],
-                        "confidence": team_data["team_result"].get("confidence", 0.5)
-                    }
-                elif "final_ranking" in team_data["team_result"]:
-                    final_agent_responses[team_id] = {
-                        "ranking": team_data["team_result"]["final_ranking"],
-                        "confidence": team_data["team_result"].get("confidence", 0.5)
-                    }
-                else:
-                    # Handle other task types
-                    final_agent_responses[team_id] = {
-                        "response": str(team_data["team_result"]),
-                        "confidence": team_data["team_result"].get("confidence", 0.5)
-                    }
-        
-        # Give extra weight to the Final Review and Decision Team
-        decision_team_id = None
-        for team_id in team_responses:
-            if "final" in team_id.lower() or "frdt" in team_id.lower():
-                decision_team_id = team_id
+        # Determine if this is an MDT (advanced) task
+        is_mdt_task = False
+        for agent_role in agent_decisions.keys():
+            if any(prefix in agent_role for prefix in ["1_", "2_", "3_"]):
+                is_mdt_task = True
                 break
         
-        # Apply standard decision methods with the team-level responses
-        decision_results = {}
-        
+        if is_mdt_task:
+            logging.info("Using MDT decision process for advanced query")
+            return self._apply_mdt_decision_methods(agent_decisions)
+        else:
+            # Basic or intermediate level - apply standard decision methods
+            return self._apply_standard_decision_methods(agent_decisions)
+    
+
+    def _apply_standard_decision_methods(self, agent_decisions):
+        """Apply standard decision methods for basic/intermediate tasks."""
         # Apply majority voting
-        majority_result = self.decision_methods.majority_voting(final_agent_responses)
-        self.logger.logger.info(f"MDT Majority voting result: {majority_result}")
-        decision_results["majority_voting"] = majority_result
+        majority_result = self.decision_methods.majority_voting(agent_decisions)
+        logging.info(f"Majority voting result: {majority_result}")
         
-        # Apply weighted voting with team weights
-        team_weights = {team_id: 1.0 for team_id in final_agent_responses}
-        if decision_team_id:
-            team_weights[decision_team_id] = 1.5  # Give more weight to final decision team
-        
-        weighted_result = self.decision_methods.weighted_voting(final_agent_responses, team_weights)
-        self.logger.logger.info(f"MDT Weighted voting result: {weighted_result}")
-        decision_results["weighted_voting"] = weighted_result
+        # Apply weighted voting
+        weighted_result = self.decision_methods.weighted_voting(agent_decisions)
+        logging.info(f"Weighted voting result: {weighted_result}")
         
         # Apply Borda count
-        borda_result = self.decision_methods.borda_count(final_agent_responses)
-        self.logger.logger.info(f"MDT Borda count result: {borda_result}")
-        decision_results["borda_count"] = borda_result
+        borda_result = self.decision_methods.borda_count(agent_decisions)
+        logging.info(f"Borda count result: {borda_result}")
         
-        # Add MDT-specific info
-        decision_results["mdt_process"] = {
-            "team_decisions": {team_id: team_data["team_result"] for team_id, team_data in team_responses.items()},
-            "decision_team": decision_team_id
+        return {
+            "majority_voting": majority_result,
+            "weighted_voting": weighted_result,
+            "borda_count": borda_result
         }
+
+
+    def _apply_mdt_decision_methods(self, agent_decisions):
+        """Apply decision methods for MDT (advanced) tasks."""
+        # Group agents by team
+        team_decisions = {}
+        for agent_role, response in agent_decisions.items():
+            parts = agent_role.split("_")
+            if len(parts) >= 2:
+                team_name = "_".join(parts[:2])
+                if team_name not in team_decisions:
+                    team_decisions[team_name] = {}
+                team_decisions[team_name][agent_role] = response
         
-        return decision_results 
+        # Make team-level decisions
+        team_results = {}
+        for team_name, team_responses in team_decisions.items():
+            team_results[team_name] = self.decision_methods.majority_voting(team_responses)
+        
+        # Identify final team
+        final_team_name = None
+        for team_name in sorted(team_decisions.keys(), reverse=True):
+            if team_name.startswith("3_") or "Final" in team_name:
+                final_team_name = team_name
+                break
+        
+        # Use final team's decisions
+        final_agent_responses = {}
+        if final_team_name:
+            final_agent_responses = team_decisions[final_team_name]
+        else:
+            # Use all responses if no final team found
+            final_agent_responses = agent_decisions
+        
+        # Apply decision methods to final team
+        majority_result = self.decision_methods.majority_voting(final_agent_responses)
+        logging.info(f"MDT Majority voting result: {majority_result}")
+        
+        weighted_result = self.decision_methods.weighted_voting(final_agent_responses)
+        logging.info(f"MDT Weighted voting result: {weighted_result}")
+        
+        borda_result = self.decision_methods.borda_count(final_agent_responses)
+        logging.info(f"MDT Borda count result: {borda_result}")
+        
+        return {
+            "majority_voting": majority_result,
+            "weighted_voting": weighted_result,
+            "borda_count": borda_result,
+            "mdt_process": {
+                "team_decisions": team_results,
+                "decision_team": final_team_name
+            }
+        }
 
 
     def save_results(self) -> str:

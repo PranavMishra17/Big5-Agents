@@ -90,11 +90,8 @@ class ModularAgent(Agent):
             self._initialize_general_knowledge()
             
         # Add ground truth if available (for evaluation purposes)
-        if "ground_truth" in config.TASK and "rationale" in config.TASK:
-            self.add_to_knowledge_base("ground_truth", {
-                #"answer": config.TASK["ground_truth"],
-                #"rationale": config.TASK["rationale"]
-            })
+        # if "ground_truth" in config.TASK and "rationale" in config.TASK: self.add_to_knowledge_base("ground_truth", { #"answer": config.TASK["ground_truth"], #"rationale": config.TASK["rationale"]})
+            
     
     def _initialize_critical_analyst_knowledge(self):
         """Initialize knowledge for the Critical Analyst role."""
