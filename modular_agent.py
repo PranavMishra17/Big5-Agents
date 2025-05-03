@@ -22,7 +22,11 @@ class ModularAgent(Agent):
                  use_team_leadership: bool = False,
                  use_closed_loop_comm: bool = False,
                  use_mutual_monitoring: bool = False,
-                 use_shared_mental_model: bool = False):
+                 use_shared_mental_model: bool = False,
+                    use_team_orientation: bool = False,
+                    use_mutual_trust: bool = False
+                 
+                 ):
         """
         Initialize a team member with specific role expertise.
         
@@ -48,7 +52,9 @@ class ModularAgent(Agent):
             use_team_leadership=use_team_leadership,
             use_closed_loop_comm=use_closed_loop_comm,
             use_mutual_monitoring=use_mutual_monitoring,
-            use_shared_mental_model=use_shared_mental_model
+            use_shared_mental_model=use_shared_mental_model,
+            use_team_orientation=use_team_orientation,
+            use_mutual_trust=use_mutual_trust
         )
         
         # Track whether this agent has leadership capabilities
@@ -86,8 +92,8 @@ class ModularAgent(Agent):
         # Add ground truth if available (for evaluation purposes)
         if "ground_truth" in config.TASK and "rationale" in config.TASK:
             self.add_to_knowledge_base("ground_truth", {
-                "answer": config.TASK["ground_truth"],
-                "rationale": config.TASK["rationale"]
+                #"answer": config.TASK["ground_truth"],
+                #"rationale": config.TASK["rationale"]
             })
     
     def _initialize_critical_analyst_knowledge(self):

@@ -1109,3 +1109,414 @@ The question, "What is the primary greenh...
 2025-04-30 12:18:00,268 [INFO] simulation.sim_20250430_121751: Getting initial analysis from Domain Expert
 2025-04-30 12:18:00,268 [INFO] agent.Domain Expert: Received message: 
         As a Domain Expert with expertise in your domain, analyze the following multiple-choice que...
+2025-05-02 18:43:01,017 [INFO] root: Running single simulation
+2025-05-02 19:47:47,778 [INFO] root: Running single simulation
+2025-05-02 19:47:47,779 [INFO] simulation.sim_20250502_194747: Event logged: simulation_started
+2025-05-02 19:47:47,779 [INFO] simulation.sim_20250502_194747: SimulationLogger initialized for sim_20250502_194747 with configuration: mutual_trust
+2025-05-02 19:48:59,638 [INFO] root: Running single simulation
+2025-05-02 19:48:59,638 [INFO] simulation.sim_20250502_194859: Event logged: simulation_started
+2025-05-02 19:48:59,638 [INFO] simulation.sim_20250502_194859: SimulationLogger initialized for sim_20250502_194859 with configuration: mutual_trust
+2025-05-02 19:51:36,278 [INFO] root: Running single simulation
+2025-05-02 19:51:36,278 [INFO] simulation.sim_20250502_195136: Event logged: simulation_started
+2025-05-02 19:51:36,278 [INFO] simulation.sim_20250502_195136: SimulationLogger initialized for sim_20250502_195136 with configuration: mutual_trust
+2025-05-02 19:52:36,861 [INFO] root: Running single simulation
+2025-05-02 19:52:36,868 [INFO] simulation.sim_20250502_195236: Event logged: simulation_started
+2025-05-02 19:52:36,868 [INFO] simulation.sim_20250502_195236: SimulationLogger initialized for sim_20250502_195236 with configuration: mutual_trust
+2025-05-02 19:52:37,412 [INFO] agent.Critical Analyst: Initialized Critical Analyst agent
+2025-05-02 19:52:37,412 [INFO] agent.Critical Analyst: Added to knowledge base: task
+2025-05-02 19:52:37,412 [INFO] agent.Critical Analyst: Added to knowledge base: critical_thinking_principles
+2025-05-02 19:52:37,412 [INFO] agent.Critical Analyst: Added to knowledge base: analytical_methods
+2025-05-02 19:52:37,412 [INFO] agent.Critical Analyst: Added to knowledge base: ground_truth
+2025-05-02 19:52:37,828 [INFO] agent.Domain Expert: Initialized Domain Expert agent
+2025-05-02 19:52:37,828 [INFO] agent.Domain Expert: Added to knowledge base: task
+2025-05-02 19:52:37,828 [INFO] agent.Domain Expert: Added to knowledge base: domain_expertise_approach
+2025-05-02 19:52:37,828 [INFO] agent.Domain Expert: Added to knowledge base: ground_truth
+2025-05-02 19:52:38,309 [INFO] agent.Creative Strategist: Initialized Creative Strategist agent
+2025-05-02 19:52:38,309 [INFO] agent.Creative Strategist: Added to knowledge base: task
+2025-05-02 19:52:38,309 [INFO] agent.Creative Strategist: Added to knowledge base: creative_thinking_principles
+2025-05-02 19:52:38,309 [INFO] agent.Creative Strategist: Added to knowledge base: innovation_strategies
+2025-05-02 19:52:38,309 [INFO] agent.Creative Strategist: Added to knowledge base: ground_truth
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Initialized Process Facilitator agent
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Added to knowledge base: task
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Added to knowledge base: decision_frameworks
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Added to knowledge base: collaboration_techniques
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Added to knowledge base: ground_truth
+2025-05-02 19:52:38,723 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Domain Expert
+2025-05-02 19:52:38,723 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Creative Strategist
+2025-05-02 19:52:38,723 [INFO] agent.Critical Analyst: Agent Critical Analyst shared knowledge with Process Facilitator
+2025-05-02 19:52:38,723 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Critical Analyst
+2025-05-02 19:52:38,723 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Creative Strategist
+2025-05-02 19:52:38,723 [INFO] agent.Domain Expert: Agent Domain Expert shared knowledge with Process Facilitator
+2025-05-02 19:52:38,723 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Critical Analyst
+2025-05-02 19:52:38,723 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Domain Expert
+2025-05-02 19:52:38,723 [INFO] agent.Creative Strategist: Agent Creative Strategist shared knowledge with Process Facilitator
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Critical Analyst
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Domain Expert
+2025-05-02 19:52:38,723 [INFO] agent.Process Facilitator: Agent Process Facilitator shared knowledge with Creative Strategist
+2025-05-02 19:52:38,723 [INFO] root: Created agent team with configuration:
+2025-05-02 19:52:38,723 [INFO] root:   Team Leadership: False (Leader: None)
+2025-05-02 19:52:38,723 [INFO] root:   Closed-loop Communication: False
+2025-05-02 19:52:38,723 [INFO] root:   Mutual Performance Monitoring: False
+2025-05-02 19:52:38,723 [INFO] root:   Shared Mental Model: False
+2025-05-02 19:52:38,723 [INFO] root:   Team Orientation: False
+2025-05-02 19:52:38,723 [INFO] root:   Mutual Trust: True
+2025-05-02 19:52:38,723 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.2
+2025-05-02 19:52:38,723 [INFO] teamwork.mutual_trust: Initialized trust network for 4 agents
+2025-05-02 19:52:38,723 [INFO] decision.methods: Initialized decision methods handler
+2025-05-02 19:52:38,723 [INFO] simulation.sim_20250502_195236: Initialized simulation sim_20250502_195236
+2025-05-02 19:52:38,723 [INFO] simulation.sim_20250502_195236: Components enabled: Mutual Trust (factor: 0.2)
+2025-05-02 19:52:38,723 [INFO] simulation.sim_20250502_195236: Starting task analysis phase
+2025-05-02 19:52:38,723 [INFO] simulation.sim_20250502_195236: Getting initial analysis from Critical Analyst
+2025-05-02 19:52:38,723 [INFO] agent.Critical Analyst: Received message: 
+        As a Critical Analyst with expertise in your domain, analyze the following multiple-choice ...
+2025-05-02 19:52:48,592 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:52:48,611 [INFO] agent.Critical Analyst: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Analysis of the Clinical Presentation:
+The patient is a 32-...
+2025-05-02 19:52:48,611 [INFO] simulation.sim_20250502_195236: Main discussion: task_analysis - Critical Analyst
+2025-05-02 19:52:48,611 [INFO] simulation.sim_20250502_195236: Getting initial analysis from Domain Expert
+2025-05-02 19:52:48,611 [INFO] agent.Domain Expert: Received message: 
+        As a Domain Expert with expertise in your domain, analyze the following multiple-choice que...
+2025-05-02 19:53:02,367 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:53:02,369 [INFO] agent.Domain Expert: Responded: ### Analysis of the Question
+
+The clinical presentation described—a 32-year-old female with subacute...
+2025-05-02 19:53:02,370 [INFO] simulation.sim_20250502_195236: Main discussion: task_analysis - Domain Expert
+2025-05-02 19:53:02,370 [INFO] simulation.sim_20250502_195236: Getting initial analysis from Creative Strategist
+2025-05-02 19:53:02,370 [INFO] agent.Creative Strategist: Received message: 
+        As a Creative Strategist with expertise in your domain, analyze the following multiple-choi...
+2025-05-02 19:53:15,869 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:53:15,870 [INFO] agent.Creative Strategist: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Rationale:
+
+To systematically analyze this question, let’s ...
+2025-05-02 19:53:15,870 [INFO] simulation.sim_20250502_195236: Main discussion: task_analysis - Creative Strategist
+2025-05-02 19:53:15,871 [INFO] simulation.sim_20250502_195236: Getting initial analysis from Process Facilitator
+2025-05-02 19:53:15,871 [INFO] agent.Process Facilitator: Received message: 
+        As a Process Facilitator with expertise in your domain, analyze the following multiple-choi...
+2025-05-02 19:53:23,845 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:53:23,849 [INFO] agent.Process Facilitator: Responded: **Single letter selection with rationale: B**
+
+### Systematic Analysis of Options:
+#### **A. Anti-NM...
+2025-05-02 19:53:23,850 [INFO] simulation.sim_20250502_195236: Main discussion: task_analysis - Process Facilitator
+2025-05-02 19:53:23,852 [INFO] simulation.sim_20250502_195236: Starting collaborative discussion phase
+2025-05-02 19:53:23,853 [INFO] simulation.sim_20250502_195236: Running collaborative discussion for Critical Analyst
+2025-05-02 19:53:23,854 [INFO] agent.Critical Analyst: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 19:53:30,061 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:53:30,061 [INFO] agent.Critical Analyst: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Final Rationale:
+After integrating my initial analysis with...
+2025-05-02 19:53:30,061 [INFO] simulation.sim_20250502_195236: Main discussion: collaborative_discussion - Critical Analyst
+2025-05-02 19:53:30,061 [INFO] simulation.sim_20250502_195236: Running collaborative discussion for Domain Expert
+2025-05-02 19:53:30,061 [INFO] agent.Domain Expert: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 19:53:33,717 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:53:33,717 [INFO] agent.Domain Expert: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Final Rationale:
+After integrating my own analysis with the...
+2025-05-02 19:53:33,717 [INFO] simulation.sim_20250502_195236: Main discussion: collaborative_discussion - Domain Expert
+2025-05-02 19:53:33,717 [INFO] simulation.sim_20250502_195236: Running collaborative discussion for Creative Strategist
+2025-05-02 19:53:33,717 [INFO] agent.Creative Strategist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 19:53:49,068 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:53:49,068 [INFO] agent.Creative Strategist: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Final Rationale:
+After reviewing the analyses from all team...
+2025-05-02 19:53:49,068 [INFO] simulation.sim_20250502_195236: Main discussion: collaborative_discussion - Creative Strategist
+2025-05-02 19:53:49,068 [INFO] simulation.sim_20250502_195236: Running collaborative discussion for Process Facilitator
+2025-05-02 19:53:49,068 [INFO] agent.Process Facilitator: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 19:54:09,512 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:54:09,512 [INFO] agent.Process Facilitator: Responded: **Single letter selection with rationale: B**
+
+### Final Answer:
+The most likely autoantibody associ...
+2025-05-02 19:54:09,512 [INFO] simulation.sim_20250502_195236: Main discussion: collaborative_discussion - Process Facilitator
+2025-05-02 19:54:09,512 [INFO] simulation.sim_20250502_195236: Applying decision methods
+2025-05-02 19:54:09,512 [INFO] decision.methods: Applying majority voting method
+2025-05-02 19:54:09,512 [INFO] simulation.sim_20250502_195236: Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 3, 'A': 1}, 'total_votes': 4, 'confidence': 0.75}
+2025-05-02 19:54:09,521 [INFO] decision.methods: Applying weighted voting method
+2025-05-02 19:54:09,522 [INFO] simulation.sim_20250502_195236: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'weighted_votes': {'B': 2.0999999999999996, 'A': 0.7}, 'total_weight': 2.8, 'confidence': 0.7499999999999999}
+2025-05-02 19:54:09,523 [INFO] decision.methods: Applying Borda count method
+2025-05-02 19:54:09,524 [INFO] simulation.sim_20250502_195236: Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 9, 'B': 11, 'C': 4, 'D': 0}, 'total_possible_score': 24.0, 'confidence': 0.4583333333333333}
+2025-05-02 19:54:09,525 [INFO] simulation.sim_20250502_195236: Mutual trust metrics collected
+2025-05-02 19:54:09,529 [INFO] simulation.sim_20250502_195236: Results saved to output\sim_20250502_195236_results.json
+2025-05-02 19:55:00,872 [INFO] root: Running single simulation
+2025-05-02 19:55:00,872 [INFO] simulation.sim_20250502_195500: Event logged: simulation_started
+2025-05-02 19:55:00,872 [INFO] simulation.sim_20250502_195500: SimulationLogger initialized for sim_20250502_195500 with configuration: mutual_trust_recruitment
+2025-05-02 19:55:01,382 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-02 19:55:01,382 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-02 19:55:03,708 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:55:03,708 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification:** 1) basic
+
+**Explanation:** This question pertains to a specific clini...
+2025-05-02 19:55:04,183 [INFO] agent.Medical Agent: Initialized Medical Agent agent
+2025-05-02 19:55:04,183 [INFO] agent.Medical Agent: Received message: 
+    Based on the following medical question, what medical specialty would be most appropriate 
+    ...
+2025-05-02 19:55:34,636 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 19:55:34,636 [INFO] agent.Medical Agent: Responded: Neurologist...
+2025-05-02 19:55:35,081 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-02 19:55:35,081 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-02 19:55:35,081 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-02 19:55:35,081 [INFO] agent.Neurologist: Added to knowledge base: ground_truth
+2025-05-02 19:55:35,081 [INFO] root: Basic complexity: Recruited single expert 'Neurologist'
+2025-05-02 19:55:35,081 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.2
+2025-05-02 19:55:35,081 [INFO] teamwork.mutual_trust: Initialized trust network for 1 agents
+2025-05-02 19:55:35,081 [INFO] decision.methods: Initialized decision methods handler
+2025-05-02 19:55:35,081 [INFO] simulation.sim_20250502_195500: Initialized simulation sim_20250502_195500
+2025-05-02 19:55:35,081 [INFO] simulation.sim_20250502_195500: Components enabled: Mutual Trust (factor: 0.2), Agent Recruitment (adaptive)
+2025-05-02 19:55:35,081 [INFO] simulation.sim_20250502_195500: Starting task analysis phase
+2025-05-02 19:55:35,081 [INFO] simulation.sim_20250502_195500: Getting initial analysis from Neurologist
+2025-05-02 19:55:35,097 [INFO] agent.Neurologist: Received message: 
+        As a Neurologist with expertise in your domain, analyze the following multiple-choice quest...
+2025-05-02 19:56:21,205 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 404 DeploymentNotFound"
+2025-05-02 20:01:27,317 [INFO] root: Running single simulation
+2025-05-02 20:01:27,333 [INFO] simulation.sim_20250502_200127: Event logged: simulation_started
+2025-05-02 20:01:27,333 [INFO] simulation.sim_20250502_200127: SimulationLogger initialized for sim_20250502_200127 with configuration: mutual_trust_recruitment
+2025-05-02 20:01:27,790 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-02 20:01:27,790 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-02 20:01:30,082 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:01:30,095 [INFO] agent.Complexity Evaluator: Responded: **Classification:** 2) intermediate
+
+**Explanation:** This question requires a nuanced understanding...
+2025-05-02 20:01:30,529 [INFO] agent.Recruiter: Initialized Recruiter agent
+2025-05-02 20:01:30,529 [INFO] agent.Recruiter: Received message: You are an experienced medical expert who recruits a group of experts with diverse identity and ask ...
+2025-05-02 20:01:32,427 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:01:32,428 [INFO] agent.Recruiter: Responded: 1. Neurologist - Specializes in disorders of the nervous system, including encephalitis and autoimmu...
+2025-05-02 20:01:32,886 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-02 20:01:32,886 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-02 20:01:32,886 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-02 20:01:32,886 [INFO] agent.Neurologist: Added to knowledge base: ground_truth
+2025-05-02 20:01:33,356 [INFO] agent.Neuroimmunologist: Initialized Neuroimmunologist agent
+2025-05-02 20:01:33,356 [INFO] agent.Neuroimmunologist: Added to knowledge base: task
+2025-05-02 20:01:33,356 [INFO] agent.Neuroimmunologist: Added to knowledge base: general_reasoning
+2025-05-02 20:01:33,356 [INFO] agent.Neuroimmunologist: Added to knowledge base: ground_truth
+2025-05-02 20:01:33,783 [INFO] agent.Radiologist: Initialized Radiologist agent
+2025-05-02 20:01:33,783 [INFO] agent.Radiologist: Added to knowledge base: task
+2025-05-02 20:01:33,783 [INFO] agent.Radiologist: Added to knowledge base: general_reasoning
+2025-05-02 20:01:33,783 [INFO] agent.Radiologist: Added to knowledge base: ground_truth
+2025-05-02 20:01:34,253 [INFO] agent.Clinical Pathologist: Initialized Clinical Pathologist agent
+2025-05-02 20:01:34,253 [INFO] agent.Clinical Pathologist: Added to knowledge base: task
+2025-05-02 20:01:34,253 [INFO] agent.Clinical Pathologist: Added to knowledge base: general_reasoning
+2025-05-02 20:01:34,253 [INFO] agent.Clinical Pathologist: Added to knowledge base: ground_truth
+2025-05-02 20:01:34,690 [INFO] agent.EEG Specialist (Neurophysiologist): Initialized EEG Specialist (Neurophysiologist) agent
+2025-05-02 20:01:34,690 [INFO] agent.EEG Specialist (Neurophysiologist): Added to knowledge base: task
+2025-05-02 20:01:34,690 [INFO] agent.EEG Specialist (Neurophysiologist): Added to knowledge base: general_reasoning
+2025-05-02 20:01:34,690 [INFO] agent.EEG Specialist (Neurophysiologist): Added to knowledge base: ground_truth
+2025-05-02 20:01:34,690 [INFO] root: Intermediate complexity: Recruited team of 5 experts with leader 'Neurologist'
+2025-05-02 20:01:34,690 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.2
+2025-05-02 20:01:34,690 [INFO] teamwork.mutual_trust: Initialized trust network for 5 agents
+2025-05-02 20:01:34,690 [INFO] decision.methods: Initialized decision methods handler
+2025-05-02 20:01:34,690 [INFO] simulation.sim_20250502_200127: Initialized simulation sim_20250502_200127
+2025-05-02 20:01:34,690 [INFO] simulation.sim_20250502_200127: Components enabled: Mutual Trust (factor: 0.2), Agent Recruitment (adaptive)
+2025-05-02 20:01:34,690 [INFO] simulation.sim_20250502_200127: Starting task analysis phase
+2025-05-02 20:01:34,690 [INFO] simulation.sim_20250502_200127: Getting initial analysis from Neurologist
+2025-05-02 20:01:34,690 [INFO] agent.Neurologist: Received message: 
+        As a Neurologist with expertise in your domain, analyze the following multiple-choice quest...
+2025-05-02 20:01:45,125 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:01:45,125 [INFO] agent.Neurologist: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Analysis of the Clinical Presentation:
+This 32-year-old fem...
+2025-05-02 20:01:45,125 [INFO] simulation.sim_20250502_200127: Main discussion: task_analysis - Neurologist
+2025-05-02 20:01:45,125 [INFO] simulation.sim_20250502_200127: Getting initial analysis from Neuroimmunologist
+2025-05-02 20:01:45,141 [INFO] agent.Neuroimmunologist: Received message: 
+        As a Neuroimmunologist with expertise in your domain, analyze the following multiple-choice...
+2025-05-02 20:01:55,101 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:01:55,107 [INFO] agent.Neuroimmunologist: Responded: ### Analysis of the Clinical Presentation:
+This patient presents with:
+1. **Subacute onset of memory...
+2025-05-02 20:01:55,107 [INFO] simulation.sim_20250502_200127: Main discussion: task_analysis - Neuroimmunologist
+2025-05-02 20:01:55,111 [INFO] simulation.sim_20250502_200127: Getting initial analysis from Radiologist
+2025-05-02 20:01:55,111 [INFO] agent.Radiologist: Received message: 
+        As a Radiologist with expertise in your domain, analyze the following multiple-choice quest...
+2025-05-02 20:02:13,723 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:02:13,723 [INFO] agent.Radiologist: Responded: ### Analysis of Each Option:
+
+#### **A. Anti-NMDA receptor antibodies**
+- **Clinical Association**: ...
+2025-05-02 20:02:13,723 [INFO] simulation.sim_20250502_200127: Main discussion: task_analysis - Radiologist
+2025-05-02 20:02:13,723 [INFO] simulation.sim_20250502_200127: Getting initial analysis from Clinical Pathologist
+2025-05-02 20:02:13,723 [INFO] agent.Clinical Pathologist: Received message: 
+        As a Clinical Pathologist with expertise in your domain, analyze the following multiple-cho...
+2025-05-02 20:02:22,963 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:02:22,963 [INFO] agent.Clinical Pathologist: Responded: ### Analysis of the Clinical Scenario:
+The patient presents with subacute onset of **memory deficits...
+2025-05-02 20:02:22,963 [INFO] simulation.sim_20250502_200127: Main discussion: task_analysis - Clinical Pathologist
+2025-05-02 20:02:22,963 [INFO] simulation.sim_20250502_200127: Getting initial analysis from EEG Specialist (Neurophysiologist)
+2025-05-02 20:02:22,963 [INFO] agent.EEG Specialist (Neurophysiologist): Received message: 
+        As a EEG Specialist (Neurophysiologist) with expertise in your domain, analyze the followin...
+2025-05-02 20:02:31,628 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:02:31,631 [INFO] agent.EEG Specialist (Neurophysiologist): Responded: ### Analysis of the Question:
+
+The clinical presentation includes:
+- **Subacute onset of memory defi...
+2025-05-02 20:02:31,632 [INFO] simulation.sim_20250502_200127: Main discussion: task_analysis - EEG Specialist (Neurophysiologist)
+2025-05-02 20:02:31,633 [INFO] simulation.sim_20250502_200127: Starting collaborative discussion phase
+2025-05-02 20:02:31,635 [INFO] simulation.sim_20250502_200127: Running collaborative discussion for Neurologist
+2025-05-02 20:02:31,637 [INFO] agent.Neurologist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 20:03:56,515 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:03:56,515 [INFO] agent.Neurologist: Responded: **Final Answer: B. Anti-LGI1 antibodies**
+
+### Rationale:
+After integrating my initial analysis with...
+2025-05-02 20:03:56,518 [INFO] simulation.sim_20250502_200127: Main discussion: collaborative_discussion - Neurologist
+2025-05-02 20:03:56,519 [INFO] simulation.sim_20250502_200127: Running collaborative discussion for Neuroimmunologist
+2025-05-02 20:03:56,519 [INFO] agent.Neuroimmunologist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 20:04:11,293 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:04:11,293 [INFO] agent.Neuroimmunologist: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Final Rationale:
+After integrating my initial analysis with...
+2025-05-02 20:04:11,293 [INFO] simulation.sim_20250502_200127: Main discussion: collaborative_discussion - Neuroimmunologist
+2025-05-02 20:04:11,293 [INFO] simulation.sim_20250502_200127: Running collaborative discussion for Radiologist
+2025-05-02 20:04:11,293 [INFO] agent.Radiologist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 20:04:16,016 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:04:16,016 [INFO] agent.Radiologist: Responded: **B. Anti-LGI1 antibodies**
+
+**Rationale**: After integrating my analysis with the insights from my ...
+2025-05-02 20:04:16,016 [INFO] simulation.sim_20250502_200127: Main discussion: collaborative_discussion - Radiologist
+2025-05-02 20:04:16,016 [INFO] simulation.sim_20250502_200127: Running collaborative discussion for Clinical Pathologist
+2025-05-02 20:04:16,016 [INFO] agent.Clinical Pathologist: Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 20:04:20,522 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:04:20,522 [INFO] agent.Clinical Pathologist: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Rationale:
+After integrating my analysis with the insights ...
+2025-05-02 20:04:20,522 [INFO] simulation.sim_20250502_200127: Main discussion: collaborative_discussion - Clinical Pathologist
+2025-05-02 20:04:20,522 [INFO] simulation.sim_20250502_200127: Running collaborative discussion for EEG Specialist (Neurophysiologist)
+2025-05-02 20:04:20,522 [INFO] agent.EEG Specialist (Neurophysiologist): Received message: 
+                You have analyzed the task, and your teammates have provided their analyses as well...
+2025-05-02 20:04:33,583 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:04:33,583 [INFO] agent.EEG Specialist (Neurophysiologist): Responded: **B. Anti-LGI1 antibodies**
+
+### Final Rationale:
+After integrating my analysis with the insights pr...
+2025-05-02 20:04:33,583 [INFO] simulation.sim_20250502_200127: Main discussion: collaborative_discussion - EEG Specialist (Neurophysiologist)
+2025-05-02 20:04:33,583 [INFO] simulation.sim_20250502_200127: Applying decision methods
+2025-05-02 20:04:33,583 [INFO] decision.methods: Applying majority voting method
+2025-05-02 20:04:33,583 [INFO] simulation.sim_20250502_200127: Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 4, 'A': 1}, 'total_votes': 5, 'confidence': 0.8}
+2025-05-02 20:04:33,583 [INFO] decision.methods: Applying weighted voting method
+2025-05-02 20:04:33,583 [INFO] simulation.sim_20250502_200127: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'weighted_votes': {'B': 2.8, 'A': 0.7}, 'total_weight': 3.5, 'confidence': 0.7999999999999999}
+2025-05-02 20:04:33,583 [INFO] decision.methods: Applying Borda count method
+2025-05-02 20:04:33,583 [INFO] simulation.sim_20250502_200127: Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 11, 'B': 14, 'C': 5, 'D': 0}, 'total_possible_score': 30.0, 'confidence': 0.4666666666666667}
+2025-05-02 20:04:33,583 [INFO] simulation.sim_20250502_200127: Mutual trust metrics collected
+2025-05-02 20:04:33,592 [INFO] simulation.sim_20250502_200127: Results saved to output\sim_20250502_200127_results.json
+2025-05-02 20:12:18,637 [INFO] root: Running single simulation
+2025-05-02 20:12:18,637 [INFO] simulation.sim_20250502_201218: Event logged: simulation_started
+2025-05-02 20:12:18,637 [INFO] simulation.sim_20250502_201218: SimulationLogger initialized for sim_20250502_201218 with configuration: mutual_trust_recruitment
+2025-05-02 20:12:19,086 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-02 20:12:19,086 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-02 20:12:35,997 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:12:36,014 [INFO] agent.Complexity Evaluator: Responded: **Classification**: 1) basic
+
+**Explanation**: This question falls under the domain of neurology and...
+2025-05-02 20:12:36,431 [INFO] agent.Medical Agent: Initialized Medical Agent agent
+2025-05-02 20:12:36,431 [INFO] agent.Medical Agent: Received message: 
+    Based on the following medical question, what medical specialty would be most appropriate 
+    ...
+2025-05-02 20:12:37,297 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:12:37,297 [INFO] agent.Medical Agent: Responded: Neurologist...
+2025-05-02 20:12:37,716 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-02 20:12:37,716 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-02 20:12:37,716 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-02 20:12:37,716 [INFO] agent.Neurologist: Added to knowledge base: ground_truth
+2025-05-02 20:12:37,716 [INFO] root: Basic complexity: Recruited single expert 'Neurologist'
+2025-05-02 20:12:37,716 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.9
+2025-05-02 20:12:37,716 [INFO] teamwork.mutual_trust: Initialized trust network for 1 agents
+2025-05-02 20:12:37,716 [INFO] decision.methods: Initialized decision methods handler
+2025-05-02 20:12:37,716 [INFO] simulation.sim_20250502_201218: Initialized simulation sim_20250502_201218
+2025-05-02 20:12:37,716 [INFO] simulation.sim_20250502_201218: Components enabled: Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-02 20:12:37,716 [INFO] simulation.sim_20250502_201218: Starting task analysis phase
+2025-05-02 20:12:37,716 [INFO] simulation.sim_20250502_201218: Getting initial analysis from Neurologist
+2025-05-02 20:12:37,716 [INFO] agent.Neurologist: Received message: 
+        As a Neurologist with expertise in your domain, analyze the following multiple-choice quest...
+2025-05-02 20:12:46,718 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:12:46,718 [INFO] agent.Neurologist: Responded: **Answer: B. Anti-LGI1 antibodies**
+
+### Rationale:
+
+The clinical presentation of this 32-year-old f...
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Main discussion: task_analysis - Neurologist
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Starting collaborative discussion phase
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Running collaborative discussion for Neurologist
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Applying decision methods
+2025-05-02 20:12:46,718 [INFO] decision.methods: Applying majority voting method
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 1}, 'total_votes': 1, 'confidence': 1.0}
+2025-05-02 20:12:46,718 [INFO] decision.methods: Applying weighted voting method
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'weighted_votes': {'B': 0.7}, 'total_weight': 0.7, 'confidence': 1.0}
+2025-05-02 20:12:46,718 [INFO] decision.methods: Applying Borda count method
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 2, 'B': 3, 'C': 1, 'D': 0}, 'total_possible_score': 6.0, 'confidence': 0.5}
+2025-05-02 20:12:46,718 [INFO] simulation.sim_20250502_201218: Mutual trust metrics collected
+2025-05-02 20:12:46,727 [INFO] simulation.sim_20250502_201218: Results saved to output\sim_20250502_201218_results.json
+2025-05-02 20:15:28,720 [INFO] root: Running single simulation
+2025-05-02 20:15:28,721 [INFO] simulation.sim_20250502_201528: Event logged: simulation_started
+2025-05-02 20:15:28,722 [INFO] simulation.sim_20250502_201528: SimulationLogger initialized for sim_20250502_201528 with configuration: mutual_trust_recruitment
+2025-05-02 20:15:29,203 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-02 20:15:29,203 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-02 20:15:31,525 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:15:31,525 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification: 1) Basic**
+
+**Explanation:** The question involves a clinical scenario ...
+2025-05-02 20:15:31,980 [INFO] agent.Medical Agent: Initialized Medical Agent agent
+2025-05-02 20:15:31,980 [INFO] agent.Medical Agent: Received message: 
+    Based on the following medical question, what medical specialty would be most appropriate 
+    ...
+2025-05-02 20:15:53,325 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:15:53,325 [INFO] agent.Medical Agent: Responded: Neurologist...
+2025-05-02 20:15:53,779 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-02 20:15:53,779 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-02 20:15:53,779 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-02 20:15:53,779 [INFO] agent.Neurologist: Added to knowledge base: ground_truth
+2025-05-02 20:15:53,779 [INFO] root: Basic complexity: Recruited single expert 'Neurologist'
+2025-05-02 20:15:53,779 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.9
+2025-05-02 20:15:53,779 [INFO] teamwork.mutual_trust: Initialized trust network for 1 agents
+2025-05-02 20:15:53,779 [INFO] decision.methods: Initialized decision methods handler
+2025-05-02 20:15:53,779 [INFO] simulation.sim_20250502_201528: Initialized simulation sim_20250502_201528
+2025-05-02 20:15:53,779 [INFO] simulation.sim_20250502_201528: Components enabled: Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-02 20:15:53,779 [INFO] simulation.sim_20250502_201528: Starting task analysis phase
+2025-05-02 20:15:53,779 [INFO] simulation.sim_20250502_201528: Getting initial analysis from Neurologist
+2025-05-02 20:15:53,795 [INFO] agent.Neurologist: Received message: 
+        As a Neurologist with expertise in your domain, analyze the following multiple-choice quest...
+2025-05-02 20:16:01,439 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-02 20:16:01,445 [INFO] agent.Neurologist: Responded: The clinical presentation of this 32-year-old female, including subacute onset of memory deficits, c...
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Main discussion: task_analysis - Neurologist
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Starting collaborative discussion phase
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Running collaborative discussion for Neurologist
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Applying decision methods
+2025-05-02 20:16:01,445 [INFO] decision.methods: Applying majority voting method
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 1}, 'total_votes': 1, 'confidence': 1.0}
+2025-05-02 20:16:01,445 [INFO] decision.methods: Applying weighted voting method
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'weighted_votes': {'A': 0.7}, 'total_weight': 0.7, 'confidence': 1.0}
+2025-05-02 20:16:01,445 [INFO] decision.methods: Applying Borda count method
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 3, 'B': 2, 'C': 1, 'D': 0}, 'total_possible_score': 6.0, 'confidence': 0.5}
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Mutual trust metrics collected
+2025-05-02 20:16:01,445 [INFO] simulation.sim_20250502_201528: Results saved to output\sim_20250502_201528_results.json

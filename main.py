@@ -12,6 +12,9 @@ from datetime import datetime
 from simulator import AgentSystemSimulator
 import config
 
+import copy
+from typing import List, Dict, Any, Optional, Tuple
+
 def setup_logging():
     """Set up logging for the application."""
     # Create logs directory if it doesn't exist
@@ -32,50 +35,152 @@ def run_simulation(
     use_closed_loop_comm: bool = None,
     use_mutual_monitoring: bool = None,
     use_shared_mental_model: bool = None,
+    use_team_orientation=None,  # New parameter
+    use_mutual_trust=None,      # New parameter
+    mutual_trust_factor=0.8,    # New parameter
     random_leader: bool = False,
     use_recruitment: bool = None,
     recruitment_method: str = None,
-    recruitment_pool: str = None
+    recruitment_pool: str = None,
+    runs= 1
 ) -> Dict[str, Any]:
     """
     Run a single agent system simulation with selected teamwork components.
     
     Args:
-        use_team_leadership: Whether to use team leadership behaviors
+        use_team_leadership: Whether to use team leadership
         use_closed_loop_comm: Whether to use closed-loop communication
         use_mutual_monitoring: Whether to use mutual performance monitoring
         use_shared_mental_model: Whether to use shared mental models
+        use_team_orientation: Whether to use team orientation
+        use_mutual_trust: Whether to use mutual trust
+        mutual_trust_factor: Trust factor for mutual trust (0.0-1.0)
         random_leader: Whether to randomly assign leadership
         use_recruitment: Whether to use dynamic agent recruitment
-        recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
+        recruitment_method: Method for recruitment
         recruitment_pool: Pool of agent roles to recruit from
+        runs: Number of simulation runs
         
     Returns:
         Simulation results
     """
-    # Create simulator with specified configuration
-    simulator = AgentSystemSimulator(
-        use_team_leadership=use_team_leadership,
-        use_closed_loop_comm=use_closed_loop_comm,
-        use_mutual_monitoring=use_mutual_monitoring,
-        use_shared_mental_model=use_shared_mental_model,
-        random_leader=random_leader,
-        use_recruitment=use_recruitment,
-        recruitment_method=recruitment_method,
-        recruitment_pool=recruitment_pool
-    )
+    results = []
+
+    for i in range(runs):
+        # Create simulator with the specified components
+        simulator = AgentSystemSimulator(
+            use_team_leadership=use_team_leadership,
+            use_closed_loop_comm=use_closed_loop_comm,
+            use_mutual_monitoring=use_mutual_monitoring,
+            use_shared_mental_model=use_shared_mental_model,
+            use_team_orientation=use_team_orientation,
+            use_mutual_trust=use_mutual_trust,
+            mutual_trust_factor=mutual_trust_factor,
+            random_leader=random_leader,
+            use_recruitment=use_recruitment,
+            recruitment_method=recruitment_method,
+            recruitment_pool=recruitment_pool
+        )
+        
+        # Run the simulation
+        result = simulator.run_simulation()
+        results.append(result)
     
-    # Run the simulation
-    results = simulator.run_simulation()
+    # Return the last result (or aggregated if multiple runs)
+    if runs == 1:
+        return results[0]
+    else:
+        # Aggregate results from multiple runs
+        return aggregate_results(results)
     
-    # Evaluate performance
-    performance = simulator.evaluate_performance()
-    results["performance"] = performance
+
+def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Aggregate results from multiple simulation runs.
     
-    # Save updated results
-    simulator.save_results()
+    Args:
+        results_list: List of result dictionaries from individual runs
+        
+    Returns:
+        Aggregated results dictionary
+    """
+    if not results_list:
+        return {}
+        
+    # Start with the first result as a template
+    aggregated = copy.deepcopy(results_list[0])
     
-    return results
+    # Update simulation ID to indicate aggregation
+    aggregated["simulation_id"] = f"{aggregated['simulation_id']}_aggregated_{len(results_list)}_runs"
+    
+    # Initialize aggregation containers
+    aggregated["decision_results"]["aggregated"] = {
+        "majority_voting": {"correct_count": 0, "total_runs": len(results_list), "avg_confidence": 0.0},
+        "weighted_voting": {"correct_count": 0, "total_runs": len(results_list), "avg_confidence": 0.0},
+        "borda_count": {"correct_count": 0, "total_runs": len(results_list), "avg_confidence": 0.0}
+    }
+    
+    # Track all run results
+    aggregated["all_runs"] = []
+    
+    # Aggregate metrics across runs
+    total_trust_level = 0.0
+    total_team_orientation_score = 0.0
+    trust_count = 0
+    orientation_count = 0
+    
+    for result in results_list:
+        # Add run info
+        run_summary = {
+            "simulation_id": result["simulation_id"],
+            "decision_results": result["decision_results"]
+        }
+        aggregated["all_runs"].append(run_summary)
+        
+        # Aggregate decision results
+        for method in ["majority_voting", "weighted_voting", "borda_count"]:
+            if result["decision_results"].get(method) and result["decision_results"][method].get("correct"):
+                aggregated["decision_results"]["aggregated"][method]["correct_count"] += 1
+                
+            if result["decision_results"].get(method) and result["decision_results"][method].get("confidence"):
+                aggregated["decision_results"]["aggregated"][method]["avg_confidence"] += \
+                    result["decision_results"][method]["confidence"]
+        
+        # Aggregate teamwork metrics
+        if "teamwork_metrics" in result:
+            # Trust metrics
+            if "mutual_trust" in result["teamwork_metrics"]:
+                if "average_trust_level" in result["teamwork_metrics"]["mutual_trust"]:
+                    total_trust_level += result["teamwork_metrics"]["mutual_trust"]["average_trust_level"]
+                    trust_count += 1
+                    
+            # Team orientation metrics
+            if "team_orientation" in result["teamwork_metrics"]:
+                if "overall_team_orientation" in result["teamwork_metrics"]["team_orientation"]:
+                    orientation = result["teamwork_metrics"]["team_orientation"]["overall_team_orientation"]
+                    if orientation == "high":
+                        total_team_orientation_score += 1.0
+                    elif orientation == "medium":
+                        total_team_orientation_score += 0.5
+                    orientation_count += 1
+    
+    # Calculate averages
+    for method in ["majority_voting", "weighted_voting", "borda_count"]:
+        if len(results_list) > 0:
+            aggregated["decision_results"]["aggregated"][method]["avg_confidence"] /= len(results_list)
+            aggregated["decision_results"]["aggregated"][method]["accuracy"] = \
+                aggregated["decision_results"]["aggregated"][method]["correct_count"] / len(results_list)
+    
+    # Calculate average teamwork metrics
+    if "teamwork_metrics" not in aggregated:
+        aggregated["teamwork_metrics"] = {}
+    
+    aggregated["teamwork_metrics"]["aggregated"] = {
+        "average_trust_level": total_trust_level / max(1, trust_count),
+        "average_team_orientation": total_team_orientation_score / max(1, orientation_count)
+    }
+    
+    return aggregated
 
 
 def run_all_configurations(runs=1):

@@ -119,21 +119,21 @@ MCQ_TASK_EXAMPLE = {
 
 # Example of an MCQ task configuration
 TASK = {
-    "name": "Climate Science Question",
+    "name": "Autoimmune Encephalitis Diagnosis",
     "description": """
-    What is the primary greenhouse gas responsible for human-induced climate change?
+    A 32-year-old female presents with subacute onset of memory deficits, confusion, and behavioral changes over 3 weeks. MRI shows bilateral medial temporal lobe hyperintensities. CSF analysis reveals mild lymphocytic pleocytosis. EEG shows focal slowing in the temporal regions. Which autoantibody is most likely associated with this clinical presentation?
     """,
     "type": "mcq",
     "options": [
-        "A. Carbon dioxide (CO2)",
-        "B. Methane (CH4)",
-        "C. Water vapor (H2O)",
-        "D. Nitrous oxide (N2O)"
+        "A. Anti-NMDA receptor antibodies",
+        "B. Anti-LGI1 antibodies",
+        "C. Anti-GABA-B receptor antibodies",
+        "D. Anti-AMPA receptor antibodies"
     ],
     "expected_output_format": "Single letter selection with rationale",
-    "ground_truth": "A",
+    "ground_truth": "B",
     "rationale": {
-        "A": "While other gases like methane have stronger warming effects per molecule, carbon dioxide is the primary driver of human-induced climate change due to its much larger quantity in the atmosphere and long atmospheric lifetime."
+        "B": "Anti-LGI1 (leucine-rich glioma-inactivated 1) antibodies are strongly associated with limbic encephalitis presenting with subacute memory deficits, confusion, and behavioral changes. The bilateral medial temporal lobe hyperintensities on MRI, mild CSF pleocytosis, and temporal EEG abnormalities are classic findings. While anti-NMDA receptor encephalitis typically presents with more psychiatric symptoms and dyskinesias, anti-GABA-B receptor encephalitis often presents with seizures as the predominant feature, and anti-AMPA receptor encephalitis is less common and often associated with underlying malignancies."
     }
 }
 

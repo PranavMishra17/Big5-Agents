@@ -19,6 +19,8 @@ class Agent:
                  use_closed_loop_comm: bool = False,
                  use_mutual_monitoring: bool = False,
                  use_shared_mental_model: bool = False,
+                 use_team_orientation: bool = False,
+                 use_mutual_trust: bool = False,
                  examples: Optional[List[Dict[str, str]]] = None):
         """
         Initialize an LLM-based agent with a specific role.
@@ -38,6 +40,8 @@ class Agent:
         self.use_closed_loop_comm = use_closed_loop_comm
         self.use_mutual_monitoring = use_mutual_monitoring
         self.use_shared_mental_model = use_shared_mental_model
+        self.use_team_orientation = use_team_orientation
+        self.use_mutual_trust = use_mutual_trust
         self.examples = examples or []
         self.conversation_history = []
         self.knowledge_base = {}
@@ -138,6 +142,57 @@ class Agent:
             
             This helps ensure all team members are aligned in their understanding.
             """
+        
+        # Add team orientation if enabled
+        if self.use_team_orientation:
+            prompt += """
+            You should demonstrate strong team orientation by:
+            1. Taking into account alternative solutions provided by teammates and appraising their input
+            2. Considering the value of teammates' perspectives even when they differ from your own
+            3. Prioritizing team goals over individual recognition or achievements
+            4. Actively engaging in information sharing, strategizing, and participatory goal setting
+            5. Enhancing your individual performance through coordination with and utilization of input from teammates
+
+            Remember that team orientation is not just working with others, but truly valuing and incorporating diverse perspectives.
+            """
+        
+        # Add mutual trust if enabled
+        if self.use_mutual_trust:
+            # Check the trust factor to adjust the prompt accordingly
+            trust_factor = getattr(self, 'mutual_trust_factor', 0.8)
+            
+            # Base mutual trust prompt
+            mutual_trust_prompt = """
+            You should foster and demonstrate mutual trust with your teammates by:
+            1. Sharing information openly and appropriately without excessive protection or checking
+            2. Being willing to admit mistakes and accept feedback from teammates
+            3. Assuming teammates are acting with positive intentions for the team's benefit
+            4. Recognizing and respecting the expertise and rights of all team members
+            5. Being willing to make yourself vulnerable by asking for help when needed
+            """
+            
+            # Adjust for low trust environments
+            if trust_factor < 0.4:
+                mutual_trust_prompt += """
+                However, be aware that the current team environment has LOW TRUST levels. This means:
+                - Be more careful about sharing sensitive or potentially controversial information
+                - Verify information from teammates more carefully before acting on it
+                - Be more explicit about your reasoning and evidence to build credibility
+                - Take extra steps to demonstrate reliability and consistency in your contributions
+                - Work gradually to establish trust through small, reliable interactions
+                """
+            # Adjust for high trust environments
+            elif trust_factor > 0.7:
+                mutual_trust_prompt += """
+                The current team environment has HIGH TRUST levels. This means:
+                - You can share information with confidence it will be used appropriately
+                - You can rely on teammates' input without excessive verification
+                - You can feel safe to express uncertainty or vulnerability
+                - You can expect teammates will protect the team's interests and your contributions
+                - The team can focus fully on the task rather than monitoring each other
+                """
+            
+            prompt += mutual_trust_prompt
         
         return prompt
     

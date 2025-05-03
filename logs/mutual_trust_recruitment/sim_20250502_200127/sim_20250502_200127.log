@@ -1,0 +1,32 @@
+2025-05-02 20:01:27,333 - simulation.sim_20250502_200127 - INFO - Event logged: simulation_started
+2025-05-02 20:01:27,333 - simulation.sim_20250502_200127 - INFO - SimulationLogger initialized for sim_20250502_200127 with configuration: mutual_trust_recruitment
+2025-05-02 20:01:34,690 - simulation.sim_20250502_200127 - INFO - Initialized simulation sim_20250502_200127
+2025-05-02 20:01:34,690 - simulation.sim_20250502_200127 - INFO - Components enabled: Mutual Trust (factor: 0.2), Agent Recruitment (adaptive)
+2025-05-02 20:01:34,690 - simulation.sim_20250502_200127 - INFO - Starting task analysis phase
+2025-05-02 20:01:34,690 - simulation.sim_20250502_200127 - INFO - Getting initial analysis from Neurologist
+2025-05-02 20:01:45,125 - simulation.sim_20250502_200127 - INFO - Main discussion: task_analysis - Neurologist
+2025-05-02 20:01:45,125 - simulation.sim_20250502_200127 - INFO - Getting initial analysis from Neuroimmunologist
+2025-05-02 20:01:55,107 - simulation.sim_20250502_200127 - INFO - Main discussion: task_analysis - Neuroimmunologist
+2025-05-02 20:01:55,111 - simulation.sim_20250502_200127 - INFO - Getting initial analysis from Radiologist
+2025-05-02 20:02:13,723 - simulation.sim_20250502_200127 - INFO - Main discussion: task_analysis - Radiologist
+2025-05-02 20:02:13,723 - simulation.sim_20250502_200127 - INFO - Getting initial analysis from Clinical Pathologist
+2025-05-02 20:02:22,963 - simulation.sim_20250502_200127 - INFO - Main discussion: task_analysis - Clinical Pathologist
+2025-05-02 20:02:22,963 - simulation.sim_20250502_200127 - INFO - Getting initial analysis from EEG Specialist (Neurophysiologist)
+2025-05-02 20:02:31,632 - simulation.sim_20250502_200127 - INFO - Main discussion: task_analysis - EEG Specialist (Neurophysiologist)
+2025-05-02 20:02:31,633 - simulation.sim_20250502_200127 - INFO - Starting collaborative discussion phase
+2025-05-02 20:02:31,635 - simulation.sim_20250502_200127 - INFO - Running collaborative discussion for Neurologist
+2025-05-02 20:03:56,518 - simulation.sim_20250502_200127 - INFO - Main discussion: collaborative_discussion - Neurologist
+2025-05-02 20:03:56,519 - simulation.sim_20250502_200127 - INFO - Running collaborative discussion for Neuroimmunologist
+2025-05-02 20:04:11,293 - simulation.sim_20250502_200127 - INFO - Main discussion: collaborative_discussion - Neuroimmunologist
+2025-05-02 20:04:11,293 - simulation.sim_20250502_200127 - INFO - Running collaborative discussion for Radiologist
+2025-05-02 20:04:16,016 - simulation.sim_20250502_200127 - INFO - Main discussion: collaborative_discussion - Radiologist
+2025-05-02 20:04:16,016 - simulation.sim_20250502_200127 - INFO - Running collaborative discussion for Clinical Pathologist
+2025-05-02 20:04:20,522 - simulation.sim_20250502_200127 - INFO - Main discussion: collaborative_discussion - Clinical Pathologist
+2025-05-02 20:04:20,522 - simulation.sim_20250502_200127 - INFO - Running collaborative discussion for EEG Specialist (Neurophysiologist)
+2025-05-02 20:04:33,583 - simulation.sim_20250502_200127 - INFO - Main discussion: collaborative_discussion - EEG Specialist (Neurophysiologist)
+2025-05-02 20:04:33,583 - simulation.sim_20250502_200127 - INFO - Applying decision methods
+2025-05-02 20:04:33,583 - simulation.sim_20250502_200127 - INFO - Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 4, 'A': 1}, 'total_votes': 5, 'confidence': 0.8}
+2025-05-02 20:04:33,583 - simulation.sim_20250502_200127 - INFO - Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'weighted_votes': {'B': 2.8, 'A': 0.7}, 'total_weight': 3.5, 'confidence': 0.7999999999999999}
+2025-05-02 20:04:33,583 - simulation.sim_20250502_200127 - INFO - Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 11, 'B': 14, 'C': 5, 'D': 0}, 'total_possible_score': 30.0, 'confidence': 0.4666666666666667}
+2025-05-02 20:04:33,583 - simulation.sim_20250502_200127 - INFO - Mutual trust metrics collected
+2025-05-02 20:04:33,592 - simulation.sim_20250502_200127 - INFO - Results saved to output\sim_20250502_200127_results.json
