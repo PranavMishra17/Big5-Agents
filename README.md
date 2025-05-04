@@ -61,7 +61,7 @@ These components are augmented by three coordinating mechanisms:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/big5-agents.git
+git clone https://github.com/V-ARE/mafia-via-agents/tree/main/Big5-Agents.git
 cd big5-agents
 
 # Install dependencies
@@ -69,7 +69,7 @@ pip install -r requirements.txt
 
 # Set up your API keys in .env file
 cp .env.example .env
-
+```
 
 ## Usage
 
@@ -193,6 +193,39 @@ TASK = {
     "rationale": {...}  # Optional reasoning for ground truth
 }
 ```
+
+### Prompt Management
+
+The `utils/prompts.py` file centralizes all prompts used throughout the system, making it easy to modify agent behaviors without changing the core code.
+
+**Structure**
+Prompts are organized into categorical dictionaries:
+
+```python
+# Agent system prompts
+AGENT_SYSTEM_PROMPTS = {
+    "base": "Base system prompt template...",
+    # Additional specialized prompts...
+}
+
+# Team leadership prompts
+LEADERSHIP_PROMPTS = {
+    "team_leadership": "Leadership component prompt...",
+    "define_task": "Task definition prompt...",
+    # Other leadership actions...
+}
+
+# Additional categories (COMMUNICATION_PROMPTS, MONITORING_PROMPTS, etc.)
+
+```
+
+**Modifying Prompts**
+To modify agent behavior for specific components:
+
+- Open utils/prompts.py
+- Locate the appropriate prompt category (e.g., TRUST_PROMPTS)
+- Edit the prompt text while preserving format placeholders (e.g., {role}, {task_description})
+- Save the file - no other code changes required
 
 ### Agent Roles & Recruitment Pools
 
