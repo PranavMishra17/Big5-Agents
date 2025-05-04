@@ -1,0 +1,59 @@
+{
+  "question": "An 8-year-old African-American boy is brought to the emergency room with severe pain in both hands. His mother says that the patient had a fever with a cough a couple of days ago. Family history is positive for an uncle who died from a blood disease. A peripheral blood smear of this patient is shown in the image. Which of the following is the most likely mechanism for this patient\u2019s disease?",
+  "options": [
+    "A. Frameshift mutation",
+    "B. Mismatch repair",
+    "C. Silent mutation",
+    "D. Missense mutation"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 5.0
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

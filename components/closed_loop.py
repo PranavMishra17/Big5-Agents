@@ -5,7 +5,7 @@ Closed-loop communication implementation for agent system.
 import logging
 from typing import Tuple, Dict, Any, List, Optional
 
-from agent import Agent
+from components.agent import Agent
 
 from utils.prompts import COMMUNICATION_PROMPTS
 

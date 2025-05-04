@@ -6,8 +6,8 @@ import logging
 import random
 from typing import Dict, List, Any, Tuple
 
-from agent import Agent
-from modular_agent import ModularAgent, create_agent_team
+from components.agent import Agent
+from components.modular_agent import ModularAgent, create_agent_team
 import config
 
 from utils.prompts import RECRUITMENT_PROMPTS
@@ -280,7 +280,7 @@ def recruit_advanced_team(question: str, recruitment_pool: str) -> Tuple[Dict[st
     design_prompt = RECRUITMENT_PROMPTS["mdt_design"].format(
         question=question
     )
-    
+
     response = recruiter.chat(design_prompt)
     
     # Parse multi-team structure

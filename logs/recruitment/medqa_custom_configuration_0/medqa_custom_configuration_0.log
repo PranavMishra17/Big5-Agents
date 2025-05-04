@@ -1,0 +1,28 @@
+2025-05-04 01:44:56,109 - simulation.medqa_custom_configuration_0 - INFO - Event logged: simulation_started
+2025-05-04 01:44:56,109 - simulation.medqa_custom_configuration_0 - INFO - SimulationLogger initialized for medqa_custom_configuration_0 with configuration: recruitment
+2025-05-04 01:45:03,608 - simulation.medqa_custom_configuration_0 - INFO - Initialized simulation medqa_custom_configuration_0
+2025-05-04 01:45:03,609 - simulation.medqa_custom_configuration_0 - INFO - Components enabled: Agent Recruitment (adaptive)
+2025-05-04 01:45:03,609 - simulation.medqa_custom_configuration_0 - INFO - Starting task analysis phase
+2025-05-04 01:45:03,609 - simulation.medqa_custom_configuration_0 - INFO - Getting initial analysis from Pediatric Hematologist
+2025-05-04 01:45:09,009 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: task_analysis - Pediatric Hematologist
+2025-05-04 01:45:09,009 - simulation.medqa_custom_configuration_0 - INFO - Getting initial analysis from Medical Geneticist
+2025-05-04 01:45:15,628 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: task_analysis - Medical Geneticist
+2025-05-04 01:45:15,628 - simulation.medqa_custom_configuration_0 - INFO - Getting initial analysis from Pediatrician
+2025-05-04 01:45:19,785 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: task_analysis - Pediatrician
+2025-05-04 01:45:19,785 - simulation.medqa_custom_configuration_0 - INFO - Getting initial analysis from Infectious Disease Specialist
+2025-05-04 01:45:26,729 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: task_analysis - Infectious Disease Specialist
+2025-05-04 01:45:26,729 - simulation.medqa_custom_configuration_0 - INFO - Getting initial analysis from Radiologist (with expertise in interpreting peripheral blood smears)
+2025-05-04 01:45:33,703 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: task_analysis - Radiologist (with expertise in interpreting peripheral blood smears)
+2025-05-04 01:45:33,704 - simulation.medqa_custom_configuration_0 - INFO - Starting collaborative discussion phase
+2025-05-04 01:45:33,704 - simulation.medqa_custom_configuration_0 - INFO - Running collaborative discussion for Pediatric Hematologist
+2025-05-04 01:45:40,776 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: collaborative_discussion - Pediatric Hematologist
+2025-05-04 01:45:40,776 - simulation.medqa_custom_configuration_0 - INFO - Running collaborative discussion for Medical Geneticist
+2025-05-04 01:45:47,436 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: collaborative_discussion - Medical Geneticist
+2025-05-04 01:45:47,436 - simulation.medqa_custom_configuration_0 - INFO - Running collaborative discussion for Pediatrician
+2025-05-04 01:45:54,841 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: collaborative_discussion - Pediatrician
+2025-05-04 01:45:54,845 - simulation.medqa_custom_configuration_0 - INFO - Running collaborative discussion for Infectious Disease Specialist
+2025-05-04 01:46:02,355 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: collaborative_discussion - Infectious Disease Specialist
+2025-05-04 01:46:02,355 - simulation.medqa_custom_configuration_0 - INFO - Running collaborative discussion for Radiologist (with expertise in interpreting peripheral blood smears)
+2025-05-04 01:46:09,822 - simulation.medqa_custom_configuration_0 - INFO - Main discussion: collaborative_discussion - Radiologist (with expertise in interpreting peripheral blood smears)
+2025-05-04 01:46:09,823 - simulation.medqa_custom_configuration_0 - INFO - Applying decision methods
+2025-05-04 01:46:09,835 - simulation.medqa_custom_configuration_0 - INFO - Results saved to output\medqa_custom_configuration_0_results.json

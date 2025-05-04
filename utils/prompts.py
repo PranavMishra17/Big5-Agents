@@ -53,7 +53,9 @@ LEADERSHIP_PROMPTS = {
     1. Incorporates the key insights from each team member
     2. Balances different perspectives from team members
     3. Provides clear reasoning for the final decision
-    
+
+    You MUST begin your response with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
+
     Present your final solution with comprehensive justification.
     Ensure all required elements from the task are addressed.
     """,
@@ -381,8 +383,8 @@ TASK_ANALYSIS_PROMPTS = {
     2. Explain the strengths and weaknesses of each option
     3. Apply relevant principles from your area of expertise
     
-    Then select the option you believe is correct and explain your reasoning in detail.
-    Be explicit about which option (A, B, C, etc.) you are selecting.
+    Begin your final answer with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
+    Then explain your reasoning for this selection. YOU MUST ANWER IN SAID FORMAT.
     """,
     
     "general_task": """
@@ -432,6 +434,9 @@ DISCUSSION_PROMPTS = {
     Based on all these perspectives, please provide your final answer to the task.
     Consider the insights from your teammates and integrate them with your own expertise.
     
-    Be explicit and clear in your final response, following the expected output format for the task.
+    Based on all these perspectives, provide your final answer. 
+    Begin with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
+    Then provide your rationale, integrating insights from your teammates. 
+    YOU MUST ANWER IN SAID FORMAT.
     """
 }

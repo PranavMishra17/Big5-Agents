@@ -3,6 +3,7 @@ Decision methods for aggregating agent responses.
 """
 
 import logging
+import re
 from typing import Dict, List, Any, Tuple
 import math
 import config
@@ -21,72 +22,79 @@ class DecisionMethods:
         """Initialize the decision methods handler."""
         self.logger = logging.getLogger("decision.methods")
         self.logger.info("Initialized decision methods handler")
-    
+
+
+    def extract_answer_option(self, content):
+        """Extract answer option from various content formats."""
+        if not isinstance(content, str):
+            return None
+        
+        # Standard answer formats
+        patterns = [
+            r"ANSWER:\s*([A-D])",
+            r"FINAL ANSWER:\s*([A-D])",
+            r"\*\*([A-D])\.",
+            r"^([A-D])\.",
+            r"option\s+([A-D])",
+            r"selected?:?\s*([A-D])"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                return match.group(1).upper()
+        
+        # Check for antibody mentions
+        antibody_map = {
+            "A": ["anti-nmda", "nmda receptor"],
+            "B": ["anti-lgi1", "lgi1"],
+            "C": ["anti-gaba", "gaba-b"],
+            "D": ["anti-ampa", "ampa receptor"]
+        }
+        
+        for option, keywords in antibody_map.items():
+            if any(keyword in content.lower() for keyword in keywords):
+                return option
+                
+        return None
+
+
     def majority_voting(self, agent_responses):
         """Apply majority voting to select the most common option."""
         votes = {}
+        max_votes = 0
         
         for agent_role, response in agent_responses.items():
             preference = None
             
-            # Extract from different response formats
+            # Handle dictionary responses
             if isinstance(response, dict):
-                # Format 1: Direct preference field
-                if "preference" in response:
-                    preference = response.get("preference")
-                
-                # Format 2: Extract field
+                if "final_decision" in response:
+                    preference = self.extract_answer_option(response["final_decision"])
                 elif "extract" in response and isinstance(response["extract"], dict):
                     if "answer" in response["extract"]:
                         preference = response["extract"]["answer"]
-                
-                # Format 3: Final decision with text parsing
-                elif any(key in response for key in ["final_decision", "message"]):
-                    content = response.get("final_decision", "") or response.get("message", "")
-                    if isinstance(content, str):
-                        content = content.upper()
-                        if "**B." in content or "ANSWER: B" in content or "ANTI-LGI1" in content:
-                            preference = "B"
-                        elif "**A." in content or "ANSWER: A" in content or "ANTI-NMDA" in content:
-                            preference = "A"
-                        elif "**C." in content or "ANSWER: C" in content or "ANTI-GABA" in content:
-                            preference = "C"
-                        elif "**D." in content or "ANSWER: D" in content or "ANTI-AMPA" in content:
-                            preference = "D"
-            
-            # Simple string (option letter)
+            # Handle string responses
             elif isinstance(response, str):
-                if len(response.strip()) == 1 and response.upper() in ["A", "B", "C", "D"]:
-                    preference = response.upper()
-                elif "**B." in response.upper() or "ANSWER: B" in response.upper():
-                    preference = "B"
-                elif "**A." in response.upper() or "ANSWER: A" in response.upper():
-                    preference = "A"
-                elif "**C." in response.upper() or "ANSWER: C" in response.upper():
-                    preference = "C"
-                elif "**D." in response.upper() or "ANSWER: D" in response.upper():
-                    preference = "D"
+                preference = self.extract_answer_option(response)
             
-            # Count vote if preference was found
+            # Register the vote if preference was found
             if preference:
                 if preference not in votes:
                     votes[preference] = 0
                 votes[preference] += 1
+                max_votes = max(max_votes, votes[preference])
         
-        # Find winner
-        winning_option = None
-        if votes:
-            winning_option = max(votes, key=votes.get)
-            confidence = votes[winning_option] / sum(votes.values())
-        else:
-            confidence = 0
+        # Find winning option
+        winning_option = None if not votes else max(votes, key=votes.get)
+        total_votes = sum(votes.values())
         
         return {
             "method": "majority_voting",
             "winning_option": winning_option,
             "vote_counts": votes,
-            "total_votes": sum(votes.values()),
-            "confidence": confidence
+            "total_votes": total_votes,
+            "confidence": max_votes / total_votes if total_votes > 0 else 0
         }
 
 
@@ -96,49 +104,27 @@ class DecisionMethods:
         num_rankings = 0
         
         for agent_role, response in agent_responses.items():
-            # Get preferences using same extraction methods as majority_voting
             preference = None
             
+            # Handle dictionary responses
             if isinstance(response, dict):
-                if "preference" in response:
-                    preference = response.get("preference")
+                if "final_decision" in response:
+                    preference = self.extract_answer_option(response["final_decision"])
                 elif "extract" in response and isinstance(response["extract"], dict):
                     if "answer" in response["extract"]:
                         preference = response["extract"]["answer"]
-                elif any(key in response for key in ["final_decision", "message"]):
-                    content = response.get("final_decision", "") or response.get("message", "")
-                    if isinstance(content, str):
-                        content = content.upper()
-                        if "**B." in content or "ANSWER: B" in content:
-                            preference = "B"
-                        elif "**A." in content or "ANSWER: A" in content:
-                            preference = "A"
-                        elif "**C." in content or "ANSWER: C" in content:
-                            preference = "C"
-                        elif "**D." in content or "ANSWER: D" in content:
-                            preference = "D"
+            # Handle string responses
             elif isinstance(response, str):
-                if len(response.strip()) == 1 and response.upper() in ["A", "B", "C", "D"]:
-                    preference = response.upper()
-                elif "**B." in response.upper() or "ANSWER: B" in response.upper():
-                    preference = "B"
-                elif "**A." in response.upper() or "ANSWER: A" in response.upper():
-                    preference = "A"
-                elif "**C." in response.upper() or "ANSWER: C" in response.upper():
-                    preference = "C"
-                elif "**D." in response.upper() or "ANSWER: D" in response.upper():
-                    preference = "D"
+                preference = self.extract_answer_option(response)
             
-            # If we found a top preference, apply Borda scoring
+            # Apply Borda scoring (3 points to top choice)
             if preference:
-                # Simple Borda count using only top preferences
-                # Award 3 points to top choice
                 borda_scores[preference] += 3
                 num_rankings += 1
         
         # Find winner
         winning_option = None
-        total_possible_score = num_rankings * 3.0  # Max possible points
+        total_possible_score = num_rankings * 3.0
         
         if total_possible_score > 0:
             winning_option = max(borda_scores, key=borda_scores.get)
@@ -156,7 +142,7 @@ class DecisionMethods:
 
 
     def weighted_voting(self, agent_responses, team_weights=None):
-        """Apply weighted voting based on agent confidence or provided weights."""
+        """Apply weighted voting based on agent confidence and hierarchy."""
         votes = {}
         weighted_votes = {}
         total_weight = 0
@@ -165,50 +151,36 @@ class DecisionMethods:
             preference = None
             confidence = 1.0
             
-            # Extract preference from various response formats
+            # Handle dictionary responses
             if isinstance(response, dict):
-                # Format 1: Direct preference field
-                if "preference" in response:
-                    preference = response.get("preference")
-                    confidence = response.get("confidence", 1.0)
-                
-                # Format 2: Extract field (from recent logs)
+                if "final_decision" in response:
+                    preference = self.extract_answer_option(response["final_decision"])
                 elif "extract" in response and isinstance(response["extract"], dict):
                     if "answer" in response["extract"]:
                         preference = response["extract"]["answer"]
-                        confidence = response["extract"].get("confidence", 1.0)
-                
-                # Format 3: Final decision with keyword extraction
-                elif "final_decision" in response and isinstance(response["final_decision"], str):
-                    content = response["final_decision"].lower()
-                    # Look for patterns like "final answer: B" or "**B."
-                    if "answer: b" in content or "**b" in content:
-                        preference = "B"
-                    elif "answer: a" in content or "**a" in content:
-                        preference = "A"
-                    elif "answer: c" in content or "**c" in content:
-                        preference = "C"
-                    elif "answer: d" in content or "**d" in content:
-                        preference = "D"
+                    if "confidence" in response["extract"]:
+                        confidence = response["extract"]["confidence"]
+            # Handle string responses
+            elif isinstance(response, str):
+                preference = self.extract_answer_option(response)
             
-            # Format 4: Simple string (option letter)
-            elif isinstance(response, str) and len(response.strip()) == 1:
-                if response.upper() in ["A", "B", "C", "D"]:
-                    preference = response.upper()
-            
+            # Apply hierarchy multiplier
             if preference:
-                # Apply hierarchy multiplier for advanced teams
                 hierarchy_factor = 1.0
-                if any(x in agent_role for x in ["3_", "Final"]):
+                
+                # Check role for hierarchy indicators
+                if "leader" in agent_role.lower() or "chief" in agent_role.lower():
+                    hierarchy_factor = 1.5
+                elif any(x in agent_role for x in ["3_", "Final", "FRDT"]):
                     hierarchy_factor = 1.3
-                elif any(x in agent_role for x in ["2_", "Expert"]):
+                elif any(x in agent_role for x in ["2_", "Expert", "DET"]):
                     hierarchy_factor = 1.1
                 
                 # Calculate final weight
                 weight = team_weights.get(agent_role, confidence) if team_weights else confidence
                 final_weight = weight * hierarchy_factor
                 
-                # Add to votes
+                # Record vote
                 if preference not in votes:
                     votes[preference] = 0
                     weighted_votes[preference] = 0
@@ -614,6 +586,9 @@ class DecisionMethods:
         # For MCQ tasks, we need explicit rankings from agents
         # We'll check if agents provided full rankings in their responses
         
+        borda_scores = {"A": 0, "B": 0, "C": 0, "D": 0}
+        num_rankings = 0
+
         # First, extract any rankings provided
         agent_rankings = {}
         for agent_role, response_data in agent_responses.items():
@@ -656,25 +631,29 @@ class DecisionMethods:
                 if option_id in borda_scores:
                     borda_scores[option_id] += (n_options - i - 1)
         
-        # Find the option with the highest Borda score
-        max_score = 0
-        winner = None
+        # Find winner
+        winning_option = None
+        total_possible_score = num_rankings * 3.0  # Max possible points
         
         for option_id, score in borda_scores.items():
             if score > max_score:
                 max_score = score
-                winner = option_id
+                winning_option = option_id
         
-        # Calculate total possible score for confidence calculation
-        total_possible_score = len(agent_rankings) * (n_options * (n_options - 1) / 2)
-        winner_score = borda_scores.get(winner, 0)
+
+        
+        if total_possible_score > 0:
+            winning_option = max(borda_scores, key=borda_scores.get)
+            confidence = borda_scores[winning_option] / total_possible_score
+        else:
+            confidence = 0
         
         return {
             "method": "borda_count",
-            "winning_option": winner,
+            "winning_option": winning_option,
             "borda_scores": borda_scores,
             "total_possible_score": total_possible_score,
-            "confidence": winner_score / max(0.001, total_possible_score) if winner_score > 0 else 0
+            "confidence": confidence
         }
     
 

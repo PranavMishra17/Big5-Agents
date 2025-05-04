@@ -1,0 +1,54 @@
+2025-05-04 01:01:51,801 - simulation.sim_20250504_010151 - INFO - Event logged: simulation_started
+2025-05-04 01:01:51,801 - simulation.sim_20250504_010151 - INFO - SimulationLogger initialized for sim_20250504_010151 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model_team_orientation_mutual_trust_recruitment
+2025-05-04 01:01:59,648 - simulation.sim_20250504_010151 - INFO - Initialized simulation sim_20250504_010151
+2025-05-04 01:01:59,648 - simulation.sim_20250504_010151 - INFO - Components enabled: Team Leadership: Neurologist, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model, Team Orientation, Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-04 01:01:59,648 - simulation.sim_20250504_010151 - INFO - Starting task analysis phase
+2025-05-04 01:01:59,648 - simulation.sim_20250504_010151 - INFO - Getting initial analysis from Neurologist
+2025-05-04 01:02:08,099 - simulation.sim_20250504_010151 - INFO - Mental model update from Neurologist, convergence: 0.00
+2025-05-04 01:02:08,121 - simulation.sim_20250504_010151 - INFO - Main discussion: task_analysis - Neurologist
+2025-05-04 01:02:08,121 - simulation.sim_20250504_010151 - INFO - Getting initial analysis from Immunologist
+2025-05-04 01:02:17,061 - simulation.sim_20250504_010151 - INFO - Mental model update from Immunologist, convergence: 0.00
+2025-05-04 01:02:17,063 - simulation.sim_20250504_010151 - INFO - Main discussion: task_analysis - Immunologist
+2025-05-04 01:02:17,064 - simulation.sim_20250504_010151 - INFO - Getting initial analysis from Neuroimmunologist
+2025-05-04 01:02:24,320 - simulation.sim_20250504_010151 - INFO - Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 01:02:24,334 - simulation.sim_20250504_010151 - INFO - Main discussion: task_analysis - Neuroimmunologist
+2025-05-04 01:02:24,335 - simulation.sim_20250504_010151 - INFO - Getting initial analysis from Radiologist
+2025-05-04 01:02:30,343 - simulation.sim_20250504_010151 - INFO - Mental model update from Radiologist, convergence: 0.00
+2025-05-04 01:02:30,346 - simulation.sim_20250504_010151 - INFO - Main discussion: task_analysis - Radiologist
+2025-05-04 01:02:30,347 - simulation.sim_20250504_010151 - INFO - Getting initial analysis from Clinical Pathologist
+2025-05-04 01:02:39,208 - simulation.sim_20250504_010151 - INFO - Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-04 01:02:39,210 - simulation.sim_20250504_010151 - INFO - Main discussion: task_analysis - Clinical Pathologist
+2025-05-04 01:02:39,212 - simulation.sim_20250504_010151 - INFO - Leadership phase: Defining task approach
+2025-05-04 01:02:57,288 - simulation.sim_20250504_010151 - INFO - Closed-loop communication: leader_definition - Neurologist -> Immunologist
+2025-05-04 01:02:57,289 - simulation.sim_20250504_010151 - INFO - Leadership action: task_definition
+2025-05-04 01:02:57,289 - simulation.sim_20250504_010151 - INFO - Starting collaborative discussion phase
+2025-05-04 01:02:57,289 - simulation.sim_20250504_010151 - INFO - Running collaborative discussion for Neurologist
+2025-05-04 01:02:57,291 - simulation.sim_20250504_010151 - INFO - Monitoring action: Neurologist monitored Immunologist, issues: 1
+2025-05-04 01:02:57,294 - simulation.sim_20250504_010151 - INFO - Monitoring action: Neurologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:03:11,515 - simulation.sim_20250504_010151 - INFO - Closed-loop communication: collaborative_discussion - Neurologist -> Immunologist
+2025-05-04 01:03:11,528 - simulation.sim_20250504_010151 - INFO - Mental model update from Neurologist, convergence: 0.00
+2025-05-04 01:03:11,528 - simulation.sim_20250504_010151 - INFO - Running collaborative discussion for Immunologist
+2025-05-04 01:03:11,540 - simulation.sim_20250504_010151 - INFO - Monitoring action: Immunologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:03:31,450 - simulation.sim_20250504_010151 - INFO - Closed-loop communication: collaborative_discussion - Immunologist -> Neurologist
+2025-05-04 01:03:31,459 - simulation.sim_20250504_010151 - INFO - Mental model update from Immunologist, convergence: 0.00
+2025-05-04 01:03:31,459 - simulation.sim_20250504_010151 - INFO - Running collaborative discussion for Neuroimmunologist
+2025-05-04 01:03:31,466 - simulation.sim_20250504_010151 - INFO - Monitoring action: Neuroimmunologist monitored Immunologist, issues: 1
+2025-05-04 01:03:31,470 - simulation.sim_20250504_010151 - INFO - Monitoring action: Neuroimmunologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:04:00,389 - simulation.sim_20250504_010151 - INFO - Closed-loop communication: collaborative_discussion - Neuroimmunologist -> Neurologist
+2025-05-04 01:04:00,405 - simulation.sim_20250504_010151 - INFO - Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 01:04:00,405 - simulation.sim_20250504_010151 - INFO - Running collaborative discussion for Radiologist
+2025-05-04 01:04:00,409 - simulation.sim_20250504_010151 - INFO - Monitoring action: Radiologist monitored Immunologist, issues: 1
+2025-05-04 01:04:00,411 - simulation.sim_20250504_010151 - INFO - Monitoring action: Radiologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:04:19,720 - simulation.sim_20250504_010151 - INFO - Closed-loop communication: collaborative_discussion - Radiologist -> Neurologist
+2025-05-04 01:04:19,731 - simulation.sim_20250504_010151 - INFO - Mental model update from Radiologist, convergence: 0.00
+2025-05-04 01:04:19,732 - simulation.sim_20250504_010151 - INFO - Running collaborative discussion for Clinical Pathologist
+2025-05-04 01:04:19,732 - simulation.sim_20250504_010151 - INFO - Monitoring action: Clinical Pathologist monitored Immunologist, issues: 1
+2025-05-04 01:04:40,835 - simulation.sim_20250504_010151 - INFO - Closed-loop communication: collaborative_discussion - Clinical Pathologist -> Neurologist
+2025-05-04 01:04:40,841 - simulation.sim_20250504_010151 - INFO - Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-04 01:04:58,730 - simulation.sim_20250504_010151 - INFO - Leadership action: synthesis
+2025-05-04 01:04:58,730 - simulation.sim_20250504_010151 - INFO - Main discussion: leadership_synthesis - Neurologist
+2025-05-04 01:04:58,744 - simulation.sim_20250504_010151 - INFO - Applying decision methods
+2025-05-04 01:04:58,748 - simulation.sim_20250504_010151 - INFO - Closed-loop communication metrics collected
+2025-05-04 01:04:58,748 - simulation.sim_20250504_010151 - INFO - Mutual monitoring metrics collected
+2025-05-04 01:04:58,748 - simulation.sim_20250504_010151 - INFO - Shared mental model metrics collected
+2025-05-04 01:04:58,758 - simulation.sim_20250504_010151 - INFO - Results saved to output\sim_20250504_010151_results.json

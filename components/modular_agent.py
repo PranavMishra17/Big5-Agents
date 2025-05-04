@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 import random
 import logging
 
-from agent import Agent
+from components.agent import Agent
 import config
 
 from typing import Tuple
@@ -371,7 +371,7 @@ def create_agent_team(use_team_leadership=True,
     # Use recruitment if enabled
     if use_recruitment and question:
         # Import here to avoid circular imports
-        from agent_recruitment import determine_complexity, recruit_agents
+        from components.agent_recruitment import determine_complexity, recruit_agents
         
         # Determine complexity
         complexity = determine_complexity(question, recruitment_method)

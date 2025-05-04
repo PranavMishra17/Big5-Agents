@@ -70,42 +70,7 @@ def load_medqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[D
         logging.error(f"Error loading MedQA dataset: {str(e)}")
         return []
 
-def load_pubmedqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
-    """
-    Load questions from the PubMedQA dataset.
-    
-    Args:
-        num_questions: Number of questions to load
-        random_seed: Random seed for reproducibility
-        
-    Returns:
-        List of question dictionaries
-    """
-    logging.info(f"Loading PubMedQA dataset with {num_questions} random questions")
-    
-    # Load the dataset
-    try:
-        ds = load_dataset("qiaojin/PubMedQA", "pqa_labeled")
-        
-        # Convert to list for easier processing
-        questions = list(ds["train"])
-        
-        # Set random seed for reproducibility
-        random.seed(random_seed)
-        
-        # Randomly select questions
-        if num_questions < len(questions):
-            selected_questions = random.sample(questions, num_questions)
-        else:
-            selected_questions = questions
-            logging.warning(f"Requested {num_questions} questions but dataset only has {len(questions)}. Using all available questions.")
-        
-        logging.info(f"Successfully loaded {len(selected_questions)} questions from PubMedQA dataset")
-        return selected_questions
-    
-    except Exception as e:
-        logging.error(f"Error loading PubMedQA dataset: {str(e)}")
-        return []
+
 
 def format_medqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -147,6 +112,47 @@ def format_medqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     
     return task
 
+
+
+
+def load_pubmedqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
+    """
+    Load questions from the PubMedQA dataset.
+    
+    Args:
+        num_questions: Number of questions to load
+        random_seed: Random seed for reproducibility
+        
+    Returns:
+        List of question dictionaries
+    """
+    logging.info(f"Loading PubMedQA dataset with {num_questions} random questions")
+    
+    # Load the dataset
+    try:
+        ds = load_dataset("qiaojin/PubMedQA", "pqa_labeled")
+        
+        # Convert to list for easier processing
+        questions = list(ds["train"])
+        
+        # Set random seed for reproducibility
+        random.seed(random_seed)
+        
+        # Randomly select questions
+        if num_questions < len(questions):
+            selected_questions = random.sample(questions, num_questions)
+        else:
+            selected_questions = questions
+            logging.warning(f"Requested {num_questions} questions but dataset only has {len(questions)}. Using all available questions.")
+        
+        logging.info(f"Successfully loaded {len(selected_questions)} questions from PubMedQA dataset")
+        return selected_questions
+    
+    except Exception as e:
+        logging.error(f"Error loading PubMedQA dataset: {str(e)}")
+        return []
+
+
 def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Format PubMedQA question for the agent system task.
@@ -184,6 +190,8 @@ def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     }
     
     return task
+
+
 
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],

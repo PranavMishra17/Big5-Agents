@@ -4842,3 +4842,1709 @@ The clinical presentation of subacut...
 2025-05-03 18:43:04,545 [INFO] root: MDT Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'vote_counts': {'B': 2, 'A': 1}, 'weighted_votes': {'B': 1.8199999999999998, 'A': 0.9099999999999999}, 'total_votes': 3, 'confidence': 0.6666666666666667}
 2025-05-03 18:43:04,545 [INFO] root: MDT Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 3, 'B': 6, 'C': 0, 'D': 0}, 'total_possible_score': 9.0, 'confidence': 0.6666666666666666}
 2025-05-03 18:43:04,547 [INFO] simulation.sim_20250503_184106: Results saved to output\sim_20250503_184106_results.json
+2025-05-03 23:20:40,255 [INFO] root: Running single simulation
+2025-05-03 23:20:40,257 [INFO] simulation.sim_20250503_232040: Event logged: simulation_started
+2025-05-03 23:20:40,257 [INFO] simulation.sim_20250503_232040: SimulationLogger initialized for sim_20250503_232040 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model_team_orientation_mutual_trust_recruitment
+2025-05-03 23:21:52,803 [INFO] root: Running single simulation
+2025-05-03 23:21:52,803 [INFO] simulation.sim_20250503_232152: Event logged: simulation_started
+2025-05-03 23:21:52,803 [INFO] simulation.sim_20250503_232152: SimulationLogger initialized for sim_20250503_232152 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model_team_orientation_mutual_trust_recruitment
+2025-05-03 23:21:53,343 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-03 23:21:53,343 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-03 23:21:55,576 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:21:55,599 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification:** 2) intermediate  
+
+**Rationale:**  
+This task involves moderately com...
+2025-05-03 23:21:55,599 [INFO] root: Adaptive complexity: intermediate
+2025-05-03 23:21:56,017 [INFO] agent.Recruiter: Initialized Recruiter agent
+2025-05-03 23:21:56,017 [INFO] agent.Recruiter: Received message: You are an experienced medical expert who recruits a group of experts with diverse identity and ask ...
+2025-05-03 23:21:57,767 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:21:57,787 [INFO] agent.Recruiter: Responded: 1. Neurologist - Specializes in disorders of the nervous system, including autoimmune encephalitis. ...
+2025-05-03 23:21:58,219 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-03 23:21:58,219 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-03 23:21:58,219 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-03 23:21:58,643 [INFO] agent.Immunologist: Initialized Immunologist agent
+2025-05-03 23:21:58,644 [INFO] agent.Immunologist: Added to knowledge base: task
+2025-05-03 23:21:58,644 [INFO] agent.Immunologist: Added to knowledge base: general_reasoning
+2025-05-03 23:21:59,071 [INFO] agent.Radiologist: Initialized Radiologist agent
+2025-05-03 23:21:59,071 [INFO] agent.Radiologist: Added to knowledge base: task
+2025-05-03 23:21:59,071 [INFO] agent.Radiologist: Added to knowledge base: general_reasoning
+2025-05-03 23:21:59,484 [INFO] agent.Psychiatrist: Initialized Psychiatrist agent
+2025-05-03 23:21:59,484 [INFO] agent.Psychiatrist: Added to knowledge base: task
+2025-05-03 23:21:59,484 [INFO] agent.Psychiatrist: Added to knowledge base: general_reasoning
+2025-05-03 23:21:59,890 [INFO] agent.Clinical Pathologist: Initialized Clinical Pathologist agent
+2025-05-03 23:21:59,890 [INFO] agent.Clinical Pathologist: Added to knowledge base: task
+2025-05-03 23:21:59,890 [INFO] agent.Clinical Pathologist: Added to knowledge base: general_reasoning
+2025-05-03 23:21:59,890 [INFO] root: Intermediate complexity: Recruited team of 5 experts with leader 'Neurologist'
+2025-05-03 23:21:59,890 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-05-03 23:21:59,890 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-05-03 23:21:59,890 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-05-03 23:21:59,908 [INFO] teamwork.team_orientation: Initialized team orientation handler
+2025-05-03 23:21:59,908 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.9
+2025-05-03 23:21:59,908 [INFO] teamwork.mutual_trust: Initialized trust network for 5 agents
+2025-05-03 23:21:59,908 [INFO] decision.methods: Initialized decision methods handler
+2025-05-03 23:21:59,908 [INFO] teamwork.shared_mental_model: Initialized task mental model for Autoimmune Encephalitis Diagnosis
+2025-05-03 23:21:59,908 [INFO] teamwork.shared_mental_model: Initialized team mental model with 5 roles
+2025-05-03 23:21:59,908 [INFO] simulation.sim_20250503_232152: Initialized simulation sim_20250503_232152
+2025-05-03 23:21:59,908 [INFO] simulation.sim_20250503_232152: Components enabled: Team Leadership: Neurologist, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model, Team Orientation, Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-03 23:21:59,908 [INFO] simulation.sim_20250503_232152: Starting task analysis phase
+2025-05-03 23:21:59,910 [INFO] simulation.sim_20250503_232152: Getting initial analysis from Neurologist
+2025-05-03 23:21:59,910 [INFO] agent.Neurologist: Received message: 
+    As a Neurologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-03 23:22:07,762 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:07,762 [INFO] agent.Neurologist: Responded: ### Systematic Analysis of the Question and Options
+
+The patient presents with **subacute onset of m...
+2025-05-03 23:22:07,784 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-03 23:22:07,784 [INFO] simulation.sim_20250503_232152: Mental model update from Neurologist, convergence: 0.00
+2025-05-03 23:22:07,787 [INFO] simulation.sim_20250503_232152: Main discussion: task_analysis - Neurologist
+2025-05-03 23:22:07,790 [INFO] simulation.sim_20250503_232152: Getting initial analysis from Immunologist
+2025-05-03 23:22:07,791 [INFO] agent.Immunologist: Received message: 
+    As a Immunologist with expertise in your domain, analyze the following multiple-choice question...
+2025-05-03 23:22:14,491 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:14,498 [INFO] agent.Immunologist: Responded: ### Analysis of the Question:
+The clinical presentation suggests autoimmune encephalitis, characteri...
+2025-05-03 23:22:14,498 [INFO] teamwork.shared_mental_model: Updated shared understanding from Immunologist
+2025-05-03 23:22:14,498 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:22:14,498 [INFO] simulation.sim_20250503_232152: Mental model update from Immunologist, convergence: 0.00
+2025-05-03 23:22:14,504 [INFO] simulation.sim_20250503_232152: Main discussion: task_analysis - Immunologist
+2025-05-03 23:22:14,504 [INFO] simulation.sim_20250503_232152: Getting initial analysis from Radiologist
+2025-05-03 23:22:14,505 [INFO] agent.Radiologist: Received message: 
+    As a Radiologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-03 23:22:23,023 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:23,023 [INFO] agent.Radiologist: Responded: ### Analysis of the Clinical Scenario:
+The patient presents with subacute onset of memory deficits, ...
+2025-05-03 23:22:23,023 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist
+2025-05-03 23:22:23,023 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:22:23,023 [INFO] simulation.sim_20250503_232152: Mental model update from Radiologist, convergence: 0.00
+2025-05-03 23:22:23,040 [INFO] simulation.sim_20250503_232152: Main discussion: task_analysis - Radiologist
+2025-05-03 23:22:23,041 [INFO] simulation.sim_20250503_232152: Getting initial analysis from Psychiatrist
+2025-05-03 23:22:23,042 [INFO] agent.Psychiatrist: Received message: 
+    As a Psychiatrist with expertise in your domain, analyze the following multiple-choice question...
+2025-05-03 23:22:29,224 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:29,235 [INFO] agent.Psychiatrist: Responded: ### Analysis of Each Option:
+
+#### **A. Anti-NMDA receptor antibodies**
+- **Strengths:** Anti-NMDA r...
+2025-05-03 23:22:29,235 [INFO] teamwork.shared_mental_model: Updated shared understanding from Psychiatrist
+2025-05-03 23:22:29,235 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:22:29,247 [INFO] simulation.sim_20250503_232152: Mental model update from Psychiatrist, convergence: 0.00
+2025-05-03 23:22:29,250 [INFO] simulation.sim_20250503_232152: Main discussion: task_analysis - Psychiatrist
+2025-05-03 23:22:29,252 [INFO] simulation.sim_20250503_232152: Getting initial analysis from Clinical Pathologist
+2025-05-03 23:22:29,252 [INFO] agent.Clinical Pathologist: Received message: 
+    As a Clinical Pathologist with expertise in your domain, analyze the following multiple-choice ...
+2025-05-03 23:22:40,399 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:40,399 [INFO] agent.Clinical Pathologist: Responded: ### Analysis of the Clinical Presentation:
+The patient presents with:
+1. **Subacute onset** of memor...
+2025-05-03 23:22:40,399 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist
+2025-05-03 23:22:40,399 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:22:40,410 [INFO] simulation.sim_20250503_232152: Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-03 23:22:40,412 [INFO] simulation.sim_20250503_232152: Main discussion: task_analysis - Clinical Pathologist
+2025-05-03 23:22:40,414 [INFO] simulation.sim_20250503_232152: Leadership phase: Defining task approach
+2025-05-03 23:22:40,415 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Immunologist
+2025-05-03 23:22:40,416 [INFO] agent.Neurologist: Received message: 
+        As the leader, you should define the team's overall approach to solving this task:
+        ...
+2025-05-03 23:22:48,991 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:48,991 [INFO] agent.Neurologist: Responded: ### Team Approach to Solving the Task
+
+To ensure structured reasoning and effective collaboration, w...
+2025-05-03 23:22:48,991 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Team Approach to Solving the Task
+
+To ensure s...
+2025-05-03 23:22:48,991 [INFO] agent.Immunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Team Approach to So...
+2025-05-03 23:22:53,009 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:53,009 [INFO] agent.Immunologist: Responded: ### Acknowledgment and Confirmation:
+I have received your message outlining the structured approach ...
+2025-05-03 23:22:53,009 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I have receiv...
+2025-05-03 23:22:53,009 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Immunologist:
+    
+    "### Team Approach to Solving the ...
+2025-05-03 23:22:57,261 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:22:57,261 [INFO] agent.Neurologist: Responded: ### Verification of Understanding
+
+Thank you for your detailed response. I can confirm that you have...
+2025-05-03 23:22:57,261 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you for y...
+2025-05-03 23:22:57,269 [INFO] simulation.sim_20250503_232152: Closed-loop communication: leader_definition - Neurologist -> Immunologist
+2025-05-03 23:22:57,269 [INFO] simulation.sim_20250503_232152: Leadership action: task_definition
+2025-05-03 23:22:57,274 [INFO] simulation.sim_20250503_232152: Starting collaborative discussion phase
+2025-05-03 23:22:57,275 [INFO] simulation.sim_20250503_232152: Running collaborative discussion for Neurologist
+2025-05-03 23:22:57,277 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-03 23:22:57,279 [INFO] teamwork.mutual_monitoring: No issues detected in Immunologist's response
+2025-05-03 23:22:57,279 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-03 23:22:57,281 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-03 23:22:57,282 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-03 23:22:57,283 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Psychiatrist's response
+2025-05-03 23:22:57,283 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-05-03 23:22:57,284 [INFO] teamwork.mutual_monitoring: Neurologist provided constructive feedback to Psychiatrist on 1 issues
+2025-05-03 23:22:57,285 [INFO] simulation.sim_20250503_232152: Monitoring action: Neurologist monitored Psychiatrist, issues: 1
+2025-05-03 23:22:57,286 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-03 23:22:57,287 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-03 23:22:57,289 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Immunologist
+2025-05-03 23:22:57,289 [INFO] agent.Neurologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-03 23:23:05,550 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:05,550 [INFO] agent.Neurologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+After reviewing the clinical case...
+2025-05-03 23:23:05,550 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-03 23:23:05,550 [INFO] agent.Immunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Final Answer: **B. ...
+2025-05-03 23:23:11,624 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:11,624 [INFO] agent.Immunologist: Responded: ### Acknowledgment and Confirmation:
+I have received your message outlining the final answer as **B....
+2025-05-03 23:23:11,624 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I have receiv...
+2025-05-03 23:23:11,624 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Immunologist:
+    
+    "### Final Answer: **B. Anti-LGI1 ...
+2025-05-03 23:23:15,967 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:15,967 [INFO] agent.Neurologist: Responded: ### Verification of Understanding
+
+Thank you for your response. I can confirm that you have accurate...
+2025-05-03 23:23:15,967 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you for y...
+2025-05-03 23:23:15,967 [INFO] simulation.sim_20250503_232152: Closed-loop communication: collaborative_discussion - Neurologist -> Immunologist
+2025-05-03 23:23:15,981 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-03 23:23:15,982 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:23:15,983 [INFO] simulation.sim_20250503_232152: Mental model update from Neurologist, convergence: 0.00
+2025-05-03 23:23:15,984 [INFO] simulation.sim_20250503_232152: Running collaborative discussion for Immunologist
+2025-05-03 23:23:15,986 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-03 23:23:15,987 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-03 23:23:15,988 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-03 23:23:15,989 [INFO] teamwork.mutual_monitoring: Immunologist provided constructive feedback to Neurologist on 1 issues
+2025-05-03 23:23:15,999 [INFO] simulation.sim_20250503_232152: Monitoring action: Immunologist monitored Neurologist, issues: 1
+2025-05-03 23:23:16,000 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-03 23:23:16,001 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-03 23:23:16,002 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-03 23:23:16,003 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Psychiatrist's response
+2025-05-03 23:23:16,003 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-05-03 23:23:16,003 [INFO] teamwork.mutual_monitoring: Immunologist provided constructive feedback to Psychiatrist on 1 issues
+2025-05-03 23:23:16,005 [INFO] simulation.sim_20250503_232152: Monitoring action: Immunologist monitored Psychiatrist, issues: 1
+2025-05-03 23:23:16,006 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-03 23:23:16,007 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-03 23:23:16,008 [INFO] communication.closed_loop: Starting closed-loop exchange: Immunologist -> Neurologist
+2025-05-03 23:23:16,009 [INFO] agent.Immunologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-03 23:23:31,188 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:31,188 [INFO] agent.Immunologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+After integrating the insights fr...
+2025-05-03 23:23:31,188 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-03 23:23:31,188 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Immunologist:
+    
+    "### Final Answer: **B....
+2025-05-03 23:23:36,722 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:36,729 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation
+
+Thank you for your detailed and comprehensive response. I ackno...
+2025-05-03 23:23:36,729 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-05-03 23:23:36,729 [INFO] agent.Immunologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-03 23:23:40,976 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:40,976 [INFO] agent.Immunologist: Responded: ### Verification of Understanding:
+Thank you for your acknowledgment and confirmation. I have review...
+2025-05-03 23:23:40,976 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-03 23:23:40,976 [INFO] simulation.sim_20250503_232152: Closed-loop communication: collaborative_discussion - Immunologist -> Neurologist
+2025-05-03 23:23:40,993 [INFO] teamwork.shared_mental_model: Updated shared understanding from Immunologist
+2025-05-03 23:23:40,993 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:23:40,994 [INFO] simulation.sim_20250503_232152: Mental model update from Immunologist, convergence: 0.00
+2025-05-03 23:23:40,997 [INFO] simulation.sim_20250503_232152: Running collaborative discussion for Radiologist
+2025-05-03 23:23:40,998 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-03 23:23:41,000 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-03 23:23:41,000 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-03 23:23:41,001 [INFO] teamwork.mutual_monitoring: Radiologist provided constructive feedback to Neurologist on 1 issues
+2025-05-03 23:23:41,003 [INFO] simulation.sim_20250503_232152: Monitoring action: Radiologist monitored Neurologist, issues: 1
+2025-05-03 23:23:41,004 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-03 23:23:41,005 [INFO] teamwork.mutual_monitoring: No issues detected in Immunologist's response
+2025-05-03 23:23:41,006 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-03 23:23:41,007 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Psychiatrist's response
+2025-05-03 23:23:41,007 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-05-03 23:23:41,007 [INFO] teamwork.mutual_monitoring: Radiologist provided constructive feedback to Psychiatrist on 1 issues
+2025-05-03 23:23:41,007 [INFO] simulation.sim_20250503_232152: Monitoring action: Radiologist monitored Psychiatrist, issues: 1
+2025-05-03 23:23:41,008 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-03 23:23:41,009 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-03 23:23:41,009 [INFO] communication.closed_loop: Starting closed-loop exchange: Radiologist -> Neurologist
+2025-05-03 23:23:41,009 [INFO] agent.Radiologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-03 23:23:44,900 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:44,911 [INFO] agent.Radiologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+### Rationale:
+After integrating all perspectives and...
+2025-05-03 23:23:44,911 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+###...
+2025-05-03 23:23:44,911 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Radiologist:
+    
+    "### Final Answer: **B. ...
+2025-05-03 23:23:51,746 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:23:51,746 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation
+
+Thank you for your detailed response. I acknowledge receipt of ...
+2025-05-03 23:23:51,746 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-05-03 23:23:51,746 [INFO] agent.Radiologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-03 23:23:52,076 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-03 23:23:52,076 [INFO] openai._base_client: Retrying request to /chat/completions in 6.000000 seconds
+2025-05-03 23:24:01,262 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:01,262 [INFO] agent.Radiologist: Responded: ### Verification of Understanding
+
+Thank you for your acknowledgment and detailed summary of the rat...
+2025-05-03 23:24:01,262 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding
+
+Thank you for y...
+2025-05-03 23:24:01,262 [INFO] simulation.sim_20250503_232152: Closed-loop communication: collaborative_discussion - Radiologist -> Neurologist
+2025-05-03 23:24:01,262 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist
+2025-05-03 23:24:01,274 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:24:01,275 [INFO] simulation.sim_20250503_232152: Mental model update from Radiologist, convergence: 0.00
+2025-05-03 23:24:01,276 [INFO] simulation.sim_20250503_232152: Running collaborative discussion for Psychiatrist
+2025-05-03 23:24:01,276 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-03 23:24:01,276 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-03 23:24:01,276 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-03 23:24:01,276 [INFO] teamwork.mutual_monitoring: Psychiatrist provided constructive feedback to Neurologist on 1 issues
+2025-05-03 23:24:01,276 [INFO] simulation.sim_20250503_232152: Monitoring action: Psychiatrist monitored Neurologist, issues: 1
+2025-05-03 23:24:01,276 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-03 23:24:01,285 [INFO] teamwork.mutual_monitoring: No issues detected in Immunologist's response
+2025-05-03 23:24:01,286 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-03 23:24:01,286 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-03 23:24:01,288 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-03 23:24:01,288 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-03 23:24:01,288 [INFO] communication.closed_loop: Starting closed-loop exchange: Psychiatrist -> Neurologist
+2025-05-03 23:24:01,288 [INFO] agent.Psychiatrist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-03 23:24:07,826 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:07,826 [INFO] agent.Psychiatrist: Responded: ### Final Answer:
+**B. Anti-LGI1 antibodies**
+
+### Rationale:
+After integrating the insights from al...
+2025-05-03 23:24:07,826 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer:
+**B. Anti-LGI1 antibodies**
+
+###...
+2025-05-03 23:24:07,826 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Psychiatrist:
+    
+    "### Final Answer:
+**B....
+2025-05-03 23:24:08,250 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-03 23:24:08,250 [INFO] openai._base_client: Retrying request to /chat/completions in 4.000000 seconds
+2025-05-03 23:24:19,644 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:19,644 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation
+
+Thank you for your detailed response. I acknowledge receipt of ...
+2025-05-03 23:24:19,644 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-05-03 23:24:19,644 [INFO] agent.Psychiatrist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer:
+**B. Anti-LGI1 a...
+2025-05-03 23:24:22,606 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:22,606 [INFO] agent.Psychiatrist: Responded: ### Verification of Understanding:
+
+Thank you for your acknowledgment and detailed response. I confi...
+2025-05-03 23:24:22,606 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+
+Thank you for ...
+2025-05-03 23:24:22,606 [INFO] simulation.sim_20250503_232152: Closed-loop communication: collaborative_discussion - Psychiatrist -> Neurologist
+2025-05-03 23:24:22,606 [INFO] teamwork.shared_mental_model: Updated shared understanding from Psychiatrist
+2025-05-03 23:24:22,617 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:24:22,618 [INFO] simulation.sim_20250503_232152: Mental model update from Psychiatrist, convergence: 0.00
+2025-05-03 23:24:22,618 [INFO] simulation.sim_20250503_232152: Running collaborative discussion for Clinical Pathologist
+2025-05-03 23:24:22,621 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-03 23:24:22,623 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-03 23:24:22,623 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-03 23:24:22,623 [INFO] teamwork.mutual_monitoring: Clinical Pathologist provided constructive feedback to Neurologist on 1 issues
+2025-05-03 23:24:22,623 [INFO] simulation.sim_20250503_232152: Monitoring action: Clinical Pathologist monitored Neurologist, issues: 1
+2025-05-03 23:24:22,623 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-03 23:24:22,623 [INFO] teamwork.mutual_monitoring: No issues detected in Immunologist's response
+2025-05-03 23:24:22,629 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-03 23:24:22,630 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-03 23:24:22,631 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-03 23:24:22,631 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Psychiatrist's response
+2025-05-03 23:24:22,631 [INFO] teamwork.mutual_monitoring:   - unclear_selection: No clear option selection (A, B, C, etc.) identified in the response
+2025-05-03 23:24:22,631 [INFO] teamwork.mutual_monitoring: Clinical Pathologist provided constructive feedback to Psychiatrist on 1 issues
+2025-05-03 23:24:22,631 [INFO] simulation.sim_20250503_232152: Monitoring action: Clinical Pathologist monitored Psychiatrist, issues: 1
+2025-05-03 23:24:22,631 [INFO] communication.closed_loop: Starting closed-loop exchange: Clinical Pathologist -> Neurologist
+2025-05-03 23:24:22,631 [INFO] agent.Clinical Pathologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-03 23:24:22,920 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-03 23:24:22,922 [INFO] openai._base_client: Retrying request to /chat/completions in 9.000000 seconds
+2025-05-03 23:24:37,555 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:37,555 [INFO] agent.Clinical Pathologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+### Rationale:
+After integrating the analyses from al...
+2025-05-03 23:24:37,555 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+###...
+2025-05-03 23:24:37,555 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Clinical Pathologist:
+    
+    "### Final Answ...
+2025-05-03 23:24:45,326 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:45,326 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation
+
+Thank you for your detailed and structured response. I acknowle...
+2025-05-03 23:24:45,339 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation
+
+Thank you for...
+2025-05-03 23:24:45,339 [INFO] agent.Clinical Pathologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-03 23:24:49,967 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:24:49,983 [INFO] agent.Clinical Pathologist: Responded: ### Verification of Understanding:
+
+Thank you for your acknowledgment and detailed summary of the ra...
+2025-05-03 23:24:49,983 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+
+Thank you for ...
+2025-05-03 23:24:49,983 [INFO] simulation.sim_20250503_232152: Closed-loop communication: collaborative_discussion - Clinical Pathologist -> Neurologist
+2025-05-03 23:24:49,991 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist
+2025-05-03 23:24:49,992 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-03 23:24:49,993 [INFO] simulation.sim_20250503_232152: Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-03 23:24:49,995 [INFO] agent.Neurologist: Received message: 
+    As the designated leader, synthesize the team's perspectives into a consensus solution.
+    
+  ...
+2025-05-03 23:24:50,188 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-03 23:24:50,189 [INFO] openai._base_client: Retrying request to /chat/completions in 9.000000 seconds
+2025-05-03 23:25:16,745 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-03 23:25:16,745 [INFO] agent.Neurologist: Responded: ### Final Consensus Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Comprehensive Justification:
+After...
+2025-05-03 23:25:16,745 [INFO] simulation.sim_20250503_232152: Leadership action: synthesis
+2025-05-03 23:25:16,745 [INFO] simulation.sim_20250503_232152: Main discussion: leadership_synthesis - Neurologist
+2025-05-03 23:25:16,758 [INFO] simulation.sim_20250503_232152: Applying decision methods
+2025-05-03 23:25:16,758 [INFO] root: Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 5}, 'total_votes': 5, 'confidence': 1.0}
+2025-05-03 23:25:16,761 [INFO] root: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'A', 'vote_counts': {'A': 5}, 'weighted_votes': {'A': 3.5}, 'total_votes': 5, 'confidence': 1.0}
+2025-05-03 23:25:16,762 [INFO] root: Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 15, 'B': 0, 'C': 0, 'D': 0}, 'total_possible_score': 15.0, 'confidence': 1.0}
+2025-05-03 23:25:16,763 [INFO] simulation.sim_20250503_232152: Closed-loop communication metrics collected
+2025-05-03 23:25:16,763 [INFO] teamwork.mutual_monitoring: Team performance analysis completed: low effectiveness
+2025-05-03 23:25:16,764 [INFO] simulation.sim_20250503_232152: Mutual monitoring metrics collected
+2025-05-03 23:25:16,764 [INFO] teamwork.shared_mental_model: Mental model effectiveness analysis: low effectiveness
+2025-05-03 23:25:16,766 [INFO] simulation.sim_20250503_232152: Shared mental model metrics collected
+2025-05-03 23:25:16,778 [INFO] simulation.sim_20250503_232152: Results saved to output\sim_20250503_232152_results.json
+2025-05-04 00:56:51,104 [INFO] root: Running single simulation
+2025-05-04 00:56:51,104 [INFO] simulation.sim_20250504_005651: Event logged: simulation_started
+2025-05-04 00:56:51,104 [INFO] simulation.sim_20250504_005651: SimulationLogger initialized for sim_20250504_005651 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model_team_orientation_mutual_trust_recruitment
+2025-05-04 00:56:51,545 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-04 00:56:51,545 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-04 00:56:53,636 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:56:53,660 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification:** 2) intermediate
+
+**Rationale:** 
+This task requires specialized medic...
+2025-05-04 00:56:53,661 [INFO] root: Adaptive complexity: intermediate
+2025-05-04 00:56:54,084 [INFO] agent.Recruiter: Initialized Recruiter agent
+2025-05-04 00:56:54,084 [INFO] agent.Recruiter: Received message: You are an experienced medical expert who recruits a group of experts with diverse identity and ask ...
+2025-05-04 00:56:55,645 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:56:55,645 [INFO] agent.Recruiter: Responded: 1. Neurologist - Specializes in diagnosing and treating disorders of the nervous system. - Hierarchy...
+2025-05-04 00:56:56,110 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-04 00:56:56,110 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-04 00:56:56,110 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-04 00:56:56,547 [INFO] agent.Neuroimmunologist: Initialized Neuroimmunologist agent
+2025-05-04 00:56:56,547 [INFO] agent.Neuroimmunologist: Added to knowledge base: task
+2025-05-04 00:56:56,547 [INFO] agent.Neuroimmunologist: Added to knowledge base: general_reasoning
+2025-05-04 00:56:56,984 [INFO] agent.Radiologist: Initialized Radiologist agent
+2025-05-04 00:56:57,000 [INFO] agent.Radiologist: Added to knowledge base: task
+2025-05-04 00:56:57,000 [INFO] agent.Radiologist: Added to knowledge base: general_reasoning
+2025-05-04 00:56:57,407 [INFO] agent.Clinical Pathologist: Initialized Clinical Pathologist agent
+2025-05-04 00:56:57,407 [INFO] agent.Clinical Pathologist: Added to knowledge base: task
+2025-05-04 00:56:57,407 [INFO] agent.Clinical Pathologist: Added to knowledge base: general_reasoning
+2025-05-04 00:56:57,828 [INFO] agent.Psychiatrist: Initialized Psychiatrist agent
+2025-05-04 00:56:57,828 [INFO] agent.Psychiatrist: Added to knowledge base: task
+2025-05-04 00:56:57,828 [INFO] agent.Psychiatrist: Added to knowledge base: general_reasoning
+2025-05-04 00:56:57,828 [INFO] root: Intermediate complexity: Recruited team of 5 experts with leader 'Neurologist'
+2025-05-04 00:56:57,828 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-05-04 00:56:57,828 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-05-04 00:56:57,828 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-05-04 00:56:57,828 [INFO] teamwork.team_orientation: Initialized team orientation handler
+2025-05-04 00:56:57,828 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.9
+2025-05-04 00:56:57,828 [INFO] teamwork.mutual_trust: Initialized trust network for 5 agents
+2025-05-04 00:56:57,828 [INFO] decision.methods: Initialized decision methods handler
+2025-05-04 00:56:57,828 [INFO] teamwork.shared_mental_model: Initialized task mental model for Autoimmune Encephalitis Diagnosis
+2025-05-04 00:56:57,828 [INFO] teamwork.shared_mental_model: Initialized team mental model with 5 roles
+2025-05-04 00:56:57,828 [INFO] simulation.sim_20250504_005651: Initialized simulation sim_20250504_005651
+2025-05-04 00:56:57,828 [INFO] simulation.sim_20250504_005651: Components enabled: Team Leadership: Neurologist, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model, Team Orientation, Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-04 00:56:57,847 [INFO] simulation.sim_20250504_005651: Starting task analysis phase
+2025-05-04 00:56:57,847 [INFO] simulation.sim_20250504_005651: Getting initial analysis from Neurologist
+2025-05-04 00:56:57,847 [INFO] agent.Neurologist: Received message: 
+    As a Neurologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-04 00:57:05,406 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:05,408 [INFO] agent.Neurologist: Responded: ### Analysis of the Question and Options:
+
+The clinical presentation of **subacute onset of memory d...
+2025-05-04 00:57:05,408 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-04 00:57:05,408 [INFO] simulation.sim_20250504_005651: Mental model update from Neurologist, convergence: 0.00
+2025-05-04 00:57:05,408 [INFO] simulation.sim_20250504_005651: Main discussion: task_analysis - Neurologist
+2025-05-04 00:57:05,408 [INFO] simulation.sim_20250504_005651: Getting initial analysis from Neuroimmunologist
+2025-05-04 00:57:05,408 [INFO] agent.Neuroimmunologist: Received message: 
+    As a Neuroimmunologist with expertise in your domain, analyze the following multiple-choice que...
+2025-05-04 00:57:12,769 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:12,770 [INFO] agent.Neuroimmunologist: Responded: ### Analysis of the Clinical Presentation:
+The patient exhibits **subacute onset of memory deficits,...
+2025-05-04 00:57:12,774 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neuroimmunologist
+2025-05-04 00:57:12,775 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:57:12,777 [INFO] simulation.sim_20250504_005651: Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 00:57:12,779 [INFO] simulation.sim_20250504_005651: Main discussion: task_analysis - Neuroimmunologist
+2025-05-04 00:57:12,782 [INFO] simulation.sim_20250504_005651: Getting initial analysis from Radiologist
+2025-05-04 00:57:12,783 [INFO] agent.Radiologist: Received message: 
+    As a Radiologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-04 00:57:21,169 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:21,169 [INFO] agent.Radiologist: Responded: ### Analysis of the Clinical Presentation:
+The patient presents with:
+- **Subacute onset** of memory...
+2025-05-04 00:57:21,169 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist
+2025-05-04 00:57:21,169 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:57:21,169 [INFO] simulation.sim_20250504_005651: Mental model update from Radiologist, convergence: 0.00
+2025-05-04 00:57:21,169 [INFO] simulation.sim_20250504_005651: Main discussion: task_analysis - Radiologist
+2025-05-04 00:57:21,169 [INFO] simulation.sim_20250504_005651: Getting initial analysis from Clinical Pathologist
+2025-05-04 00:57:21,169 [INFO] agent.Clinical Pathologist: Received message: 
+    As a Clinical Pathologist with expertise in your domain, analyze the following multiple-choice ...
+2025-05-04 00:57:32,188 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:32,188 [INFO] agent.Clinical Pathologist: Responded: ### Analysis of the Clinical Presentation:
+This patient presents with **subacute onset of memory def...
+2025-05-04 00:57:32,188 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist
+2025-05-04 00:57:32,188 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:57:32,207 [INFO] simulation.sim_20250504_005651: Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-04 00:57:32,207 [INFO] simulation.sim_20250504_005651: Main discussion: task_analysis - Clinical Pathologist
+2025-05-04 00:57:32,209 [INFO] simulation.sim_20250504_005651: Getting initial analysis from Psychiatrist
+2025-05-04 00:57:32,210 [INFO] agent.Psychiatrist: Received message: 
+    As a Psychiatrist with expertise in your domain, analyze the following multiple-choice question...
+2025-05-04 00:57:40,749 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:40,757 [INFO] agent.Psychiatrist: Responded: ### Analysis of the Clinical Presentation:
+The patient presents with **subacute onset of memory defi...
+2025-05-04 00:57:40,757 [INFO] teamwork.shared_mental_model: Updated shared understanding from Psychiatrist
+2025-05-04 00:57:40,757 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:57:40,757 [INFO] simulation.sim_20250504_005651: Mental model update from Psychiatrist, convergence: 0.00
+2025-05-04 00:57:40,765 [INFO] simulation.sim_20250504_005651: Main discussion: task_analysis - Psychiatrist
+2025-05-04 00:57:40,766 [INFO] simulation.sim_20250504_005651: Leadership phase: Defining task approach
+2025-05-04 00:57:40,766 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Neuroimmunologist
+2025-05-04 00:57:40,766 [INFO] agent.Neurologist: Received message: 
+        As the leader, you should define the team's overall approach to solving this task:
+        ...
+2025-05-04 00:57:49,208 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:49,208 [INFO] agent.Neurologist: Responded: ### Team Approach to Solving the Task:
+
+#### **Step 1: Breaking Down the Task**
+1. **Understand the ...
+2025-05-04 00:57:49,208 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Team Approach to Solving the Task:
+
+#### **Ste...
+2025-05-04 00:57:49,208 [INFO] agent.Neuroimmunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Team Approach to So...
+2025-05-04 00:57:53,466 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:53,466 [INFO] agent.Neuroimmunologist: Responded: ### Acknowledgment and Confirmation:
+I have received your message and appreciate the detailed breakd...
+2025-05-04 00:57:53,466 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I have receiv...
+2025-05-04 00:57:53,466 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Neuroimmunologist:
+    
+    "### Team Approach to Solving...
+2025-05-04 00:57:56,277 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:57:56,277 [INFO] agent.Neurologist: Responded: ### Verification of Understanding:
+Thank you for your prompt and detailed response. You have accurat...
+2025-05-04 00:57:56,277 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 00:57:56,292 [INFO] simulation.sim_20250504_005651: Closed-loop communication: leader_definition - Neurologist -> Neuroimmunologist
+2025-05-04 00:57:56,296 [INFO] simulation.sim_20250504_005651: Leadership action: task_definition
+2025-05-04 00:57:56,296 [INFO] simulation.sim_20250504_005651: Starting collaborative discussion phase
+2025-05-04 00:57:56,296 [INFO] simulation.sim_20250504_005651: Running collaborative discussion for Neurologist
+2025-05-04 00:57:56,296 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 00:57:56,303 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 00:57:56,305 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 00:57:56,306 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 00:57:56,307 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 00:57:56,309 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-04 00:57:56,309 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 00:57:56,309 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 00:57:56,309 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Neuroimmunologist
+2025-05-04 00:57:56,309 [INFO] agent.Neurologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 00:58:03,668 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:03,671 [INFO] agent.Neurologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+
+After integrating the insights f...
+2025-05-04 00:58:03,671 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-04 00:58:03,671 [INFO] agent.Neuroimmunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Final Answer: **B. ...
+2025-05-04 00:58:07,048 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:07,064 [INFO] agent.Neuroimmunologist: Responded: ### Acknowledgment and Confirmation:
+I have received your message and appreciate the detailed ration...
+2025-05-04 00:58:07,064 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+I have receiv...
+2025-05-04 00:58:07,064 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Neuroimmunologist:
+    
+    "### Final Answer: **B. Anti-...
+2025-05-04 00:58:11,234 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:11,245 [INFO] agent.Neurologist: Responded: ### Verification of Understanding:
+Thank you for your response. You have correctly understood the te...
+2025-05-04 00:58:11,245 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 00:58:11,245 [INFO] simulation.sim_20250504_005651: Closed-loop communication: collaborative_discussion - Neurologist -> Neuroimmunologist
+2025-05-04 00:58:11,255 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-04 00:58:11,256 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:58:11,256 [INFO] simulation.sim_20250504_005651: Mental model update from Neurologist, convergence: 0.00
+2025-05-04 00:58:11,256 [INFO] simulation.sim_20250504_005651: Running collaborative discussion for Neuroimmunologist
+2025-05-04 00:58:11,256 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 00:58:11,256 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 00:58:11,256 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 00:58:11,256 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 00:58:11,256 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 00:58:11,268 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-04 00:58:11,268 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 00:58:11,268 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 00:58:11,268 [INFO] communication.closed_loop: Starting closed-loop exchange: Neuroimmunologist -> Neurologist
+2025-05-04 00:58:11,268 [INFO] agent.Neuroimmunologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 00:58:16,160 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:16,160 [INFO] agent.Neuroimmunologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+
+Integrating the insights from al...
+2025-05-04 00:58:16,160 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-04 00:58:16,160 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Neuroimmunologist:
+    
+    "### Final Answer:...
+2025-05-04 00:58:20,298 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:20,298 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your detailed message and thorough rationale. I h...
+2025-05-04 00:58:20,298 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 00:58:20,298 [INFO] agent.Neuroimmunologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-04 00:58:24,148 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:24,153 [INFO] agent.Neuroimmunologist: Responded: ### Verification of Understanding:
+Thank you for your acknowledgment and detailed summary. I confirm...
+2025-05-04 00:58:24,153 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 00:58:24,153 [INFO] simulation.sim_20250504_005651: Closed-loop communication: collaborative_discussion - Neuroimmunologist -> Neurologist
+2025-05-04 00:58:24,159 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neuroimmunologist
+2025-05-04 00:58:24,160 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:58:24,162 [INFO] simulation.sim_20250504_005651: Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 00:58:24,162 [INFO] simulation.sim_20250504_005651: Running collaborative discussion for Radiologist
+2025-05-04 00:58:24,162 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 00:58:24,162 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 00:58:24,162 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 00:58:24,162 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 00:58:24,162 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 00:58:24,172 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-04 00:58:24,174 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 00:58:24,174 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 00:58:24,174 [INFO] communication.closed_loop: Starting closed-loop exchange: Radiologist -> Neurologist
+2025-05-04 00:58:24,174 [INFO] agent.Radiologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 00:58:29,699 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:29,705 [INFO] agent.Radiologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+After integrating the analyses fr...
+2025-05-04 00:58:29,705 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-04 00:58:29,705 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Radiologist:
+    
+    "### Final Answer: **B. ...
+2025-05-04 00:58:36,115 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:36,116 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your message and detailed rationale. I have recei...
+2025-05-04 00:58:36,116 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 00:58:36,117 [INFO] agent.Radiologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-04 00:58:36,392 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 00:58:36,392 [INFO] openai._base_client: Retrying request to /chat/completions in 14.000000 seconds
+2025-05-04 00:58:56,114 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:58:56,114 [INFO] agent.Radiologist: Responded: ### Verification of Understanding:
+Thank you for your detailed acknowledgment and confirmation. Base...
+2025-05-04 00:58:56,114 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 00:58:56,125 [INFO] simulation.sim_20250504_005651: Closed-loop communication: collaborative_discussion - Radiologist -> Neurologist
+2025-05-04 00:58:56,125 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist
+2025-05-04 00:58:56,130 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:58:56,131 [INFO] simulation.sim_20250504_005651: Mental model update from Radiologist, convergence: 0.00
+2025-05-04 00:58:56,132 [INFO] simulation.sim_20250504_005651: Running collaborative discussion for Clinical Pathologist
+2025-05-04 00:58:56,132 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 00:58:56,132 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 00:58:56,136 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 00:58:56,137 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 00:58:56,137 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 00:58:56,139 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 00:58:56,139 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 00:58:56,139 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 00:58:56,142 [INFO] communication.closed_loop: Starting closed-loop exchange: Clinical Pathologist -> Neurologist
+2025-05-04 00:58:56,142 [INFO] agent.Clinical Pathologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 00:59:02,576 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:02,578 [INFO] agent.Clinical Pathologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+After integrating all team perspe...
+2025-05-04 00:59:02,579 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-04 00:59:02,580 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Clinical Pathologist:
+    
+    "### Final Answ...
+2025-05-04 00:59:02,966 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 00:59:02,966 [INFO] openai._base_client: Retrying request to /chat/completions in 5.000000 seconds
+2025-05-04 00:59:13,915 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:13,915 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your detailed message and clear rationale. I have...
+2025-05-04 00:59:13,915 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 00:59:13,915 [INFO] agent.Clinical Pathologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-04 00:59:17,805 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:17,805 [INFO] agent.Clinical Pathologist: Responded: ### Verification of Understanding:
+Thank you for your thorough response and confirmation of the anal...
+2025-05-04 00:59:17,805 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 00:59:17,805 [INFO] simulation.sim_20250504_005651: Closed-loop communication: collaborative_discussion - Clinical Pathologist -> Neurologist
+2025-05-04 00:59:17,805 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist
+2025-05-04 00:59:17,821 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:59:17,822 [INFO] simulation.sim_20250504_005651: Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-04 00:59:17,824 [INFO] simulation.sim_20250504_005651: Running collaborative discussion for Psychiatrist
+2025-05-04 00:59:17,825 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 00:59:17,826 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 00:59:17,826 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 00:59:17,828 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 00:59:17,828 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 00:59:17,830 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 00:59:17,830 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 00:59:17,830 [INFO] teamwork.mutual_monitoring: No issues detected in Clinical Pathologist's response
+2025-05-04 00:59:17,834 [INFO] communication.closed_loop: Starting closed-loop exchange: Psychiatrist -> Neurologist
+2025-05-04 00:59:17,835 [INFO] agent.Psychiatrist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 00:59:22,393 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:22,393 [INFO] agent.Psychiatrist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+After integrating the analyses fr...
+2025-05-04 00:59:22,393 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---...
+2025-05-04 00:59:22,393 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Psychiatrist:
+    
+    "### Final Answer: **B....
+2025-05-04 00:59:29,714 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:29,714 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your detailed message and clear rationale. I have...
+2025-05-04 00:59:29,714 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 00:59:29,714 [INFO] agent.Psychiatrist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-04 00:59:34,531 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:34,531 [INFO] agent.Psychiatrist: Responded: ### Verification of Understanding:
+Thank you for your detailed acknowledgment and confirmation. I ha...
+2025-05-04 00:59:34,540 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 00:59:34,540 [INFO] simulation.sim_20250504_005651: Closed-loop communication: collaborative_discussion - Psychiatrist -> Neurologist
+2025-05-04 00:59:34,540 [INFO] teamwork.shared_mental_model: Updated shared understanding from Psychiatrist
+2025-05-04 00:59:34,540 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 00:59:34,540 [INFO] simulation.sim_20250504_005651: Mental model update from Psychiatrist, convergence: 0.00
+2025-05-04 00:59:34,540 [INFO] agent.Neurologist: Received message: 
+    As the designated leader, synthesize the team's perspectives into a consensus solution.
+    
+  ...
+2025-05-04 00:59:49,652 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 00:59:49,654 [INFO] agent.Neurologist: Responded: ### Final Solution: **B. Anti-LGI1 antibodies**
+
+---
+
+### Comprehensive Justification:
+
+After synthe...
+2025-05-04 00:59:49,654 [INFO] simulation.sim_20250504_005651: Leadership action: synthesis
+2025-05-04 00:59:49,654 [INFO] simulation.sim_20250504_005651: Main discussion: leadership_synthesis - Neurologist
+2025-05-04 00:59:49,661 [INFO] simulation.sim_20250504_005651: Applying decision methods
+2025-05-04 01:01:51,801 [INFO] root: Running single simulation
+2025-05-04 01:01:51,801 [INFO] simulation.sim_20250504_010151: Event logged: simulation_started
+2025-05-04 01:01:51,801 [INFO] simulation.sim_20250504_010151: SimulationLogger initialized for sim_20250504_010151 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model_team_orientation_mutual_trust_recruitment
+2025-05-04 01:01:52,287 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-04 01:01:52,287 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-04 01:01:54,497 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:01:54,512 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification:** 2) intermediate  
+
+**Rationale:** This question involves moderately c...
+2025-05-04 01:01:54,528 [INFO] root: Adaptive complexity: intermediate
+2025-05-04 01:01:54,986 [INFO] agent.Recruiter: Initialized Recruiter agent
+2025-05-04 01:01:54,986 [INFO] agent.Recruiter: Received message: You are an experienced medical expert who recruits a group of experts with diverse identity and ask ...
+2025-05-04 01:01:57,397 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:01:57,397 [INFO] agent.Recruiter: Responded: 1. Neurologist - Specializes in disorders of the nervous system, including encephalitis and related ...
+2025-05-04 01:01:57,854 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-04 01:01:57,854 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-04 01:01:57,854 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-04 01:01:58,293 [INFO] agent.Immunologist: Initialized Immunologist agent
+2025-05-04 01:01:58,293 [INFO] agent.Immunologist: Added to knowledge base: task
+2025-05-04 01:01:58,293 [INFO] agent.Immunologist: Added to knowledge base: general_reasoning
+2025-05-04 01:01:58,742 [INFO] agent.Neuroimmunologist: Initialized Neuroimmunologist agent
+2025-05-04 01:01:58,742 [INFO] agent.Neuroimmunologist: Added to knowledge base: task
+2025-05-04 01:01:58,742 [INFO] agent.Neuroimmunologist: Added to knowledge base: general_reasoning
+2025-05-04 01:01:59,195 [INFO] agent.Radiologist: Initialized Radiologist agent
+2025-05-04 01:01:59,195 [INFO] agent.Radiologist: Added to knowledge base: task
+2025-05-04 01:01:59,195 [INFO] agent.Radiologist: Added to knowledge base: general_reasoning
+2025-05-04 01:01:59,648 [INFO] agent.Clinical Pathologist: Initialized Clinical Pathologist agent
+2025-05-04 01:01:59,648 [INFO] agent.Clinical Pathologist: Added to knowledge base: task
+2025-05-04 01:01:59,648 [INFO] agent.Clinical Pathologist: Added to knowledge base: general_reasoning
+2025-05-04 01:01:59,648 [INFO] root: Intermediate complexity: Recruited team of 5 experts with leader 'Neurologist'
+2025-05-04 01:01:59,648 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-05-04 01:01:59,648 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-05-04 01:01:59,648 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-05-04 01:01:59,648 [INFO] teamwork.team_orientation: Initialized team orientation handler
+2025-05-04 01:01:59,648 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.9
+2025-05-04 01:01:59,648 [INFO] teamwork.mutual_trust: Initialized trust network for 5 agents
+2025-05-04 01:01:59,648 [INFO] decision.methods: Initialized decision methods handler
+2025-05-04 01:01:59,648 [INFO] teamwork.shared_mental_model: Initialized task mental model for Autoimmune Encephalitis Diagnosis
+2025-05-04 01:01:59,648 [INFO] teamwork.shared_mental_model: Initialized team mental model with 5 roles
+2025-05-04 01:01:59,648 [INFO] simulation.sim_20250504_010151: Initialized simulation sim_20250504_010151
+2025-05-04 01:01:59,648 [INFO] simulation.sim_20250504_010151: Components enabled: Team Leadership: Neurologist, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model, Team Orientation, Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-04 01:01:59,648 [INFO] simulation.sim_20250504_010151: Starting task analysis phase
+2025-05-04 01:01:59,648 [INFO] simulation.sim_20250504_010151: Getting initial analysis from Neurologist
+2025-05-04 01:01:59,648 [INFO] agent.Neurologist: Received message: 
+    As a Neurologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-04 01:02:08,099 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:08,099 [INFO] agent.Neurologist: Responded: ### Analysis of the Clinical Presentation:
+The patient presents with:
+- **Subacute onset** of memory...
+2025-05-04 01:02:08,099 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-04 01:02:08,099 [INFO] simulation.sim_20250504_010151: Mental model update from Neurologist, convergence: 0.00
+2025-05-04 01:02:08,121 [INFO] simulation.sim_20250504_010151: Main discussion: task_analysis - Neurologist
+2025-05-04 01:02:08,121 [INFO] simulation.sim_20250504_010151: Getting initial analysis from Immunologist
+2025-05-04 01:02:08,124 [INFO] agent.Immunologist: Received message: 
+    As a Immunologist with expertise in your domain, analyze the following multiple-choice question...
+2025-05-04 01:02:17,049 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:17,051 [INFO] agent.Immunologist: Responded: ### Analysis of the Clinical Presentation:
+The patient presents with **subacute onset of memory defi...
+2025-05-04 01:02:17,051 [INFO] teamwork.shared_mental_model: Updated shared understanding from Immunologist
+2025-05-04 01:02:17,051 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:02:17,061 [INFO] simulation.sim_20250504_010151: Mental model update from Immunologist, convergence: 0.00
+2025-05-04 01:02:17,063 [INFO] simulation.sim_20250504_010151: Main discussion: task_analysis - Immunologist
+2025-05-04 01:02:17,064 [INFO] simulation.sim_20250504_010151: Getting initial analysis from Neuroimmunologist
+2025-05-04 01:02:17,065 [INFO] agent.Neuroimmunologist: Received message: 
+    As a Neuroimmunologist with expertise in your domain, analyze the following multiple-choice que...
+2025-05-04 01:02:24,320 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:24,320 [INFO] agent.Neuroimmunologist: Responded: ### Analysis of the Clinical Presentation:
+The patient presents with **subacute onset of memory defi...
+2025-05-04 01:02:24,320 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neuroimmunologist
+2025-05-04 01:02:24,320 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:02:24,320 [INFO] simulation.sim_20250504_010151: Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 01:02:24,334 [INFO] simulation.sim_20250504_010151: Main discussion: task_analysis - Neuroimmunologist
+2025-05-04 01:02:24,335 [INFO] simulation.sim_20250504_010151: Getting initial analysis from Radiologist
+2025-05-04 01:02:24,337 [INFO] agent.Radiologist: Received message: 
+    As a Radiologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-04 01:02:30,314 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:30,314 [INFO] agent.Radiologist: Responded: ### Systematic Analysis of the Options:
+
+#### Option A: Anti-NMDA receptor antibodies
+- **Strengths*...
+2025-05-04 01:02:30,333 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist
+2025-05-04 01:02:30,333 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:02:30,343 [INFO] simulation.sim_20250504_010151: Mental model update from Radiologist, convergence: 0.00
+2025-05-04 01:02:30,346 [INFO] simulation.sim_20250504_010151: Main discussion: task_analysis - Radiologist
+2025-05-04 01:02:30,347 [INFO] simulation.sim_20250504_010151: Getting initial analysis from Clinical Pathologist
+2025-05-04 01:02:30,347 [INFO] agent.Clinical Pathologist: Received message: 
+    As a Clinical Pathologist with expertise in your domain, analyze the following multiple-choice ...
+2025-05-04 01:02:39,192 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:39,192 [INFO] agent.Clinical Pathologist: Responded: ### Systematic Analysis of the Options:
+
+#### **Option A: Anti-NMDA receptor antibodies**
+- **Clinic...
+2025-05-04 01:02:39,192 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist
+2025-05-04 01:02:39,192 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:02:39,208 [INFO] simulation.sim_20250504_010151: Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-04 01:02:39,210 [INFO] simulation.sim_20250504_010151: Main discussion: task_analysis - Clinical Pathologist
+2025-05-04 01:02:39,212 [INFO] simulation.sim_20250504_010151: Leadership phase: Defining task approach
+2025-05-04 01:02:39,212 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Immunologist
+2025-05-04 01:02:39,214 [INFO] agent.Neurologist: Received message: 
+        As the leader, you should define the team's overall approach to solving this task:
+        ...
+2025-05-04 01:02:49,060 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:49,069 [INFO] agent.Neurologist: Responded: ### Team Approach to Solving the Task:
+
+#### **Step 1: Understand the Clinical Scenario**
+- The team...
+2025-05-04 01:02:49,069 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Team Approach to Solving the Task:
+
+#### **Ste...
+2025-05-04 01:02:49,069 [INFO] agent.Immunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Team Approach to So...
+2025-05-04 01:02:54,388 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:54,394 [INFO] agent.Immunologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for outlining the structured team approach to solving...
+2025-05-04 01:02:54,394 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 01:02:54,394 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Immunologist:
+    
+    "### Team Approach to Solving the ...
+2025-05-04 01:02:57,278 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:02:57,278 [INFO] agent.Neurologist: Responded: ### Verification of Understanding:
+Thank you for your detailed acknowledgment and confirmation of th...
+2025-05-04 01:02:57,279 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 01:02:57,288 [INFO] simulation.sim_20250504_010151: Closed-loop communication: leader_definition - Neurologist -> Immunologist
+2025-05-04 01:02:57,289 [INFO] simulation.sim_20250504_010151: Leadership action: task_definition
+2025-05-04 01:02:57,289 [INFO] simulation.sim_20250504_010151: Starting collaborative discussion phase
+2025-05-04 01:02:57,289 [INFO] simulation.sim_20250504_010151: Running collaborative discussion for Neurologist
+2025-05-04 01:02:57,290 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-04 01:02:57,290 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Immunologist's response
+2025-05-04 01:02:57,290 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:02:57,290 [INFO] teamwork.mutual_monitoring: Neurologist provided constructive feedback to Immunologist on 1 issues
+2025-05-04 01:02:57,291 [INFO] simulation.sim_20250504_010151: Monitoring action: Neurologist monitored Immunologist, issues: 1
+2025-05-04 01:02:57,291 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist's response
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:02:57,292 [INFO] teamwork.mutual_monitoring: Neurologist provided constructive feedback to Clinical Pathologist on 1 issues
+2025-05-04 01:02:57,294 [INFO] simulation.sim_20250504_010151: Monitoring action: Neurologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:02:57,294 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Immunologist
+2025-05-04 01:02:57,294 [INFO] agent.Neurologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:03:02,155 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:02,163 [INFO] agent.Neurologist: Responded: ### Final Answer:  
+**B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+The clinical presentation of **...
+2025-05-04 01:03:02,163 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer:  
+**B. Anti-LGI1 antibodies**
+
+-...
+2025-05-04 01:03:02,163 [INFO] agent.Immunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Final Answer:  
+**B...
+2025-05-04 01:03:08,813 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:08,813 [INFO] agent.Immunologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for providing the final answer and detailed rationale...
+2025-05-04 01:03:08,813 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 01:03:08,818 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Immunologist:
+    
+    "### Final Answer:  
+**B. Anti-LGI...
+2025-05-04 01:03:11,515 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:11,515 [INFO] agent.Neurologist: Responded: ### Verification of Understanding:
+Thank you for your detailed acknowledgment and confirmation. Base...
+2025-05-04 01:03:11,515 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 01:03:11,515 [INFO] simulation.sim_20250504_010151: Closed-loop communication: collaborative_discussion - Neurologist -> Immunologist
+2025-05-04 01:03:11,525 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-04 01:03:11,526 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:03:11,528 [INFO] simulation.sim_20250504_010151: Mental model update from Neurologist, convergence: 0.00
+2025-05-04 01:03:11,528 [INFO] simulation.sim_20250504_010151: Running collaborative discussion for Immunologist
+2025-05-04 01:03:11,530 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:03:11,532 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 01:03:11,533 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:03:11,533 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 01:03:11,534 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 01:03:11,536 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 01:03:11,537 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 01:03:11,537 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist's response
+2025-05-04 01:03:11,538 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:03:11,539 [INFO] teamwork.mutual_monitoring: Immunologist provided constructive feedback to Clinical Pathologist on 1 issues
+2025-05-04 01:03:11,540 [INFO] simulation.sim_20250504_010151: Monitoring action: Immunologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:03:11,542 [INFO] communication.closed_loop: Starting closed-loop exchange: Immunologist -> Neurologist
+2025-05-04 01:03:11,542 [INFO] agent.Immunologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:03:21,984 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:21,984 [INFO] agent.Immunologist: Responded: ### Final Answer:
+**B. Anti-LGI1 antibodies**
+
+---
+
+### Rationale:
+The clinical presentation, imagin...
+2025-05-04 01:03:21,984 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer:
+**B. Anti-LGI1 antibodies**
+
+---...
+2025-05-04 01:03:21,993 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Immunologist:
+    
+    "### Final Answer:
+**B....
+2025-05-04 01:03:27,254 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:27,254 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your detailed message and analysis. I have review...
+2025-05-04 01:03:27,254 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 01:03:27,254 [INFO] agent.Immunologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer:
+**B. Anti-LGI1 a...
+2025-05-04 01:03:31,441 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:31,441 [INFO] agent.Immunologist: Responded: ### Verification of Understanding:
+Thank you for your thoughtful and detailed response. I have revie...
+2025-05-04 01:03:31,441 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 01:03:31,450 [INFO] simulation.sim_20250504_010151: Closed-loop communication: collaborative_discussion - Immunologist -> Neurologist
+2025-05-04 01:03:31,457 [INFO] teamwork.shared_mental_model: Updated shared understanding from Immunologist
+2025-05-04 01:03:31,457 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:03:31,459 [INFO] simulation.sim_20250504_010151: Mental model update from Immunologist, convergence: 0.00
+2025-05-04 01:03:31,459 [INFO] simulation.sim_20250504_010151: Running collaborative discussion for Neuroimmunologist
+2025-05-04 01:03:31,462 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:03:31,463 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 01:03:31,464 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-04 01:03:31,465 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Immunologist's response
+2025-05-04 01:03:31,466 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:03:31,466 [INFO] teamwork.mutual_monitoring: Neuroimmunologist provided constructive feedback to Immunologist on 1 issues
+2025-05-04 01:03:31,466 [INFO] simulation.sim_20250504_010151: Monitoring action: Neuroimmunologist monitored Immunologist, issues: 1
+2025-05-04 01:03:31,467 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 01:03:31,467 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 01:03:31,468 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 01:03:31,469 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist's response
+2025-05-04 01:03:31,469 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:03:31,470 [INFO] teamwork.mutual_monitoring: Neuroimmunologist provided constructive feedback to Clinical Pathologist on 1 issues
+2025-05-04 01:03:31,470 [INFO] simulation.sim_20250504_010151: Monitoring action: Neuroimmunologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:03:31,470 [INFO] communication.closed_loop: Starting closed-loop exchange: Neuroimmunologist -> Neurologist
+2025-05-04 01:03:31,470 [INFO] agent.Neuroimmunologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:03:36,676 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:36,676 [INFO] agent.Neuroimmunologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+### Rationale:
+After integrating insights from all te...
+2025-05-04 01:03:36,676 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+###...
+2025-05-04 01:03:36,676 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Neuroimmunologist:
+    
+    "### Final Answer:...
+2025-05-04 01:03:44,049 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:03:44,057 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your comprehensive message and detailed analysis....
+2025-05-04 01:03:44,057 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 01:03:44,057 [INFO] agent.Neuroimmunologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "### Final Answer: **B. Anti-LGI1 a...
+2025-05-04 01:03:44,340 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:03:44,340 [INFO] openai._base_client: Retrying request to /chat/completions in 11.000000 seconds
+2025-05-04 01:04:00,389 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:00,389 [INFO] agent.Neuroimmunologist: Responded: ### Verification of Understanding:
+Thank you for your thorough acknowledgment and detailed response....
+2025-05-04 01:04:00,389 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 01:04:00,389 [INFO] simulation.sim_20250504_010151: Closed-loop communication: collaborative_discussion - Neuroimmunologist -> Neurologist
+2025-05-04 01:04:00,389 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neuroimmunologist
+2025-05-04 01:04:00,405 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:04:00,405 [INFO] simulation.sim_20250504_010151: Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 01:04:00,405 [INFO] simulation.sim_20250504_010151: Running collaborative discussion for Radiologist
+2025-05-04 01:04:00,407 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:04:00,407 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 01:04:00,408 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-04 01:04:00,408 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Immunologist's response
+2025-05-04 01:04:00,408 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:04:00,408 [INFO] teamwork.mutual_monitoring: Radiologist provided constructive feedback to Immunologist on 1 issues
+2025-05-04 01:04:00,409 [INFO] simulation.sim_20250504_010151: Monitoring action: Radiologist monitored Immunologist, issues: 1
+2025-05-04 01:04:00,409 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:04:00,409 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 01:04:00,409 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist
+2025-05-04 01:04:00,410 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist's response
+2025-05-04 01:04:00,410 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:04:00,410 [INFO] teamwork.mutual_monitoring: Radiologist provided constructive feedback to Clinical Pathologist on 1 issues
+2025-05-04 01:04:00,411 [INFO] simulation.sim_20250504_010151: Monitoring action: Radiologist monitored Clinical Pathologist, issues: 1
+2025-05-04 01:04:00,411 [INFO] communication.closed_loop: Starting closed-loop exchange: Radiologist -> Neurologist
+2025-05-04 01:04:00,411 [INFO] agent.Radiologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:04:07,473 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:07,475 [INFO] agent.Radiologist: Responded: **Final Answer: B. Anti-LGI1 antibodies**
+
+### Rationale:
+The clinical presentation of **subacute on...
+2025-05-04 01:04:07,475 [INFO] communication.closed_loop: Step 1 - Sender message sent: **Final Answer: B. Anti-LGI1 antibodies**
+
+### Rat...
+2025-05-04 01:04:07,476 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Radiologist:
+    
+    "**Final Answer: B. Anti...
+2025-05-04 01:04:07,873 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:04:07,873 [INFO] openai._base_client: Retrying request to /chat/completions in 2.000000 seconds
+2025-05-04 01:04:16,759 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:16,759 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your detailed message and thorough analysis. I ha...
+2025-05-04 01:04:16,759 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 01:04:16,759 [INFO] agent.Radiologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "**Final Answer: B. Anti-LGI1 antib...
+2025-05-04 01:04:19,720 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:19,720 [INFO] agent.Radiologist: Responded: ### Verification of Understanding:
+Thank you for your thoughtful response and confirmation of the an...
+2025-05-04 01:04:19,720 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+Thank you for y...
+2025-05-04 01:04:19,720 [INFO] simulation.sim_20250504_010151: Closed-loop communication: collaborative_discussion - Radiologist -> Neurologist
+2025-05-04 01:04:19,729 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist
+2025-05-04 01:04:19,729 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:04:19,731 [INFO] simulation.sim_20250504_010151: Mental model update from Radiologist, convergence: 0.00
+2025-05-04 01:04:19,732 [INFO] simulation.sim_20250504_010151: Running collaborative discussion for Clinical Pathologist
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring: No issues detected in Neurologist's response
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring: Monitoring response from Immunologist
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Immunologist's response
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring: Clinical Pathologist provided constructive feedback to Immunologist on 1 issues
+2025-05-04 01:04:19,732 [INFO] simulation.sim_20250504_010151: Monitoring action: Clinical Pathologist monitored Immunologist, issues: 1
+2025-05-04 01:04:19,732 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:04:19,742 [INFO] teamwork.mutual_monitoring: No issues detected in Neuroimmunologist's response
+2025-05-04 01:04:19,742 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist
+2025-05-04 01:04:19,743 [INFO] teamwork.mutual_monitoring: No issues detected in Radiologist's response
+2025-05-04 01:04:19,744 [INFO] communication.closed_loop: Starting closed-loop exchange: Clinical Pathologist -> Neurologist
+2025-05-04 01:04:19,744 [INFO] agent.Clinical Pathologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:04:20,012 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:04:20,012 [INFO] openai._base_client: Retrying request to /chat/completions in 3.000000 seconds
+2025-05-04 01:04:28,729 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:28,729 [INFO] agent.Clinical Pathologist: Responded: **Final Answer: B. Anti-LGI1 antibodies**
+
+### Rationale:
+The patient’s presentation of subacute mem...
+2025-05-04 01:04:28,744 [INFO] communication.closed_loop: Step 1 - Sender message sent: **Final Answer: B. Anti-LGI1 antibodies**
+
+### Rat...
+2025-05-04 01:04:28,744 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Clinical Pathologist:
+    
+    "**Final Answer...
+2025-05-04 01:04:37,158 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:37,169 [INFO] agent.Neurologist: Responded: ### Acknowledgment and Confirmation:
+Thank you for your detailed message and analysis. I have review...
+2025-05-04 01:04:37,169 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: ### Acknowledgment and Confirmation:
+Thank you for...
+2025-05-04 01:04:37,169 [INFO] agent.Clinical Pathologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "**Final Answer: B. Anti-LGI1 antib...
+2025-05-04 01:04:40,835 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:40,835 [INFO] agent.Clinical Pathologist: Responded: ### Verification of Understanding:
+
+Thank you for your detailed response and acknowledgment. I confi...
+2025-05-04 01:04:40,835 [INFO] communication.closed_loop: Step 3 - Sender verification: ### Verification of Understanding:
+
+Thank you for ...
+2025-05-04 01:04:40,835 [INFO] simulation.sim_20250504_010151: Closed-loop communication: collaborative_discussion - Clinical Pathologist -> Neurologist
+2025-05-04 01:04:40,841 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist
+2025-05-04 01:04:40,841 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:04:40,841 [INFO] simulation.sim_20250504_010151: Mental model update from Clinical Pathologist, convergence: 0.00
+2025-05-04 01:04:40,841 [INFO] agent.Neurologist: Received message: 
+    As the designated leader, synthesize the team's perspectives into a consensus solution.
+    
+  ...
+2025-05-04 01:04:58,730 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:04:58,730 [INFO] agent.Neurologist: Responded: ### Final Answer: **B. Anti-LGI1 antibodies**
+
+---
+
+### Comprehensive Justification:
+
+#### **Synthes...
+2025-05-04 01:04:58,730 [INFO] simulation.sim_20250504_010151: Leadership action: synthesis
+2025-05-04 01:04:58,730 [INFO] simulation.sim_20250504_010151: Main discussion: leadership_synthesis - Neurologist
+2025-05-04 01:04:58,744 [INFO] simulation.sim_20250504_010151: Applying decision methods
+2025-05-04 01:04:58,748 [INFO] root: Majority voting result: {'method': 'majority_voting', 'winning_option': 'A', 'vote_counts': {'A': 3, 'B': 2}, 'total_votes': 5, 'confidence': 0.6}
+2025-05-04 01:04:58,748 [INFO] root: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'vote_counts': {'B': 5}, 'weighted_votes': {'B': 5.0}, 'total_votes': 5, 'confidence': 1.0}
+2025-05-04 01:04:58,748 [INFO] root: Borda count result: {'method': 'borda_count', 'winning_option': 'A', 'borda_scores': {'A': 9, 'B': 6, 'C': 0, 'D': 0}, 'total_possible_score': 15.0, 'confidence': 0.6}
+2025-05-04 01:04:58,748 [INFO] simulation.sim_20250504_010151: Closed-loop communication metrics collected
+2025-05-04 01:04:58,748 [INFO] teamwork.mutual_monitoring: Team performance analysis completed: low effectiveness
+2025-05-04 01:04:58,748 [INFO] simulation.sim_20250504_010151: Mutual monitoring metrics collected
+2025-05-04 01:04:58,748 [INFO] teamwork.shared_mental_model: Mental model effectiveness analysis: low effectiveness
+2025-05-04 01:04:58,748 [INFO] simulation.sim_20250504_010151: Shared mental model metrics collected
+2025-05-04 01:04:58,758 [INFO] simulation.sim_20250504_010151: Results saved to output\sim_20250504_010151_results.json
+2025-05-04 01:31:08,191 [INFO] root: Running single simulation
+2025-05-04 01:31:08,191 [INFO] simulation.sim_20250504_013108: Event logged: simulation_started
+2025-05-04 01:31:08,191 [INFO] simulation.sim_20250504_013108: SimulationLogger initialized for sim_20250504_013108 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model_team_orientation_mutual_trust_recruitment
+2025-05-04 01:31:08,741 [INFO] agent.Complexity Evaluator: Initialized Complexity Evaluator agent
+2025-05-04 01:31:08,741 [INFO] agent.Complexity Evaluator: Received message: 
+    Analyze the following task/question and determine its complexity level:
+    
+    
+    A 32-year...
+2025-05-04 01:31:10,657 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:10,669 [INFO] agent.Complexity Evaluator: Responded: **Complexity Classification:** 2) intermediate  
+
+**Rationale:** This task involves moderately compl...
+2025-05-04 01:31:10,669 [INFO] root: Adaptive complexity: intermediate
+2025-05-04 01:31:11,083 [INFO] agent.Recruiter: Initialized Recruiter agent
+2025-05-04 01:31:11,084 [INFO] agent.Recruiter: Received message: You are an experienced medical expert who recruits a group of experts with diverse identity and ask ...
+2025-05-04 01:31:13,812 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:13,828 [INFO] agent.Recruiter: Responded: 1. Neurologist - Specializes in disorders of the nervous system, including autoimmune and inflammato...
+2025-05-04 01:31:14,262 [INFO] agent.Neurologist: Initialized Neurologist agent
+2025-05-04 01:31:14,262 [INFO] agent.Neurologist: Added to knowledge base: task
+2025-05-04 01:31:14,262 [INFO] agent.Neurologist: Added to knowledge base: general_reasoning
+2025-05-04 01:31:14,678 [INFO] agent.Neuroimmunologist: Initialized Neuroimmunologist agent
+2025-05-04 01:31:14,678 [INFO] agent.Neuroimmunologist: Added to knowledge base: task
+2025-05-04 01:31:14,679 [INFO] agent.Neuroimmunologist: Added to knowledge base: general_reasoning
+2025-05-04 01:31:15,080 [INFO] agent.Radiologist (Neuroradiology): Initialized Radiologist (Neuroradiology) agent
+2025-05-04 01:31:15,080 [INFO] agent.Radiologist (Neuroradiology): Added to knowledge base: task
+2025-05-04 01:31:15,080 [INFO] agent.Radiologist (Neuroradiology): Added to knowledge base: general_reasoning
+2025-05-04 01:31:15,516 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Initialized Clinical Pathologist (with expertise in CSF analysis) agent
+2025-05-04 01:31:15,516 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Added to knowledge base: task
+2025-05-04 01:31:15,516 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Added to knowledge base: general_reasoning
+2025-05-04 01:31:15,965 [INFO] agent.Psychiatrist: Initialized Psychiatrist agent
+2025-05-04 01:31:15,966 [INFO] agent.Psychiatrist: Added to knowledge base: task
+2025-05-04 01:31:15,966 [INFO] agent.Psychiatrist: Added to knowledge base: general_reasoning
+2025-05-04 01:31:15,966 [INFO] root: Intermediate complexity: Recruited team of 5 experts with leader 'Neurologist'
+2025-05-04 01:31:15,966 [INFO] communication.closed_loop: Initialized closed-loop communication handler
+2025-05-04 01:31:15,966 [INFO] teamwork.mutual_monitoring: Initialized mutual performance monitoring handler
+2025-05-04 01:31:15,967 [INFO] teamwork.shared_mental_model: Initialized shared mental model handler
+2025-05-04 01:31:15,967 [INFO] teamwork.team_orientation: Initialized team orientation handler
+2025-05-04 01:31:15,967 [INFO] teamwork.mutual_trust: Initialized mutual trust handler with factor 0.9
+2025-05-04 01:31:15,967 [INFO] teamwork.mutual_trust: Initialized trust network for 5 agents
+2025-05-04 01:31:15,967 [INFO] decision.methods: Initialized decision methods handler
+2025-05-04 01:31:15,967 [INFO] teamwork.shared_mental_model: Initialized task mental model for Autoimmune Encephalitis Diagnosis
+2025-05-04 01:31:15,967 [INFO] teamwork.shared_mental_model: Initialized team mental model with 5 roles
+2025-05-04 01:31:15,967 [INFO] simulation.sim_20250504_013108: Initialized simulation sim_20250504_013108
+2025-05-04 01:31:15,967 [INFO] simulation.sim_20250504_013108: Components enabled: Team Leadership: Neurologist, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model, Team Orientation, Mutual Trust (factor: 0.9), Agent Recruitment (adaptive)
+2025-05-04 01:31:15,976 [INFO] simulation.sim_20250504_013108: Starting task analysis phase
+2025-05-04 01:31:15,976 [INFO] simulation.sim_20250504_013108: Getting initial analysis from Neurologist
+2025-05-04 01:31:15,976 [INFO] agent.Neurologist: Received message: 
+    As a Neurologist with expertise in your domain, analyze the following multiple-choice question:...
+2025-05-04 01:31:21,057 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:21,057 [INFO] agent.Neurologist: Responded: ANSWER: B  
+
+**Rationale:**  
+The clinical presentation of subacute onset memory deficits, confusion...
+2025-05-04 01:31:21,057 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-04 01:31:21,057 [INFO] simulation.sim_20250504_013108: Mental model update from Neurologist, convergence: 0.00
+2025-05-04 01:31:21,057 [INFO] simulation.sim_20250504_013108: Main discussion: task_analysis - Neurologist
+2025-05-04 01:31:21,057 [INFO] simulation.sim_20250504_013108: Getting initial analysis from Neuroimmunologist
+2025-05-04 01:31:21,057 [INFO] agent.Neuroimmunologist: Received message: 
+    As a Neuroimmunologist with expertise in your domain, analyze the following multiple-choice que...
+2025-05-04 01:31:28,808 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:28,808 [INFO] agent.Neuroimmunologist: Responded: ANSWER: B
+
+The most likely autoantibody associated with this clinical presentation is **Anti-LGI1 an...
+2025-05-04 01:31:28,808 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neuroimmunologist
+2025-05-04 01:31:28,808 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:31:28,808 [INFO] simulation.sim_20250504_013108: Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 01:31:28,820 [INFO] simulation.sim_20250504_013108: Main discussion: task_analysis - Neuroimmunologist
+2025-05-04 01:31:28,821 [INFO] simulation.sim_20250504_013108: Getting initial analysis from Radiologist (Neuroradiology)
+2025-05-04 01:31:28,821 [INFO] agent.Radiologist (Neuroradiology): Received message: 
+    As a Radiologist (Neuroradiology) with expertise in your domain, analyze the following multiple...
+2025-05-04 01:31:37,496 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:37,516 [INFO] agent.Radiologist (Neuroradiology): Responded: ANSWER: B
+
+**Reasoning:**
+
+The clinical presentation, imaging findings, and ancillary test results s...
+2025-05-04 01:31:37,516 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist (Neuroradiology)
+2025-05-04 01:31:37,518 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:31:37,519 [INFO] simulation.sim_20250504_013108: Mental model update from Radiologist (Neuroradiology), convergence: 0.00
+2025-05-04 01:31:37,521 [INFO] simulation.sim_20250504_013108: Main discussion: task_analysis - Radiologist (Neuroradiology)
+2025-05-04 01:31:37,522 [INFO] simulation.sim_20250504_013108: Getting initial analysis from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:31:37,523 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Received message: 
+    As a Clinical Pathologist (with expertise in CSF analysis) with expertise in your domain, analy...
+2025-05-04 01:31:41,822 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:41,822 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Responded: ANSWER: B
+
+Rationale:
+
+1. **Option A: Anti-NMDA receptor antibodies**  
+   Anti-NMDA receptor enceph...
+2025-05-04 01:31:41,822 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:31:41,822 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:31:41,840 [INFO] simulation.sim_20250504_013108: Mental model update from Clinical Pathologist (with expertise in CSF analysis), convergence: 0.00
+2025-05-04 01:31:41,840 [INFO] simulation.sim_20250504_013108: Main discussion: task_analysis - Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:31:41,840 [INFO] simulation.sim_20250504_013108: Getting initial analysis from Psychiatrist
+2025-05-04 01:31:41,840 [INFO] agent.Psychiatrist: Received message: 
+    As a Psychiatrist with expertise in your domain, analyze the following multiple-choice question...
+2025-05-04 01:31:50,857 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:50,857 [INFO] agent.Psychiatrist: Responded: ANSWER: B
+
+The most likely autoantibody associated with this clinical presentation is **Anti-LGI1 an...
+2025-05-04 01:31:50,865 [INFO] teamwork.shared_mental_model: Updated shared understanding from Psychiatrist
+2025-05-04 01:31:50,865 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:31:50,865 [INFO] simulation.sim_20250504_013108: Mental model update from Psychiatrist, convergence: 0.00
+2025-05-04 01:31:50,870 [INFO] simulation.sim_20250504_013108: Main discussion: task_analysis - Psychiatrist
+2025-05-04 01:31:50,870 [INFO] simulation.sim_20250504_013108: Leadership phase: Defining task approach
+2025-05-04 01:31:50,870 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Neuroimmunologist
+2025-05-04 01:31:50,870 [INFO] agent.Neurologist: Received message: 
+        As the leader, you should define the team's overall approach to solving this task:
+        ...
+2025-05-04 01:31:58,617 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:31:58,621 [INFO] agent.Neurologist: Responded: ### Team Approach to Solving the Task:
+
+#### **1. Break Down the Task into Clear Steps:**
+   - **Ste...
+2025-05-04 01:31:58,621 [INFO] communication.closed_loop: Step 1 - Sender message sent: ### Team Approach to Solving the Task:
+
+#### **1. ...
+2025-05-04 01:31:58,621 [INFO] agent.Neuroimmunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "### Team Approach to So...
+2025-05-04 01:32:04,275 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:04,276 [INFO] agent.Neuroimmunologist: Responded: Acknowledgment and Confirmation:  
+I have received your message and confirm my understanding of the ...
+2025-05-04 01:32:04,278 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: Acknowledgment and Confirmation:  
+I have received...
+2025-05-04 01:32:04,278 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Neuroimmunologist:
+    
+    "### Team Approach to Solving...
+2025-05-04 01:32:08,489 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:08,491 [INFO] agent.Neurologist: Responded: **Verification of Understanding:**  
+Thank you for your detailed response. You have correctly unders...
+2025-05-04 01:32:08,492 [INFO] communication.closed_loop: Step 3 - Sender verification: **Verification of Understanding:**  
+Thank you for...
+2025-05-04 01:32:08,503 [INFO] simulation.sim_20250504_013108: Closed-loop communication: leader_definition - Neurologist -> Neuroimmunologist
+2025-05-04 01:32:08,503 [INFO] simulation.sim_20250504_013108: Leadership action: task_definition
+2025-05-04 01:32:08,508 [INFO] simulation.sim_20250504_013108: Starting collaborative discussion phase
+2025-05-04 01:32:08,509 [INFO] simulation.sim_20250504_013108: Running collaborative discussion for Neurologist
+2025-05-04 01:32:08,510 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:32:08,511 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neuroimmunologist's response
+2025-05-04 01:32:08,512 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:08,513 [INFO] teamwork.mutual_monitoring: Neurologist provided constructive feedback to Neuroimmunologist on 1 issues
+2025-05-04 01:32:08,514 [INFO] simulation.sim_20250504_013108: Monitoring action: Neurologist monitored Neuroimmunologist, issues: 1
+2025-05-04 01:32:08,516 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist (Neuroradiology)
+2025-05-04 01:32:08,517 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Radiologist (Neuroradiology)'s response
+2025-05-04 01:32:08,518 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:08,518 [INFO] teamwork.mutual_monitoring: Neurologist provided constructive feedback to Radiologist (Neuroradiology) on 1 issues
+2025-05-04 01:32:08,521 [INFO] simulation.sim_20250504_013108: Monitoring action: Neurologist monitored Radiologist (Neuroradiology), issues: 1
+2025-05-04 01:32:08,522 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:32:08,522 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist (with expertise in CSF analysis)'s response
+2025-05-04 01:32:08,522 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:08,522 [INFO] teamwork.mutual_monitoring: Neurologist provided constructive feedback to Clinical Pathologist (with expertise in CSF analysis) on 1 issues
+2025-05-04 01:32:08,522 [INFO] simulation.sim_20250504_013108: Monitoring action: Neurologist monitored Clinical Pathologist (with expertise in CSF analysis), issues: 1
+2025-05-04 01:32:08,522 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 01:32:08,522 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 01:32:08,522 [INFO] communication.closed_loop: Starting closed-loop exchange: Neurologist -> Neuroimmunologist
+2025-05-04 01:32:08,522 [INFO] agent.Neurologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:32:20,899 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:20,899 [INFO] agent.Neurologist: Responded: ANSWER: B  
+
+**Rationale:**  
+After integrating the analyses from all team members and addressing in...
+2025-05-04 01:32:20,899 [INFO] communication.closed_loop: Step 1 - Sender message sent: ANSWER: B  
+
+**Rationale:**  
+After integrating th...
+2025-05-04 01:32:20,899 [INFO] agent.Neuroimmunologist: Received message: 
+    You have received the following message from the Neurologist:
+    
+    "ANSWER: B  
+
+**Rational...
+2025-05-04 01:32:24,646 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:24,646 [INFO] agent.Neuroimmunologist: Responded: Acknowledgment and Confirmation:  
+I have received your message and confirm my understanding of the ...
+2025-05-04 01:32:24,646 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: Acknowledgment and Confirmation:  
+I have received...
+2025-05-04 01:32:24,646 [INFO] agent.Neurologist: Received message: 
+    You sent the following message to the Neuroimmunologist:
+    
+    "ANSWER: B  
+
+**Rationale:** ...
+2025-05-04 01:32:28,373 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:28,373 [INFO] agent.Neurologist: Responded: **Verification of Understanding:**  
+Thank you for your response. You have correctly understood the ...
+2025-05-04 01:32:28,373 [INFO] communication.closed_loop: Step 3 - Sender verification: **Verification of Understanding:**  
+Thank you for...
+2025-05-04 01:32:28,373 [INFO] simulation.sim_20250504_013108: Closed-loop communication: collaborative_discussion - Neurologist -> Neuroimmunologist
+2025-05-04 01:32:28,386 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neurologist
+2025-05-04 01:32:28,386 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:32:28,386 [INFO] simulation.sim_20250504_013108: Mental model update from Neurologist, convergence: 0.00
+2025-05-04 01:32:28,389 [INFO] simulation.sim_20250504_013108: Running collaborative discussion for Neuroimmunologist
+2025-05-04 01:32:28,389 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:32:28,390 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-04 01:32:28,390 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:28,390 [INFO] teamwork.mutual_monitoring: Neuroimmunologist provided constructive feedback to Neurologist on 1 issues
+2025-05-04 01:32:28,391 [INFO] simulation.sim_20250504_013108: Monitoring action: Neuroimmunologist monitored Neurologist, issues: 1
+2025-05-04 01:32:28,392 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist (Neuroradiology)
+2025-05-04 01:32:28,393 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Radiologist (Neuroradiology)'s response
+2025-05-04 01:32:28,393 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:28,393 [INFO] teamwork.mutual_monitoring: Neuroimmunologist provided constructive feedback to Radiologist (Neuroradiology) on 1 issues
+2025-05-04 01:32:28,394 [INFO] simulation.sim_20250504_013108: Monitoring action: Neuroimmunologist monitored Radiologist (Neuroradiology), issues: 1
+2025-05-04 01:32:28,395 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:32:28,395 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist (with expertise in CSF analysis)'s response
+2025-05-04 01:32:28,395 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:28,395 [INFO] teamwork.mutual_monitoring: Neuroimmunologist provided constructive feedback to Clinical Pathologist (with expertise in CSF analysis) on 1 issues
+2025-05-04 01:32:28,396 [INFO] simulation.sim_20250504_013108: Monitoring action: Neuroimmunologist monitored Clinical Pathologist (with expertise in CSF analysis), issues: 1
+2025-05-04 01:32:28,397 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 01:32:28,397 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 01:32:28,397 [INFO] communication.closed_loop: Starting closed-loop exchange: Neuroimmunologist -> Neurologist
+2025-05-04 01:32:28,398 [INFO] agent.Neuroimmunologist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:32:37,927 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:37,934 [INFO] agent.Neuroimmunologist: Responded: ANSWER: B
+
+### Rationale:
+After integrating all team members' analyses and addressing potential cont...
+2025-05-04 01:32:37,934 [INFO] communication.closed_loop: Step 1 - Sender message sent: ANSWER: B
+
+### Rationale:
+After integrating all te...
+2025-05-04 01:32:37,934 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Neuroimmunologist:
+    
+    "ANSWER: B
+
+### Ra...
+2025-05-04 01:32:44,865 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:44,865 [INFO] agent.Neurologist: Responded: **Acknowledgment and Confirmation:**  
+Thank you for your detailed message. I have received it and a...
+2025-05-04 01:32:44,865 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: **Acknowledgment and Confirmation:**  
+Thank you f...
+2025-05-04 01:32:44,865 [INFO] agent.Neuroimmunologist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "ANSWER: B
+
+### Rationale:
+After in...
+2025-05-04 01:32:49,488 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:32:49,488 [INFO] agent.Neuroimmunologist: Responded: **Verification of Understanding:**  
+Thank you for your acknowledgment and detailed restatement of t...
+2025-05-04 01:32:49,488 [INFO] communication.closed_loop: Step 3 - Sender verification: **Verification of Understanding:**  
+Thank you for...
+2025-05-04 01:32:49,488 [INFO] simulation.sim_20250504_013108: Closed-loop communication: collaborative_discussion - Neuroimmunologist -> Neurologist
+2025-05-04 01:32:49,502 [INFO] teamwork.shared_mental_model: Updated shared understanding from Neuroimmunologist
+2025-05-04 01:32:49,502 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:32:49,502 [INFO] simulation.sim_20250504_013108: Mental model update from Neuroimmunologist, convergence: 0.00
+2025-05-04 01:32:49,508 [INFO] simulation.sim_20250504_013108: Running collaborative discussion for Radiologist (Neuroradiology)
+2025-05-04 01:32:49,509 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:32:49,509 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-04 01:32:49,510 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:49,511 [INFO] teamwork.mutual_monitoring: Radiologist (Neuroradiology) provided constructive feedback to Neurologist on 1 issues
+2025-05-04 01:32:49,512 [INFO] simulation.sim_20250504_013108: Monitoring action: Radiologist (Neuroradiology) monitored Neurologist, issues: 1
+2025-05-04 01:32:49,513 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:32:49,514 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neuroimmunologist's response
+2025-05-04 01:32:49,514 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:49,514 [INFO] teamwork.mutual_monitoring: Radiologist (Neuroradiology) provided constructive feedback to Neuroimmunologist on 1 issues
+2025-05-04 01:32:49,514 [INFO] simulation.sim_20250504_013108: Monitoring action: Radiologist (Neuroradiology) monitored Neuroimmunologist, issues: 1
+2025-05-04 01:32:49,514 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:32:49,514 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist (with expertise in CSF analysis)'s response
+2025-05-04 01:32:49,514 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:32:49,520 [INFO] teamwork.mutual_monitoring: Radiologist (Neuroradiology) provided constructive feedback to Clinical Pathologist (with expertise in CSF analysis) on 1 issues
+2025-05-04 01:32:49,520 [INFO] simulation.sim_20250504_013108: Monitoring action: Radiologist (Neuroradiology) monitored Clinical Pathologist (with expertise in CSF analysis), issues: 1
+2025-05-04 01:32:49,520 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 01:32:49,520 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 01:32:49,520 [INFO] communication.closed_loop: Starting closed-loop exchange: Radiologist (Neuroradiology) -> Neurologist
+2025-05-04 01:32:49,520 [INFO] agent.Radiologist (Neuroradiology): Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:33:00,163 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:00,163 [INFO] agent.Radiologist (Neuroradiology): Responded: ANSWER: B
+
+**Rationale:**
+
+After reviewing all perspectives and analyses, the most consistent diagno...
+2025-05-04 01:33:00,163 [INFO] communication.closed_loop: Step 1 - Sender message sent: ANSWER: B
+
+**Rationale:**
+
+After reviewing all per...
+2025-05-04 01:33:00,163 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Radiologist (Neuroradiology):
+    
+    "ANSWER...
+2025-05-04 01:33:05,496 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:05,496 [INFO] agent.Neurologist: Responded: **Acknowledgment and Confirmation:**  
+Thank you for your detailed message. I have received it and a...
+2025-05-04 01:33:05,496 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: **Acknowledgment and Confirmation:**  
+Thank you f...
+2025-05-04 01:33:05,496 [INFO] agent.Radiologist (Neuroradiology): Received message: 
+    You sent the following message to the Neurologist:
+    
+    "ANSWER: B
+
+**Rationale:**
+
+After r...
+2025-05-04 01:33:07,987 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:07,989 [INFO] agent.Radiologist (Neuroradiology): Responded: **Verification of Understanding:**  
+Thank you for your acknowledgment and confirmation. From your r...
+2025-05-04 01:33:07,989 [INFO] communication.closed_loop: Step 3 - Sender verification: **Verification of Understanding:**  
+Thank you for...
+2025-05-04 01:33:07,989 [INFO] simulation.sim_20250504_013108: Closed-loop communication: collaborative_discussion - Radiologist (Neuroradiology) -> Neurologist
+2025-05-04 01:33:08,001 [INFO] teamwork.shared_mental_model: Updated shared understanding from Radiologist (Neuroradiology)
+2025-05-04 01:33:08,001 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:33:08,002 [INFO] simulation.sim_20250504_013108: Mental model update from Radiologist (Neuroradiology), convergence: 0.00
+2025-05-04 01:33:08,004 [INFO] simulation.sim_20250504_013108: Running collaborative discussion for Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:33:08,004 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:33:08,004 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-04 01:33:08,006 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:08,006 [INFO] teamwork.mutual_monitoring: Clinical Pathologist (with expertise in CSF analysis) provided constructive feedback to Neurologist on 1 issues
+2025-05-04 01:33:08,006 [INFO] simulation.sim_20250504_013108: Monitoring action: Clinical Pathologist (with expertise in CSF analysis) monitored Neurologist, issues: 1
+2025-05-04 01:33:08,006 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:33:08,006 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neuroimmunologist's response
+2025-05-04 01:33:08,006 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:08,006 [INFO] teamwork.mutual_monitoring: Clinical Pathologist (with expertise in CSF analysis) provided constructive feedback to Neuroimmunologist on 1 issues
+2025-05-04 01:33:08,010 [INFO] simulation.sim_20250504_013108: Monitoring action: Clinical Pathologist (with expertise in CSF analysis) monitored Neuroimmunologist, issues: 1
+2025-05-04 01:33:08,011 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist (Neuroradiology)
+2025-05-04 01:33:08,011 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Radiologist (Neuroradiology)'s response
+2025-05-04 01:33:08,011 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:08,011 [INFO] teamwork.mutual_monitoring: Clinical Pathologist (with expertise in CSF analysis) provided constructive feedback to Radiologist (Neuroradiology) on 1 issues
+2025-05-04 01:33:08,011 [INFO] simulation.sim_20250504_013108: Monitoring action: Clinical Pathologist (with expertise in CSF analysis) monitored Radiologist (Neuroradiology), issues: 1
+2025-05-04 01:33:08,011 [INFO] teamwork.mutual_monitoring: Monitoring response from Psychiatrist
+2025-05-04 01:33:08,011 [INFO] teamwork.mutual_monitoring: No issues detected in Psychiatrist's response
+2025-05-04 01:33:08,011 [INFO] communication.closed_loop: Starting closed-loop exchange: Clinical Pathologist (with expertise in CSF analysis) -> Neurologist
+2025-05-04 01:33:08,011 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:33:08,316 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:33:08,316 [INFO] openai._base_client: Retrying request to /chat/completions in 1.000000 seconds
+2025-05-04 01:33:16,666 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:16,666 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Responded: ANSWER: B  
+
+### Rationale:  
+
+After reviewing the clinical presentation, imaging findings, CSF anal...
+2025-05-04 01:33:16,666 [INFO] communication.closed_loop: Step 1 - Sender message sent: ANSWER: B  
+
+### Rationale:  
+
+After reviewing the...
+2025-05-04 01:33:16,666 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Clinical Pathologist (with expertise in CSF an...
+2025-05-04 01:33:17,117 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:33:17,119 [INFO] openai._base_client: Retrying request to /chat/completions in 8.000000 seconds
+2025-05-04 01:33:32,496 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:32,496 [INFO] agent.Neurologist: Responded: **Acknowledgment and Confirmation:**  
+Thank you for your detailed message. I have received it and a...
+2025-05-04 01:33:32,496 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: **Acknowledgment and Confirmation:**  
+Thank you f...
+2025-05-04 01:33:32,496 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Received message: 
+    You sent the following message to the Neurologist:
+    
+    "ANSWER: B  
+
+### Rationale:  
+
+Aft...
+2025-05-04 01:33:36,634 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:36,646 [INFO] agent.Clinical Pathologist (with expertise in CSF analysis): Responded: **Verification of Understanding:**  
+Thank you for your thorough acknowledgment and confirmation of ...
+2025-05-04 01:33:36,646 [INFO] communication.closed_loop: Step 3 - Sender verification: **Verification of Understanding:**  
+Thank you for...
+2025-05-04 01:33:36,646 [INFO] simulation.sim_20250504_013108: Closed-loop communication: collaborative_discussion - Clinical Pathologist (with expertise in CSF analysis) -> Neurologist
+2025-05-04 01:33:36,651 [INFO] teamwork.shared_mental_model: Updated shared understanding from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:33:36,652 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:33:36,653 [INFO] simulation.sim_20250504_013108: Mental model update from Clinical Pathologist (with expertise in CSF analysis), convergence: 0.00
+2025-05-04 01:33:36,653 [INFO] simulation.sim_20250504_013108: Running collaborative discussion for Psychiatrist
+2025-05-04 01:33:36,653 [INFO] teamwork.mutual_monitoring: Monitoring response from Neurologist
+2025-05-04 01:33:36,657 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neurologist's response
+2025-05-04 01:33:36,657 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:36,658 [INFO] teamwork.mutual_monitoring: Psychiatrist provided constructive feedback to Neurologist on 1 issues
+2025-05-04 01:33:36,658 [INFO] simulation.sim_20250504_013108: Monitoring action: Psychiatrist monitored Neurologist, issues: 1
+2025-05-04 01:33:36,660 [INFO] teamwork.mutual_monitoring: Monitoring response from Neuroimmunologist
+2025-05-04 01:33:36,660 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Neuroimmunologist's response
+2025-05-04 01:33:36,660 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:36,660 [INFO] teamwork.mutual_monitoring: Psychiatrist provided constructive feedback to Neuroimmunologist on 1 issues
+2025-05-04 01:33:36,664 [INFO] simulation.sim_20250504_013108: Monitoring action: Psychiatrist monitored Neuroimmunologist, issues: 1
+2025-05-04 01:33:36,665 [INFO] teamwork.mutual_monitoring: Monitoring response from Radiologist (Neuroradiology)
+2025-05-04 01:33:36,666 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Radiologist (Neuroradiology)'s response
+2025-05-04 01:33:36,666 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:36,666 [INFO] teamwork.mutual_monitoring: Psychiatrist provided constructive feedback to Radiologist (Neuroradiology) on 1 issues
+2025-05-04 01:33:36,666 [INFO] simulation.sim_20250504_013108: Monitoring action: Psychiatrist monitored Radiologist (Neuroradiology), issues: 1
+2025-05-04 01:33:36,666 [INFO] teamwork.mutual_monitoring: Monitoring response from Clinical Pathologist (with expertise in CSF analysis)
+2025-05-04 01:33:36,670 [INFO] teamwork.mutual_monitoring: Detected 1 issues in Clinical Pathologist (with expertise in CSF analysis)'s response
+2025-05-04 01:33:36,671 [INFO] teamwork.mutual_monitoring:   - contradictory_selection: Potential contradiction: response indicates A but also mentions selecting B
+2025-05-04 01:33:36,671 [INFO] teamwork.mutual_monitoring: Psychiatrist provided constructive feedback to Clinical Pathologist (with expertise in CSF analysis) on 1 issues
+2025-05-04 01:33:36,673 [INFO] simulation.sim_20250504_013108: Monitoring action: Psychiatrist monitored Clinical Pathologist (with expertise in CSF analysis), issues: 1
+2025-05-04 01:33:36,673 [INFO] communication.closed_loop: Starting closed-loop exchange: Psychiatrist -> Neurologist
+2025-05-04 01:33:36,673 [INFO] agent.Psychiatrist: Received message: 
+    You have analyzed the task, and your teammates have provided their analyses as well.
+    
+    Y...
+2025-05-04 01:33:44,070 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:44,070 [INFO] agent.Psychiatrist: Responded: ANSWER: B
+
+The most likely autoantibody associated with this clinical presentation is **Anti-LGI1 an...
+2025-05-04 01:33:44,070 [INFO] communication.closed_loop: Step 1 - Sender message sent: ANSWER: B
+
+The most likely autoantibody associated...
+2025-05-04 01:33:44,070 [INFO] agent.Neurologist: Received message: 
+    You have received the following message from the Psychiatrist:
+    
+    "ANSWER: B
+
+The most li...
+2025-05-04 01:33:44,450 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:33:44,450 [INFO] openai._base_client: Retrying request to /chat/completions in 1.000000 seconds
+2025-05-04 01:33:53,787 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:53,787 [INFO] agent.Neurologist: Responded: **Acknowledgment and Confirmation:**  
+Thank you for your detailed message. I have received it and a...
+2025-05-04 01:33:53,787 [INFO] communication.closed_loop: Step 2 - Receiver acknowledgment: **Acknowledgment and Confirmation:**  
+Thank you f...
+2025-05-04 01:33:53,787 [INFO] agent.Psychiatrist: Received message: 
+    You sent the following message to the Neurologist:
+    
+    "ANSWER: B
+
+The most likely autoant...
+2025-05-04 01:33:57,585 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:33:57,585 [INFO] agent.Psychiatrist: Responded: **Verification of Understanding:**  
+Thank you for your acknowledgment and confirmation. I have revi...
+2025-05-04 01:33:57,585 [INFO] communication.closed_loop: Step 3 - Sender verification: **Verification of Understanding:**  
+Thank you for...
+2025-05-04 01:33:57,601 [INFO] simulation.sim_20250504_013108: Closed-loop communication: collaborative_discussion - Psychiatrist -> Neurologist
+2025-05-04 01:33:57,601 [INFO] teamwork.shared_mental_model: Updated shared understanding from Psychiatrist
+2025-05-04 01:33:57,601 [INFO] teamwork.shared_mental_model: Current understanding convergence: 0.00
+2025-05-04 01:33:57,601 [INFO] simulation.sim_20250504_013108: Mental model update from Psychiatrist, convergence: 0.00
+2025-05-04 01:33:57,604 [INFO] agent.Neurologist: Received message: 
+    As the designated leader, synthesize the team's perspectives into a consensus solution.
+    
+  ...
+2025-05-04 01:33:57,768 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 429 Too Many Requests"
+2025-05-04 01:33:57,768 [INFO] openai._base_client: Retrying request to /chat/completions in 9.000000 seconds
+2025-05-04 01:34:23,180 [INFO] httpx: HTTP Request: POST https://vare-labs-azure-openai-resource.openai.azure.com/openai/deployments/VARELab-GPT4o/chat/completions?api-version=2024-08-01-preview "HTTP/1.1 200 OK"
+2025-05-04 01:34:23,181 [INFO] agent.Neurologist: Responded: **ANSWER: B**
+
+### **Final Solution and Justification:**
+
+After synthesizing the insights from all t...
+2025-05-04 01:34:23,182 [INFO] simulation.sim_20250504_013108: Leadership action: synthesis
+2025-05-04 01:34:23,183 [INFO] simulation.sim_20250504_013108: Main discussion: leadership_synthesis - Neurologist
+2025-05-04 01:34:23,184 [INFO] simulation.sim_20250504_013108: Applying decision methods
+2025-05-04 01:34:23,184 [INFO] root: Majority voting result: {'method': 'majority_voting', 'winning_option': 'B', 'vote_counts': {'B': 5}, 'total_votes': 5, 'confidence': 1.0}
+2025-05-04 01:34:23,184 [INFO] root: Weighted voting result: {'method': 'weighted_voting', 'winning_option': 'B', 'vote_counts': {'B': 5}, 'weighted_votes': {'B': 5.0}, 'total_votes': 5, 'confidence': 1.0}
+2025-05-04 01:34:23,184 [INFO] root: Borda count result: {'method': 'borda_count', 'winning_option': 'B', 'borda_scores': {'A': 0, 'B': 15, 'C': 0, 'D': 0}, 'total_possible_score': 15.0, 'confidence': 1.0}
+2025-05-04 01:34:23,184 [INFO] simulation.sim_20250504_013108: Closed-loop communication metrics collected
+2025-05-04 01:34:23,184 [INFO] teamwork.mutual_monitoring: Team performance analysis completed: low effectiveness
+2025-05-04 01:34:23,184 [INFO] simulation.sim_20250504_013108: Mutual monitoring metrics collected
+2025-05-04 01:34:23,185 [INFO] teamwork.shared_mental_model: Mental model effectiveness analysis: low effectiveness
+2025-05-04 01:34:23,185 [INFO] simulation.sim_20250504_013108: Shared mental model metrics collected
+2025-05-04 01:34:23,186 [INFO] simulation.sim_20250504_013108: Results saved to output\sim_20250504_013108_results.json
