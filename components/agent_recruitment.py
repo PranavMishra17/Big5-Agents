@@ -10,6 +10,9 @@ from agent import Agent
 from modular_agent import ModularAgent, create_agent_team
 import config
 
+from utils.prompts import RECRUITMENT_PROMPTS
+
+
 def determine_complexity(question, method="adaptive"):
     """
     Determine the complexity of a question to decide on team structure.
@@ -34,27 +37,9 @@ def determine_complexity(question, method="adaptive"):
         expertise_description="analyzes tasks to determine their complexity level"
     )
     
-    prompt = f"""
-    Analyze the following task/question and determine its complexity level:
-    
-    {question}
-    
-    Based on your analysis, classify this as one of:
-    1) basic - A single expert can handle this question (simpler questions, single domain)
-    2) intermediate - Requires a team approach (moderately complex, 2-3 domains involved)
-    3) advanced - Requires multiple experts with diverse knowledge (complex, interdisciplinary, novel)
-    
-    Consider these factors:
-    - Are multiple domains of expertise needed?
-    - Is there uncertainty or ambiguity requiring multiple perspectives?
-    - Are there competing considerations or complex tradeoffs?
-    - Does it require specialized medical knowledge?
-    - Are there diagnostic complexities or rare conditions?
-    - Does it involve analysis of imaging, laboratory results or complex symptom patterns?
-    
-    Format your response as:
-    **Complexity Classification:** [number]) [complexity level]
-    """
+    prompt = RECRUITMENT_PROMPTS["complexity_evaluation"].format(
+        question=question
+    )
     
     response = evaluator.chat(prompt)
     
@@ -117,24 +102,14 @@ def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, 
         role="Medical Agent",
         expertise_description="A specialized medical expert with comprehensive medical knowledge"
     )
-    
-    # Initialize the prompt
-    system_prompt = "You are a helpful medical agent that answers multiple choice questions about medical knowledge."
-    
+       
     # For basic tasks, we follow the MDAgents paper by having a single specialized agent
     # with task-specific expertise rather than using our default roles
     
     # Create the specialized agent with a specific role based on question analysis
-    analysis_prompt = f"""
-    Based on the following medical question, what medical specialty would be most appropriate 
-    to accurately answer this question? Please identify only ONE specific medical specialty 
-    that is most relevant.
-    
-    Question: {question}
-    
-    Please respond with just the specialty name (e.g., 'Cardiologist', 'Neurologist', etc.)
-    """
-    
+    analysis_prompt = RECRUITMENT_PROMPTS["medical_specialty"].format(
+        question=question
+    ) 
     # Get the appropriate specialty
     specialty_response = medical_agent.chat(analysis_prompt)
     
@@ -187,26 +162,11 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
     num_agents = 5
     
     # Create prompt for team selection following MDAgents approach
-    selection_prompt = f"""You are an experienced medical expert who recruits a group of experts with diverse identity and ask them to discuss and solve the given medical query.
-    
-IMPORTANT: Select experts with DISTINCT and NON-OVERLAPPING specialties that are directly relevant to the medical question. Each expert should bring a unique perspective or knowledge domain.
+    selection_prompt = RECRUITMENT_PROMPTS["team_selection"].format(
+        question=question,
+        num_agents=num_agents
+    )
 
-Question: {question}
-
-You can recruit {num_agents} experts in different medical expertise. Considering the medical question and the options for the answer, what kind of experts will you recruit to better make an accurate answer?
-
-Also, you need to specify the communication structure between experts (e.g., Pulmonologist == Neonatologist == Medical Geneticist == Pediatrician > Cardiologist), or indicate if they are independent.
-
-For example, if you want to recruit five experts, your answer can be like:
-1. Pediatrician - Specializes in the medical care of infants, children, and adolescents. - Hierarchy: Independent
-2. Cardiologist - Focuses on the diagnosis and treatment of heart and blood vessel-related conditions. - Hierarchy: Pediatrician > Cardiologist
-3. Pulmonologist - Specializes in the diagnosis and treatment of respiratory system disorders. - Hierarchy: Independent
-4. Neonatologist - Focuses on the care of newborn infants, especially those who are born prematurely or have medical issues at birth. - Hierarchy: Independent
-5. Medical Geneticist - Specializes in the study of genes and heredity. - Hierarchy: Independent
-
-Please answer in above format, and do not include your reason.
-"""
-    
     response = recruiter.chat(selection_prompt)
     
     # Parse selected team - similar to MDAgents
@@ -317,30 +277,9 @@ def recruit_advanced_team(question: str, recruitment_pool: str) -> Tuple[Dict[st
     )
     
     # Create prompt for multi-team design following MDAgents MDT approach
-    design_prompt = f"""You are an experienced medical expert. Given the complex medical query, you need to organize Multidisciplinary Teams (MDTs) and the members in MDT to make accurate and robust answer.
-
-Question: {question}
-
-You should organize 3 MDTs with different specialties or purposes and each MDT should have 3 clinicians. Considering the medical question and the options, please return your recruitment plan to better make an accurate answer.
-
-For example, the following can be an example answer:
-Group 1 - Initial Assessment Team (IAT)
-Member 1: Otolaryngologist (ENT Surgeon) (Lead) - Specializes in ear, nose, and throat surgery, including thyroidectomy. This member leads the group due to their critical role in the surgical intervention and managing any surgical complications, such as nerve damage.
-Member 2: General Surgeon - Provides additional surgical expertise and supports in the overall management of thyroid surgery complications.
-Member 3: Anesthesiologist - Focuses on perioperative care, pain management, and assessing any complications from anesthesia that may impact voice and airway function.
-
-Group 2 - Diagnostic Evidence Team (DET)
-Member 1: Endocrinologist (Lead) - Oversees the long-term management of Graves' disease, including hormonal therapy and monitoring for any related complications post-surgery.
-Member 2: Speech-Language Pathologist - Specializes in voice and swallowing disorders, providing rehabilitation services to improve the patient's speech and voice quality following nerve damage.
-Member 3: Neurologist - Assesses and advises on nerve damage and potential recovery strategies, contributing neurological expertise to the patient's care.
-
-Group 3 - Final Review and Decision Team (FRDT)
-Member 1: Psychiatrist or Psychologist (Lead) - Addresses any psychological impacts of the chronic disease and its treatments, including issues related to voice changes, self-esteem, and coping strategies.
-Member 2: Physical Therapist - Offers exercises and strategies to maintain physical health and potentially support vocal function recovery indirectly through overall well-being.
-Member 3: Vocational Therapist - Assists the patient in adapting to changes in voice, especially if their profession relies heavily on vocal communication, helping them find strategies to maintain their occupational roles.
-
-Above is just an example, thus, you should organize your own unique MDTs but you should include Initial Assessment Team (IAT) and Final Review and Decision Team (FRDT) in your recruitment plan. When you return your answer, please strictly refer to the above format.
-"""
+    design_prompt = RECRUITMENT_PROMPTS["mdt_design"].format(
+        question=question
+    )
     
     response = recruiter.chat(design_prompt)
     

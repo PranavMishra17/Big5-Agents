@@ -11,6 +11,9 @@ import config
 
 from typing import Tuple
 
+from utils.prompts import LEADERSHIP_PROMPTS, TASK_ANALYSIS_PROMPTS
+
+
 class ModularAgent(Agent):
     """
     Modular agent with specialization capabilities.
@@ -256,95 +259,49 @@ class ModularAgent(Agent):
     
     def _analyze_ranking_task(self) -> str:
         """Analyze a ranking task."""
-        prompt = f"""
-        As a {self.role} with expertise in your domain, analyze the following ranking task:
-        
-        {config.TASK['description']}
-        
-        Items to rank:
-        {', '.join(config.TASK['options'])}
-        
-        Based on your specialized knowledge, provide:
-        1. Your analytical approach to this ranking task
-        2. Key factors you'll consider in making your decisions
-        3. Any specific insights your role brings to this type of task
-        
-        Then provide your complete ranking from 1 (most important) to {len(config.TASK['options'])} (least important).
-        Present your ranking as a numbered list with brief justifications for each item's placement.
-        """
+        prompt = TASK_ANALYSIS_PROMPTS["ranking_task"].format(
+            role=self.role,
+            task_description=config.TASK['description'],
+            items_to_rank=', '.join(config.TASK['options']),
+            num_items=len(config.TASK['options'])
+        )
         
         return self.chat(prompt)
     
+
     def _analyze_mcq_task(self) -> str:
         """Analyze a multiple-choice task."""
-        prompt = f"""
-        As a {self.role} with expertise in your domain, analyze the following multiple-choice question:
+        prompt = TASK_ANALYSIS_PROMPTS["mcq_task"].format(
+            role=self.role,
+            task_description=config.TASK['description'],
+            options=chr(10).join(config.TASK['options'])
+        )
         
-        {config.TASK['description']}
-        
-        Options:
-        {chr(10).join(config.TASK['options'])}
-        
-        Based on your specialized knowledge:
-        1. Analyze each option systematically
-        2. Explain the strengths and weaknesses of each option
-        3. Apply relevant principles from your area of expertise
-        
-        Then select the option you believe is correct and explain your reasoning in detail.
-        Be explicit about which option (A, B, C, etc.) you are selecting.
-        """
-        
-        return self.chat(prompt)
+        return self.chat(prompt)   
     
+
     def _analyze_general_task(self) -> str:
         """Analyze a general (open-ended, estimation, etc.) task."""
-        prompt = f"""
-        As a {self.role} with expertise in your domain, analyze the following task:
-        
-        {config.TASK['description']}
-        
-        Based on your specialized knowledge:
-        1. Break down the key components of this task
-        2. Identify the most important factors to consider
-        3. Apply relevant principles from your area of expertise
-        
-        Then provide your comprehensive response to the task.
-        Structure your answer clearly and provide justifications for your key points.
-        """
+        prompt = TASK_ANALYSIS_PROMPTS["general_task"].format(
+            role=self.role,
+            task_description=config.TASK['description']
+        )
         
         return self.chat(prompt)
-    
+
     def respond_to_agent(self, agent_message: str, agent_role: str) -> str:
-        """
-        Respond to another agent's message from your specialized perspective.
+        """Respond to another agent's message from your specialized perspective."""
+        from utils.prompts import DISCUSSION_PROMPTS
         
-        Args:
-            agent_message: Message from another agent
-            agent_role: Role of the agent who sent the message
-            
-        Returns:
-            This agent's specialized response
-        """
-        prompt = f"""
-        Another team member ({agent_role}) has provided the following input:
-        
-        "{agent_message}"
-        
-        As a {self.role} with your particular expertise, respond to this message.
-        Apply your specialized knowledge to this discussion about the task.
-        
-        If you notice any misconceptions or have additional information to add from your
-        area of expertise, share that information.
-        
-        If you agree with their analysis, acknowledge the points you agree with and
-        add any additional insights from your perspective.
-        
-        If you are using closed-loop communication, acknowledge the message and confirm your
-        understanding before providing your response.
-        """
+        prompt = DISCUSSION_PROMPTS["respond_to_agent"].format(
+            agent_role=agent_role,
+            agent_message=agent_message,
+            role=self.role
+        )
         
         return self.chat(prompt)
-        
+
+
     def leadership_action(self, action_type: str, context: str = None) -> str:
         """
         Perform a leadership action if this agent has leadership capabilities.
@@ -359,55 +316,23 @@ class ModularAgent(Agent):
         if not self.can_lead:
             return f"As a {self.role} without leadership designation, I cannot perform leadership actions."
         
-        action_prompts = {
-            "define_task": f"""
-                As the designated leader for this task, define the overall approach for solving:
-                
-                {config.TASK['description']}
-                
-                Break this down into clear subtasks, specifying:
-                1. The objective of each subtask
-                2. The sequence in which they should be completed
-                3. How to evaluate successful completion
-                
-                Provide clear, specific instructions that will guide the team through this process.
-                
-                Additional context: {context or ''}
-            """,
-            
-            "synthesize": f"""
-                As the designated leader, synthesize the team's perspectives into a consensus solution.
-                
-                Context information: {context or ''}
-                
-                Create a final solution that:
-                1. Incorporates the key insights from each team member
-                2. Balances different perspectives from team members
-                3. Provides clear reasoning for the final decision
-                
-                Present your final solution with comprehensive justification.
-                Ensure all required elements from the task are addressed.
-            """,
-            
-            "facilitate": f"""
-                As the designated leader, facilitate progress on our current discussion.
-                
-                Current context: {context or ''}
-                
-                Please:
-                1. Identify areas of agreement and disagreement
-                2. Propose next steps to move the discussion forward
-                3. Ask specific questions to gather needed information
-                4. Summarize key insights so far
-                
-                Your goal is to help the team make progress rather than advocate for a specific position.
-            """
-        }
-        
-        if action_type in action_prompts:
-            return self.chat(action_prompts[action_type])
+        if action_type == "define_task":
+            prompt = LEADERSHIP_PROMPTS["define_task"].format(
+                task_description=config.TASK['description'],
+                context=context or ''
+            )
+        elif action_type == "synthesize":
+            prompt = LEADERSHIP_PROMPTS["synthesize"].format(
+                context=context or ''
+            )
+        elif action_type == "facilitate":
+            prompt = LEADERSHIP_PROMPTS["facilitate"].format(
+                context=context or ''
+            )
         else:
             return f"Unknown leadership action: {action_type}"
+        
+        return self.chat(prompt)
 
 
 

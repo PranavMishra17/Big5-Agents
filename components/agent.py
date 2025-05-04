@@ -9,6 +9,17 @@ from typing import List, Dict, Any, Optional, Tuple
 from langchain_openai import AzureChatOpenAI
 import config
 
+from utils.prompts import (
+    AGENT_SYSTEM_PROMPTS,
+    LEADERSHIP_PROMPTS,
+    COMMUNICATION_PROMPTS,
+    MONITORING_PROMPTS,
+    MENTAL_MODEL_PROMPTS,
+    ORIENTATION_PROMPTS,
+    TRUST_PROMPTS
+)
+
+
 class Agent:
     """Base agent class for modular agent system."""
     
@@ -82,120 +93,55 @@ class Agent:
                 
         self.logger.info(f"Initialized {self.role} agent")
     
+
     def _build_system_prompt(self) -> str:
         """Build the system prompt for the agent."""
-        prompt = f"You are a {self.role} who {self.expertise_description}. "
-        prompt += f"You are part of the {config.TEAM_NAME}. Your goal is to {config.TEAM_GOAL}. "
-
-        # Add information about the task
-        prompt += f"""
-        You are working on the following task: {config.TASK['name']}
-        
-        {config.TASK['description']}
-        
-        This is a {config.TASK['type']} task, and your output should be in the format: {config.TASK.get('expected_output_format', 'not specified')}
-        """
+        # Base prompt
+        prompt = AGENT_SYSTEM_PROMPTS["base"].format(
+            role=self.role,
+            expertise_description=self.expertise_description,
+            team_name=config.TEAM_NAME,
+            team_goal=config.TEAM_GOAL,
+            task_name=config.TASK['name'],
+            task_description=config.TASK['description'],
+            task_type=config.TASK['type'],
+            expected_output_format=config.TASK.get('expected_output_format', 'not specified')
+        )
 
         # Add team leadership component if enabled
         if self.use_team_leadership:
-            prompt += """
-            As part of this team, you should demonstrate effective team leadership by:
-            1. Facilitating team problem solving
-            2. Providing performance expectations and acceptable interaction patterns
-            3. Synchronizing and combining individual team member contributions
-            4. Seeking and evaluating information that affects team functioning
-            5. Clarifying team member roles
-            6. Engaging in preparatory discussions and feedback sessions with the team
-            """
+            prompt += LEADERSHIP_PROMPTS["team_leadership"]
         
         # Add closed-loop communication component if enabled
         if self.use_closed_loop_comm:
-            prompt += """
-            When communicating with your teammates, you should use closed-loop communication:
-            1. When you send information, make it clear and specific
-            2. When you receive information, acknowledge receipt and confirm understanding
-            3. When your sent information is acknowledged, verify that it was understood correctly
-            
-            This three-step process ensures that critical information is properly exchanged.
-            """
+            prompt += COMMUNICATION_PROMPTS["closed_loop"]
             
         # Add mutual performance monitoring if enabled
         if self.use_mutual_monitoring:
-            prompt += """
-            You should engage in mutual performance monitoring by:
-            1. Tracking the performance of your teammates
-            2. Checking for errors or omissions in their reasoning
-            3. Providing constructive feedback when you identify issues
-            4. Ensuring the overall quality of the team's work
-            
-            Do this respectfully and with the goal of improving the team's decision-making.
-            """
+            prompt += MONITORING_PROMPTS["mutual_monitoring"]
             
         # Add shared mental model if enabled
         if self.use_shared_mental_model:
-            prompt += """
-            You should actively contribute to the team's shared mental model by:
-            1. Explicitly stating your understanding of key concepts
-            2. Checking alignment on how the team interprets the task
-            3. Establishing shared terminology and frameworks
-            4. Clarifying your reasoning process so others can follow it
-            
-            This helps ensure all team members are aligned in their understanding.
-            """
+            prompt += MENTAL_MODEL_PROMPTS["shared_mental_model"]
         
         # Add team orientation if enabled
         if self.use_team_orientation:
-            prompt += """
-            You should demonstrate strong team orientation by:
-            1. Taking into account alternative solutions provided by teammates and appraising their input
-            2. Considering the value of teammates' perspectives even when they differ from your own
-            3. Prioritizing team goals over individual recognition or achievements
-            4. Actively engaging in information sharing, strategizing, and participatory goal setting
-            5. Enhancing your individual performance through coordination with and utilization of input from teammates
-
-            Remember that team orientation is not just working with others, but truly valuing and incorporating diverse perspectives.
-            """
+            prompt += ORIENTATION_PROMPTS["team_orientation"]
         
         # Add mutual trust if enabled
         if self.use_mutual_trust:
-            # Check the trust factor to adjust the prompt accordingly
-            trust_factor = getattr(self, 'mutual_trust_factor', 0.8)
-            
             # Base mutual trust prompt
-            mutual_trust_prompt = """
-            You should foster and demonstrate mutual trust with your teammates by:
-            1. Sharing information openly and appropriately without excessive protection or checking
-            2. Being willing to admit mistakes and accept feedback from teammates
-            3. Assuming teammates are acting with positive intentions for the team's benefit
-            4. Recognizing and respecting the expertise and rights of all team members
-            5. Being willing to make yourself vulnerable by asking for help when needed
-            """
+            prompt += TRUST_PROMPTS["mutual_trust_base"]
             
-            # Adjust for low trust environments
+            # Adjust for trust levels
+            trust_factor = getattr(self, 'mutual_trust_factor', 0.8)
             if trust_factor < 0.4:
-                mutual_trust_prompt += """
-                However, be aware that the current team environment has LOW TRUST levels. This means:
-                - Be more careful about sharing sensitive or potentially controversial information
-                - Verify information from teammates more carefully before acting on it
-                - Be more explicit about your reasoning and evidence to build credibility
-                - Take extra steps to demonstrate reliability and consistency in your contributions
-                - Work gradually to establish trust through small, reliable interactions
-                """
-            # Adjust for high trust environments
+                prompt += TRUST_PROMPTS["low_trust"]
             elif trust_factor > 0.7:
-                mutual_trust_prompt += """
-                The current team environment has HIGH TRUST levels. This means:
-                - You can share information with confidence it will be used appropriately
-                - You can rely on teammates' input without excessive verification
-                - You can feel safe to express uncertainty or vulnerability
-                - You can expect teammates will protect the team's interests and your contributions
-                - The team can focus fully on the task rather than monitoring each other
-                """
-            
-            prompt += mutual_trust_prompt
+                prompt += TRUST_PROMPTS["high_trust"]
         
         return prompt
-    
+
     def add_to_knowledge_base(self, key: str, value: Any) -> None:
         """
         Add information to the agent's knowledge base.

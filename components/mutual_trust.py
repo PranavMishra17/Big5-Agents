@@ -9,6 +9,9 @@ import logging
 import random
 from typing import Dict, List, Any, Optional, Tuple
 
+from utils.prompts import TRUST_PROMPTS
+
+
 class MutualTrust:
     """
     Implements mutual trust capabilities for agents.
@@ -302,44 +305,11 @@ class MutualTrust:
         
         # Adjust prompt based on trust levels
         if avg_trust_to_others >= 0.7 and avg_trust_from_others >= 0.7:
-            trust_addition = f"""
-            
-            As a team member in a high-trust environment:
-            
-            1. Share information openly and completely with your teammates
-            2. Be willing to admit mistakes and uncertainties
-            3. Accept feedback from others without defensiveness
-            4. Trust others' expertise and judgment in their areas of specialization
-            5. Feel safe in expressing vulnerability and asking for help when needed
-            
-            The team environment supports psychological safety, allowing for open communication and constructive feedback.
-            """
+            trust_addition = TRUST_PROMPTS["high_trust_environment"]
         elif avg_trust_to_others >= 0.4 and avg_trust_from_others >= 0.4:
-            trust_addition = f"""
-            
-            As a team member in a developing trust environment:
-            
-            1. Share important information with your teammates while considering what is appropriate
-            2. Be willing to acknowledge mistakes when necessary
-            3. Consider feedback from others carefully
-            4. Recognize others' expertise in their specialized areas
-            5. Balance self-reliance with appropriate requests for assistance
-            
-            The team is working to build trust through consistent and reliable interactions.
-            """
+            trust_addition = TRUST_PROMPTS["medium_trust_environment"]
         else:
-            trust_addition = f"""
-            
-            As a team member in a trust-building environment:
-            
-            1. Share information that is necessary for team functioning
-            2. Acknowledge when corrections are needed
-            3. Provide and receive feedback in a constructive manner
-            4. Demonstrate reliability in your area of expertise
-            5. Gradually increase openness as trust develops
-            
-            The team needs to establish trust through consistent performance and respect for boundaries.
-            """
+            trust_addition = TRUST_PROMPTS["low_trust_environment"]
         
         return base_prompt + trust_addition
     

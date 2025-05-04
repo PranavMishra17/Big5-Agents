@@ -8,6 +8,8 @@ group interaction and the belief in the importance of team goals over individual
 import logging
 from typing import Dict, List, Any, Optional
 
+from utils.prompts import ORIENTATION_PROMPTS
+
 class TeamOrientation:
     """
     Implements team orientation capabilities for agents.
@@ -133,30 +135,10 @@ class TeamOrientation:
         return indicators
     
     def enhance_agent_prompt(self, base_prompt: str) -> str:
-        """
-        Enhance an agent's prompt with team orientation elements.
-        
-        Args:
-            base_prompt: The original prompt for the agent
-            
-        Returns:
-            Enhanced prompt with team orientation elements
-        """
-        team_orientation_addition = """
-        
-        As a team member with strong team orientation:
-        
-        1. Value and consider the input and perspectives of your teammates, even when they differ from your own
-        2. Share your knowledge and information openly to benefit the team's understanding
-        3. Prioritize team goals over individual recognition or achievement
-        4. Actively participate in goal setting and strategy development
-        5. Consider how your contributions can complement and enhance the work of others
-        
-        Remember that team success depends on the integration of diverse perspectives and the coordination of individual efforts toward collective goals.
-        """
-        
+        """Enhance an agent's prompt with team orientation elements."""
+        team_orientation_addition = ORIENTATION_PROMPTS["enhanced_orientation"]
         return base_prompt + team_orientation_addition
-    
+
     def get_team_orientation_metrics(self) -> Dict[str, Any]:
         """
         Get metrics on team orientation effectiveness.

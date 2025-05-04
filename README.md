@@ -1,8 +1,31 @@
 # Big5-Agents
 
-## Modular Agent System
-
 A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.
+
+## Table of Contents
+- [Overview](#overview)
+- [Big Five Teamwork Model](#big-five-teamwork-model)
+- [Installation](#installation)
+- [Usage](#usage)
+  - [Basic Usage](#basic-usage)
+  - [Command Line Options](#command-line-options)
+  - [Running Multiple Configurations](#running-multiple-configurations)
+- [Dataset Runner](#dataset-runner)
+  - [Dataset Runner Options](#dataset-runner-options)
+  - [Examples](#dataset-runner-examples)
+- [Agent Recruitment](#agent-recruitment)
+  - [Complexity Levels](#complexity-levels)
+  - [Recruitment Methods](#recruitment-methods)
+  - [Recruitment Pools](#recruitment-pools)
+- [Configuration](#configuration)
+  - [Task Configuration](#task-configuration)
+  - [Agent Roles & Recruitment Pools](#agent-roles--recruitment-pools)
+  - [Decision Methods](#decision-methods)
+- [Logs Structure](#logs-structure)
+- [Results Output](#results-output)
+- [Project Structure](#project-structure)
+- [Extending the System](#extending-the-system)
+- [References](#references)
 
 ## Overview
 
@@ -17,12 +40,22 @@ This system implements a multi-agent approach for collaborative problem solving 
 - **Adaptive agent recruitment** based on task complexity
 - **Dataset processing** for batch evaluation
 
-The system is built around the Big Five teamwork model components:
+The system is built around the Big Five teamwork model components.
+
+## Big Five Teamwork Model
+
+Our system is built on the Big Five teamwork model introduced by Salas et al. (2005), which identifies five core components of effective teamwork:
+
 1. **Team Leadership** - Coordinating activities and defining approaches
 2. **Mutual Performance Monitoring** - Tracking teammates' work and providing feedback
 3. **Backup Behavior** - Providing support via specialized knowledge
 4. **Adaptability** - Adjusting strategies based on information exchange
 5. **Team Orientation** - Shared mental models for better coordination
+
+These components are augmented by three coordinating mechanisms:
+- Shared Mental Models
+- Closed-Loop Communication
+- Mutual Trust
 
 ## Installation
 
@@ -36,8 +69,7 @@ pip install -r requirements.txt
 
 # Set up your API keys in .env file
 cp .env.example .env
-# Edit .env with your API keys
-```
+
 
 ## Usage
 
@@ -85,6 +117,28 @@ python main.py --all --runs 3
 ## Dataset Runner
 
 The dataset runner allows you to evaluate your agent system on datasets like MedQA and PubMedQA:
+
+### Dataset Runner Options
+
+```
+--dataset TYPE         Dataset to run (medqa or pubmedqa)
+--num-questions N      Number of questions to process (default: 50)
+--seed N               Random seed for reproducibility (default: 42)
+--all                  Run all feature configurations
+--output-dir PATH      Output directory for results
+--leadership           Use team leadership
+--closedloop           Use closed-loop communication
+--mutual               Use mutual performance monitoring
+--mental               Use shared mental model
+--orientation          Use team orientation
+--trust                Use mutual trust
+--trust-factor N       Mutual trust factor (0.0-1.0) (default: 0.8)
+--recruitment          Use dynamic agent recruitment
+--recruitment-method   Method for recruitment (adaptive, basic, intermediate, advanced)
+--recruitment-pool     Pool of agent roles to recruit from (general, medical)
+```
+
+### Dataset Runner Examples
 
 ```bash
 # Run 50 random MedQA questions with all teamwork components
@@ -214,20 +268,25 @@ output/
 
 ```
 big5_agents/
-├── agent.py                 # Base agent class
-├── modular_agent.py         # Specialized agent implementation
-├── agent_recruitment.py     # Dynamic agent team assembly
-├── closed_loop.py           # Closed-loop communication
-├── mutual_monitoring.py     # Performance monitoring
-├── shared_mental_model.py   # Shared understanding management
-├── decision_methods.py      # Decision aggregation methods
-├── simulator.py             # Main simulation orchestration
-├── logger.py                # Enhanced logging system
-├── main.py                  # Command-line interface
-├── dataset_runner.py        # Dataset processing utility
-├── config.py                # Configuration settings
-├── requirements.txt         # Dependencies
-└── README.md                # This file
+├── components/                     # Big Five components 
+│   ├── agent.py                    # Base agent class
+│   ├── modular_agent.py            # Specialized agent implementation
+│   ├── agent_recruitment.py        # Dynamic agent team assembly
+│   ├── closed_loop.py              # Closed-loop communication
+│   ├── mutual_monitoring.py        # Performance monitoring
+│   ├── shared_mental_model.py      # Shared understanding management
+│   ├── decision_methods.py         # Decision aggregation methods
+│   ├── team_orientation.py         # Team orientation component
+│   └── mutual_trust.py             # Mutual trust component
+├── utils/
+│   ├── logger.py                   # Enhanced logging system
+│   └── prompts.py                  # Centralized prompt management
+├── simulator.py                    # Main simulation orchestration
+├── config.py                       # Configuration settings
+├── main.py                         # Command-line interface
+├── dataset_runner.py               # Dataset processing utility
+├── requirements.txt                # Dependencies
+└── README.md                       # This file
 ```
 
 ## Extending the System
@@ -236,3 +295,10 @@ big5_agents/
 - Implement new task types in `agent.extract_response()`
 - Create additional decision methods in `decision_methods.py`
 - Add new recruitment strategies in `agent_recruitment.py`
+- Modify prompts centrally in `utils/prompts.py`
+
+
+## References
+
+- Kim, Y., Park, C., Jeong, H., Chan, Y. S., Xu, X., McDuff, D., Lee, H., Ghassemi, M., Breazeal, C., & Park, H. W. (2024). MDAgents: An Adaptive Collaboration of LLMs for Medical Decision-Making. arXiv preprint arXiv:2404.15155. https://arxiv.org/abs/2404.15155
+- Salas, E., Sims, D. E., & Burke, C. S. (2005). Is there a "Big Five" in Teamwork?. Small Group Research, 36(5), 555-599. https://doi.org/10.1177/1046496405277134

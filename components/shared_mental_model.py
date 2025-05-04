@@ -11,6 +11,8 @@ import logging
 import json
 from typing import Dict, List, Any
 
+from utils.prompts import MENTAL_MODEL_PROMPTS
+
 class SharedMentalModel:
     """
     Implements shared mental model capabilities for agents.
@@ -408,26 +410,16 @@ class SharedMentalModel:
         # Get task description
         task_description = config.TASK.get("description", "Not specified")
         
-        team_mental_model = f"""Collaboratively and accurately answer the following question, considering all provided options: {task_description}. 
-        
-    Maintain shared mental models to support collaboration:
-
-    Team-related mental models:
-    1. Each expert understands the other's specialty and defers appropriately. Example: The pathologist handles histo slides, labs, and biopsy findings; the internist interprets clinical presentation and management strategies.
-    2. Use clear, structured communication with confirmation and clarifying questions.
-    3. Agree on how to approach each question: e.g., one summarizes the case, the other analyzes the key findings, then they jointly choose the best answer.
-    4. A shared attitude of psychological safety—both are open to being wrong and correcting each other without ego. Each expert is open to changing their professional opinion if compelling evidence or reasoning is presented by other experts. When sharing their views, clearly state their current decision and reasoning. If their opinion changes during the discussion, explicitly acknowledge this change and explain why.
-    5. Efficient division of labor: e.g., one expert takes lead on clinical scenario interpretation, the other cross-checks with pathology or physiology knowledge.
-
-    Task-specific understanding:
-    Objective: {task_model.get('objective', 'Not specified')}
-
-    Key evaluation criteria:
-    """
-        
-        # Add evaluation criteria
+        # Create criteria string from evaluation_criteria
+        criteria_str = ""
         for aspect, description in task_model.get("evaluation_criteria", {}).items():
-            team_mental_model += f"- {aspect.capitalize()}: {description}\n"
+            criteria_str += f"- {aspect.capitalize()}: {description}\n"
+        
+        team_mental_model = MENTAL_MODEL_PROMPTS["team_mental_model"].format(
+            task_description=task_description,
+            objective=task_model.get('objective', 'Not specified'),
+            criteria=criteria_str
+        )
         
         # Add role-specific guidance
         if "current_team" in self.team_knowledge and agent_role in self.team_knowledge["current_team"]["roles"]:
@@ -453,26 +445,16 @@ class SharedMentalModel:
         # Get task description
         task_description = config.TASK.get("description", "Not specified")
         
-        individual_mental_model = f"""You are working on the following task: {task_description}
-
-    Task-related mental models:
-    1. Be aligned on what the question is asking: diagnosis, next best step, mechanism, prognosis, etc.
-    2. Eliminate obviously wrong options and discuss remaining choices based on evidence.
-    3. Maintain a shared baseline of question content scope—understand that questions test integration of disciplines, not isolated facts.
-    4. Prioritize findings appropriately: e.g., which symptoms are more diagnostic, what labs carry more weight, etc.
-    5. You are not allowed to consult external sources.
-    6. You do not have any additional information other than what is provided in the question.
-    7. Reflect on how different perspectives affect initial assessment of the question: If your answer changed based on this reflection, provide your decision and a brief explanation that includes whether your opinion has changed and why.
-
-    Task-specific understanding:
-    Objective: {task_model.get('objective', 'Not specified')}
-
-    Key evaluation criteria:
-    """
-        
-        # Add evaluation criteria
+        # Create criteria string from evaluation_criteria
+        criteria_str = ""
         for aspect, description in task_model.get("evaluation_criteria", {}).items():
-            individual_mental_model += f"- {aspect.capitalize()}: {description}\n"
+            criteria_str += f"- {aspect.capitalize()}: {description}\n"
+        
+        individual_mental_model = MENTAL_MODEL_PROMPTS["individual_mental_model"].format(
+            task_description=task_description,
+            objective=task_model.get('objective', 'Not specified'),
+            criteria=criteria_str
+        )
         
         # Add role-specific information
         individual_mental_model += f"\nAs a {agent_role}, apply your specialized knowledge to this task."

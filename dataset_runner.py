@@ -16,7 +16,7 @@ from tqdm import tqdm
 from datasets import load_dataset
 from simulator import AgentSystemSimulator
 import config
-from logger import SimulationLogger
+from utils.logger import SimulationLogger
 
 def setup_logging():
     """Set up logging for the dataset runner."""

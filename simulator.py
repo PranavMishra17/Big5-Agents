@@ -8,15 +8,17 @@ import json
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime
 
-from modular_agent import ModularAgent, create_agent_team
-from closed_loop import ClosedLoopCommunication
-from mutual_monitoring import MutualMonitoring
-from shared_mental_model import SharedMentalModel
-from decision_methods import DecisionMethods
-from logger import SimulationLogger
+from components.modular_agent import ModularAgent, create_agent_team
+from components.closed_loop import ClosedLoopCommunication
+from components.mutual_monitoring import MutualMonitoring
+from components.shared_mental_model import SharedMentalModel
+from components.decision_methods import DecisionMethods
+from utils.logger import SimulationLogger
 import config
-from team_orientation import TeamOrientation
-from mutual_trust import MutualTrust
+from components.team_orientation import TeamOrientation
+from components.mutual_trust import MutualTrust
+
+from utils.prompts import DISCUSSION_PROMPTS
 
 
 
@@ -390,22 +392,12 @@ class AgentSystemSimulator:
             if len(other_analyses) > 0:
                 other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
                                                  for other_role, analysis in other_analyses.items()])
-                
-                collaborative_prompt = f"""
-                You have analyzed the task, and your teammates have provided their analyses as well.
-                
-                Your initial analysis:
-                {agent_analyses[role]['analysis']}
-                
-                Your teammates' analyses:
-                {other_analyses_text}
-                
-                Based on all these perspectives, please provide your final answer to the task.
-                Consider the insights from your teammates and integrate them with your own expertise.
-                
-                Be explicit and clear in your final response, following the expected output format for the task.
-                """
-                
+                        
+                collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
+                    initial_analysis=agent_analyses[role]['analysis'],
+                    teammates_analyses=other_analyses_text
+                )
+
                 # Apply mutual monitoring if enabled
                 if self.use_mutual_monitoring and self.mutual_monitor:
                     # For each teammate's analysis, generate monitoring feedback

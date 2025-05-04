@@ -7,6 +7,9 @@ from typing import Tuple, Dict, Any, List, Optional
 
 from agent import Agent
 
+from utils.prompts import COMMUNICATION_PROMPTS
+
+
 class ClosedLoopCommunication:
     """
     Implements closed-loop communication protocol between agents.
@@ -49,40 +52,21 @@ class ClosedLoopCommunication:
         self.logger.info(f"Step 1 - Sender message sent: {sender_message[:50]}...")
         
         # Step 2: Receiver acknowledges and confirms understanding
-        receiver_prompt = f"""
-        You have received the following message from the {sender.role}:
-        
-        "{sender_message}"
-        
-        Following closed-loop communication protocol:
-        1. Acknowledge that you have received this message
-        2. Confirm your understanding by restating the key points in your own words
-        3. Then provide your response to the content
-        
-        Begin your response with an acknowledgment and confirmation.
-        """
-        
+        receiver_prompt = COMMUNICATION_PROMPTS["receiver_acknowledgment"].format(
+            sender_role=sender.role,
+            sender_message=sender_message
+        )
+    
+
         receiver_message = receiver.chat(receiver_prompt)
         self.logger.info(f"Step 2 - Receiver acknowledgment: {receiver_message[:50]}...")
         
         # Step 3: Sender verifies message was received correctly
-        verification_prompt = f"""
-        You sent the following message to the {receiver.role}:
-        
-        "{sender_message}"
-        
-        They responded with:
-        
-        "{receiver_message}"
-        
-        Following closed-loop communication protocol:
-        1. Verify whether they understood your message correctly
-        2. Clarify any misunderstandings if necessary
-        3. Then continue the conversation based on their response
-        
-        Begin your response with verification of their understanding.
-        """
-        
+        verification_prompt = COMMUNICATION_PROMPTS["sender_verification"].format(
+            receiver_role=receiver.role,
+            sent_message=sender_message,
+            response_message=receiver_message
+        ) 
         verification_message = sender.chat(verification_prompt)
         self.logger.info(f"Step 3 - Sender verification: {verification_message[:50]}...")
         
