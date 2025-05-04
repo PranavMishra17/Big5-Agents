@@ -19,6 +19,7 @@ A flexible multi-agent system with modular teamwork components based on the Big 
   - [Recruitment Pools](#recruitment-pools)
 - [Configuration](#configuration)
   - [Task Configuration](#task-configuration)
+  - [Prompt Management](#prompt-management)
   - [Agent Roles & Recruitment Pools](#agent-roles--recruitment-pools)
   - [Decision Methods](#decision-methods)
 - [Logs Structure](#logs-structure)
