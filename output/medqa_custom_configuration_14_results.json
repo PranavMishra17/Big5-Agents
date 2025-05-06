@@ -1,0 +1,85 @@
+{
+  "simulation_id": "medqa_custom_configuration_14",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Rheumatologist",
+      "message": "ANSWER: A  \n\n**Rationale:**  \nThe unanimous consensus among all specialists, including my own analysis, is that **tuberculosis screening (Option A)** is the most critical diagnostic test to order before initiating etanercept therapy in this patient with rheumatoid arthritis. Etanercept, a tumor necrosis factor (TNF) inhibitor, is an immunosuppressive agent that increases the risk of reactivating latent infections, particularly tuberculosis (TB). Screening for TB using a tuberculin skin test (TST) or interferon-gamma release assay (IGRA) is a standard and essential practice prior to starting TNF inhibitors to prevent serious complications such as disseminated TB.\n\n**Integration of insights:**  \n- The **Infectious Disease Specialist** highlighted the strong link between TNF inhibitors and latent TB reactivation, emphasizing that TB screening is universally recommended before starting these medications.  \n- The **Radiologist** and **Pharmacologist** reinforced the necessity of TB screening as the single most relevant test in this context, pointing out that other options (ANA testing, endoscopy, and malignancy screening) are either unrelated or not immediately necessary.  \n- The **Immunologist** provided a detailed analysis of the immunosuppressive effects of TNF inhibitors and the importance of addressing infection risks, particularly TB, before initiating therapy.  \n\n**Analysis of other options:**  \n- **B. Antinuclear antibody (ANA) level:** While useful for diagnosing autoimmune diseases like lupus, ANA testing is not relevant to the management of rheumatoid arthritis or the initiation of TNF inhibitors.  \n- **C. Endoscopy:** This test is used for gastrointestinal evaluation, but there is no indication for it in this patient, as his reflux is well-managed with omeprazole.  \n- **D. Malignancy screening:** Although TNF inhibitors may slightly increase malignancy risk, routine malignancy screening is not required before starting etanercept unless specific risk factors or symptoms are present.  \n\n**Conclusion:**  \nTuberculosis screening is the most appropriate and necessary diagnostic test to ensure the safe initiation of etanercept in this patient. This aligns with clinical guidelines and the collective expertise of the team."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Infectious Disease Specialist",
+      "message": "ANSWER: A  \n\n**Rationale:**  \nThe consensus among all contributors is that tuberculosis (TB) screening is the most critical diagnostic test to perform before initiating etanercept in this patient. Etanercept is a tumor necrosis factor (TNF) inhibitor, a class of immunosuppressive drugs that significantly increases the risk of reactivating latent TB. Reactivation of TB can lead to severe complications, especially in immunosuppressed individuals. Therefore, screening for latent TB using a tuberculin skin test (TST) or interferon-gamma release assay (IGRA) is a standard and essential step before starting TNF inhibitors.  \n\n**Key Points Supporting the Selection of Option A:**  \n1. **Risk of Latent TB Reactivation:**  \n   - TNF inhibitors suppress the immune system by inhibiting TNF-\u03b1, a cytokine essential for the containment of latent infections such as TB. Without proper screening and prophylactic treatment, latent TB can reactivate, leading to disseminated or active TB, which is life-threatening.  \n   - Screening for TB is recommended by clinical guidelines before initiating TNF inhibitors.  \n\n2. **Other Options Are Less Relevant:**  \n   - **B. Antinuclear antibody (ANA) level:** While ANA testing is relevant for diagnosing autoimmune diseases like lupus, it is not related to the management of rheumatoid arthritis or the risks associated with TNF inhibitors.  \n   - **C. Endoscopy:** Although the patient has a history of gastric reflux, it is well-managed with omeprazole, and there are no active symptoms warranting endoscopy. Moreover, endoscopy is unrelated to the use of TNF inhibitors.  \n   - **D. Malignancy screening:** While TNF inhibitors have been associated with a slightly increased risk of malignancy, routine cancer screening is not required before starting these medications unless there are specific symptoms or risk factors.  \n\n**Conclusion:**  \nTuberculosis screening is the most appropriate diagnostic test to ensure the safe initiation of etanercept therapy. This aligns with established clinical guidelines and addresses the most immediate and serious risk associated with TNF inhibitors. Thus, the final answer is **A. Tuberculosis screening**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Radiologist",
+      "message": "ANSWER: A  \n\n**Rationale:**  \nThe unanimous consensus among all team members, including myself, is that tuberculosis (TB) screening is the most critical diagnostic test to order before initiating etanercept therapy. Etanercept is a tumor necrosis factor-alpha (TNF-\u03b1) inhibitor, which is an immunosuppressive medication commonly used to treat rheumatoid arthritis. However, TNF-\u03b1 inhibitors increase the risk of reactivating latent TB, which can lead to severe and potentially life-threatening complications. Screening for latent TB using a tuberculin skin test (TST) or interferon-gamma release assay (IGRA) is standard practice and is recommended by clinical guidelines before starting TNF-\u03b1 inhibitor therapy.  \n\n**Integration of perspectives:**  \n- The **Rheumatologist** emphasized that TB screening is a mandatory safety measure before starting TNF-\u03b1 inhibitors, as reactivation of latent TB is a well-documented risk.  \n- The **Infectious Disease Specialist** highlighted the importance of TB screening due to the immunosuppressive effects of etanercept and the potential for severe complications from TB reactivation.  \n- The **Pharmacologist** reinforced the need for TB screening as it directly addresses the most immediate and serious risk associated with TNF-\u03b1 inhibitors.  \n- The **Immunologist** underscored that TB screening is the most relevant and appropriate test in this clinical context, as it ensures the safe use of etanercept.  \n\n**Analysis of other options:**  \n- **B. Antinuclear antibody (ANA) level:** Not relevant, as ANA testing is not indicated for initiating etanercept in a patient with a confirmed diagnosis of rheumatoid arthritis.  \n- **C. Endoscopy:** Unnecessary, as there is no indication of active gastrointestinal symptoms or complications related to the patient\u2019s history of gastric reflux.  \n- **D. Malignancy screening:** While TNF-\u03b1 inhibitors carry a theoretical risk of malignancy, routine cancer screening is not required in this context unless specific risk factors or symptoms are present.  \n\n**Conclusion:** Tuberculosis screening is the most appropriate diagnostic test to perform before starting etanercept, ensuring the patient\u2019s safety by preventing latent TB reactivation. Therefore, the correct answer is **A. Tuberculosis screening**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pharmacologist",
+      "message": "ANSWER: A\n\n**Rationale:**  \nThe consensus among all team members, including myself, is that tuberculosis (TB) screening is the most appropriate diagnostic test to order before starting etanercept. Etanercept is a tumor necrosis factor (TNF) inhibitor, a class of immunosuppressive drugs that increase the risk of reactivating latent infections, particularly TB. Screening for latent TB with a tuberculin skin test (TST) or interferon-gamma release assay (IGRA) is a standard and essential practice before initiating TNF inhibitors. Reactivation of latent TB in immunosuppressed patients can lead to severe and potentially life-threatening complications, making this test critical for patient safety.\n\n**Integration of perspectives:**\n- The **Rheumatologist** emphasized that TB screening is a standard guideline-recommended practice before starting TNF inhibitors, as these drugs can reactivate latent TB.  \n- The **Infectious Disease Specialist** highlighted the increased risk of TB reactivation with TNF inhibitors and the importance of prophylactic treatment if latent TB is detected.  \n- The **Radiologist** reinforced that TB screening is mandatory before initiating TNF inhibitors and noted that other diagnostic options are not relevant to this clinical scenario.  \n- The **Immunologist** also supported TB screening as the most critical step to mitigate the risk of latent TB reactivation, which is a known and serious complication of TNF inhibitor therapy.\n\n**Analysis of other options:**\n1. **B. Antinuclear antibody (ANA) level:** ANA testing is not relevant in this case because the patient already has a confirmed diagnosis of rheumatoid arthritis, and ANA testing does not address the risks associated with TNF inhibitors.  \n2. **C. Endoscopy:** While the patient has a history of gastric reflux managed with omeprazole, there is no indication of active gastrointestinal symptoms or complications that would necessitate endoscopy. This test is unrelated to the use of etanercept.  \n3. **D. Malignancy screening:** Routine malignancy screening is not required before starting TNF inhibitors unless there are specific risk factors or symptoms suggestive of cancer. The patient's history and presentation do not indicate a need for malignancy screening at this time.\n\n**Conclusion:**  \nTuberculosis screening is the most appropriate diagnostic test to order before initiating etanercept therapy. This ensures safe administration of the medication and minimizes the risk of potentially severe complications from latent TB reactivation."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Immunologist",
+      "message": "ANSWER: A  \n\n**Rationale:**  \nAll team members, including myself, agree that tuberculosis (TB) screening is the most appropriate diagnostic test to order before initiating etanercept therapy in this patient. Etanercept is a tumor necrosis factor-alpha (TNF-\u03b1) inhibitor, which suppresses the immune system to control inflammation in autoimmune diseases such as rheumatoid arthritis (RA). However, TNF inhibitors are associated with an increased risk of reactivating latent TB, which can lead to severe complications in immunosuppressed individuals.  \n\nScreening for latent TB using a tuberculin skin test (TST) or interferon-gamma release assay (IGRA) is a standard recommendation before starting TNF inhibitors. Identifying and treating latent TB before initiating etanercept ensures patient safety and prevents the development of active TB.  \n\n**Integration of insights from teammates:**  \n- The **Rheumatologist** emphasized that TB screening is a standard practice before starting TNF inhibitors, as reactivation of TB is a well-documented risk associated with these medications.  \n- The **Infectious Disease Specialist** highlighted the importance of screening for latent TB to avoid severe infectious complications, which aligns with clinical guidelines for using TNF inhibitors.  \n- The **Radiologist** noted that other options, such as ANA testing, endoscopy, or malignancy screening, are not relevant to the initiation of etanercept and do not address the most immediate concern of infection risk.  \n- The **Pharmacologist** reinforced that TB screening is critical for patient safety and that other diagnostic tests are either unnecessary or unrelated to the use of TNF inhibitors.  \n\n**Analysis of other options:**  \n- **B. Antinuclear antibody (ANA) level:** Irrelevant because the patient already has a confirmed diagnosis of RA, and ANA testing does not relate to the risks of TNF inhibitors.  \n- **C. Endoscopy:** Unnecessary, as the patient\u2019s gastric reflux is well-controlled with omeprazole, and there is no indication of active gastrointestinal symptoms.  \n- **D. Malignancy screening:** While there is a theoretical increased risk of malignancies with TNF inhibitors, routine screening is not required unless specific risk factors or symptoms are present.  \n\n**Conclusion:**  \nThe most critical diagnostic test before starting etanercept is **tuberculosis screening**, as it directly addresses the potential risk of latent TB reactivation associated with TNF inhibitors. This aligns with clinical guidelines and ensures the safe use of the medication."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 5.0
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "teamwork_metrics": {}
+}

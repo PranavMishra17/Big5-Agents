@@ -1,0 +1,59 @@
+{
+  "question": "A microbiology graduate student was given a swab containing an unknown bacteria that caused an ear infection in a seven-year-old girl. The student identified the bacteria as a gram-positive, catalase-negative cocci producing green rings around the colonies when grown on blood agar. Which of the following characteristics is associated with this bacteria?",
+  "options": [
+    "A. Growth in bile and 6.5% NaCl",
+    "B. Bacitracin-resistant",
+    "C. Bacitracin-sensitive",
+    "D. Positive quellung reaction"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "weighted_votes": {
+        "C": 1.0
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 3,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 1.0
+    }
+  }
+}

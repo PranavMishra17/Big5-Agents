@@ -1,0 +1,91 @@
+{
+  "question": "A 69-year-old man presents with granulomatosis with polyangiitis diagnosed about 8 months ago. He was treated appropriately and states that his symptoms are well controlled. He is presenting today for a general follow up visit. His temperature is 99.0\u00b0F (37.2\u00b0C), blood pressure is 184/104 mmHg, pulse is 88/min, respirations are 12/min, and oxygen saturation is 98% on room air. His physical examination is notable for the findings in Figures A and B. Which of the following would be found in this patient on serum laboratory studies?",
+  "options": [
+    "A. Hyperkalemia and metabolic acidosis",
+    "B. Hypokalemia and metabolic acidosis",
+    "C. Hypokalemia and metabolic alkalosis",
+    "D. Hypokalemia and normal acid-base status"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3
+      },
+      "weighted_votes": {
+        "C": 3.9000000000000004
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 9,
+        "D": 0
+      },
+      "total_possible_score": 9.0,
+      "confidence": 1.0
+    },
+    "mdt_process": {
+      "team_decisions": {
+        "1_Initial Assessment Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "2_Domain Specialist Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "3_Final Review and Decision Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        }
+      },
+      "decision_team": "3_Final Review and Decision Team"
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

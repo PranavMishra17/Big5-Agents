@@ -1,0 +1,141 @@
+{
+  "simulation_id": "medqa_custom_configuration_22",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": false,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "1_Initial Assessment Team_Internist",
+      "message": "**ANSWER: C**\n\n### Rationale:\n\nBased on the analysis provided by all team members, the most consistent serum laboratory findings in this patient with granulomatosis with polyangiitis (GPA) and renal involvement are **hypokalemia and metabolic alkalosis**. This conclusion integrates the following key points:\n\n#### Clinical Context:\n1. **Granulomatosis with Polyangiitis (GPA):** \n   - GPA is a systemic vasculitis that often affects the kidneys, lungs, and upper respiratory tract. Renal involvement commonly manifests as pauci-immune crescentic glomerulonephritis.\n   - This renal dysfunction leads to activation of the renin-angiotensin-aldosterone system (RAAS), causing secondary hyperaldosteronism.\n\n2. **Hypertension (184/104 mmHg):**\n   - The patient\u2019s elevated blood pressure strongly suggests renal involvement, which is a hallmark of GPA-related glomerulonephritis. Secondary hyperaldosteronism due to renal damage results in increased potassium excretion (hypokalemia) and hydrogen ion excretion (metabolic alkalosis).\n\n3. **Controlled Symptoms:**\n   - Despite the patient reporting well-controlled symptoms, the hypertension and findings in Figures A and B (likely indicative of renal involvement) suggest ongoing subclinical pathology.\n\n#### Laboratory Expectations:\n- **Hypokalemia:** Secondary hyperaldosteronism leads to increased renal potassium loss.\n- **Metabolic Alkalosis:** Excess hydrogen ion excretion and bicarbonate retention result in alkalosis.\n\n#### Option Analysis:\n1. **Option A (Hyperkalemia and metabolic acidosis):**\n   - Hyperkalemia and metabolic acidosis are seen in tubular disorders or advanced renal failure. GPA-related renal involvement typically affects the glomeruli rather than the tubules, making this option unlikely.\n\n2. **Option B (Hypokalemia and metabolic acidosis):**\n   - Hypokalemia is plausible, but metabolic acidosis is inconsistent with secondary hyperaldosteronism, which more commonly causes alkalosis.\n\n3. **Option C (Hypokalemia and metabolic alkalosis):**\n   - Hypokalemia and metabolic alkalosis are classic findings in conditions involving secondary hyperaldosteronism, such as renovascular hypertension or glomerulonephritis. This aligns perfectly with the patient's clinical picture.\n\n4. **Option D (Hypokalemia and normal acid-base status):**\n   - Normal acid-base status is unlikely in the context of RAAS activation, which typically causes metabolic alkalosis.\n\n### Final Conclusion:\nThe patient\u2019s history of GPA, hypertension, and likely renal involvement strongly suggest secondary hyperaldosteronism, resulting in **hypokalemia and metabolic alkalosis**. Therefore, the correct answer is **C**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "1_Initial Assessment Team_Radiologist",
+      "message": "ANSWER: C\n\n### Rationale:\nThe patient has a history of **granulomatosis with polyangiitis (GPA)**, a systemic vasculitis that frequently involves the kidneys, leading to complications such as **pauci-immune crescentic glomerulonephritis**. His presentation of **severe hypertension (184/104 mmHg)** strongly suggests renal involvement, which is a common cause of secondary hypertension in GPA. The physical findings (Figures A and B, though not provided) likely point to signs of renal disease or systemic effects of vasculitis.\n\n#### Pathophysiology:\nRenal involvement in GPA can activate the **renin-angiotensin-aldosterone system (RAAS)** due to reduced renal perfusion or glomerular damage. This results in:\n1. **Hypokalemia**: Increased aldosterone levels promote potassium excretion in the distal nephron.\n2. **Metabolic Alkalosis**: Aldosterone also enhances hydrogen ion excretion, leading to bicarbonate retention and alkalosis.\n\nThese findings are consistent with **secondary hyperaldosteronism**, which is a hallmark of renovascular hypertension or glomerulonephritis-induced RAAS activation.\n\n#### Systematic Analysis of Options:\n1. **Option A: Hyperkalemia and metabolic acidosis**\n   - Hyperkalemia and metabolic acidosis are typically seen in advanced renal failure or tubular dysfunction (e.g., Type 4 renal tubular acidosis). However, GPA-associated glomerulonephritis usually leads to hypokalemia and alkalosis due to RAAS activation. This option is inconsistent with the clinical scenario.\n\n2. **Option B: Hypokalemia and metabolic acidosis**\n   - While hypokalemia can occur in renal disease, metabolic acidosis is less likely in this context. Secondary hyperaldosteronism from RAAS activation typically causes alkalosis, not acidosis. This option does not align with the patient's presentation.\n\n3. **Option C: Hypokalemia and metabolic alkalosis**\n   - This is the most consistent choice. Hypokalemia and metabolic alkalosis are classic findings in conditions involving secondary hyperaldosteronism, such as renovascular hypertension or glomerulonephritis. The patient's hypertension and likely renal involvement strongly support this acid-base and electrolyte disturbance.\n\n4. **Option D: Hypokalemia and normal acid-base status**\n   - While hypokalemia is plausible, normal acid-base status is unlikely in the setting of significant RAAS activation, which typically causes alkalosis. This option is incomplete and does not fully explain the clinical findings.\n\n#### Integration of Teammates' Insights:\nAll team members agree that **Option C** is the most appropriate answer. The Internist, Pathologist, Cardiologist, Neurologist, and Endocrinologist all highlighted that hypokalemia and metabolic alkalosis are the expected findings in GPA with renal involvement, particularly when hypertension is present. The Senior Consultant and Evidence-Based Medicine Specialist further emphasized the role of RAAS activation in driving these changes, solidifying the conclusion.\n\n### Final Conclusion:\nThe most likely laboratory findings in this patient are **hypokalemia and metabolic alkalosis**, making **Option C** the correct answer. This aligns with the clinical context of GPA-associated renal involvement and secondary hyperaldosteronism."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "1_Initial Assessment Team_Pathologist",
+      "message": "ANSWER: C\n\n### Rationale:\n\nThe patient has a history of granulomatosis with polyangiitis (GPA), a systemic vasculitis that often affects the kidneys, leading to conditions such as pauci-immune crescentic glomerulonephritis. His elevated blood pressure (184/104 mmHg) strongly suggests renal involvement, which is a common complication of GPA. Renal dysfunction in GPA can activate the renin-angiotensin-aldosterone system (RAAS), leading to secondary hyperaldosteronism. This mechanism results in:\n\n1. **Hypokalemia**: Aldosterone increases renal potassium excretion, causing low serum potassium levels.\n2. **Metabolic Alkalosis**: Aldosterone also promotes hydrogen ion excretion, leading to bicarbonate retention and a shift toward alkalosis.\n\n### Integration of Teammates' Analyses:\n- All teammates consistently identified **hypokalemia and metabolic alkalosis (Option C)** as the most likely findings based on the patient's clinical context, including renal involvement and hypertension.\n- The **Internist** and **Cardiologist** highlighted the role of secondary hyperaldosteronism in causing these laboratory abnormalities.\n- The **Endocrinologist** emphasized the potential contribution of corticosteroid therapy, which is commonly used to treat GPA and can exacerbate hypokalemia and alkalosis.\n- The **Radiologist** and **Neurologist** ruled out other options (e.g., hyperkalemia or metabolic acidosis) by noting that these findings are inconsistent with the pathophysiology of GPA-related renal involvement.\n\n### Systematic Elimination of Incorrect Options:\n- **Option A (Hyperkalemia and metabolic acidosis)**: Hyperkalemia and acidosis are more typical in advanced renal failure or type IV renal tubular acidosis, which are not consistent with the patient's clinical scenario.\n- **Option B (Hypokalemia and metabolic acidosis)**: Hypokalemia with acidosis is seen in renal tubular disorders but is not typical in GPA-related glomerulonephritis, where alkalosis predominates.\n- **Option D (Hypokalemia and normal acid-base status)**: Hypokalemia without acid-base disturbance is unlikely in the setting of secondary hyperaldosteronism, which typically causes metabolic alkalosis.\n\n### Conclusion:\nThe patient's clinical presentation, history of GPA, and hypertension strongly indicate renal involvement with secondary hyperaldosteronism, leading to **hypokalemia and metabolic alkalosis**. Therefore, the correct answer is **C**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "2_Domain Specialist Team_Cardiologist",
+      "message": "ANSWER: C  \n\n### Rationale:\n\nThis 69-year-old man with a history of granulomatosis with polyangiitis (GPA), a systemic vasculitis that commonly affects the kidneys, presents with severe hypertension (184/104 mmHg). Hypertension in GPA is often a sign of renal involvement, such as pauci-immune crescentic glomerulonephritis, which can lead to activation of the renin-angiotensin-aldosterone system (RAAS). RAAS activation results in secondary hyperaldosteronism, which promotes potassium excretion and hydrogen ion loss, leading to **hypokalemia** and **metabolic alkalosis**.\n\n#### Integration of Team Insights:\n1. **Renal Involvement in GPA**:\n   - All team members recognized that renal involvement in GPA is a common complication, often presenting as glomerulonephritis. This condition leads to secondary hyperaldosteronism, which drives the electrolyte and acid-base disturbances seen in this patient.\n\n2. **Hypertension and RAAS Activation**:\n   - The elevated blood pressure strongly suggests RAAS activation, which is consistent with secondary hyperaldosteronism. The RAAS system promotes potassium excretion (causing hypokalemia) and hydrogen ion loss (causing metabolic alkalosis).\n\n3. **Systematic Option Analysis**:\n   - **Option A (Hyperkalemia and metabolic acidosis)**: Hyperkalemia and metabolic acidosis are associated with advanced renal failure or tubular dysfunction, which is not consistent with the clinical picture of GPA-related glomerulonephritis and secondary hyperaldosteronism.\n   - **Option B (Hypokalemia and metabolic acidosis)**: While hypokalemia could occur, metabolic acidosis is unlikely in this scenario due to the alkalosis driven by RAAS activation.\n   - **Option C (Hypokalemia and metabolic alkalosis)**: Hypokalemia and metabolic alkalosis are the hallmark findings in conditions involving secondary hyperaldosteronism, which aligns perfectly with the patient's clinical presentation. All team members agree this is the correct answer.\n   - **Option D (Hypokalemia and normal acid-base status)**: Normal acid-base status is unlikely in the setting of renal involvement and RAAS activation, which typically leads to metabolic alkalosis.\n\n#### Final Conclusion:\nThe patient\u2019s history of GPA, severe hypertension, and likely renal involvement point to secondary hyperaldosteronism, which causes **hypokalemia and metabolic alkalosis**. This makes **Option C** the correct answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "2_Domain Specialist Team_Neurologist",
+      "message": "ANSWER: C\n\n### Rationale:\n\nThis 69-year-old man with a history of granulomatosis with polyangiitis (GPA) presents with severe hypertension (184/104 mmHg) and findings suggestive of renal involvement, likely glomerulonephritis. Renal involvement in GPA is a common complication and often manifests as pauci-immune crescentic glomerulonephritis. This condition can lead to activation of the renin-angiotensin-aldosterone system (RAAS), resulting in **secondary hyperaldosteronism**. Hyperaldosteronism promotes potassium excretion (causing **hypokalemia**) and hydrogen ion excretion (causing **metabolic alkalosis**).\n\nThe patient's hypertension, a hallmark of renal involvement, supports the likelihood of RAAS activation. Additionally, the absence of symptoms or findings consistent with advanced renal failure (e.g., hyperkalemia and metabolic acidosis) makes other options less plausible.\n\n### Integration of Perspectives:\n1. **Renal Involvement in GPA**: All team members agree that renal involvement is the key driver of the patient's clinical presentation. Secondary hyperaldosteronism due to glomerulonephritis or renovascular hypertension is the most likely mechanism.\n2. **Electrolyte and Acid-Base Disturbances**: Hypokalemia and metabolic alkalosis (Option C) are the hallmark findings in conditions involving RAAS activation, as emphasized by all teams.\n3. **Exclusion of Other Options**:\n   - **Option A (Hyperkalemia and metabolic acidosis)**: This is inconsistent with RAAS activation and the patient's presentation.\n   - **Option B (Hypokalemia and metabolic acidosis)**: Metabolic acidosis is not typical in this scenario; alkalosis is expected.\n   - **Option D (Hypokalemia and normal acid-base status)**: Acid-base disturbances are expected in the context of RAAS activation, making normal acid-base status unlikely.\n\n### Final Conclusion:\nThe most consistent laboratory findings in this patient with GPA, hypertension, and likely renal involvement are **hypokalemia and metabolic alkalosis**. This aligns with the pathophysiology of secondary hyperaldosteronism. Therefore, the correct answer is **C**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "2_Domain Specialist Team_Endocrinologist",
+      "message": "ANSWER: C\n\n### Rationale:\n\nThe patient has a history of granulomatosis with polyangiitis (GPA), an autoimmune vasculitis that frequently involves the kidneys, leading to complications such as glomerulonephritis. His severely elevated blood pressure (184/104 mmHg) strongly suggests renal involvement, which is common in GPA and can lead to secondary activation of the renin-angiotensin-aldosterone system (RAAS). RAAS activation causes increased potassium excretion (resulting in hypokalemia) and hydrogen ion excretion (leading to metabolic alkalosis).\n\n#### Integration of Insights:\n1. **Endocrinologist Perspective**: Corticosteroid therapy, a common treatment for GPA, can mimic mineralocorticoid effects and exacerbate hypokalemia and metabolic alkalosis. Renal involvement in GPA further contributes to this electrolyte and acid-base disturbance via secondary hyperaldosteronism.\n\n2. **Internist Perspective**: The patient's hypertension and likely renal involvement fit the pattern of secondary hyperaldosteronism, which is a hallmark of renovascular disease or glomerulonephritis. The combination of hypokalemia and metabolic alkalosis is consistent with this mechanism.\n\n3. **Radiologist Perspective**: Renal involvement in GPA often leads to glomerulonephritis, which activates RAAS and results in hypokalemia and metabolic alkalosis. The physical findings likely support this diagnosis.\n\n4. **Pathologist Perspective**: GPA-associated renal disease typically manifests as pauci-immune crescentic glomerulonephritis, leading to RAAS activation. This mechanism explains the hypokalemia and metabolic alkalosis seen in this patient.\n\n5. **Cardiologist Perspective**: Severe hypertension in this patient is likely secondary to renal involvement, which activates RAAS and results in hypokalemia and metabolic alkalosis. This fits the clinical picture.\n\n6. **Neurologist Perspective**: The renal complications of GPA are the most likely explanation for this patient's clinical findings. Secondary hyperaldosteronism explains the hypokalemia and metabolic alkalosis.\n\n7. **Evidence-Based Medicine Specialist**: The combination of hypokalemia and metabolic alkalosis is well-supported by the pathophysiology of GPA-associated renal disease and secondary hyperaldosteronism.\n\n8. **Clinical Decision Maker**: All perspectives converge on the conclusion that secondary hyperaldosteronism due to renal involvement in GPA is the most plausible explanation for the patient's findings.\n\n### Final Conclusion:\nThe patient's clinical presentation, history of GPA, and laboratory findings strongly suggest **hypokalemia and metabolic alkalosis**, making **Option C** the correct answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "3_Final Review and Decision Team_Senior Consultant",
+      "message": "ANSWER: C\n\n### Rationale:\nThe patient has a history of **granulomatosis with polyangiitis (GPA)**, a systemic vasculitis that often affects the kidneys. His elevated blood pressure (184/104 mmHg) strongly suggests renal involvement, which is a common complication of GPA. Renal involvement, particularly pauci-immune crescentic glomerulonephritis, can lead to activation of the renin-angiotensin-aldosterone system (RAAS). This activation results in secondary hyperaldosteronism, which promotes **potassium excretion (hypokalemia)** and **hydrogen ion excretion**, leading to **metabolic alkalosis**.\n\n#### Integration of Team Insights:\n1. **Internist's Perspective**: The internist emphasized the role of secondary hyperaldosteronism in the setting of renal involvement, leading to hypokalemia and metabolic alkalosis. This aligns with the clinical presentation of hypertension and GPA-related glomerulonephritis.\n   \n2. **Radiologist's Perspective**: The radiologist highlighted that renal dysfunction in GPA often leads to hypokalemia and metabolic alkalosis due to RAAS activation. This explanation supports the underlying pathophysiology in this case.\n\n3. **Pathologist's Perspective**: The pathologist reinforced the role of renal involvement in GPA and its downstream effects, including secondary hyperaldosteronism, which causes hypokalemia and metabolic alkalosis. This analysis is consistent with the patient's clinical findings.\n\n4. **Cardiologist's Perspective**: The cardiologist focused on the hypertension and its association with renal dysfunction, leading to RAAS activation. This perspective further supports the conclusion of hypokalemia and metabolic alkalosis.\n\n5. **Endocrinologist's Perspective**: The endocrinologist considered the possibility of corticosteroid use exacerbating hypokalemia and metabolic alkalosis, which is plausible given the treatment regimen for GPA. This adds another layer of support for Option C.\n\n6. **Evidence-Based Medicine Specialist's Perspective**: The specialist systematically ruled out other options and emphasized that hypokalemia and metabolic alkalosis are the most consistent findings in the context of GPA-associated renal disease and hypertension.\n\n7. **Clinical Decision Maker's Perspective**: The clinical decision maker clarified that GPA-related renal involvement typically leads to secondary hyperaldosteronism, causing hypokalemia and metabolic alkalosis. This aligns with the patient's clinical presentation.\n\n#### Systematic Analysis of Options:\n- **Option A (Hyperkalemia and metabolic acidosis)**: Hyperkalemia and acidosis are inconsistent with secondary hyperaldosteronism, which promotes potassium and hydrogen ion excretion.\n- **Option B (Hypokalemia and metabolic acidosis)**: While hypokalemia could occur, acidosis is less likely in the setting of RAAS activation, which favors alkalosis.\n- **Option C (Hypokalemia and metabolic alkalosis)**: This is the most consistent with the clinical scenario. RAAS activation due to renal involvement in GPA leads to hypokalemia and metabolic alkalosis.\n- **Option D (Hypokalemia and normal acid-base status)**: Normal acid-base status is unlikely in the presence of RAAS activation, which typically results in alkalosis.\n\n### Final Conclusion:\nThe patient's clinical presentation, history of GPA, hypertension, and likely renal involvement point to **hypokalemia and metabolic alkalosis** as the most probable laboratory findings. Therefore, the correct answer is **C**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "3_Final Review and Decision Team_Evidence-Based Medicine Specialist",
+      "message": "ANSWER: C\n\n### Rationale:\n\nThis 69-year-old man with a history of **granulomatosis with polyangiitis (GPA)** presents with **severe hypertension (184/104 mmHg)**, which strongly suggests renal involvement, a common complication of GPA. Renal manifestations of GPA often include **pauci-immune crescentic glomerulonephritis**, which can impair renal function. This renal involvement can lead to **secondary hyperaldosteronism** due to activation of the renin-angiotensin-aldosterone system (RAAS), resulting in **hypokalemia** and **metabolic alkalosis**.\n\n#### Integration of Insights from Team Members:\n1. **Renal Involvement in GPA**:\n   - All team members agree that the patient's hypertension is likely due to renal involvement, which is common in GPA. This renal dysfunction activates the RAAS, leading to secondary hyperaldosteronism.\n   - Secondary hyperaldosteronism promotes potassium excretion (causing hypokalemia) and hydrogen ion excretion (causing metabolic alkalosis).\n\n2. **Exclusion of Other Options**:\n   - **Option A (Hyperkalemia and metabolic acidosis)**: Hyperkalemia and acidosis are typically seen in advanced renal failure or tubular dysfunction (e.g., type 4 renal tubular acidosis). However, GPA-associated renal disease primarily affects the glomeruli, not the tubules, and the RAAS activation in this case would lead to hypokalemia, not hyperkalemia. This option is inconsistent with the clinical scenario.\n   - **Option B (Hypokalemia and metabolic acidosis)**: While hypokalemia can occur, metabolic acidosis is not typical in this context. Secondary hyperaldosteronism from renal involvement or diuretic use would more likely cause metabolic alkalosis. This option is incorrect.\n   - **Option D (Hypokalemia and normal acid-base status)**: Hypokalemia without an acid-base disturbance is unlikely in this scenario. The activation of the RAAS system typically leads to metabolic alkalosis due to hydrogen ion loss. This option does not fully explain the clinical findings.\n\n3. **Consistency with Clinical Findings**:\n   - **Option C (Hypokalemia and metabolic alkalosis)** aligns with the patient's history of GPA, renal involvement, severe hypertension, and the likely activation of the RAAS. This mechanism explains the expected laboratory findings, making this the most accurate choice.\n\n### Final Conclusion:\nThe most likely serum laboratory findings in this patient with GPA and renal involvement are **hypokalemia and metabolic alkalosis**, consistent with secondary hyperaldosteronism. Therefore, the correct answer is **C**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "3_Final Review and Decision Team_Clinical Decision Maker",
+      "message": "**ANSWER: C**\n\n**Rationale:**\n\nAfter reviewing the analyses from all team members and integrating their insights with my own expertise, the most appropriate answer is **C: Hypokalemia and metabolic alkalosis**. This conclusion is supported by the clinical context, pathophysiology of granulomatosis with polyangiitis (GPA), and the likely renal involvement in this patient.\n\n### Key Points Supporting the Answer:\n1. **Granulomatosis with Polyangiitis and Renal Involvement**:\n   - GPA commonly affects the kidneys, leading to pauci-immune crescentic glomerulonephritis. This renal dysfunction often results in hypertension due to activation of the renin-angiotensin-aldosterone system (RAAS).\n   - RAAS activation causes secondary hyperaldosteronism, which promotes potassium excretion (resulting in hypokalemia) and hydrogen ion excretion (leading to metabolic alkalosis).\n\n2. **Hypertension as a Clue**:\n   - The patient's severe hypertension (184/104 mmHg) strongly suggests renal involvement, which is a known complication of GPA. Secondary hyperaldosteronism due to renovascular hypertension or glomerulonephritis explains the electrolyte and acid-base disturbances.\n\n3. **Exclusion of Other Options**:\n   - **Option A (Hyperkalemia and metabolic acidosis)**: Hyperkalemia and metabolic acidosis are more consistent with advanced renal failure or tubulointerstitial disease, neither of which is suggested by the patient's presentation of \"well-controlled symptoms.\"\n   - **Option B (Hypokalemia and metabolic acidosis)**: While hypokalemia could occur, metabolic acidosis is not typical in GPA-related renal disease with secondary hyperaldosteronism. Acidosis is more common in renal tubular acidosis or severe kidney failure.\n   - **Option D (Hypokalemia and normal acid-base status)**: Normal acid-base status is unlikely in the presence of secondary hyperaldosteronism, which typically causes metabolic alkalosis.\n\n4. **Consensus Among Team Members**:\n   - All team members, including specialists in internal medicine, pathology, cardiology, radiology, and endocrinology, agree that the most consistent findings in this patient are **hypokalemia and metabolic alkalosis**. This reflects the pathophysiology of GPA with renal involvement and the downstream effects of RAAS activation.\n\n### Final Conclusion:\nThe patient's clinical presentation, history of GPA, severe hypertension, and likely renal involvement point to **hypokalemia and metabolic alkalosis** as the most likely laboratory findings. Therefore, the correct answer is **C**."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3
+      },
+      "weighted_votes": {
+        "C": 3.9000000000000004
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 9,
+        "D": 0
+      },
+      "total_possible_score": 9.0,
+      "confidence": 1.0
+    },
+    "mdt_process": {
+      "team_decisions": {
+        "1_Initial Assessment Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "2_Domain Specialist Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "3_Final Review and Decision Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        }
+      },
+      "decision_team": "3_Final Review and Decision Team"
+    }
+  },
+  "teamwork_metrics": {}
+}
