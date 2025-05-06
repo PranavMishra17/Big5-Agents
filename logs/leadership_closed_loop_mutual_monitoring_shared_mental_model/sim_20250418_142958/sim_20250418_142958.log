@@ -1,6 +1,0 @@
-2025-04-18 14:29:58,911 - simulation.sim_20250418_142958 - INFO - Event logged: simulation_started
-2025-04-18 14:29:58,911 - simulation.sim_20250418_142958 - INFO - SimulationLogger initialized for sim_20250418_142958 with configuration: leadership_closed_loop_mutual_monitoring_shared_mental_model
-2025-04-18 14:30:00,681 - simulation.sim_20250418_142958 - INFO - Initialized simulation sim_20250418_142958
-2025-04-18 14:30:00,682 - simulation.sim_20250418_142958 - INFO - Components enabled: Team Leadership: Process Facilitator, Closed-loop Communication, Mutual Performance Monitoring, Shared Mental Model
-2025-04-18 14:30:00,682 - simulation.sim_20250418_142958 - INFO - Starting task analysis phase
-2025-04-18 14:30:00,682 - simulation.sim_20250418_142958 - INFO - Getting initial analysis from Critical Analyst

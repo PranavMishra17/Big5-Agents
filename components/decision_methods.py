@@ -99,38 +99,52 @@ class DecisionMethods:
 
 
     def borda_count(self, agent_responses):
-        """Apply Borda count method to aggregate ranked preferences."""
+        """Apply Borda count to MCQ tasks."""
+        import re
+        
         borda_scores = {"A": 0, "B": 0, "C": 0, "D": 0}
         num_rankings = 0
         
-        for agent_role, response in agent_responses.items():
-            preference = None
-            
-            # Handle dictionary responses
-            if isinstance(response, dict):
-                if "final_decision" in response:
-                    preference = self.extract_answer_option(response["final_decision"])
-                elif "extract" in response and isinstance(response["extract"], dict):
-                    if "answer" in response["extract"]:
-                        preference = response["extract"]["answer"]
-            # Handle string responses
-            elif isinstance(response, str):
-                preference = self.extract_answer_option(response)
-            
-            # Apply Borda scoring (3 points to top choice)
-            if preference:
-                borda_scores[preference] += 3
-                num_rankings += 1
+        for agent_role, response_data in agent_responses.items():
+            if "final_decision" in response_data:
+                # Look for ranking pattern with improved regex
+                # Handle bold markdown, optional spaces, and variations
+                ranking_pattern = r"[Mm]y\s+ranking:?\s*\*?([A-D])\*?,\s*\*?([A-D])\*?,\s*\*?([A-D])\*?,\s*\*?([A-D])\*?"
+                match = re.search(ranking_pattern, response_data["final_decision"], re.IGNORECASE)
+                
+                if match:
+                    # Extract ranking
+                    ranking = list(match.groups())
+                    num_rankings += 1
+                    
+                    # Assign Borda points (3 for 1st place, 2 for 2nd, etc.)
+                    for i, option in enumerate(ranking):
+                        borda_scores[option] += 3 - i  # 3, 2, 1, 0 points
+                    
+                    logging.info(f"Borda count: {agent_role} ranking extracted: {ranking}")
+                else:
+                    # Fallback: look for ranking mentioned in a different format
+                    alt_pattern = r"ranking.*?([A-D]).*?([A-D]).*?([A-D]).*?([A-D])"
+                    alt_match = re.search(alt_pattern, response_data["final_decision"], re.IGNORECASE)
+                    
+                    if alt_match:
+                        ranking = list(alt_match.groups())
+                        num_rankings += 1
+                        for i, option in enumerate(ranking):
+                            borda_scores[option] += 3 - i
+                        logging.info(f"Borda count: {agent_role} alt ranking extracted: {ranking}")
+                    else:
+                        # Second fallback: just extract the answer
+                        answer = self.extract_answer_option(response_data["final_decision"])
+                        if answer:
+                            borda_scores[answer] += 3
+                            num_rankings += 1
+                            logging.info(f"Borda count: {agent_role} only answer found: {answer}")
         
-        # Find winner
-        winning_option = None
+        # Find winner and calculate confidence
+        winning_option = max(borda_scores.items(), key=lambda x: x[1])[0] if borda_scores else None
         total_possible_score = num_rankings * 3.0
-        
-        if total_possible_score > 0:
-            winning_option = max(borda_scores, key=borda_scores.get)
-            confidence = borda_scores[winning_option] / total_possible_score
-        else:
-            confidence = 0
+        confidence = borda_scores[winning_option] / total_possible_score if winning_option and total_possible_score > 0 else 0
         
         return {
             "method": "borda_count",
@@ -146,29 +160,28 @@ class DecisionMethods:
         votes = {}
         weighted_votes = {}
         total_weight = 0
+        agent_weights_used = {}
         
-        for agent_role, response in agent_responses.items():
+        for agent_role, response_data in agent_responses.items():
             preference = None
             confidence = 1.0
             
-            # Handle dictionary responses
-            if isinstance(response, dict):
-                if "final_decision" in response:
-                    preference = self.extract_answer_option(response["final_decision"])
-                elif "extract" in response and isinstance(response["extract"], dict):
-                    if "answer" in response["extract"]:
-                        preference = response["extract"]["answer"]
-                    if "confidence" in response["extract"]:
-                        confidence = response["extract"]["confidence"]
-            # Handle string responses
-            elif isinstance(response, str):
-                preference = self.extract_answer_option(response)
+            # Extract answer and confidence
+            if isinstance(response_data, dict):
+                if "final_decision" in response_data:
+                    preference = self.extract_answer_option(response_data["final_decision"])
+                elif "extract" in response_data and isinstance(response_data["extract"], dict):
+                    if "answer" in response_data["extract"]:
+                        preference = response_data["extract"]["answer"]
+                    if "confidence" in response_data["extract"]:
+                        confidence = response_data["extract"]["confidence"]
             
-            # Apply hierarchy multiplier
             if preference:
-                hierarchy_factor = 1.0
+                # Get agent weight from response data or use default
+                weight = response_data.get("weight", 0.2)
                 
-                # Check role for hierarchy indicators
+                # Apply hierarchy multiplier
+                hierarchy_factor = 1.0
                 if "leader" in agent_role.lower() or "chief" in agent_role.lower():
                     hierarchy_factor = 1.5
                 elif any(x in agent_role for x in ["3_", "Final", "FRDT"]):
@@ -177,8 +190,8 @@ class DecisionMethods:
                     hierarchy_factor = 1.1
                 
                 # Calculate final weight
-                weight = team_weights.get(agent_role, confidence) if team_weights else confidence
-                final_weight = weight * hierarchy_factor
+                final_weight = weight * confidence * hierarchy_factor
+                agent_weights_used[agent_role] = final_weight
                 
                 # Record vote
                 if preference not in votes:
@@ -189,20 +202,20 @@ class DecisionMethods:
                 weighted_votes[preference] += final_weight
                 total_weight += final_weight
         
-        # Find winner
-        winning_option = None
-        confidence = 0
+        # Log weights used
+        logging.info(f"Agent weights used in voting: {agent_weights_used}")
         
-        if weighted_votes:
-            winning_option = max(weighted_votes, key=weighted_votes.get)
-            confidence = weighted_votes[winning_option] / total_weight if total_weight > 0 else 0
+        # Find winner
+        winning_option = None if not weighted_votes else max(weighted_votes.items(), key=lambda x: x[1])[0]
+        confidence = weighted_votes.get(winning_option, 0) / total_weight if total_weight > 0 else 0
         
         return {
             "method": "weighted_voting",
             "winning_option": winning_option,
             "vote_counts": votes,
             "weighted_votes": weighted_votes,
-            "total_votes": sum(votes.values()),
+            "agent_weights": agent_weights_used,
+            "total_weight": total_weight,
             "confidence": confidence
         }
 
@@ -580,73 +593,53 @@ class DecisionMethods:
         }
     
 
-
-    def _borda_count_mcq(self, agent_responses: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    def _borda_count_mcq(self, agent_responses):
         """Apply Borda count to MCQ tasks."""
-        # For MCQ tasks, we need explicit rankings from agents
-        # We'll check if agents provided full rankings in their responses
+        import re
         
         borda_scores = {"A": 0, "B": 0, "C": 0, "D": 0}
         num_rankings = 0
-
-        # First, extract any rankings provided
-        agent_rankings = {}
+        
         for agent_role, response_data in agent_responses.items():
-            if "preference_ranking" in response_data:
-                agent_rankings[agent_role] = response_data["preference_ranking"]
-            elif "answer" in response_data:
-                # If only the answer is given, create an implied ranking
-                # with the chosen answer first and others in arbitrary order
-                answer = response_data["answer"]
-                ranking = []
+            if "final_decision" in response_data:
+                # Look for ranking pattern with improved regex
+                # Handle bold markdown, optional spaces, and variations
+                ranking_pattern = r"[Mm]y\s+ranking:?\s*\*?([A-D])\*?,\s*\*?([A-D])\*?,\s*\*?([A-D])\*?,\s*\*?([A-D])\*?"
+                match = re.search(ranking_pattern, response_data["final_decision"], re.IGNORECASE)
                 
-                # Add the chosen answer first
-                for option in config.TASK["options"]:
-                    option_id = option.split('.')[0].strip() if '.' in option else None
-                    if option_id == answer:
-                        ranking.append(option_id)
-                        break
-                
-                # Add remaining options in order
-                for option in config.TASK["options"]:
-                    option_id = option.split('.')[0].strip() if '.' in option else None
-                    if option_id and option_id != answer:
-                        ranking.append(option_id)
-                
-                agent_rankings[agent_role] = ranking
+                if match:
+                    # Extract ranking
+                    ranking = list(match.groups())
+                    num_rankings += 1
+                    
+                    # Assign Borda points (3 for 1st place, 2 for 2nd, etc.)
+                    for i, option in enumerate(ranking):
+                        borda_scores[option] += 3 - i  # 3, 2, 1, 0 points
+                    
+                    logging.info(f"Borda count: {agent_role} ranking extracted: {ranking}")
+                else:
+                    # Fallback: look for ranking mentioned in a different format
+                    alt_pattern = r"ranking.*?([A-D]).*?([A-D]).*?([A-D]).*?([A-D])"
+                    alt_match = re.search(alt_pattern, response_data["final_decision"], re.IGNORECASE)
+                    
+                    if alt_match:
+                        ranking = list(alt_match.groups())
+                        num_rankings += 1
+                        for i, option in enumerate(ranking):
+                            borda_scores[option] += 3 - i
+                        logging.info(f"Borda count: {agent_role} alt ranking extracted: {ranking}")
+                    else:
+                        # Second fallback: just extract the answer
+                        answer = self.extract_answer_option(response_data["final_decision"])
+                        if answer:
+                            borda_scores[answer] += 3
+                            num_rankings += 1
+                            logging.info(f"Borda count: {agent_role} only answer found: {answer}")
         
-        # Apply Borda count to these rankings
-        n_options = len(config.TASK["options"])
-        borda_scores = {}
-        
-        # Initialize scores for all option ids
-        for option in config.TASK["options"]:
-            option_id = option.split('.')[0].strip() if '.' in option else None
-            if option_id:
-                borda_scores[option_id] = 0
-        
-        # Calculate Borda scores
-        for agent_role, ranking in agent_rankings.items():
-            for i, option_id in enumerate(ranking):
-                if option_id in borda_scores:
-                    borda_scores[option_id] += (n_options - i - 1)
-        
-        # Find winner
-        winning_option = None
-        total_possible_score = num_rankings * 3.0  # Max possible points
-        
-        for option_id, score in borda_scores.items():
-            if score > max_score:
-                max_score = score
-                winning_option = option_id
-        
-
-        
-        if total_possible_score > 0:
-            winning_option = max(borda_scores, key=borda_scores.get)
-            confidence = borda_scores[winning_option] / total_possible_score
-        else:
-            confidence = 0
+        # Find winner and calculate confidence
+        winning_option = max(borda_scores.items(), key=lambda x: x[1])[0] if borda_scores else None
+        total_possible_score = num_rankings * 3.0
+        confidence = borda_scores[winning_option] / total_possible_score if winning_option and total_possible_score > 0 else 0
         
         return {
             "method": "borda_count",
@@ -655,7 +648,6 @@ class DecisionMethods:
             "total_possible_score": total_possible_score,
             "confidence": confidence
         }
-    
 
 
     def _borda_count_general(self, agent_responses: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:

@@ -625,3 +625,41 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+    """
+    
+    Basic Usage
+# Run simulation with all teamwork components
+python main.py
+
+# Run simulation with specific components
+python main.py --leadership --closedloop --mutual --mental --orientation
+
+# Run with mutual trust and custom trust factor
+python main.py --trust --trust-factor 0.6
+
+# Run with dynamic agent recruitment
+python main.py --recruitment
+
+Command Line Options
+--leadership      Enable team leadership component
+--closedloop      Enable closed-loop communication
+--mutual          Enable mutual performance monitoring
+--mental          Enable shared mental model
+--orientation     Enable Team Orientataion
+--trust           Enable Mutual Trust
+--trust-factor    Custom trust factor[0-1]
+--all             Run all feature combinations
+--random-leader   Randomly assign leadership
+--runs N          Number of runs for each configuration (default: 1)
+--recruitment     Enable dynamic agent recruitment
+--recruitment-method {adaptive|basic|intermediate|advanced}
+--recruitment-pool {general|medical}
+
+Running Multiple Configurations
+# Run all possible combinations with 3 runs each
+
+python main.py --all --runs 3
+    
+    """

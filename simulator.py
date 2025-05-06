@@ -194,6 +194,16 @@ class AgentSystemSimulator:
         if self.use_team_leadership and self.leader:
             self.logger.logger.info("Leadership phase: Defining task approach")
             self._run_leadership_definition()
+
+        # Add complexity metrics to the results if recruitment was used
+        if self.use_recruitment:
+            from components.agent_recruitment import complexity_counts
+            self.results["recruitment_metrics"] = {
+                "complexity_distribution": complexity_counts,
+                "total_questions": sum(complexity_counts.values()),
+                "method": self.recruitment_method,
+                "pool": self.recruitment_pool
+            }
         
         # Run collaborative discussion
         self.logger.logger.info("Starting collaborative discussion phase")
@@ -522,10 +532,16 @@ class AgentSystemSimulator:
             # Extract the response structure
             extracted = agent.extract_response(final_decision)
             
-            # Store the agent's decision
+            # Get agent weight from knowledge base
+            weight = agent.get_from_knowledge_base("weight")
+            if weight is None:
+                weight = 0.2  # Default weight
+            
+            # Store the agent's decision with weight
             agent_decisions[role] = {
                 "final_decision": final_decision,
-                "extract": extracted
+                "extract": extracted,
+                "weight": weight  # Include the weight
             }
         
         # If leadership is enabled, have leader synthesize the team's decision
@@ -570,6 +586,7 @@ class AgentSystemSimulator:
         
         return agent_decisions
     
+
 
     def _apply_decision_methods(self, agent_decisions):
         """

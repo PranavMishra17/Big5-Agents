@@ -1,6 +1,0 @@
-2025-05-02 19:55:00,872 - simulation.sim_20250502_195500 - INFO - Event logged: simulation_started
-2025-05-02 19:55:00,872 - simulation.sim_20250502_195500 - INFO - SimulationLogger initialized for sim_20250502_195500 with configuration: mutual_trust_recruitment
-2025-05-02 19:55:35,081 - simulation.sim_20250502_195500 - INFO - Initialized simulation sim_20250502_195500
-2025-05-02 19:55:35,081 - simulation.sim_20250502_195500 - INFO - Components enabled: Mutual Trust (factor: 0.2), Agent Recruitment (adaptive)
-2025-05-02 19:55:35,081 - simulation.sim_20250502_195500 - INFO - Starting task analysis phase
-2025-05-02 19:55:35,081 - simulation.sim_20250502_195500 - INFO - Getting initial analysis from Neurologist

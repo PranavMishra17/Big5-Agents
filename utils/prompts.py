@@ -4,8 +4,7 @@ Centralized prompt management for Big5-Agents.
 
 # Agent System Prompts
 AGENT_SYSTEM_PROMPTS = {
-    "base": """You are a {role} who {expertise_description}. 
-    You are part of the {team_name}. Your goal is to {team_goal}. 
+    "base": """You are a {role} who {expertise_description}. Your job is to collaborate with other medical experts in a team.
     
     You are working on the following task: {task_name}
     
@@ -13,8 +12,6 @@ AGENT_SYSTEM_PROMPTS = {
     
     This is a {task_type} task, and your output should be in the format: {expected_output_format}
     """,
-    
-    # Additional system prompts for specialized agent types
 }
 
 # Team Leadership Prompts
@@ -306,24 +303,26 @@ RECRUITMENT_PROMPTS = {
     """,
     
     "team_selection": """You are an experienced medical expert who recruits a group of experts with diverse identity and ask them to discuss and solve the given medical query.
-    
-IMPORTANT: Select experts with DISTINCT and NON-OVERLAPPING specialties that are directly relevant to the medical question. Each expert should bring a unique perspective or knowledge domain.
+        
+    IMPORTANT: Select experts with DISTINCT and NON-OVERLAPPING specialties that are directly relevant to the medical question. Each expert should bring a unique perspective or knowledge domain.
 
-Question: {question}
+    Question: {question}
 
-You can recruit {num_agents} experts in different medical expertise. Considering the medical question and the options for the answer, what kind of experts will you recruit to better make an accurate answer?
+    You can recruit {num_agents} experts in different medical expertise. Considering the medical question and the options for the answer, what kind of experts will you recruit to better make an accurate answer?
 
-Also, you need to specify the communication structure between experts (e.g., Pulmonologist == Neonatologist == Medical Geneticist == Pediatrician > Cardiologist), or indicate if they are independent.
+    For each expert, you MUST assign a weightage between 0.0 and 1.0 that reflects their importance to this specific question. The total of all weights should sum to 1.0.
 
-For example, if you want to recruit five experts, your answer can be like:
-1. Pediatrician - Specializes in the medical care of infants, children, and adolescents. - Hierarchy: Independent
-2. Cardiologist - Focuses on the diagnosis and treatment of heart and blood vessel-related conditions. - Hierarchy: Pediatrician > Cardiologist
-3. Pulmonologist - Specializes in the diagnosis and treatment of respiratory system disorders. - Hierarchy: Independent
-4. Neonatologist - Focuses on the care of newborn infants, especially those who are born prematurely or have medical issues at birth. - Hierarchy: Independent
-5. Medical Geneticist - Specializes in the study of genes and heredity. - Hierarchy: Independent
+    Also, you need to specify the communication structure between experts (e.g., Pulmonologist == Neonatologist == Medical Geneticist == Pediatrician > Cardiologist), or indicate if they are independent.
 
-Please answer in above format, and do not include your reason.
-""",
+    For example, if you want to recruit five experts, your answer can be like:
+    1. Pediatrician - Specializes in the medical care of infants, children, and adolescents. - Hierarchy: Independent - Weight: 0.2
+    2. Cardiologist - Focuses on the diagnosis and treatment of heart and blood vessel-related conditions. - Hierarchy: Pediatrician > Cardiologist - Weight: 0.15
+    3. Pulmonologist - Specializes in the diagnosis and treatment of respiratory system disorders. - Hierarchy: Independent - Weight: 0.25
+    4. Neonatologist - Focuses on the care of newborn infants, especially those who are born prematurely or have medical issues at birth. - Hierarchy: Independent - Weight: 0.2
+    5. Medical Geneticist - Specializes in the study of genes and heredity. - Hierarchy: Independent - Weight: 0.2
+
+    Please answer in above format, and do not include your reason.
+    """,
     
     "mdt_design": """You are an experienced medical expert. Given the complex medical query, you need to organize Multidisciplinary Teams (MDTs) and the members in MDT to make accurate and robust answer.
 
@@ -372,19 +371,20 @@ TASK_ANALYSIS_PROMPTS = {
     
     "mcq_task": """
     As a {role} with expertise in your domain, analyze the following multiple-choice question:
-    
+
     {task_description}
-    
+
     Options:
     {options}
-    
+
     Based on your specialized knowledge:
     1. Analyze each option systematically
-    2. Explain the strengths and weaknesses of each option
-    3. Apply relevant principles from your area of expertise
-    
+    2. Provide a ranking of the options from most to least appropriate
+    3. Give your confidence level for each option
+
     Begin your final answer with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
-    Then explain your reasoning for this selection. YOU MUST ANWER IN SAID FORMAT.
+    Then provide your full ranking (e.g., "My ranking: A, C, B, D") followed by your detailed reasoning.
+    Strictly follow the format requested, unless specified otherwise.
     """,
     
     "general_task": """

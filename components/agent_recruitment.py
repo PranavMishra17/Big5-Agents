@@ -13,6 +13,13 @@ import config
 from utils.prompts import RECRUITMENT_PROMPTS
 
 
+# Global counters for complexity tracking
+complexity_counts = {
+    "basic": 0,
+    "intermediate": 0,
+    "advanced": 0
+}
+
 def determine_complexity(question, method="adaptive"):
     """
     Determine the complexity of a question to decide on team structure.
@@ -58,6 +65,9 @@ def determine_complexity(question, method="adaptive"):
     if any(term in question.lower() for term in ["diagnosis", "diagnostic", "symptom", "clinical", "patient", "disease", "disorder", "syndrome", "encephalitis", "antibody", "autoimmune"]):
         if complexity == "basic":
             complexity = "intermediate"
+
+    # Increment counter for the determined complexity
+    complexity_counts[complexity] += 1
     
     logging.info(f"{method.capitalize()} complexity: {complexity}")
     
@@ -140,7 +150,6 @@ def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, 
     
     return agents, agent
 
-
 def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
     Recruit a team of specialists with hierarchical relationships, following MDAgents approach.
@@ -174,6 +183,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
     selected_team = []
     leader_role = None
     hierarchies = {}
+    weights = {}  # Dictionary to store agent weights
     
     for line in lines:
         if " - Hierarchy: " not in line:
@@ -184,7 +194,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
         if len(parts) != 2:
             continue
             
-        agent_info, hierarchy = parts
+        agent_info, hierarchy_weight = parts
         
         # Extract role and expertise from agent info
         try:
@@ -200,44 +210,60 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
         except:
             continue
             
+        # Extract weight
+        weight = 0.2  # Default weight
+        if " - Weight: " in hierarchy_weight:
+            hierarchy, weight_part = hierarchy_weight.split(" - Weight: ")
+            try:
+                weight = float(weight_part.strip())
+            except:
+                weight = 0.2  # Default if parsing fails
+        else:
+            hierarchy = hierarchy_weight
+        
         # Determine hierarchy
         if "Independent" in hierarchy:
             hierarchies[role] = "Independent"
         else:
             # Check if this role appears as the superior in any hierarchy
-            for other_role in hierarchies:
-                if f"{role} > " in hierarchy:
-                    # This role is superior to others
+            if ">" in hierarchy:
+                parts = hierarchy.split(">")
+                superior = parts[0].strip()
+                if superior == role:
                     if leader_role is None:
                         leader_role = role
         
-        selected_team.append((role, expertise, hierarchies.get(role, "Independent")))
+        # Store weight and add to selected team
+        weights[role] = weight
+        selected_team.append((role, expertise, hierarchies.get(role, "Independent"), weight))
         
         # Stop when we have enough agents
         if len(selected_team) >= num_agents:
             break
     
-    # If no team members found, create a default team
+    # If no team members found, create a default team with weights
     if not selected_team:
         selected_team = [
-            ("Internist", "General medical knowledge and diagnosis", "Leader"),
-            ("Cardiologist", "Heart and cardiovascular system", "Independent"),
-            ("Neurologist", "Brain and nervous system disorders", "Independent"),
-            ("Pathologist", "Disease diagnosis through laboratory tests", "Independent"),
-            ("Radiologist", "Medical imaging interpretation", "Independent")
+            ("Internist", "General medical knowledge and diagnosis", "Leader", 0.25),
+            ("Cardiologist", "Heart and cardiovascular system", "Independent", 0.2),
+            ("Neurologist", "Brain and nervous system disorders", "Independent", 0.2),
+            ("Pathologist", "Disease diagnosis through laboratory tests", "Independent", 0.15),
+            ("Radiologist", "Medical imaging interpretation", "Independent", 0.2)
         ]
         leader_role = "Internist"
+        weights = {role: weight for role, _, _, weight in selected_team}
     
     # If no leader designated, choose the first as leader
     if not leader_role:
         leader_role = selected_team[0][0]
-        selected_team[0] = (leader_role, selected_team[0][1], "Leader")
+        # Update the first team member's hierarchy to Leader
+        selected_team[0] = (leader_role, selected_team[0][1], "Leader", selected_team[0][3])
     
     # Create agents
     agents = {}
     leader = None
     
-    for role, expertise, hierarchy in selected_team:
+    for role, expertise, hierarchy, weight in selected_team:
         is_leader = hierarchy == "Leader" or role == leader_role
         
         agent = ModularAgent(
@@ -248,16 +274,19 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
             use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL
         )
         
+        # Store weight in agent's knowledge base
+        agent.add_to_knowledge_base("weight", weight)
+        
         agents[role] = agent
         
         if is_leader:
             leader = agent
     
-    # Log recruitment
+    # Log recruitment and weights
     logging.info(f"Intermediate complexity: Recruited team of {len(agents)} experts with leader '{leader_role}'")
+    logging.info(f"Agent weights: {weights}")
     
     return agents, leader
-
 
 def recruit_advanced_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
