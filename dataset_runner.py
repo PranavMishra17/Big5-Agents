@@ -10,7 +10,8 @@ import json
 import random
 import sys
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, time
+import openai
 from tqdm import tqdm
 
 from datasets import load_dataset
@@ -192,34 +193,23 @@ def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     return task
 
 
-
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],
     dataset_type: str,
     configuration: Dict[str, bool],
-    output_dir: Optional[str] = None
+    output_dir: Optional[str] = None,
+    max_retries: int = 3
 ) -> Dict[str, Any]:
     """
-    Run a set of questions with a specific configuration.
-    
-    Args:
-        questions: List of questions to run
-        dataset_type: Type of dataset ("medqa" or "pubmedqa")
-        configuration: Configuration of teamwork components
-        output_dir: Optional output directory for results
-        
-    Returns:
-        Results dictionary
+    Run questions with specific configuration, handling errors gracefully.
     """
     config_name = configuration.get("name", "unknown")
     logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
     
     # Setup output directory
-    if output_dir:
-        run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}")
+    run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
+    if run_output_dir:
         os.makedirs(run_output_dir, exist_ok=True)
-    else:
-        run_output_dir = None
     
     # Results collection
     results = {
@@ -228,6 +218,7 @@ def run_questions_with_configuration(
         "num_questions": len(questions),
         "timestamp": datetime.now().isoformat(),
         "question_results": [],
+        "errors": [],
         "summary": {
             "majority_voting": {"correct": 0, "total": 0},
             "weighted_voting": {"correct": 0, "total": 0},
@@ -237,89 +228,159 @@ def run_questions_with_configuration(
     
     # Process each question
     for i, question in enumerate(tqdm(questions, desc=f"{config_name}")):
-        # Format the question for the task
-        if dataset_type == "medqa":
-            task = format_medqa_for_task(question)
-        elif dataset_type == "pubmedqa":
-            task = format_pubmedqa_for_task(question)
-        else:
-            logging.error(f"Unknown dataset type: {dataset_type}")
-            continue
-        
-        # Update the global task configuration
-        config.TASK = task
-        
-        # Create simulator with specified configuration
-        simulator = AgentSystemSimulator(
-            simulation_id=f"{dataset_type}_{config_name.lower().replace(' ', '_')}_{i}",
-            use_team_leadership=configuration.get("leadership", False),
-            use_closed_loop_comm=configuration.get("closed_loop", False),
-            use_mutual_monitoring=configuration.get("mutual_monitoring", False),
-            use_shared_mental_model=configuration.get("shared_mental_model", False),
-            use_recruitment=configuration.get("recruitment", False),
-            recruitment_method=configuration.get("recruitment_method", "adaptive"),
-            recruitment_pool=configuration.get("recruitment_pool", "general")
-        )
+        question_result = {"question_index": i}
         
         try:
-            # Run the simulation
-            simulation_results = simulator.run_simulation()
+            # Format the question for the task
+            if dataset_type == "medqa":
+                task = format_medqa_for_task(question)
+            elif dataset_type == "pubmedqa":
+                task = format_pubmedqa_for_task(question)
+            else:
+                raise ValueError(f"Unknown dataset type: {dataset_type}")
             
-            # Evaluate performance
-            performance = simulator.evaluate_performance()
+            question_result["question"] = task["description"]
+            question_result["ground_truth"] = task.get("ground_truth", "")
             
-            # Combine results
-            question_result = {
-                "question_index": i,
-                "question": task["description"],
-                "ground_truth": task.get("ground_truth", ""),
-                "decisions": simulation_results["decision_results"],
-                "performance": performance.get("task_performance", {})
-            }
+            # Update task configuration
+            config.TASK = task
             
-            # Update summary statistics
-            for method in ["majority_voting", "weighted_voting", "borda_count"]:
-                if method in performance.get("task_performance", {}):
-                    method_perf = performance["task_performance"][method]
-                    if "correct" in method_perf:
-                        results["summary"][method]["total"] += 1
-                        if method_perf["correct"]:
-                            results["summary"][method]["correct"] += 1
+            # Try to run the simulation with retries
+            for attempt in range(max_retries):
+                try:
+                    # Create simulator
+                    simulator = AgentSystemSimulator(
+                        simulation_id=f"{dataset_type}_{config_name.lower().replace(' ', '_')}_{i}",
+                        use_team_leadership=configuration.get("leadership", False),
+                        use_closed_loop_comm=configuration.get("closed_loop", False),
+                        use_mutual_monitoring=configuration.get("mutual_monitoring", False),
+                        use_shared_mental_model=configuration.get("shared_mental_model", False),
+                        use_recruitment=configuration.get("recruitment", False),
+                        recruitment_method=configuration.get("recruitment_method", "adaptive"),
+                        recruitment_pool=configuration.get("recruitment_pool", "general")
+                    )
+                    
+                    # Run simulation
+                    simulation_results = simulator.run_simulation()
+                    performance = simulator.evaluate_performance()
+                    
+                    # Store decisions and performance
+                    question_result["decisions"] = simulation_results["decision_results"]
+                    question_result["performance"] = performance.get("task_performance", {})
+                    
+                    # Update summary statistics
+                    for method in ["majority_voting", "weighted_voting", "borda_count"]:
+                        if method in performance.get("task_performance", {}):
+                            method_perf = performance["task_performance"][method]
+                            if "correct" in method_perf:
+                                results["summary"][method]["total"] += 1
+                                if method_perf["correct"]:
+                                    results["summary"][method]["correct"] += 1
+                    
+                    # Simulation succeeded, break the retry loop
+                    break
+                
+                except Exception as e:
+                    error_str = str(e)
+                    
+                    # Check for different error types
+                    if attempt < max_retries - 1:
+                        # Content filter errors
+                        if "content" in error_str.lower() and "filter" in error_str.lower():
+                            error_type = "content_filter"
+                            wait_time = 2
+                            logging.warning(f"Content filter triggered, retry {attempt+1} for question {i}")
+                        
+                        # Rate limit errors
+                        elif any(term in error_str.lower() for term in ["rate", "limit", "timeout", "capacity"]):
+                            error_type = "rate_limit"
+                            wait_time = min(2 ** attempt + 1, 15)  # Exponential backoff
+                            logging.warning(f"Rate limit hit, waiting {wait_time}s before retry {attempt+1}")
+                        
+                        # Other retryable errors
+                        elif any(term in error_str.lower() for term in ["connection", "timeout", "retry", "try again"]):
+                            error_type = "connection"
+                            wait_time = min(2 ** attempt + 1, 10)
+                            logging.warning(f"Connection error, retry {attempt+1} for question {i}")
+                        
+                        # Continue with retry
+                        else:
+                            error_type = "other"
+                            wait_time = 1
+                            logging.warning(f"Unknown error, retry {attempt+1} for question {i}")
+                        
+                        time.sleep(wait_time)
+                        continue
+                    
+                    # Last attempt failed, record error
+                    question_result["error"] = f"API error: {error_str}"
+                    results["errors"].append({
+                        "question_index": i,
+                        "error_type": "api_error",
+                        "error": error_str
+                    })
+                    logging.error(f"Failed after {max_retries} retries for question {i}: {error_str}")
+                    break
             
-            # Save results
-            results["question_results"].append(question_result)
-            
-            # Save to specific output directory if provided
+            # Save individual question results
             if run_output_dir:
-                with open(os.path.join(run_output_dir, f"question_{i}.json"), 'w') as f:
-                    json.dump({
-                        "question": task["description"],
-                        "options": task.get("options", []),
-                        "ground_truth": task.get("ground_truth", ""),
-                        "decisions": simulation_results["decision_results"],
-                        "performance": performance.get("task_performance", {})
-                    }, f, indent=2)
-            
+                try:
+                    with open(os.path.join(run_output_dir, f"question_{i}.json"), 'w') as f:
+                        output_data = {
+                            "question": task["description"],
+                            "options": task.get("options", []),
+                            "ground_truth": task.get("ground_truth", "")
+                        }
+                        if "decisions" in question_result:
+                            output_data["decisions"] = question_result["decisions"]
+                        if "performance" in question_result:
+                            output_data["performance"] = question_result["performance"]
+                        if "error" in question_result:
+                            output_data["error"] = question_result["error"]
+                        json.dump(output_data, f, indent=2)
+                except Exception as e:
+                    logging.error(f"Failed to save results for question {i}: {str(e)}")
+        
         except Exception as e:
-            logging.error(f"Error running question {i}: {str(e)}")
-            results["question_results"].append({
+            # Errors in task formatting or other pre-simulation errors
+            logging.error(f"Error processing question {i}: {str(e)}")
+            question_result["error"] = f"Processing error: {str(e)}"
+            results["errors"].append({
                 "question_index": i,
-                "question": task["description"],
+                "error_type": "processing",
                 "error": str(e)
             })
+        
+        # Always add the question result, even if it has errors
+        results["question_results"].append(question_result)
     
     # Calculate accuracy for each method
     for method in ["majority_voting", "weighted_voting", "borda_count"]:
         method_summary = results["summary"][method]
-        if method_summary["total"] > 0:
-            method_summary["accuracy"] = method_summary["correct"] / method_summary["total"]
-        else:
-            method_summary["accuracy"] = 0.0
+        method_summary["accuracy"] = method_summary["correct"] / method_summary["total"] if method_summary["total"] > 0 else 0.0
+
+    # After simulation results and performance are obtained
+    if hasattr(simulator, "metadata") and "complexity" in simulator.metadata:
+        complexity = simulator.metadata["complexity"]
+        # Track if this complexity level got the answer correct
+        for method in ["majority_voting", "weighted_voting", "borda_count"]:
+            if method in performance.get("task_performance", {}) and "correct" in performance["task_performance"][method]:
+                if performance["task_performance"][method]["correct"]:
+                    from components import agent_recruitment
+                    if hasattr(agent_recruitment, "complexity_correct"):
+                        agent_recruitment.complexity_correct[complexity] += 1
+                    break  # Just count once if any method got it right
     
     # Save overall results
     if run_output_dir:
-        with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
-            json.dump(results["summary"], f, indent=2)
+        try:
+            with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
+                json.dump(results["summary"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
+                json.dump(results["errors"], f, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to save summary results: {str(e)}")
     
     # Print summary
     print(f"\nSummary for {config_name} on {dataset_type}:")
@@ -327,6 +388,32 @@ def run_questions_with_configuration(
         if "accuracy" in stats:
             print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
     
+    if results["errors"]:
+        print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+
+    # Add before returning results
+    from components import agent_recruitment
+    if hasattr(agent_recruitment, "complexity_counts") and hasattr(agent_recruitment, "complexity_correct"):
+        results["complexity_metrics"] = {
+            "counts": agent_recruitment.complexity_counts.copy(),
+            "correct": agent_recruitment.complexity_correct.copy(),
+            "accuracy": {}
+        }
+        
+        # Calculate accuracy for each complexity level
+        for level in ["basic", "intermediate", "advanced"]:
+            count = results["complexity_metrics"]["counts"].get(level, 0)
+            correct = results["complexity_metrics"]["correct"].get(level, 0)
+            results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
+        
+        # Print complexity metrics
+        print("\nComplexity Distribution:")
+        for level in ["basic", "intermediate", "advanced"]:
+            count = results["complexity_metrics"]["counts"].get(level, 0)
+            correct = results["complexity_metrics"]["correct"].get(level, 0)
+            accuracy = results["complexity_metrics"]["accuracy"].get(level, 0.0)
+            print(f"  {level.title()}: {correct}/{count} correct ({accuracy:.2%})")
+        
     return results
 
 

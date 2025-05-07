@@ -6,7 +6,7 @@ import os
 import logging
 import json
 from typing import Dict, List, Tuple, Optional, Any
-from datetime import datetime
+from datetime import datetime, time
 
 from components.modular_agent import ModularAgent, create_agent_team
 from components.closed_loop import ClosedLoopCommunication
@@ -73,6 +73,9 @@ class AgentSystemSimulator:
         self.recruitment_method = recruitment_method or config.RECRUITMENT_METHOD
         self.recruitment_pool = recruitment_pool or "general"
         self.random_leader = random_leader
+        self.metadata = {}
+        if use_recruitment and recruitment_method:
+            self.metadata["complexity"] = recruitment_method
         
         # Setup configuration
         self.config = {

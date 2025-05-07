@@ -14,7 +14,15 @@ from utils.prompts import RECRUITMENT_PROMPTS
 
 
 # Global counters for complexity tracking
+# Global counters for complexity tracking
 complexity_counts = {
+    "basic": 0,
+    "intermediate": 0, 
+    "advanced": 0
+}
+
+# Track correct answers by complexity
+complexity_correct = {
     "basic": 0,
     "intermediate": 0,
     "advanced": 0
@@ -31,47 +39,58 @@ def determine_complexity(question, method="adaptive"):
     Returns:
         Complexity level ("basic", "intermediate", or "advanced")
     """
-    if method == "basic":
-        return "basic"
-    elif method == "intermediate":
-        return "intermediate"
-    elif method == "advanced":
-        return "advanced"
+    global complexity_counts
     
-    # For adaptive method, evaluate the question
-    evaluator = Agent(
-        role="Complexity Evaluator",
-        expertise_description="analyzes tasks to determine their complexity level"
-    )
-    
-    prompt = RECRUITMENT_PROMPTS["complexity_evaluation"].format(
-        question=question
-    )
-    
-    response = evaluator.chat(prompt)
-    
-    # Extract complexity classification
-    if "basic" in response.lower():
-        complexity = "basic"
-    elif "intermediate" in response.lower():
-        complexity = "intermediate"
-    elif "advanced" in response.lower():
-        complexity = "advanced"
+    if method in ["basic", "intermediate", "advanced"]:
+        complexity = method
     else:
-        # Default to intermediate if parsing fails
-        complexity = "intermediate"
+        # For adaptive method, try evaluation with error handling
+        try:
+            evaluator = Agent(
+                role="Complexity Evaluator",
+                expertise_description="analyzes tasks to determine their complexity level"
+            )
     
-    # Override for medical/diagnostic questions to ensure at least intermediate complexity
-    if any(term in question.lower() for term in ["diagnosis", "diagnostic", "symptom", "clinical", "patient", "disease", "disorder", "syndrome", "encephalitis", "antibody", "autoimmune"]):
-        if complexity == "basic":
-            complexity = "intermediate"
+            prompt = RECRUITMENT_PROMPTS["complexity_evaluation"].format(
+                question=question
+            )
 
-    # Increment counter for the determined complexity
+            try:
+                response = evaluator.chat(prompt.format(question=question))
+                
+                # Extract complexity classification
+                if "1)" in response.lower() or "low" in response.lower():
+                    complexity = "basic"
+                elif "2)" in response.lower() or "moderate" in response.lower():
+                    complexity = "intermediate"
+                else:
+                    complexity = "advanced"
+            except Exception as e:
+                # API error fallback: use heuristic approach
+                logging.error(f"Error in complexity evaluation: {str(e)}")
+                
+                # Simple heuristic based on length and keywords
+                word_count = len(question.split())
+                complex_terms = ["autoimmune", "encephalitis", "differential", 
+                                "pathophysiology", "etiology", "comorbidities"]
+                term_count = sum(1 for term in complex_terms if term.lower() in question.lower())
+                
+                if word_count > 100 or term_count >= 3:
+                    complexity = "advanced"
+                elif word_count > 50 or term_count >= 1:
+                    complexity = "intermediate"
+                else:
+                    complexity = "basic"
+                logging.info(f"Used fallback complexity determination: {complexity}")
+        except:
+            # Default if all else fails
+            logging.error("Critical error in complexity determination, using default")
+            complexity = "intermediate"
+    
+    # Update counter
     complexity_counts[complexity] += 1
-    
-    logging.info(f"{method.capitalize()} complexity: {complexity}")
-    
     return complexity
+    
 
 def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general") -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
