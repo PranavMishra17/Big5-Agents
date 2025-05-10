@@ -1,0 +1,113 @@
+{
+  "simulation_id": "medqa_custom_configuration_18",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": true,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Gastroenterologist",
+      "message": "ANSWER: B\n\n### Rationale:\nAfter integrating my own expertise with the analyses provided by the team (Endocrinologist, Radiologist, Hepatologist, and Clinical Pathologist), the most likely substance to be increased in this patient is **glucagon (B)**. All team members agree that this patient's presentation is consistent with **chronic pancreatitis**, which has led to **exocrine insufficiency** (manifesting as steatorrhea and weight loss) and **endocrine dysfunction** (manifesting as diabetes mellitus with fasting hyperglycemia). The presence of gallstones further supports the diagnosis, as gallstones are a common cause of chronic pancreatitis.\n\n### Integration of Insights:\n1. **Endocrinologist**: Highlighted the role of glucagon in chronic pancreatitis-associated diabetes due to beta-cell destruction and unopposed alpha-cell activity. This aligns with the observed hyperglycemia.\n2. **Radiologist**: Emphasized the ultrasound findings of gallstones and their role in causing chronic pancreatitis. Also stressed the preservation of alpha cells leading to increased glucagon secretion.\n3. **Hepatologist**: Agreed with glucagon as the most likely elevated substance, while noting that somatostatin is less relevant in this scenario.\n4. **Clinical Pathologist**: Provided additional clarity on the pathophysiology of chronic pancreatitis and its effects on both exocrine and endocrine functions, supporting glucagon as the correct answer.\n\n### Addressing Contradictions:\nBoth the Radiologist and Hepatologist analyses mentioned somatostatin (Option A) but ultimately selected **glucagon (Option B)** as the correct answer. This minor inconsistency likely reflects an attempt to discuss the plausibility of somatostatin elevation, but the consensus remains that **glucagon** is the most appropriate choice based on the clinical picture.\n\n### Final Confidence Levels:\n- **B (Glucagon): Very High**  \n  Supported by the pathophysiology of chronic pancreatitis and diabetes mellitus, as well as the consistent agreement across all team members.\n- **A (Somatostatin): Low**  \n  Somatostatin is unlikely to be elevated in chronic pancreatitis unless a somatostatinoma is present, which is not suggested by this case.\n- **C (Serotonin): Very Low**  \n  Serotonin elevation is unrelated to the clinical picture and would indicate carcinoid syndrome, which is not relevant here.\n- **D (Insulin): Very Low**  \n  Insulin levels are expected to be low or normal due to beta-cell destruction, making elevation implausible.\n\n### Summary:\nThe serum concentration of **glucagon (B)** is most likely to be increased in this patient due to the endocrine dysfunction associated with chronic pancreatitis."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Endocrinologist",
+      "message": "ANSWER: B\n\n### Rationale:\nAfter integrating the insights from my teammates and addressing the critical points raised, the most appropriate answer remains **B (Glucagon)**. All team members (including myself) consistently identified **glucagon** as the most likely substance to be elevated based on the patient's clinical presentation and the pathophysiology of chronic pancreatitis. However, I noted potential contradictions in my teammates' responses, where they mentioned \"A\" in their reasoning but selected \"B\" as the answer. This inconsistency does not affect the correctness of the final answer but highlights the need for clarity in reasoning.\n\n#### Final Integrated Reasoning:\nThis 52-year-old man presents with:\n1. **Recurrent abdominal pain, steatorrhea, and weight loss**: These symptoms suggest **chronic pancreatitis** with exocrine pancreatic insufficiency.\n2. **Hyperglycemia (fasting glucose of 186 mg/dL)**: This indicates endocrine dysfunction, likely diabetes mellitus secondary to chronic pancreatitis.\n3. **Gallstones (echogenic foci with posterior acoustic shadowing)**: These are a common cause of chronic pancreatitis due to pancreatic duct obstruction.\n\nIn chronic pancreatitis, the destruction of pancreatic tissue leads to:\n- **Exocrine insufficiency**: Causing steatorrhea due to fat malabsorption.\n- **Endocrine dysfunction**: The destruction of insulin-producing beta cells leads to insufficient insulin production and unopposed glucagon activity from preserved alpha cells. This results in hyperglycemia and elevated glucagon levels.\n\n#### Analysis of Options:\n1. **A. Somatostatin**:  \n   Somatostatin inhibits the secretion of insulin and glucagon. While somatostatinomas can cause gallstones, steatorrhea, and diabetes, this patient's presentation is more consistent with chronic pancreatitis than a somatostatinoma. Somatostatin is unlikely to be elevated in this scenario.  \n   - Confidence: Low\n\n2. **B. Glucagon**:  \n   The destruction of beta cells in chronic pancreatitis leads to decreased insulin production, while alpha cells (which produce glucagon) remain relatively preserved. This results in unopposed glucagon secretion, contributing to hyperglycemia. Elevated glucagon is the most likely finding in this patient.  \n   - Confidence: Very High\n\n3. **C. Serotonin**:  \n   Serotonin is associated with carcinoid syndrome (flushing, diarrhea, wheezing), which is not relevant to this patient's presentation. There is no reason to suspect elevated serotonin levels.  \n   - Confidence: Very Low\n\n4. **D. Insulin**:  \n   Insulin levels are expected to be reduced in this patient due to beta-cell destruction from chronic pancreatitis. Hyperglycemia directly supports this reasoning. Elevated insulin is highly unlikely.  \n   - Confidence: Very Low\n\n### Final Confidence Levels:\n- **B (Glucagon)**: Very High\n- **A (Somatostatin)**: Low\n- **C (Serotonin)**: Very Low\n- **D (Insulin)**: Very Low\n\n### Conclusion:\nThe most likely substance to be elevated in this patient is **glucagon (B)**, as it aligns with the pathophysiology of chronic pancreatitis and the observed clinical findings. All team members reached the same conclusion, and the minor contradictions noted in their reasoning do not affect the correctness of the answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Radiologist",
+      "message": "ANSWER: B\n\n### Rationale:\nAfter integrating insights from my teammates and addressing identified issues, the most appropriate answer remains **B (Glucagon)**. This conclusion is supported by the clinical presentation, imaging findings, and pathophysiology of chronic pancreatitis with secondary diabetes mellitus. Below is the refined reasoning:\n\n### Clinical Summary:\nThe patient presents with:\n- **Recurrent abdominal pain** localized to the right upper quadrant.\n- **Steatorrhea** (foul-smelling, greasy stools) indicative of exocrine pancreatic insufficiency.\n- **Weight loss** despite no change in appetite, consistent with malabsorption.\n- **Hyperglycemia** (fasting glucose concentration of 186 mg/dL), suggesting endocrine dysfunction.\n- **Gallstones** confirmed by abdominal ultrasound findings (echogenic foci with posterior acoustic shadowing).\n\nThese findings strongly suggest **chronic pancreatitis**, likely due to gallstone-induced pancreatic duct obstruction. Chronic pancreatitis leads to progressive destruction of pancreatic tissue, resulting in both **exocrine insufficiency** (causing steatorrhea) and **endocrine dysfunction** (causing diabetes mellitus).\n\n### Hormonal Analysis:\n1. **B. Glucagon (Correct Answer)**  \n   In chronic pancreatitis, the destruction of insulin-producing beta cells results in reduced insulin secretion. However, alpha cells (which produce glucagon) are relatively preserved, leading to an **increase in glucagon levels**. This contributes to the hyperglycemia seen in this patient. Elevated glucagon is a hallmark of diabetes associated with chronic pancreatitis, making it the most likely elevated substance.\n\n2. **A. Somatostatin**  \n   Somatostatin is secreted by pancreatic delta cells and inhibits the secretion of insulin, glucagon, and other hormones. While somatostatinomas (rare neuroendocrine tumors) can cause elevated somatostatin levels, this patient\u2019s clinical picture is more consistent with chronic pancreatitis rather than a somatostatinoma. Somatostatin levels are unlikely to be significantly elevated in this case.\n\n3. **C. Serotonin**  \n   Serotonin is associated with carcinoid syndrome, which presents with flushing, diarrhea, and wheezing. There is no evidence of a neuroendocrine tumor or serotonin-related pathology in this patient. Serotonin elevation is irrelevant to the clinical scenario.\n\n4. **D. Insulin**  \n   Insulin levels are expected to be **low or normal** in this patient due to destruction of beta cells in chronic pancreatitis. The observed hyperglycemia directly supports insufficient insulin production, making elevated insulin levels highly unlikely.\n\n### Integration of Team Feedback:\n- The **Gastroenterologist**, **Hepatologist**, and **Endocrinologist** all independently arrived at the same conclusion (B: Glucagon) with consistent reasoning. The identified contradictions in their responses (mentioning A but selecting B) appear to be typographical errors and do not undermine their overall analyses.\n- The **Clinical Pathologist** also supported glucagon (B) as the correct answer, reinforcing the consensus.\n\n### Final Confidence Levels:\n- **B (Glucagon): Very High** \u2013 Supported by the pathophysiology of chronic pancreatitis and the clinical presentation.\n- **A (Somatostatin): Low** \u2013 Less likely in the absence of features of a somatostatinoma.\n- **C (Serotonin): Very Low** \u2013 Irrelevant to the clinical scenario.\n- **D (Insulin): Very Low** \u2013 Contradicted by the patient\u2019s hyperglycemia.\n\n### Conclusion:\nThe most likely substance to be elevated in this patient is **glucagon (B)**, consistent with the pathophysiology of chronic pancreatitis and its associated endocrine dysfunction."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Hepatologist",
+      "message": "**ANSWER: B**\n\n**Rationale:**  \nAfter integrating the analyses and insights from my teammates (Gastroenterologist, Endocrinologist, Radiologist, and Clinical Pathologist), as well as addressing any inconsistencies, the most likely answer remains **B (Glucagon)**. This conclusion is supported by the following key points:\n\n1. **Clinical Context:**  \n   The patient presents with symptoms and findings strongly suggestive of **chronic pancreatitis**, including:\n   - Recurrent abdominal pain localized to the right upper quadrant.\n   - Steatorrhea (foul-smelling, greasy stools) due to exocrine pancreatic insufficiency.\n   - Weight loss due to malabsorption.\n   - Hyperglycemia (fasting glucose of 186 mg/dL), indicative of endocrine dysfunction (diabetes mellitus secondary to chronic pancreatitis).\n   - Gallstones on ultrasound, a common cause of chronic pancreatitis.\n\n2. **Pathophysiology:**  \n   - In chronic pancreatitis, the destruction of pancreatic beta cells leads to reduced insulin secretion, contributing to hyperglycemia.  \n   - Pancreatic alpha cells, which produce **glucagon**, are relatively spared in the early stages of chronic pancreatitis. The loss of insulin's regulatory effect on glucagon secretion leads to **increased glucagon levels**, further aggravating hyperglycemia.  \n   - This mechanism makes glucagon the most likely hormone to be elevated in this patient.\n\n3. **Option Analysis:**  \n   - **A. Somatostatin:** While somatostatin inhibits insulin and glucagon secretion, there is no evidence to suggest significantly elevated somatostatin levels in chronic pancreatitis. Somatostatinomas are rare and not supported by this clinical picture.  \n   - **B. Glucagon:** As explained above, glucagon is the most likely substance to be elevated due to the relative preservation of alpha cells and loss of beta-cell function in chronic pancreatitis. This is consistent with the patient's hyperglycemia.  \n   - **C. Serotonin:** Serotonin elevation is seen in carcinoid syndrome, which is unrelated to this patient's presentation. There is no evidence of a neuroendocrine tumor.  \n   - **D. Insulin:** Insulin levels are expected to be **low or normal** due to beta-cell destruction in chronic pancreatitis. The hyperglycemia observed in this patient supports decreased insulin secretion.\n\n4. **Confidence Levels:**  \n   - **B (Glucagon): Very High** \u2013 Consistent with the pathophysiology of chronic pancreatitis and secondary diabetes mellitus.  \n   - **A (Somatostatin): Low** \u2013 Not typically elevated in chronic pancreatitis; somatostatinomas are rare and not supported by this case.  \n   - **C (Serotonin): Very Low** \u2013 Irrelevant to the clinical picture.  \n   - **D (Insulin): Very Low** \u2013 Contradicted by the observed hyperglycemia and beta-cell destruction.\n\n5. **Addressing Contradictions in Teammates' Analyses:**  \n   Both the Gastroenterologist and Radiologist analyses inadvertently mentioned **A (Somatostatin)** in their reasoning while selecting **B (Glucagon)** as the correct answer. These were likely typographical errors, as the detailed reasoning in both cases clearly supports **B (Glucagon)**. This reinforces the consensus that glucagon is the most appropriate choice.\n\n**Final Conclusion:**  \nThe most likely substance to be increased in this patient is **glucagon (B)**, as it aligns with the clinical presentation and the pathophysiology of chronic pancreatitis with secondary diabetes mellitus."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Clinical Pathologist",
+      "message": "ANSWER: B\n\n### Rationale:\nAfter integrating the insights from my teammates and addressing the identified issues in their analyses, the most likely answer remains **B (Glucagon)**. All team members, including myself, agree that the clinical presentation is consistent with **chronic pancreatitis**, leading to both exocrine pancreatic insufficiency (causing steatorrhea and weight loss) and endocrine dysfunction (causing hyperglycemia). The fasting glucose level of 186 mg/dL suggests diabetes mellitus secondary to chronic pancreatitis. \n\nIn this condition, the destruction of beta cells (insulin-producing cells) leads to decreased insulin secretion, while alpha cells (glucagon-producing cells) are relatively preserved. This results in **increased glucagon levels**, which exacerbate hyperglycemia. The presence of gallstones on ultrasound further supports the diagnosis of chronic pancreatitis, as gallstones are a common cause of pancreatic inflammation.\n\n#### Integration of Teammates' Insights:\n1. **Gastroenterologist's Analysis**: \n   The gastroenterologist correctly identified glucagon as the most likely elevated substance due to the pathophysiology of chronic pancreatitis. However, there was a potential contradiction in their response, as they mentioned somatostatin (A) in their reasoning but ultimately selected glucagon (B). This discrepancy has been noted and clarified here\u2014somatostatin is not elevated in chronic pancreatitis, making glucagon the correct choice.\n\n2. **Radiologist's Analysis**: \n   The radiologist also correctly identified glucagon as the most likely elevated substance and provided a thorough explanation. However, similar to the gastroenterologist, there was a contradiction where somatostatin (A) was discussed but glucagon (B) was selected. Again, this has been clarified\u2014somatostatin is not relevant in this case, and glucagon remains the most appropriate answer.\n\n3. **Hepatologist's Analysis**: \n   The hepatologist also selected glucagon as the correct answer but mentioned somatostatin (A) as a potential alternative. This was inconsistent with their final answer. As clarified earlier, somatostatinomas (which cause elevated somatostatin) are rare and not relevant to this patient's presentation. Glucagon remains the most appropriate answer based on the clinical scenario.\n\n### Final Clarification:\nThe critical issue across the teammate analyses was a contradiction between discussing somatostatin (A) and selecting glucagon (B). This contradiction likely arose from considering somatostatinomas as a differential diagnosis, which is unnecessary here because the presentation is entirely consistent with chronic pancreatitis. The correct answer is **B (Glucagon)**, as all the clinical findings align with this explanation.\n\n### Confidence Levels:\n- **B (Glucagon): Very High**  \n- **A (Somatostatin): Low**  \n- **C (Serotonin): Very Low**  \n- **D (Insulin): Very Low**  "
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "weighted_votes": {
+        "B": 1.0
+      },
+      "agent_weights": {
+        "Gastroenterologist": 0.3,
+        "Endocrinologist": 0.25,
+        "Radiologist": 0.2,
+        "Hepatologist": 0.15,
+        "Clinical Pathologist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 15,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "teamwork_metrics": {
+    "mutual_monitoring": {
+      "total_monitoring_exchanges": 12,
+      "total_issues_detected": 12,
+      "avg_issues_per_exchange": 1.0,
+      "issue_types": {
+        "contradictory_selection": 12
+      },
+      "issue_resolution_rate": 0.0,
+      "team_monitoring_effectiveness": "low"
+    }
+  },
+  "recruitment_metrics": {
+    "complexity_distribution": {
+      "basic": 5,
+      "intermediate": 29,
+      "advanced": 4
+    },
+    "total_questions": 38,
+    "method": "adaptive",
+    "pool": "medical"
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "simulation_id": "medqa_custom_configuration_1",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": true,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Transplant Hepatologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from all team members, the consensus strongly supports **donor T-cells (Option A)** as the mediators of this patient's symptoms. The clinical presentation\u2014skin rash, bloody diarrhea, and colonic epithelial apoptosis\u2014is consistent with **graft-versus-host disease (GVHD)**, a complication that occurs when **donor T-cells** attack the recipient's tissues. This explanation aligns with the following key points:\n\n1. **Clinical Features**:  \n   - **Skin rash** and **bloody diarrhea** are hallmark symptoms of GVHD.  \n   - The biopsy findings of **apoptosis of colonic epithelial cells** are characteristic of GVHD.  \n\n2. **Pathophysiology**:  \n   - GVHD is mediated by **donor T-cells**, which are immunocompetent cells within the transplanted organ. These cells recognize recipient tissues as foreign and initiate an immune response, causing systemic damage.  \n\n3. **Team Contributions**:  \n   - The Immunologist emphasized the role of **donor T-cells** as the primary drivers of GVHD, highlighting the histological findings and systemic symptoms.  \n   - The Gastroenterologist and Pathologist agreed that the biopsy findings and clinical presentation rule out host-versus-graft rejection (mediated by recipient T-cells).  \n   - The Infectious Disease Specialist reinforced the timing (two weeks post-transplant) and systemic involvement, which are classic for GVHD mediated by donor T-cells.  \n\n### Ranking of Options:  \n1. **A. Donor T-cells**: Very high confidence.  \n2. **B. Recipient T-cells**: Moderate confidence (relevant for graft rejection but not GVHD).  \n3. **C. Donor B-cells**: Low confidence (not primary mediators of GVHD).  \n4. **D. Recipient B-cells**: Very low confidence (irrelevant to the pathophysiology).  \n\n### Final Conclusion:  \nThe patient\u2019s symptoms and biopsy findings are best explained by **donor T-cells** mediating **GVHD**, making **A** the correct answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Immunologist",
+      "message": "**ANSWER: A**\n\n### Rationale:  \nIntegrating the analyses from all team members, the consensus is that this clinical scenario is most consistent with **graft-versus-host disease (GVHD)**, mediated by **donor T-cells**. The patient presents with hallmark symptoms of acute GVHD, including a skin rash, bloody diarrhea, and colonic epithelial apoptosis observed on biopsy. GVHD occurs when donor T-cells from the transplanted organ recognize the recipient's tissues as foreign and mount an immune response, leading to tissue damage in organs such as the skin, gastrointestinal tract, and liver.\n\n#### Integration of Insights:\n1. **Immunologist (Myself):** Emphasized that donor T-cells are the primary mediators of GVHD, as they attack the recipient's tissues, leading to systemic symptoms and epithelial apoptosis.  \n2. **Transplant Hepatologist:** Highlighted that GVHD is a known complication of liver transplantation, especially when the graft contains immunocompetent donor T-cells. The clinical and histological findings strongly point to GVHD mediated by donor T-cells.  \n3. **Gastroenterologist:** Focused on the gastrointestinal involvement in GVHD, noting that colonic epithelial apoptosis and bloody diarrhea are classic findings caused by donor T-cell-mediated tissue damage.  \n4. **Pathologist:** Provided histopathological confirmation that apoptosis of colonic epithelial cells is characteristic of GVHD and linked this directly to donor T-cell activity.  \n5. **Infectious Disease Specialist:** Agreed that the systemic symptoms and biopsy findings are best explained by GVHD mediated by donor T-cells, ruling out other immune mechanisms.\n\n#### Analysis of Other Options:  \n- **B. Recipient T-cells:** More relevant in graft rejection (host-versus-graft response), which typically causes dysfunction of the transplanted organ rather than systemic symptoms like rash and diarrhea.  \n- **C. Donor B-cells:** Not primary mediators of GVHD; their role in antibody production does not explain the epithelial apoptosis or systemic symptoms.  \n- **D. Recipient B-cells:** Irrelevant in this context, as they are not involved in GVHD or the observed pathology.\n\n### Conclusion:  \nAll team members agree that **donor T-cells** are the most likely mediators of this patient\u2019s symptoms, making **A** the correct answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Gastroenterologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nIntegrating insights from all team members and my own analysis, the most appropriate answer is **A. Donor T-cells**. This patient\u2019s clinical presentation\u2014skin rash, bloody diarrhea, and biopsy findings of colonic epithelial cell apoptosis\u2014strongly indicates **graft-versus-host disease (GVHD)**. GVHD is a well-documented complication following solid organ transplantation, especially liver transplants, when donor-derived immune cells (primarily T-cells) attack the recipient\u2019s tissues.  \n\n#### Key Points Supporting Answer A:  \n1. **Pathophysiology of GVHD**:  \n   - GVHD occurs when donor T-cells recognize the recipient's cells as foreign and mount an immune response.  \n   - This leads to epithelial apoptosis, as seen in the biopsy, and systemic symptoms such as rash and gastrointestinal involvement.  \n\n2. **Exclusion of Other Options**:  \n   - **B. Recipient T-cells**: These are involved in host-versus-graft rejection, primarily targeting the transplanted organ (e.g., liver dysfunction). This does not explain the systemic symptoms and biopsy findings characteristic of GVHD.  \n   - **C. Donor B-cells** and **D. Recipient B-cells**: B-cells are not the primary mediators of GVHD. While they may contribute to antibody production, they do not explain the epithelial apoptosis or the clinical presentation.  \n\n3. **Consensus Among Specialists**:  \n   All team members (Transplant Hepatologist, Immunologist, Pathologist, and Infectious Disease Specialist) agree that **donor T-cells** are the mediators of GVHD in this case. This unanimity reinforces the validity of this conclusion.  \n\n### Final Conclusion:  \nThe clinical findings and biopsy are best explained by **donor T-cells** mediating GVHD. Therefore, the correct answer is **A**."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pathologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nThe clinical presentation of this patient\u2014skin rash, bloody diarrhea, and biopsy findings of colonic epithelial cell apoptosis\u2014strongly suggests **graft-versus-host disease (GVHD)**. GVHD occurs when **donor T-cells** from the transplanted organ (in this case, the liver) recognize the recipient\u2019s tissues as foreign and mount an immune response against them. This immune-mediated attack leads to epithelial cell apoptosis in affected organs, including the skin and gastrointestinal tract.  \n\n#### Integration of Team Insights:  \n1. **Pathologist's Perspective**: GVHD is mediated by donor T-cells, which attack recipient tissues, leading to apoptosis. The biopsy findings and symptoms align perfectly with this mechanism.  \n2. **Transplant Hepatologist's Perspective**: GVHD is a known complication following liver transplantation, particularly when donor T-cells are present in the graft. The systemic symptoms (rash and diarrhea) and histological findings strongly point to donor T-cells as the mediators.  \n3. **Immunologist's Perspective**: Donor T-cells are the primary mediators of GVHD, as they recognize recipient tissues as foreign and initiate an immune response. Recipient T-cells are involved in graft rejection, not GVHD.  \n4. **Gastroenterologist's Perspective**: The apoptosis seen in the colonic epithelial cells is classic for GVHD, which is mediated by donor T-cells. The systemic symptoms further reinforce this diagnosis.  \n5. **Infectious Disease Specialist's Perspective**: The hallmark features of GVHD\u2014rash, bloody diarrhea, and epithelial apoptosis\u2014are best explained by donor T-cells attacking recipient tissues.  \n\n#### Analysis of Options:  \n- **A. Donor T-cells**: Correct. Donor T-cells mediate GVHD, causing the observed symptoms and histological findings. Confidence level: Very high.  \n- **B. Recipient T-cells**: Incorrect. Recipient T-cells mediate graft rejection, not GVHD. Confidence level: Moderate.  \n- **C. Donor B-cells**: Incorrect. Donor B-cells are not primary mediators of GVHD. Confidence level: Low.  \n- **D. Recipient B-cells**: Incorrect. Recipient B-cells are not involved in GVHD. Confidence level: Very low.  \n\n### Conclusion:  \nThe most likely mediator of this patient's symptoms is **donor T-cells**, making **A** the correct answer."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Infectious Disease Specialist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nThe patient presents with hallmark symptoms of **graft-versus-host disease (GVHD)**, including skin rash, bloody diarrhea, and biopsy findings of colonic epithelial apoptosis. GVHD occurs when **donor T-cells** from the transplanted organ recognize the recipient's tissues as foreign and initiate an immune response. This mechanism aligns with the clinical presentation and histopathological findings.  \n\n#### Integration of Insights:  \n1. **Transplant Hepatologist**: Highlighted that GVHD is a known complication of liver transplantation, particularly mediated by donor T-cells. The systemic symptoms and biopsy findings further support this diagnosis.  \n2. **Immunologist**: Emphasized the immunological basis of GVHD, where donor T-cells attack recipient tissues, causing epithelial apoptosis. This is consistent with the patient's presentation and timing post-transplant.  \n3. **Gastroenterologist**: Focused on the gastrointestinal manifestations of GVHD, including bloody diarrhea and colonic epithelial apoptosis, which are classic features mediated by donor T-cells.  \n4. **Pathologist**: Provided histological evidence supporting GVHD, with epithelial apoptosis being a key finding mediated by donor T-cells.  \n\n#### Systematic Analysis of Options:  \n- **A. Donor T-cells**: The correct answer, as donor T-cells are the primary mediators of GVHD. The clinical and histological findings strongly support this mechanism.  \n- **B. Recipient T-cells**: Incorrect, as recipient T-cells are involved in graft rejection, not GVHD. The systemic symptoms and biopsy findings point to GVHD instead.  \n- **C. Donor B-cells**: Not relevant, as B-cells are not primary mediators of GVHD.  \n- **D. Recipient B-cells**: Irrelevant in this context, as recipient B-cells do not mediate GVHD.  \n\n### Conclusion:  \nAll perspectives converge on **donor T-cells** as the mediators of GVHD in this case. Therefore, the correct answer is **A**."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Transplant Hepatologist": 0.3,
+        "Immunologist": 0.25,
+        "Gastroenterologist": 0.2,
+        "Pathologist": 0.15,
+        "Infectious Disease Specialist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "teamwork_metrics": {
+    "mutual_monitoring": {
+      "total_monitoring_exchanges": 0,
+      "total_issues_detected": 0,
+      "avg_issues_per_exchange": 0.0,
+      "issue_types": {},
+      "issue_resolution_rate": 0.0,
+      "team_monitoring_effectiveness": "low"
+    }
+  },
+  "recruitment_metrics": {
+    "complexity_distribution": {
+      "basic": 0,
+      "intermediate": 4,
+      "advanced": 0
+    },
+    "total_questions": 4,
+    "method": "adaptive",
+    "pool": "medical"
+  }
+}

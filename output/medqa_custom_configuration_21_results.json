@@ -1,0 +1,113 @@
+{
+  "simulation_id": "medqa_custom_configuration_21",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": true,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Cardiologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nIntegrating the insights from the team members and addressing the identified contradictions, the most appropriate next step is **administering oral amoxicillin 1 hour before the procedure (Option A)**. Here's the reasoning:\n\n1. **Patient's Risk for Infective Endocarditis (IE)**:  \n   - The patient has a **prosthetic aortic valve**, which places him in the high-risk category for IE. According to the American Heart Association (AHA) guidelines, prophylactic antibiotics are recommended for high-risk patients undergoing dental procedures that involve manipulation of gingival tissue, the periapical region of teeth, or perforation of the oral mucosa. A molar extraction falls under this category.\n   - Administering oral amoxicillin is therefore the most critical and immediate next step to mitigate the risk of IE.\n\n2. **Functional Status and Clinical Stability**:  \n   - The patient is asymptomatic, has good functional capacity (can climb 3 flights of stairs without shortness of breath), and has stable vital signs. There are no signs or symptoms of decompensated heart failure, prosthetic valve dysfunction, or endocarditis.  \n   - The systolic ejection click heard on auscultation is likely related to the prosthetic valve and is not an indication of dysfunction in an otherwise asymptomatic patient.\n\n3. **Echocardiography (Option B)**:  \n   - While echocardiography could provide additional information about the prosthetic valve's function, it is not indicated in this scenario. The patient has no clinical signs or symptoms warranting urgent evaluation of the valve. Routine echocardiography is not necessary for asymptomatic patients with stable functional capacity.  \n   - The Hematologist, Anesthesiologist, and Endocrinologist suggested echocardiography (Option B), but this is not the most appropriate *next step*. Instead, it may be considered at a later time if new symptoms or concerns arise.\n\n4. **Nitrous Oxide (Option C)**:  \n   - Nitrous oxide is generally safe for patients with stable cardiovascular conditions, including those with a history of ischemic heart disease or valve replacement. There is no indication to avoid it in this patient, making this option irrelevant.\n\n5. **Discontinuation of Aspirin and Warfarin (Option D)**:  \n   - Discontinuing both aspirin and warfarin without a bridging strategy is inappropriate and dangerous in this patient. Warfarin is likely used for anticoagulation due to the prosthetic valve, and aspirin is for secondary prevention of ischemic heart disease. For minor dental procedures like molar extraction, anticoagulation is typically maintained within the therapeutic INR range, and local hemostatic measures are applied to manage bleeding.\n\n### Addressing Team Contradictions:  \nWhile multiple team members suggested echocardiography (Option B) as the next step, they also acknowledged the importance of antibiotic prophylaxis (Option A). However, the immediate and necessary intervention to prevent IE is administering antibiotics, making **Option A** the most appropriate choice. Echocardiography, while potentially helpful, is not urgently required in this stable, asymptomatic patient.\n\n### Final Summary:  \nThe patient requires **antibiotic prophylaxis (Option A)** as the next step to prevent infective endocarditis during the dental procedure. Other options (B, C, and D) are either unnecessary at this time or contraindicated."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Hematologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from my teammates and addressing critical points, the most appropriate next step is **Option A: Administer oral amoxicillin 1 hour before the procedure**. Here\u2019s why:\n\n1. **Prosthetic Valve and Infective Endocarditis (IE) Risk**:  \n   - This patient has a prosthetic aortic valve, which places him in the high-risk category for infective endocarditis. According to the American Heart Association (AHA) guidelines, prophylactic antibiotics are recommended for high-risk patients undergoing dental procedures that involve manipulation of gingival tissue, the periapical region of teeth, or perforation of the oral mucosa.  \n   - A molar extraction is precisely the type of procedure that warrants prophylaxis in this patient. Administering oral amoxicillin 1 hour before the procedure is the standard of care and directly addresses the immediate risk of IE.  \n\n2. **Echocardiography (Option B)**:  \n   - While echocardiography is an important diagnostic tool, it is not routinely indicated in this patient. The patient is asymptomatic, reports excellent functional capacity (able to climb 3 flights of stairs without symptoms), and has no clinical signs of prosthetic valve dysfunction or heart failure. The systolic ejection click heard on auscultation is expected in a patient with a prosthetic valve.  \n   - Routine echocardiography in this stable, asymptomatic patient would not change the immediate management plan. Therefore, it is not the most appropriate next step.  \n\n3. **Nitrous Oxide (Option C)**:  \n   - There is no specific contraindication to the use of nitrous oxide in this patient. His cardiovascular status is stable, and he has no respiratory compromise. This option is not relevant to the immediate management.  \n\n4. **Anticoagulation Management (Option D)**:  \n   - Discontinuing both aspirin and warfarin without a bridging strategy is inappropriate and dangerous in this patient, as it would significantly increase the risk of thromboembolic events, including prosthetic valve thrombosis. Minor dental procedures, such as molar extraction, can generally be performed without stopping anticoagulation, provided local hemostatic measures are used.  \n\n### Addressing Critical Points:  \n- Both the **Anesthesiologist** and **Endocrinologist** analyses contained a contradiction, as they suggested echocardiography (Option B) as the answer while acknowledging that antibiotic prophylaxis (Option A) is necessary and guideline-directed. This misalignment has been corrected in this final response.  \n- The **Cardiologist** correctly emphasized the importance of antibiotic prophylaxis (Option A), aligning with current AHA guidelines.  \n\n### Final Summary:  \nThe **most appropriate next step** is to administer oral amoxicillin 1 hour before the procedure (Option A). While echocardiography (Option B) might be considered in certain symptomatic or unstable patients, it is not necessary in this stable, asymptomatic individual. Options C and D are either irrelevant or contraindicated.  \n\n"
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Anesthesiologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from my teammates and re-evaluating the clinical scenario, the most appropriate next step is **administering oral amoxicillin 1 hour before the procedure (Option A)**. This is based on the following considerations:  \n\n1. **Prophylaxis for Infective Endocarditis (IE)**:  \n   - The patient has a prosthetic aortic valve, placing him at high risk for infective endocarditis. According to the American Heart Association (AHA) guidelines, prophylactic antibiotics are indicated for patients with prosthetic heart valves undergoing dental procedures that involve manipulation of gingival tissue or perforation of the oral mucosa. A molar extraction qualifies as such a procedure.  \n   - Administering oral amoxicillin (or an alternative if allergic) 1 hour before the procedure is the standard of care to prevent IE.  \n\n2. **Functional Capacity & Prosthetic Valve Status**:  \n   - The patient has good functional capacity (able to climb 3 flights of stairs without symptoms), which is a strong clinical indicator of stable cardiovascular health.  \n   - The systolic ejection click heard on auscultation is likely due to his prosthetic valve and does not necessarily indicate dysfunction. Routine echocardiography is not required in asymptomatic patients with good functional capacity unless there are concerning symptoms or signs, such as heart failure, fatigue, or new murmurs.  \n\n3. **Insights from Teammates**:  \n   - The **Cardiologist** and **Dentist** emphasized the importance of antibiotic prophylaxis (Option A), which aligns with current guidelines. Both noted that echocardiography (Option B) is unnecessary in this asymptomatic patient.  \n   - The **Hematologist** and **Endocrinologist** raised the possibility of echocardiography (Option B) but did not provide compelling evidence that it is needed in this stable patient. Their reasoning highlighted that the patient has no symptoms of valve dysfunction or decompensated cardiovascular disease, making echocardiography less relevant in this scenario.  \n\n4. **Other Options (C and D)**:  \n   - **Option C (Avoid nitrous oxide)**: This is not relevant, as there is no contraindication to nitrous oxide in this patient.  \n   - **Option D (Discontinue aspirin and warfarin)**: Discontinuing anticoagulation is inappropriate and dangerous in this patient with a prosthetic valve.  \n\n### Final Summary:  \nThe **immediate next step** is to administer oral amoxicillin 1 hour before the procedure to prevent infective endocarditis (Option A). Echocardiography (Option B) is not required in this asymptomatic patient with good functional capacity, and the other options (C and D) are either irrelevant or contraindicated.  \n\n"
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Endocrinologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from my teammates and re-evaluating the clinical scenario, the most appropriate next step is **Option A: Administer oral amoxicillin 1 hour before the procedure**.  \n\nThis patient has a prosthetic aortic valve, which places him at high risk for infective endocarditis (IE) during invasive dental procedures, such as a molar extraction. According to the American Heart Association (AHA) guidelines, antibiotic prophylaxis is indicated for patients with prosthetic valves undergoing dental procedures that involve manipulation of gingival tissue, the periapical region of teeth, or perforation of the oral mucosa. Administering oral amoxicillin 1 hour before the procedure is the standard of care to prevent IE.  \n\n### Integration of Teammates' Analyses:  \n1. **Cardiologist's Perspective**:  \n   The cardiologist correctly emphasized the importance of antibiotic prophylaxis (Option A) for this high-risk patient. They also pointed out that the patient\u2019s ability to climb 3 flights of stairs without symptoms suggests good functional capacity, making routine echocardiography (Option B) unnecessary at this time.  \n\n2. **Hematologist's Perspective**:  \n   While the hematologist initially selected Option B, their analysis also recognized the importance of antibiotic prophylaxis (Option A) for preventing infective endocarditis. They acknowledged that echocardiography is not routinely indicated in asymptomatic patients with good functional capacity, which aligns with the cardiologist's view.  \n\n3. **Anesthesiologist's Perspective**:  \n   The anesthesiologist also highlighted the importance of echocardiography (Option B) but acknowledged that antibiotic prophylaxis (Option A) is necessary. They agreed that nitrous oxide (Option C) is not contraindicated and that discontinuing warfarin and aspirin (Option D) is inappropriate.  \n\n4. **Critical Issues Identified**:  \n   Both the hematologist and anesthesiologist had potential contradictions in their responses, as they leaned toward echocardiography (Option B) while also recognizing the importance of antibiotic prophylaxis (Option A). This inconsistency suggests that Option A is the more immediate and clinically appropriate step.  \n\n### Why Not the Other Options?  \n- **Option B (Obtain echocardiography prior to procedure)**:  \n   While echocardiography is a valuable tool for assessing prosthetic valve function, it is not immediately necessary in this asymptomatic patient with good functional capacity and no clinical signs of valve dysfunction or heart failure. The systolic ejection click is expected in patients with a prosthetic valve. Therefore, echocardiography could be deferred unless new symptoms or concerns arise.  \n\n- **Option C (Avoid nitrous oxide during the procedure)**:  \n   There is no specific contraindication to nitrous oxide in this patient, as his cardiovascular status is stable and he has good functional capacity.  \n\n- **Option D (Discontinue aspirin and warfarin 72 hours prior to procedure)**:  \n   Discontinuing anticoagulation and antiplatelet therapy in this patient with a prosthetic valve would significantly increase the risk of thromboembolic events, including valve thrombosis. Minor dental procedures like molar extraction can often be performed without stopping anticoagulation, and local hemostatic measures can manage bleeding.  \n\n### Final Summary:  \nThe patient requires **antibiotic prophylaxis (Option A)** to prevent infective endocarditis, as this is the most immediate and critical step before the dental procedure. Echocardiography (Option B) is not necessary in this stable, asymptomatic patient. Options C and D are irrelevant or contraindicated."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Dentist/Oral Surgeon",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter reviewing the analyses provided by the team (Cardiologist, Hematologist, Anesthesiologist, and Endocrinologist), the most appropriate next step remains **Option A: Administer oral amoxicillin 1 hour before the procedure**. This decision aligns with the guidelines from the American Heart Association (AHA) for infective endocarditis (IE) prophylaxis in patients with prosthetic cardiac valves undergoing invasive dental procedures. The risk of IE in this patient, given his prosthetic aortic valve, outweighs the need for additional diagnostic procedures like echocardiography, as he is asymptomatic, has good functional capacity, and shows no signs of prosthetic valve dysfunction.  \n\n### Integration of Team Insights:  \n1. **Cardiologist's Analysis**: Strongly supports Option A as the most appropriate next step, citing AHA guidelines for IE prophylaxis and the patient's high-risk status due to his prosthetic valve. This aligns with my initial analysis and reinforces the importance of prophylactic antibiotics.  \n\n2. **Hematologist's Analysis**: While the Hematologist ranked Option B higher, suggesting echocardiography to evaluate the prosthetic valve, this is unnecessary because the patient is asymptomatic and has no clinical signs of valve dysfunction. The systolic ejection click is expected in patients with prosthetic valves and does not warrant routine echocardiography.  \n\n3. **Anesthesiologist's Analysis**: The Anesthesiologist also emphasized Option B, citing the need to evaluate the prosthetic valve before proceeding. However, this step is not immediately necessary given the patient's stable condition and adequate functional capacity. Prophylactic antibiotics (Option A) should take precedence as the next step.  \n\n4. **Endocrinologist's Analysis**: Similar to the Anesthesiologist and Hematologist, the Endocrinologist suggested Option B due to the systolic ejection click. However, this finding is not indicative of dysfunction in the absence of symptoms or other clinical concerns. Antibiotic prophylaxis remains the priority for preventing IE during the dental procedure.  \n\n### Addressing Contradictions:  \nWhile some teammates suggested Option B as the next step, their reasoning appears to prioritize precautionary measures without clear clinical indications. The systolic ejection click is expected in patients with prosthetic valves and does not necessitate echocardiography in an asymptomatic, stable patient. Antibiotic prophylaxis is the immediate next step to mitigate the risk of IE, which is the most pressing concern for this patient undergoing dental surgery.\n\n### Final Summary:  \nThe most appropriate next step is **Option A: Administer oral amoxicillin 1 hour before the procedure** to prevent infective endocarditis. Echocardiography (Option B) may be considered in the future if new symptoms or concerns arise, but it is not indicated at this time. Options C and D are either irrelevant or contraindicated."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Cardiologist": 0.35,
+        "Hematologist": 0.25,
+        "Anesthesiologist": 0.2,
+        "Endocrinologist": 0.1,
+        "Dentist/Oral Surgeon": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "teamwork_metrics": {
+    "mutual_monitoring": {
+      "total_monitoring_exchanges": 12,
+      "total_issues_detected": 12,
+      "avg_issues_per_exchange": 1.0,
+      "issue_types": {
+        "contradictory_selection": 12
+      },
+      "issue_resolution_rate": 0.0,
+      "team_monitoring_effectiveness": "low"
+    }
+  },
+  "recruitment_metrics": {
+    "complexity_distribution": {
+      "basic": 6,
+      "intermediate": 34,
+      "advanced": 4
+    },
+    "total_questions": 44,
+    "method": "adaptive",
+    "pool": "medical"
+  }
+}

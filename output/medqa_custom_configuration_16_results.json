@@ -1,0 +1,111 @@
+{
+  "simulation_id": "medqa_custom_configuration_16",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": true,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Psychiatrist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter reviewing the analyses provided by the team members and integrating their insights with my own expertise, the most appropriate answer remains **A. If symptoms present within a month after delivery and treatment occurs promptly, the prognosis is good**. This answer accurately reflects the clinical presentation, timeline, and management of the patient's most likely condition: **postpartum psychosis**.  \n\n#### Key Points Supporting Answer A:  \n1. **Clinical Presentation**:  \n   - The patient is exhibiting hallmark symptoms of postpartum psychosis, including delusional beliefs (thinking the baby is a \"parasite\"), psychomotor slowing, withdrawal, and refusal to eat.  \n   - Postpartum psychosis typically develops within the first month postpartum, aligning with the patient presenting 3 weeks after delivery.  \n\n2. **Prognosis with Treatment**:  \n   - Timely intervention, including antipsychotic medications, mood stabilizers, and possibly hospitalization, can lead to a favorable prognosis. This aligns with evidence-based management and was emphasized by all team members.  \n\n3. **Team Consensus**:  \n   - All team members (OB-GYN, psychologist, primary care physician, and social worker) agreed that **A** is the most accurate and relevant option, given the urgency and treatable nature of postpartum psychosis.  \n\n#### Why Other Options Are Less Appropriate:  \n- **B. Risk for this patient\u2019s condition increases with each pregnancy**:  \n   While there is an increased recurrence risk in subsequent pregnancies for women with a history of postpartum psychosis, this is not the most relevant or comprehensive statement for the current case.  \n\n- **C. This patient\u2019s condition is self-limited**:  \n   This is factually incorrect. Postpartum psychosis is not self-limited and requires urgent medical intervention to prevent harm to the mother and baby.  \n\n- **D. Electroconvulsive therapy is the first-line therapy for this patient\u2019s condition**:  \n   ECT is not first-line treatment. It may be considered in severe or refractory cases, but initial management typically involves antipsychotics and mood stabilizers.  \n\n### Final Integration:  \nThe team unanimously identified **A** as the best answer, supported by high confidence levels and consistent reasoning. This reflects the importance of early recognition and treatment in postpartum psychosis, which significantly improves outcomes. The collaborative perspectives further validate that **A** is the most appropriate response.  "
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Obstetrician-Gynecologist (OB-GYN)",
+      "message": "ANSWER: A  \n\n### Rationale:  \nThe patient is displaying symptoms consistent with **postpartum psychosis**, a rare but serious psychiatric condition that typically occurs within the first month postpartum. Key features in this case include delusions (believing the newborn is a \"parasite\"), withdrawal from her husband and baby, psychomotor slowing, and refusal to eat. This condition is a medical emergency that requires urgent intervention to prevent harm to the mother and baby.  \n\nAll team members agree that **Option A** is the most accurate and relevant statement about this patient\u2019s condition. Postpartum psychosis requires prompt treatment, which can include antipsychotic medications, mood stabilizers, and possibly hospitalization. With timely intervention, the prognosis is generally good, making this the most appropriate option.  \n\n#### Integration of Team Insights:  \n- **Psychiatrist's analysis:** Emphasized the psychotic features and urgency of treatment. Noted that timely intervention significantly improves prognosis, which aligns with Option A.  \n- **Psychologist's analysis:** Highlighted the importance of early recognition and treatment, agreeing that postpartum psychosis is not self-limited and requires active intervention.  \n- **Primary Care Physician's analysis:** Pointed out that Option A is the most evidence-based and relevant to the current clinical presentation.  \n- **Social Worker's analysis:** Focused on the importance of prompt treatment and the good prognosis with appropriate care, further supporting Option A.  \n\n#### Rejection of Other Options:  \n- **Option B:** While the risk of postpartum psychosis recurrence increases in subsequent pregnancies, this is not universally true and is less relevant to the current case.  \n- **Option C:** Incorrect, as postpartum psychosis is not self-limited and requires urgent treatment.  \n- **Option D:** Electroconvulsive therapy (ECT) is not the first-line treatment; it is reserved for severe or refractory cases.  \n\n### Final Conclusion:  \nOption **A** is the most accurate and clinically relevant statement, as it emphasizes the good prognosis with timely treatment, which is critical for managing postpartum psychosis effectively."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Psychologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nThe patient is presenting with symptoms consistent with **postpartum psychosis**, a rare but severe psychiatric condition that typically occurs within the first month postpartum. Symptoms include delusions (e.g., the belief that the baby is a parasite), psychomotor slowing, withdrawal from loved ones, and refusal to eat. This condition is a medical emergency and requires prompt intervention due to the risk of harm to the mother or baby.  \n\n#### Integration of Insights:  \nAll team members (Psychiatrist, OB-GYN, Primary Care Physician, and Social Worker) agree that **Option A** is the most appropriate answer. This option highlights the importance of early recognition and treatment, which significantly improves outcomes in postpartum psychosis. The prognosis is generally favorable with timely intervention, including antipsychotic medications, mood stabilizers, and supportive care.  \n\nOther options were systematically analyzed and deemed less appropriate:  \n- **Option B** is partially correct, as postpartum psychosis has a higher recurrence risk in subsequent pregnancies, but this does not universally increase with each pregnancy unless there is a prior history of psychosis.  \n- **Option C** is incorrect, as postpartum psychosis is not self-limited and requires urgent treatment to prevent severe consequences.  \n- **Option D** is also incorrect, as electroconvulsive therapy (ECT) is not the first-line therapy for postpartum psychosis; it is reserved for severe or refractory cases.  \n\n### Final Conclusion:  \nOption **A** is the most accurate and relevant statement regarding the patient's condition and prognosis. Early intervention is critical, and with prompt treatment, the prognosis is generally good."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Primary Care Physician",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from the team (Psychiatrist, OB-GYN, Psychologist, and Social Worker) and my own analysis, the most appropriate answer is **A**: \"If symptoms present within a month after delivery and treatment occurs promptly, the prognosis is good.\"  \n\nThe patient is presenting with symptoms consistent with **postpartum psychosis**, a rare but severe psychiatric condition that typically occurs within the first few weeks postpartum. Key features include:  \n1. **Delusions**: Believing the newborn is a \"parasite\" sucking her lifeforce.  \n2. **Psychomotor slowing**: Drained appearance, slow movements, and speech.  \n3. **Behavioral changes**: Refusal to eat and withdrawal from her husband and baby.  \n\nPostpartum psychosis is a psychiatric emergency that requires urgent medical intervention. Early treatment, typically involving antipsychotics, mood stabilizers, and hospitalization, can lead to a favorable prognosis. Electroconvulsive therapy (ECT) may be considered in severe or refractory cases but is not first-line.  \n\n### Option Analysis:  \n1. **A. If symptoms present within a month after delivery and treatment occurs promptly, the prognosis is good**  \n   - This is the correct answer. Postpartum psychosis often begins within the first month postpartum, as seen in this case. Timely intervention significantly improves outcomes. This aligns with evidence-based management and the clinical presentation.  \n   - **Confidence level: Very High**  \n\n2. **B. Risk for this patient\u2019s condition increases with each pregnancy**  \n   - This statement is partially correct but less relevant to the immediate clinical context. A history of postpartum psychosis increases recurrence risk in future pregnancies, but the risk does not universally increase with each pregnancy unless there is prior history.  \n   - **Confidence level: Moderate**  \n\n3. **C. This patient\u2019s condition is self-limited**  \n   - This is incorrect. Postpartum psychosis is not self-limited and requires urgent intervention. Without treatment, it can lead to severe consequences, including harm to the mother or baby.  \n   - **Confidence level: Low**  \n\n4. **D. Electroconvulsive therapy is the first-line therapy for this patient\u2019s condition**  \n   - This is incorrect. While ECT may be used in severe or refractory cases, it is not the first-line therapy. Initial treatment involves antipsychotics, mood stabilizers, and supportive care.  \n   - **Confidence level: Very Low**  \n\n### Final Summary:  \nThe patient's presentation aligns with postpartum psychosis, and early recognition and treatment are critical for a favorable prognosis. Option A is the most appropriate and evidence-based choice."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Social Worker",
+      "message": "ANSWER: A  \n\nRationale:  \nAfter reviewing the analyses from the Psychiatrist, OB-GYN, Psychologist, and Primary Care Physician, as well as my initial analysis, it is clear that the patient is experiencing **postpartum psychosis**, a rare but serious psychiatric condition that typically emerges within the first month postpartum. The patient\u2019s symptoms, including delusions (believing the baby is a \"parasite\"), withdrawal, psychomotor slowing, and refusal to eat, strongly indicate this diagnosis.  \n\n**Option A** is the most accurate and relevant statement. Postpartum psychosis often presents within the first month after delivery, and with prompt treatment\u2014such as antipsychotic medications, mood stabilizers, and potential hospitalization\u2014the prognosis is generally good. Early intervention is critical to prevent harm to the mother and baby.  \n\nThe other options were systematically ruled out:  \n- **B** is partially true but less relevant because it focuses on recurrence risk rather than immediate management or prognosis.  \n- **C** is incorrect because postpartum psychosis is not self-limited and requires urgent intervention.  \n- **D** is incorrect because electroconvulsive therapy (ECT), while effective in severe or refractory cases, is not the first-line treatment.  \n\nBy integrating the insights from all team members, it is evident that **Option A** best captures the clinical presentation and appropriate management of the patient\u2019s condition."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Psychiatrist": 0.4,
+        "Obstetrician-Gynecologist (OB-GYN)": 0.2,
+        "Psychologist": 0.2,
+        "Primary Care Physician": 0.1,
+        "Social Worker": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "teamwork_metrics": {
+    "mutual_monitoring": {
+      "total_monitoring_exchanges": 0,
+      "total_issues_detected": 0,
+      "avg_issues_per_exchange": 0.0,
+      "issue_types": {},
+      "issue_resolution_rate": 0.0,
+      "team_monitoring_effectiveness": "low"
+    }
+  },
+  "recruitment_metrics": {
+    "complexity_distribution": {
+      "basic": 4,
+      "intermediate": 27,
+      "advanced": 3
+    },
+    "total_questions": 34,
+    "method": "adaptive",
+    "pool": "medical"
+  }
+}

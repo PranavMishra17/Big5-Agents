@@ -1,0 +1,111 @@
+{
+  "simulation_id": "medqa_custom_configuration_24",
+  "config": {
+    "use_team_leadership": false,
+    "use_closed_loop_comm": false,
+    "use_mutual_monitoring": true,
+    "use_shared_mental_model": false,
+    "use_team_orientation": false,
+    "use_mutual_trust": false,
+    "mutual_trust_factor": 0.8,
+    "use_recruitment": true,
+    "recruitment_method": "adaptive",
+    "recruitment_pool": "medical",
+    "random_leader": false,
+    "task": "MedQA Question"
+  },
+  "exchanges": [
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pediatric Cardiologist",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating the analyses provided by the team members and considering the clinical scenario, the most appropriate management strategy for this 15-month-old boy with a small muscular ventricular septal defect (VSD) is **Option A: Reassurance of the parents and regular follow-up**.  \n\n1. **Clinical Context**:  \n   - The echocardiogram confirms a muscular VSD without pulmonary hypertension, and the child is thriving, asymptomatic, and has normal growth and development.  \n   - Small muscular VSDs often close spontaneously, particularly within the first few years of life. Regular follow-up allows for monitoring of the defect and early detection of potential complications.  \n\n2. **Team Insights**:  \n   - All team members unanimously agree that **Option A** is the most appropriate choice.  \n   - The Pediatrician, Pediatric Echocardiography Specialist, Developmental Pediatrician, and Pediatric Cardiac Surgeon emphasized the natural history of small muscular VSDs and the importance of a conservative approach in asymptomatic cases.  \n   - Regular follow-up ensures that any changes in the defect or the child\u2019s clinical status can be identified and addressed promptly.  \n\n3. **Ranking of Options**:  \n   - **Option A**: The best choice due to the child\u2019s stable condition and the likelihood of spontaneous closure.  \n   - **Option B**: Antibiotic prophylaxis is unnecessary in this case, as the child does not meet the criteria for infective endocarditis prophylaxis.  \n   - **Option C**: Digoxin is inappropriate because the child has no signs of heart failure or significant left-to-right shunting.  \n   - **Option D**: Transcatheter closure is not indicated for small, asymptomatic defects and would be overly aggressive.  \n\n### Final Summary:  \nThe best management strategy for this patient is reassurance of the parents and regular follow-up (Option A). This aligns with evidence-based guidelines and the natural history of small muscular VSDs, which often close spontaneously without the need for medical or surgical intervention. Regular follow-up ensures that any complications can be addressed if they arise."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pediatrician",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from all team members, the consensus is that **Option A: Reassurance of the parents and regular follow-up** is the most appropriate management strategy for this patient.  \n\nThe child has a small muscular ventricular septal defect (VSD) confirmed by echocardiography, without pulmonary hypertension, heart failure, or other complications. He is thriving well, asymptomatic, and has normal growth and development. Small muscular VSDs often close spontaneously, especially in young children, and do not require medical or surgical intervention unless complications arise.  \n\nKey points from the team analysis:  \n- **Pediatric Cardiologist** emphasized the natural history of small muscular VSDs and the importance of regular follow-up to monitor for potential complications. Antibiotic prophylaxis is not necessary unless specific high-risk criteria are met.  \n- **Pediatric Echocardiography Specialist** highlighted the role of periodic echocardiograms to track the defect\u2019s progression and reinforced that reassurance is the standard of care for asymptomatic cases.  \n- **Developmental Pediatrician** and **Pediatric Cardiac Surgeon** agreed that digoxin and transcatheter occlusion are unwarranted in this case, as the child has no signs of heart failure or significant left-to-right shunting.  \n\n### Summary:  \nOption A provides reassurance to the parents while ensuring regular monitoring to detect any changes in the defect or the child\u2019s clinical status. Other options (digoxin, antibiotic prophylaxis, or invasive intervention) are inappropriate in this case, given the absence of symptoms and complications."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pediatric Echocardiography Specialist",
+      "message": "**ANSWER: A**\n\n### Rationale:\nAfter reviewing the analyses from my teammates and integrating their insights with my initial evaluation, it is clear that **Option A: Reassurance of the parents and regular follow-up** is the most appropriate management strategy for this patient. \n\n- **Clinical Stability and Natural History**:  \n  The child is thriving, asymptomatic, and has no signs of heart failure or pulmonary hypertension. Small muscular ventricular septal defects (VSDs) often close spontaneously, especially in young children. The absence of complications such as growth delay, feeding difficulties, or respiratory distress supports a conservative approach.\n\n- **Guideline-Based Management**:  \n  All teammates emphasized that reassurance and periodic follow-up with echocardiography to monitor the defect's size and hemodynamics align with current evidence-based guidelines. There is no indication for immediate intervention or pharmacological treatment in this case.\n\n- **Other Options Are Inappropriate**:  \n  - **Option B (Antibiotic prophylaxis)**: Not recommended for small, uncomplicated VSDs per current guidelines (e.g., AHA).  \n  - **Option C (Digoxin)**: Unnecessary as the child has no heart failure symptoms.  \n  - **Option D (Transcatheter closure)**: Overly aggressive for a small, asymptomatic defect.\n\n### Final Summary:  \nThe best management strategy is **Option A**, as it reflects the natural history of small muscular VSDs, which often close spontaneously, and avoids unnecessary interventions. Regular follow-up ensures timely detection of any potential complications while providing reassurance to the parents."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Developmental Pediatrician",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating insights from my teammates and combining them with my own analysis, it is clear that **Option A: Reassurance of the parents and regular follow-up** is the most appropriate management strategy for this patient.  \n\nThis 15-month-old child has a **small muscular ventricular septal defect (VSD)** without pulmonary hypertension, is thriving well (weight and height >85th percentile), and shows no symptoms of heart failure or complications. Small muscular VSDs have a high likelihood of **spontaneous closure** during childhood, especially within the first few years of life. Regular follow-up with a pediatric cardiologist to monitor the size of the defect and any potential complications is the standard approach. Parental reassurance is also essential to address concerns and provide education on the natural course of the condition.  \n\n### Integration of Team Insights:  \n1. **Pediatric Cardiologist**: Highlighted the importance of periodic monitoring with echocardiograms and emphasized that antibiotic prophylaxis (Option B) is not recommended for small, uncomplicated VSDs. This reinforces the conservative approach of Option A.  \n2. **Pediatrician**: Agreed that reassurance and follow-up are key, while also noting that digoxin (Option C) is unnecessary for asymptomatic patients. This supports the exclusion of pharmacologic management.  \n3. **Pediatric Echocardiography Specialist**: Provided strong evidence that transcatheter closure (Option D) is inappropriate for small, asymptomatic VSDs and is reserved for cases with significant complications.  \n4. **Pediatric Cardiac Surgeon**: Reaffirmed that small muscular VSDs often close spontaneously and that reassurance and follow-up (Option A) align with best practices.  \n\n### Confidence Levels:\n- **Option A (Reassurance and follow-up)**: Very high. This is the standard of care for small, asymptomatic VSDs.  \n- **Option C (Digoxin and follow-up)**: Low. Digoxin is not indicated in the absence of heart failure or significant left-to-right shunting.  \n- **Option B (Antibiotic prophylaxis)**: Very low. Prophylaxis is not recommended for small, uncomplicated VSDs per current guidelines.  \n- **Option D (Transcatheter closure)**: Very low. This is overly aggressive for a small, asymptomatic VSD.  \n\n### Final Conclusion:  \nThe best management strategy for this child is **Option A: Reassurance of the parents and regular follow-up**, as it aligns with the natural history of small muscular VSDs and avoids unnecessary interventions."
+    },
+    {
+      "type": "collaborative_discussion",
+      "communication": "standard",
+      "sender": "Pediatric Cardiac Surgeon",
+      "message": "ANSWER: A  \n\n### Rationale:  \nAfter integrating the insights from my teammates and considering the clinical scenario, the most appropriate management strategy for this patient is **reassurance of the parents and regular follow-up (Option A)**.  \n\n- **Clinical Context**: The child has a small muscular ventricular septal defect (VSD) without pulmonary hypertension, is asymptomatic, thriving, and has no signs of heart failure or growth delay. These findings are consistent with a small, hemodynamically insignificant defect that is likely to close spontaneously over time.  \n- **Natural History of Small Muscular VSDs**: Many small muscular VSDs close spontaneously within the first few years of life. Regular follow-up with a pediatric cardiologist is essential to monitor the size of the defect and ensure no complications arise.  \n- **Guideline-Based Management**: Current guidelines recommend conservative management for small, asymptomatic VSDs. Intervention is only warranted for large defects causing significant left-to-right shunting, pulmonary hypertension, or heart failure, none of which are present in this case.  \n\n### Analysis of Other Options:  \n1. **Option B: Antibiotic prophylaxis against infective endocarditis**  \n   - Not recommended for small, uncomplicated VSDs based on current guidelines (e.g., AHA). Prophylaxis is reserved for high-risk conditions, such as prosthetic valves or prior infective endocarditis.  \n   - While not harmful, this option reflects outdated practice and is unnecessary.  \n\n2. **Option C: Oral digoxin and regular follow-up**  \n   - Digoxin is used for heart failure management in cases of significant left-to-right shunting or cardiac dysfunction. This child has no symptoms of heart failure and is thriving, so digoxin is not indicated. Regular follow-up alone is appropriate.  \n\n3. **Option D: Transcatheter occlusion closure of the defect**  \n   - Reserved for large VSDs causing significant clinical symptoms or complications. This child has a small, asymptomatic defect, making this option overly aggressive and inappropriate.  \n\n### Final Summary:  \nThe most appropriate management for this child is **Option A: Reassurance of the parents and regular follow-up**, as it aligns with the natural history of small muscular VSDs and evidence-based guidelines. This conservative approach ensures proper monitoring while avoiding unnecessary interventions."
+    }
+  ],
+  "decision_results": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Pediatric Cardiologist": 0.4,
+        "Pediatrician": 0.25,
+        "Pediatric Echocardiography Specialist": 0.15,
+        "Developmental Pediatrician": 0.1,
+        "Pediatric Cardiac Surgeon": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "teamwork_metrics": {
+    "mutual_monitoring": {
+      "total_monitoring_exchanges": 0,
+      "total_issues_detected": 0,
+      "avg_issues_per_exchange": 0.0,
+      "issue_types": {},
+      "issue_resolution_rate": 0.0,
+      "team_monitoring_effectiveness": "low"
+    }
+  },
+  "recruitment_metrics": {
+    "complexity_distribution": {
+      "basic": 8,
+      "intermediate": 38,
+      "advanced": 4
+    },
+    "total_questions": 50,
+    "method": "adaptive",
+    "pool": "medical"
+  }
+}
