@@ -1,0 +1,66 @@
+{
+  "question": "A 21-year-old woman is brought to the emergency room 1 hour after she ingested 12 pills of acetaminophen. She had a fight with her boyfriend immediately prior to the ingestion, during which she threatened to kill herself if he broke up with her. She has been hospitalized 4 times for overdoses in the past 3 years following breakups with her partners. On the way to the hospital, she screamed and then assaulted the paramedic who attempted to take her temperature. Physical examination shows multiple rows of well-healed scars bilaterally on the wrists. This patient is most likely to display which of the following defense mechanisms?",
+  "options": [
+    "A. Fantasy",
+    "B. Sublimation",
+    "C. Displacement",
+    "D. Splitting"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Psychiatrist": 0.35,
+        "Emergency Medicine Specialist": 0.25,
+        "Clinical Psychologist": 0.2,
+        "Toxicologist": 0.1,
+        "Social Worker (Medical)": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

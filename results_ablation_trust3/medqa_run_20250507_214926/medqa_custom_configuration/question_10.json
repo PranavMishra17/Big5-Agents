@@ -1,0 +1,96 @@
+{
+  "question": "A 15-year-old girl is brought in by her parents to her pediatrician with concerns that their daughter still has not had her first menstrual cycle. The parents report that the patient has had no developmental issues in the past. She was born full term by vaginal delivery and has met all other milestones growing up. Based on chart review, the patient demonstrated breast bud development at 10 years of age. The patient is not self conscious of her appearance but is concerned that something may be wrong since she has not yet had her first period. The patient\u2019s temperature is 97.9\u00b0F (36.6\u00b0C), blood pressure is 116/70 mmHg, pulse is 66/min, and respirations are 12/min. On exam, the patient appears her stated age and is of normal stature. She has Tanner 5 breast development but Tanner 2 pubic hair. On gynecologic exam, external genitalia appears normal, but the vagina ends in a blind pouch. Lab studies demonstrate that the patient has elevated levels of testosterone, estrogen, and luteinizing hormone. Which of the following is the most likely karyotype for this patient?",
+  "options": [
+    "A. 45, XO",
+    "B. 46, XY",
+    "C. 47, XXY",
+    "D. 47, XYY"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 3
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 3
+      },
+      "weighted_votes": {
+        "B": 0.78
+      },
+      "agent_weights": {
+        "3_Final Review and Decision Team_Senior Consultant": 0.26,
+        "3_Final Review and Decision Team_Evidence-Based Medicine Specialist": 0.26,
+        "3_Final Review and Decision Team_Clinical Decision Maker": 0.26
+      },
+      "total_weight": 0.78,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 9,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 9.0,
+      "confidence": 1.0
+    },
+    "mdt_process": {
+      "team_decisions": {
+        "1_Initial Assessment Team": {
+          "method": "majority_voting",
+          "winning_option": "B",
+          "vote_counts": {
+            "B": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "2_Domain Specialist Team": {
+          "method": "majority_voting",
+          "winning_option": "B",
+          "vote_counts": {
+            "B": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "3_Final Review and Decision Team": {
+          "method": "majority_voting",
+          "winning_option": "B",
+          "vote_counts": {
+            "B": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        }
+      },
+      "decision_team": "3_Final Review and Decision Team"
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

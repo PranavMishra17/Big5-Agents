@@ -1,0 +1,66 @@
+{
+  "question": "A 61-year-old man decides to undergo surgery for a hip replacement after seeing no improvement in his pain with non-operative treatment. At some point during the surgery, he is administered an agent that results in fasciculations in the patient's extremities. This was the expected response to the administered agent so no intervention was needed. After a while, the fasciculations stop and remain stopped for the remainder of the surgery. Consider the period of time during which the patient had fasciculations and subsequently the period of time after the fasciculations stopped. If the effects of the administered agent needed to be reversed during each of these two time periods respectively, which of the following agents should be administered during each time period?",
+  "options": [
+    "A. Neostigmine, no reversal",
+    "B. Neostigmine, neostigmine",
+    "C. No reversal, atracurium",
+    "D. No reversal, neostigmine"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Anesthesiologist": 0.4,
+        "Pharmacologist": 0.25,
+        "Neurologist": 0.15,
+        "Orthopedic Surgeon": 0.1,
+        "Clinical Toxicologist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

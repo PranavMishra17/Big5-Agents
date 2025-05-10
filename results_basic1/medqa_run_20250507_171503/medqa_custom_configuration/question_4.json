@@ -1,0 +1,62 @@
+{
+  "question": "A 33-year-old man presents to the emergency department acutely confused. The patient was found down at a local construction site by his coworkers. The patient has a past medical history of a seizure disorder and schizophrenia and is currently taking haloperidol. He had recent surgery 2 months ago to remove an inflamed appendix. His temperature is 105\u00b0F (40.6\u00b0C), blood pressure is 120/84 mmHg, pulse is 150/min, respirations are 19/min, and oxygen saturation is 99% on room air. Physical exam is notable for a confused man who cannot answer questions. His clothes are drenched in sweat. He is not making purposeful movements with his extremities although no focal neurological deficits are clearly apparent. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Exertional heat stroke",
+    "B. Heat exhaustion",
+    "C. Malignant hyperthermia",
+    "D. Neuroleptic malignant syndrome"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "weighted_votes": {
+        "D": 0.2
+      },
+      "agent_weights": {
+        "Emergency Medicine": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 2,
+        "B": 0,
+        "C": 1,
+        "D": 3
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 1.0
+    }
+  }
+}

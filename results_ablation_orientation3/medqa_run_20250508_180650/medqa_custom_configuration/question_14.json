@@ -1,0 +1,96 @@
+{
+  "question": "A 70-year-old man with hypertension and type 2 diabetes mellitus is admitted to the hospital 8 hours after the onset of impaired speech and right-sided weakness. Two days after admission, he becomes confused and is difficult to arouse. His pulse is 64/min and blood pressure is 166/96 mm Hg. Pulse oximetry on room air shows an oxygen saturation of 95%. Fundoscopic examination shows bilateral optic disc swelling. He is intubated and mechanically ventilated. A CT scan of the brain shows hypoattenuation in the territory of the left middle cerebral artery with surrounding edema and a 1-cm midline shift to the right. Which of the following interventions is most likely to result in a decrease in this patient's intracranial pressure?",
+  "options": [
+    "A. Increase the respiratory rate",
+    "B. Increase the fraction of inhaled oxygen",
+    "C. Increase the positive end-expiratory pressure",
+    "D. Decrease the heart rate"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3
+      },
+      "weighted_votes": {
+        "A": 0.78
+      },
+      "agent_weights": {
+        "3_Final Review and Decision Team_Neurosurgeon": 0.26,
+        "3_Final Review and Decision Team_Pharmacologist": 0.26,
+        "3_Final Review and Decision Team_Rehabilitation Medicine Specialist": 0.26
+      },
+      "total_weight": 0.78,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 9,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 9.0,
+      "confidence": 1.0
+    },
+    "mdt_process": {
+      "team_decisions": {
+        "1_Initial Assessment Team": {
+          "method": "majority_voting",
+          "winning_option": "A",
+          "vote_counts": {
+            "A": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "2_Diagnostic Evidence Team": {
+          "method": "majority_voting",
+          "winning_option": "A",
+          "vote_counts": {
+            "A": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "3_Final Review and Decision Team": {
+          "method": "majority_voting",
+          "winning_option": "A",
+          "vote_counts": {
+            "A": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        }
+      },
+      "decision_team": "3_Final Review and Decision Team"
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

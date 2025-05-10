@@ -1,0 +1,66 @@
+{
+  "question": "A 28-year-old G1P1 woman is brought into the clinic by her concerned husband. The husband has noted that his wife is not behaving normally. She no longer enjoys his company or is not particularly happy around their newborn. The newborn was delivered 3 weeks ago via normal vaginal delivery with no complications. He also notes that his wife seems to be off in some other world with her thoughts. Overall, she appears to be drained, and her movements and speech seem slow. The patient complains that the newborn is sucking the lifeforce from her when she breastfeeds. She has thus stopped eating to save herself from this parasite. Which of the following statements is true regarding this patient\u2019s most likely condition?",
+  "options": [
+    "A. If symptoms present within a month after delivery and treatment occurs promptly, the prognosis is good",
+    "B. Risk for this patient\u2019s condition increases with each pregnancy",
+    "C. This patient\u2019s condition is self-limited",
+    "D. Electroconvulsive therapy is the first-line therapy for this patient\u2019s condition"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Psychiatrist": 0.4,
+        "Obstetrician": 0.2,
+        "Psychologist": 0.2,
+        "Family Medicine Physician": 0.1,
+        "Lactation Consultant": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

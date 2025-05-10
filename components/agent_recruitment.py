@@ -28,6 +28,13 @@ complexity_correct = {
     "advanced": 0
 }
 
+# In agent_recruitment.py
+# Reset counters at the beginning of each run
+def reset_complexity_metrics():
+    global complexity_counts, complexity_correct
+    complexity_counts = {"basic": 0, "intermediate": 0, "advanced": 0}
+    complexity_correct = {"basic": 0, "intermediate": 0, "advanced": 0}
+
 def determine_complexity(question, method="adaptive"):
     """
     Determine the complexity of a question to decide on team structure.
@@ -41,7 +48,7 @@ def determine_complexity(question, method="adaptive"):
     """
     global complexity_counts
     
-    if method in ["basic", "intermediate", "advanced"]:
+    if method != "adaptive":
         complexity = method
     else:
         # For adaptive method, try evaluation with error handling
@@ -104,6 +111,7 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
+
     if complexity == "basic":
         return recruit_basic_team(question, recruitment_pool)
     elif complexity == "intermediate":

@@ -1,0 +1,62 @@
+{
+  "question": "A 30-year-old African-American woman comes to the physician for a routine checkup. She feels well. She has a history of type 2 diabetes mellitus that is well-controlled with metformin. Her mother died of a progressive lung disease at the age of 50 years. The patient is sexually active with her husband, and they use condoms consistently. She has smoked one pack of cigarettes daily for the past 10 years. She drinks one to two glasses of wine per day. She does not use illicit drugs. Vital signs are within normal limits. Examination, including ophthalmologic evaluation, shows no abnormalities. Laboratory studies, including serum creatinine and calcium concentrations, are within normal limits. An ECG shows no abnormalities. A tuberculin skin test is negative. A chest x-ray is shown. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. ANCA testing",
+    "B. Oral methotrexate therapy",
+    "C. Monitoring",
+    "D. Oral isoniazid monotherapy"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "weighted_votes": {
+        "C": 0.2
+      },
+      "agent_weights": {
+        "Pulmonologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 2,
+        "B": 0,
+        "C": 3,
+        "D": 1
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

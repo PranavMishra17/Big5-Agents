@@ -1,0 +1,62 @@
+{
+  "question": "A 4-year-old male is brought into your office because his mother states he has been fatigued. He has not been acting like himself and has been getting tired easily while running around and playing with other children. As of last week, he has also been complaining of being short of breath. His vitals are temperature 98.6 deg F (37.2 deg C), blood pressure 100/75 mmHg, pulse 98/min, and respirations 22/min. On exam, the patient is short of breath, and there is a holosystolic murmur with an appreciable thrill along the left sternal border. There are no other noticeable abnormalities, and the mother states that the child's prenatal course along with genetic testing was normal. What is the most likely diagnosis?",
+  "options": [
+    "A. Tetrology of Fallot",
+    "B. Patent ductus arteriosus (PDA)",
+    "C. Ventricular septal defect (VSD)",
+    "D. Atrial septal defect (ASD)"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "weighted_votes": {
+        "C": 0.2
+      },
+      "agent_weights": {
+        "Pediatric Cardiologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 2,
+        "B": 1,
+        "C": 3,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

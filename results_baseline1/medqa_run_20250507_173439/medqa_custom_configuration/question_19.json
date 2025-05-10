@@ -1,0 +1,66 @@
+{
+  "question": "A 56-year-old man presents to his primary care provider because of a lack of flexibility in his right hand. He has noticed that his hand has become less flexible and more fixed over the past year and he now has trouble shaking other people\u2019s hands comfortably. He has a history of chronic alcohol abuse, hepatitis C, and cirrhosis. His family history is insignificant. He has a 40 pack-year smoking history. At the physician\u2019s office, his blood pressure is 118/67 mm Hg, the respirations are 18/min, the pulse is 77/min, and the temperature is 36.7\u00b0C (98.0\u00b0F). On physical examination, the 4th and 5th digits are mildly flexed with dense, rope-like cords extending down his palm. Additionally, small ulcerations are identified on his palm. Which of the following is considered the first-line therapy for this condition?",
+  "options": [
+    "A. Surgery",
+    "B. Colchicine",
+    "C. Steroid injections",
+    "D. Collagenase injections"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Orthopedic Surgeon": 0.3,
+        "Rheumatologist": 0.25,
+        "Hepatologist": 0.15,
+        "Dermatologist": 0.15,
+        "Addiction Medicine Specialist": 0.15
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

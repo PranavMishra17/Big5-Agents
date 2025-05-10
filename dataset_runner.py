@@ -206,6 +206,9 @@ def run_questions_with_configuration(
     config_name = configuration.get("name", "unknown")
     logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
     
+    from components import agent_recruitment
+    agent_recruitment.reset_complexity_metrics()
+
     # Setup output directory
     run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
     if run_output_dir:
@@ -405,14 +408,7 @@ def run_questions_with_configuration(
             count = results["complexity_metrics"]["counts"].get(level, 0)
             correct = results["complexity_metrics"]["correct"].get(level, 0)
             results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
-        
-        # Print complexity metrics
-        print("\nComplexity Distribution:")
-        for level in ["basic", "intermediate", "advanced"]:
-            count = results["complexity_metrics"]["counts"].get(level, 0)
-            correct = results["complexity_metrics"]["correct"].get(level, 0)
-            accuracy = results["complexity_metrics"]["accuracy"].get(level, 0.0)
-            print(f"  {level.title()}: {correct}/{count} correct ({accuracy:.2%})")
+
         
     return results
 
@@ -457,6 +453,8 @@ def run_dataset(
     Returns:
         Results dictionary
     """
+
+
     # Load the dataset
     if dataset_type == "medqa":
         questions = load_medqa_dataset(num_questions, random_seed)
@@ -707,6 +705,16 @@ def main():
             if "accuracy" in stats:
                 print(f"  {method.replace('_', ' ').title()}: {stats['accuracy']:.2%} accuracy")
 
+
+    # Print complexity metrics just once
+    if "complexity_metrics" in results:
+        print("\nComplexity Distribution:")
+        for level in ["basic", "intermediate", "advanced"]:
+            count = results["complexity_metrics"]["counts"].get(level, 0)
+            correct = results["complexity_metrics"]["correct"].get(level, 0)
+            accuracy = correct / count if count > 0 else 0.0
+            print(f"  {level.title()}: {correct}/{count} correct ({accuracy:.2%})")
+
 if __name__ == "__main__":
     main()
 
@@ -723,3 +731,54 @@ if __name__ == "__main__":
 # python dataset_runner.py --dataset medqa --output-dir ./medqa_results --seed 123 --num-questions 50 --leadership --closedloop --mutual --mental --all
 
 # python dataset_runner.py --dataset medqa --output-dir ./medqa_results_rq --seed 123 --num-questions 5 --leadership --closedloop --mutual --mental --all --recruitment --recruitment-method adaptive --recruitment-pool medical
+
+
+"""
+
+Seed- 100, 200, 333
+
+Single Agent ~ 10 mins run time
+basic 1: python dataset_runner.py --dataset medqa --output-dir ./results_basic1 --seed 100 --num-questions 25 --recruitment --recruitment-method basic
+basic 2: python dataset_runner.py --dataset medqa --output-dir ./results_basic2 --seed 200 --num-questions 25 --recruitment --recruitment-method basic
+basic 3: python dataset_runner.py --dataset medqa --output-dir ./results_basic3 --seed 333 --num-questions 25 --recruitment --recruitment-method basic
+
+
+Multi Agent ~ 30 mins run time
+baseline 1: python dataset_runner.py --dataset medqa --output-dir ./results_baseline1 --seed 100 --num-questions 25 --recruitment
+baseline 2: python dataset_runner.py --dataset medqa --output-dir ./results_baseline2 --seed 200 --num-questions 25 --recruitment
+baseline 3: python dataset_runner.py --dataset medqa --output-dir ./results_baseline3 --seed 333 --num-questions 25 --recruitment
+
+
+ABLATION STUDY ~ 40-50 mins run time
+leadership 1: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_leadership --seed 100 --num-questions 25 --recruitment --leadership 
+leadership 2: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_leadership2 --seed 200 --num-questions 25 --recruitment --leadership
+leadership 3: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_leadership3 --seed 333 --num-questions 25 --recruitment --leadership
+
+Trust 1: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_trust1 --seed 100 --num-questions 25 --recruitment --trust
+Trust 2: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_trust2 --seed 200 --num-questions 25 --recruitment --trust
+Trust 3: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_trust3 --seed 333 --num-questions 25 --recruitment --trust
+
+Closed-Loop 1: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_loop1 --seed 100 --num-questions 25 --recruitment --closedloop
+Closed-Loop 2: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_loop2 --seed 200 --num-questions 25 --recruitment --closedloop
+Closed-Loop 3: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_loop3 --seed 333 --num-questions 25 --recruitment --closedloop
+
+Mutual-Montioring 1: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_moniter1 --seed 100 --num-questions 25 --recruitment --mutual
+Mutual-Montioring 2: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_moniter2 --seed 200 --num-questions 25 --recruitment --mutual
+Mutual-Montioring 3: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_moniter3 --seed 333 --num-questions 25 --recruitment --mutual
+
+mental model 1: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_mental1 --seed 100 --num-questions 25 --recruitment --mental
+mental model 2: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_mental2 --seed 200 --num-questions 25 --recruitment --mental
+mental model 3: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_mental3 --seed 333 --num-questions 25 --recruitment --mental
+
+Orientation 1: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_orientation1 --seed 100 --num-questions 25 --recruitment --orientation
+Orientation 2: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_orientation2 --seed 200 --num-questions 25 --recruitment --orientation
+Orientation 3: python dataset_runner.py --dataset medqa --output-dir ./results_ablation_orientation3 --seed 333 --num-questions 25 --recruitment --orientation
+
+
+
+COMBINED ~ 80 mins run time
+all 1: python dataset_runner.py --dataset medqa --output-dir ./results_combined1 --seed 100 --num-questions 25 --recruitment --leadership --closedloop --mutual --mental --orientation --trust
+all 2: python dataset_runner.py --dataset medqa --output-dir ./results_combined2 --seed 200 --num-questions 25 --recruitment --leadership --closedloop --mutual --mental --orientation --trust
+all 3: python dataset_runner.py --dataset medqa --output-dir ./results_combined3 --seed 333 --num-questions 25 --recruitment --leadership --closedloop --mutual --mental --orientation --trust
+
+"""

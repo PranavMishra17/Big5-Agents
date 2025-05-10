@@ -1,0 +1,62 @@
+{
+  "question": "A 66-year-old woman is brought to the emergency department 4 hours after falling and hitting her head while skiing. Initially, she refused treatment, but an hour ago she began to develop a severe headache, nausea, and right leg weakness. She has osteopenia. Her only medication is a daily multivitamin. She has no visual changes and is oriented to person, time, and place. Her temperature is 37.2\u00b0C (99\u00b0F), pulse is 72/min, respirations are 18/min and regular, and blood pressure is 128/75 mm Hg. Examination shows a 5-cm bruise on the left side of her skull. The pupils are equal, round, and reactive to light and accommodation. Muscle strength is 0/5 in her right knee and foot. Which of the following is the most likely cause of this patient's symptoms?",
+  "options": [
+    "A. Tonsillar herniation",
+    "B. Uncal herniation",
+    "C. Subfalcine herniation",
+    "D. Extracranial herniation"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "weighted_votes": {
+        "C": 0.2
+      },
+      "agent_weights": {
+        "Neurologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 3,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

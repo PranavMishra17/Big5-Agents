@@ -1,0 +1,96 @@
+{
+  "question": "A 4-year-old boy is brought to the physician because of a progressive headache and neck pain for 2 weeks. During this period, he has had multiple episodes of dizziness and tingling sensations in his arms and hands. A year ago, he underwent closed reduction of a dislocated shoulder that he suffered after a fall. He underwent surgical removal of a sac-like protuberance on his lower back, soon after being born. His temperature is 36.7\u00b0C (98\u00b0F), pulse is 80/min, and blood pressure is 100/80 mm Hg. His neck is supple. Neurological examination shows sensorineural hearing loss bilaterally and normal gross motor function. Fundoscopy reveals bilateral optic disk swelling. An MRI of the brain is shown. Which of the following is the most likely cause of this patient's symptoms?",
+  "options": [
+    "A. Medulloblastoma",
+    "B. Intraventricular hemorrhage",
+    "C. Chiari II malformation",
+    "D. Vestibular schwannoma"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 3
+      },
+      "weighted_votes": {
+        "C": 0.78
+      },
+      "agent_weights": {
+        "3_Final Review and Decision Team_Senior Consultant": 0.26,
+        "3_Final Review and Decision Team_Evidence-Based Medicine Specialist": 0.26,
+        "3_Final Review and Decision Team_Clinical Decision Maker": 0.26
+      },
+      "total_weight": 0.78,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 9,
+        "D": 0
+      },
+      "total_possible_score": 9.0,
+      "confidence": 1.0
+    },
+    "mdt_process": {
+      "team_decisions": {
+        "1_Initial Assessment Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "2_Domain Specialist Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "3_Final Review and Decision Team": {
+          "method": "majority_voting",
+          "winning_option": "C",
+          "vote_counts": {
+            "C": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        }
+      },
+      "decision_team": "3_Final Review and Decision Team"
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

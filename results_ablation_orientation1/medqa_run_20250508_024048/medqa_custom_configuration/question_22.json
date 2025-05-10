@@ -1,0 +1,66 @@
+{
+  "question": "A 50-year-old man presents to the emergency department with chief complaints of abdominal pain, distension, and bloody diarrhea for a day. Abdominal pain was episodic in nature and limited to the left lower quadrant. It was also associated with nausea and vomiting. He also has a history of postprandial abdominal pain for several months. He had an acute myocardial infarction which was treated with thrombolytics 3 months ago. He is a chronic smoker and has been diagnosed with diabetes mellitus for 10 years. On physical examination, the patient is ill-looking with a blood pressure of 90/60 mm Hg, pulse 100/min, respiratory rate of 22/min, temperature of 38.0\u00b0C (100.5\u00b0F) with oxygen saturation of 98% in room air. The abdomen is tender on palpation and distended. Rectal examination demonstrates bright red color stool. Leukocyte count is 14,000/mm3. Other biochemical tests were within normal ranges. Abdominal X-ray did not detect pneumoperitoneum or air-fluid level. The recent use of antibiotics was denied by the patient and stool culture was negative for C. difficile. Contrast-enhanced CT scan revealed segmental colitis involving the distal transverse colon. What is the most likely cause of the patient\u2019s symptoms?",
+  "options": [
+    "A. Hypokalemia",
+    "B. Aneurysm",
+    "C. Embolism",
+    "D. Atherosclerosis"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Gastroenterologist": 0.3,
+        "Cardiologist": 0.25,
+        "Radiologist": 0.2,
+        "Endocrinologist": 0.15,
+        "Infectious Disease Specialist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

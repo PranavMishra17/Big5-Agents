@@ -1,0 +1,62 @@
+{
+  "question": "A 70-year-old man comes to the physician for the evaluation of an 8-week history of blood in his stool. Two months ago, he had an episode of bronchitis and was treated with amoxicillin. Since then, he has noticed blood in his stool and on the toilet paper occasionally. The patient has had intermittent constipation for the past 5 years. Six months ago, he had severe left lower quadrant pain and fever that resolved with antibiotic therapy. He underwent a colonoscopy 3 years ago, which did not show any evidence of malignancy. He takes levothyroxine for hypothyroidism. He had smoked one pack of cigarettes daily for 45 years, but quit smoking 10 years ago. He drinks one glass of red wine every night. He appears pale. He is 180 cm (5 ft 11 in) tall and weighs 98 kg (216 lb); BMI is 32 kg/m2. His temperature is 36\u00b0C (96.8\u00b0F), pulse is 85/min, and blood pressure is 135/80 mm Hg. Physical examination shows pale conjunctivae. Cardiopulmonary examination shows no abnormalities. The abdomen is soft and nontender with no organomegaly. Digital rectal examination shows no masses. Test of the stool for occult blood is positive. Laboratory studies show:\nHemoglobin 11 g/dL\nMean corpuscular volume 76 \u03bcm3\nRed cell distribution width 17% (N = 13\u201315)\nLeukocyte count 5,000/mm3\nWhich of the following is the most likely diagnosis?\"",
+  "options": [
+    "A. Colorectal carcinoma",
+    "B. Diverticulosis",
+    "C. Hemorrhoids",
+    "D. Pseudomembranous colitis\n\""
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 1
+      },
+      "weighted_votes": {
+        "B": 0.2
+      },
+      "agent_weights": {
+        "Gastroenterologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 2,
+        "B": 3,
+        "C": 1,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

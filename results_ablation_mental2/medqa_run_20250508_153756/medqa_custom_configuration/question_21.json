@@ -1,0 +1,66 @@
+{
+  "question": "An investigator is attempting to assess the glomerular filtration rate (GFR) of a healthy adult volunteer. The volunteer's inulin clearance is evaluated under continuous inulin infusion and urine collection and compared to the creatinine clearance. It is found that the estimated GFR based on the volunteer's creatinine clearance is 129 mL/min and the estimated GFR calculated using the inulin clearance is 122 mL/min. Which of the following is the best explanation for the difference in these measurements?",
+  "options": [
+    "A. Creatinine is not freely filtered",
+    "B. Inulin is not freely filtered",
+    "C. Creatinine is passively reabsorbed",
+    "D. Creatinine is actively secreted"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Nephrologist": 0.3,
+        "Clinical Pharmacologist": 0.25,
+        "Biochemist": 0.2,
+        "Medical Physiologist": 0.15,
+        "Laboratory Medicine Specialist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

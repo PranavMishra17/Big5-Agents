@@ -1,0 +1,66 @@
+{
+  "question": "A 3-month-old infant is brought to her pediatrician for a well-child visit. The infant was born to a 22-year-old mother via a spontaneous vaginal delivery at 38 weeks of gestation in her home. She moved to the United States approximately 3 weeks ago from a small village. She reports that her infant had 2 episodes of non-bloody and non-bilious vomiting. The infant's medical history includes eczema and 2 seizure episodes that resolved with benzodiazepines in the emergency department. Physical examination is notable for a musty body odor, eczema, and a fair skin complexion. Which of the following is the best next step in management?",
+  "options": [
+    "A. Abdominal radiography",
+    "B. Dermatology consult",
+    "C. Dietary restriction",
+    "D. MRI of the brain"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 1.0
+      },
+      "agent_weights": {
+        "Pediatrician": 0.25,
+        "Medical Geneticist": 0.25,
+        "Metabolic Specialist": 0.2,
+        "Neurologist": 0.15,
+        "Dermatologist": 0.15
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

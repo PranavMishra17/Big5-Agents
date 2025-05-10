@@ -1,0 +1,96 @@
+{
+  "question": "A 34-year-old woman comes to the emergency department because of a 2-hour history of abdominal pain, nausea, and vomiting that began an hour after she finished lunch. Examination shows abdominal guarding and rigidity; bowel sounds are reduced. Magnetic resonance cholangiopancreatography shows the dorsal pancreatic duct draining into the minor papilla and a separate smaller duct draining into the major papilla. The spleen is located anterior to the left kidney. A disruption of which of the following embryological processes is the most likely cause of this patient's imaging findings?",
+  "options": [
+    "A. Fusion of the pancreatic buds",
+    "B. Rotation of the midgut",
+    "C. Proliferation of mesenchyme in the dorsal mesentery",
+    "D. Differentiation of the proximal hepatic diverticulum"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3
+      },
+      "total_votes": 3,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 3
+      },
+      "weighted_votes": {
+        "A": 0.78
+      },
+      "agent_weights": {
+        "3_Final Review and Decision Team_Medical Geneticist": 0.26,
+        "3_Final Review and Decision Team_Pain Management Specialist": 0.26,
+        "3_Final Review and Decision Team_Nutritionist": 0.26
+      },
+      "total_weight": 0.78,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 9,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 9.0,
+      "confidence": 1.0
+    },
+    "mdt_process": {
+      "team_decisions": {
+        "1_Initial Assessment Team": {
+          "method": "majority_voting",
+          "winning_option": "A",
+          "vote_counts": {
+            "A": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "2_Diagnostic Evidence Team": {
+          "method": "majority_voting",
+          "winning_option": "A",
+          "vote_counts": {
+            "A": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        },
+        "3_Final Review and Decision Team": {
+          "method": "majority_voting",
+          "winning_option": "A",
+          "vote_counts": {
+            "A": 3
+          },
+          "total_votes": 3,
+          "confidence": 1.0
+        }
+      },
+      "decision_team": "3_Final Review and Decision Team"
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

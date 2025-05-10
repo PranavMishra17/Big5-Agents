@@ -1,0 +1,66 @@
+{
+  "question": "A 3-year-old boy is brought to the physician because of a 5-day history of yellowing of his eyes and skin. He has had generalized fatigue and mild shortness of breath over the past 2 months. Examination shows pale conjunctivae and scleral jaundice. The spleen is palpated 4 cm below the left costal margin. Laboratory studies show a hemoglobin concentration of 8.5 g/dL and a mean corpuscular volume of 76 \u03bcm3. A peripheral blood smear shows round erythrocytes that lack central pallor. Which of the following is the most likely cause of the splenomegaly seen in this child?",
+  "options": [
+    "A. Reticuloendothelial hyperplasia",
+    "B. Metabolite accumulation",
+    "C. Work hypertrophy",
+    "D. Extramedullary hematopoiesis"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 0.9
+      },
+      "agent_weights": {
+        "Pediatric Hematologist": 0.2,
+        "Medical Geneticist": 0.25,
+        "Pediatric Gastroenterologist": 0.2,
+        "Clinical Pathologist": 0.15,
+        "Pediatrician": 0.1
+      },
+      "total_weight": 0.9,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "question": "A 26-year-old woman comes to the emergency department 30 minutes after she was bitten by her neighbor's cat. She has no history of serious illness and takes no medications. She received all recommended immunizations during childhood but has not received any since then. Vital signs are within normal limits. Physical examination shows four puncture wounds on the thenar eminence of the right hand. There is mild swelling but no erythema. There is normal range of motion of her right thumb and wrist. The wound is cleaned with povidone iodine and irrigated with saline. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. Obtain a wound culture",
+    "B. Administer oral amoxicillin-clavulanate",
+    "C. Close the wound surgically",
+    "D. Close the wound with cyanoacrylate tissue adhesive"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 1
+      },
+      "weighted_votes": {
+        "B": 0.2
+      },
+      "agent_weights": {
+        "Infectious Disease Specialist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 2,
+        "B": 3,
+        "C": 1,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

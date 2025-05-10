@@ -1,0 +1,66 @@
+{
+  "question": "A 28-year-old woman is brought to the emergency department by a friend after fainting at work and hitting her head. She is conscious, alert, and in pain as she sustained a deep laceration above her right orbit. When asked about prior fainting episodes, she says that she has had them since childhood, but she felt it was \"nothing serious\". She also says she has frequent palpitations, shortness of breath, nausea, and, at times, chest pain and attributes this to \"working too hard.\" Her pulse is 110/min, respirations are 20/min, temperature is 37.4\u00b0C (99.3\u00b0F), and blood pressure is 110/78 mm Hg. Physical examination shows tachycardia and mild hypotension. The patient's electrocardiogram is obtained. Which of the following drugs is the preferable choice for first line treatment of the patient's condition?",
+  "options": [
+    "A. Calcium gluconate",
+    "B. Flecainide",
+    "C. Magnesium sulfate",
+    "D. Procainamide"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Cardiologist": 0.3,
+        "Emergency Medicine Specialist": 0.25,
+        "Neurologist": 0.2,
+        "Endocrinologist": 0.15,
+        "Medical Geneticist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 1.0
+    }
+  }
+}

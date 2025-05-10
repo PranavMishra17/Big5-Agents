@@ -1,0 +1,66 @@
+{
+  "question": "A 21-year-old woman is diagnosed with a rare subtype of anti-NMDA encephalitis. During the diagnostic workup, she was found to have an ovarian teratoma. Her physician is curious about the association between anti-NMDA encephalitis and ovarian teratomas. A causal relationship between this subtype of anti-NMDA encephalitis and ovarian teratomas is suspected. The physician aims to identify patients with anti-NMDA encephalitis and subsequently evaluate them for the presence of ovarian teratomas. Which type of study design would be the most appropriate?",
+  "options": [
+    "A. Case series",
+    "B. Case-control study",
+    "C. Randomized controlled trial",
+    "D. Retrospective cohort study"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "weighted_votes": {
+        "B": 1.0
+      },
+      "agent_weights": {
+        "Neurologist": 0.3,
+        "Gynecologist": 0.25,
+        "Immunologist": 0.2,
+        "Pathologist": 0.15,
+        "Epidemiologist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 15,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

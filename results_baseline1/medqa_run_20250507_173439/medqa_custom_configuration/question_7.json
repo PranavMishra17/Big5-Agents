@@ -1,0 +1,66 @@
+{
+  "question": "A 37-year-old man is brought to the emergency department following a motor vehicle collision. His temperature is 38.1\u00b0C (100.6\u00b0F), pulse is 39/min, respirations are 29/min, and blood pressure is 58/42 mm Hg. There is no improvement in his blood pressure despite adequate fluid resuscitation. A drug is administered that causes increased IP3 concentrations in arteriolar smooth muscle cells and increased cAMP concentrations in cardiac myocytes. This drug only has a negligible effect on cAMP concentration in bronchial smooth muscle cells. Which of the following sets of cardiovascular changes is most likely following administration of this drug?\n $$$ Cardiac output %%% Mean arterial pressure %%% Systemic vascular resistance $$$",
+  "options": [
+    "A. No change \u2191 \u2191",
+    "B. \u2191 \u2191 \u2193",
+    "C. \u2193 \u2193 \u2191",
+    "D. \u2191 \u2193 \u2193"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "weighted_votes": {
+        "B": 1.0
+      },
+      "agent_weights": {
+        "Cardiologist": 0.3,
+        "Pharmacologist": 0.25,
+        "Critical Care Specialist": 0.2,
+        "Vascular Surgeon": 0.15,
+        "Emergency Medicine Physician": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 15,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 1.0
+    }
+  }
+}

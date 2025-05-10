@@ -1,0 +1,66 @@
+{
+  "question": "A 7-year-old boy is brought to the emergency department by his parents for worsening symptoms. The patient recently saw his pediatrician for an acute episode of sinusitis. At the time, the pediatrician prescribed decongestants and sent the patient home. Since then, the patient has developed a nasal discharge with worsening pain. The patient has a past medical history of asthma which is well controlled with albuterol. His temperature is 99.5\u00b0F (37.5\u00b0C), blood pressure is 90/48 mmHg, pulse is 124/min, respirations are 17/min, and oxygen saturation is 98% on room air. On physical exam, you note a healthy young boy. Cardiopulmonary exam is within normal limits. Inspection of the patient's nose reveals a unilateral purulent discharge mixed with blood. The rest of the patient's exam is within normal limits. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Foreign body obstruction",
+    "B. Nasopharyngeal carcinoma",
+    "C. Septal perforation",
+    "D. Sinusitis with bacterial superinfection"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 0.95
+      },
+      "agent_weights": {
+        "Pediatrician": 0.2,
+        "Otolaryngologist (ENT Specialist)": 0.3,
+        "Infectious Disease Specialist": 0.2,
+        "Allergist/Immunologist": 0.15,
+        "Radiologist": 0.1
+      },
+      "total_weight": 0.95,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

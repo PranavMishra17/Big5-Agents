@@ -1,0 +1,66 @@
+{
+  "question": "A 32-year-old man presents to the physician for a check-up as part of his immigration application. On auscultation, there is a mild rumble heard at the cardiac apex preceded by an opening snap. His blood pressure is 132/76 and heart rate is 78/min. The patient suffers from occasional asthma attacks but has noticed that he cannot hold his breath on exertion over the past 2 years. He is otherwise healthy. He does not recall if he had any serious infections during childhood, and there is no family history of congenital diseases. Which of the following could have been used to prevent the development of this condition?",
+  "options": [
+    "A. Penicillin",
+    "B. Sulfasalazine",
+    "C. Indomethacin",
+    "D. PGE1 infusion"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Cardiologist": 0.3,
+        "Infectious Disease Specialist": 0.25,
+        "Pediatrician": 0.2,
+        "Pulmonologist": 0.15,
+        "Epidemiologist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

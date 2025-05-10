@@ -1,0 +1,62 @@
+{
+  "question": "A 29-year-old man is brought to the emergency department 20 minutes after sustaining a gunshot wound to the abdomen. On arrival, he is awake and oriented to person, place, and time. He appears agitated. His pulse is 102/min, respirations are 20/min, and blood pressure is 115/70 mm Hg. The pupils are equal and reactive to light. Abdominal examination shows an entrance wound in the right upper quadrant above the umbilicus. There is an exit wound on the right lower back next to the lumbar spine. Breath sounds are normal bilaterally. There is diffuse mild tenderness to palpation with no guarding or rebound. Cardiac examination shows no abnormalities. Intravenous fluid therapy is begun. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. CT scan of the abdomen",
+    "B. Close observation",
+    "C. Diagnostic laparoscopy",
+    "D. Immediate laparotomy"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "weighted_votes": {
+        "D": 0.2
+      },
+      "agent_weights": {
+        "Trauma Surgeon": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 2,
+        "B": 0,
+        "C": 1,
+        "D": 3
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 1.0
+    }
+  }
+}

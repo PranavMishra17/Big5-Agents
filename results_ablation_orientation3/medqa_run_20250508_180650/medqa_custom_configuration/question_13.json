@@ -1,0 +1,66 @@
+{
+  "question": "A 14-year-old male is brought to your psychiatric clinic after he was caught stealing his peers\u2019 belongings multiple times by his teacher. He is a straight-A student with many friends and is an outstanding football player. He describes his family as very loving and gets along with his older siblings. He also states that he has no ill will towards anyone he stole from in class. Although never caught, he admits that he would often steal things in stores or locker rooms when no one was looking in order to satisfy an intense impulse. Which of the following is the best diagnosis for this patient?",
+  "options": [
+    "A. Manic episode",
+    "B. Conduct disorder",
+    "C. Kleptomania",
+    "D. Schizophrenia"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 1.0
+      },
+      "agent_weights": {
+        "Child and Adolescent Psychiatrist": 0.3,
+        "Clinical Psychologist": 0.25,
+        "Behavioral Neurologist": 0.2,
+        "Social Worker (with expertise in Child and Family Dynamics)": 0.15,
+        "Pediatrician": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

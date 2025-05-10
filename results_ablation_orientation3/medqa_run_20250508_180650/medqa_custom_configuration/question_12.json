@@ -1,0 +1,66 @@
+{
+  "question": "A 29-year-old nulligravid woman comes to the physician because of a 10-day history of small quantities of intermittent, blood-tinged discharge from her left nipple. There is no personal or family history of serious illness. She has smoked 1 pack of cigarettes daily for 5 years. Her last menstrual period was 12 days ago. She is sexually active and uses condoms inconsistently. Physical examination shows scant serosanguinous fluid expressible from the left nipple. There is no palpable breast mass or axillary lymphadenopathy. Examination shows no other abnormalities. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. Subareolar ultrasound",
+    "B. Image-guided core biopsy of the affected duct",
+    "C. Nipple discharge cytology",
+    "D. Reassurance"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Breast Surgeon": 0.3,
+        "Radiologist": 0.25,
+        "Endocrinologist": 0.2,
+        "Pathologist": 0.15,
+        "Primary Care Physician": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

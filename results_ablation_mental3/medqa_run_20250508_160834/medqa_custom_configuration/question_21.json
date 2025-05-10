@@ -1,0 +1,66 @@
+{
+  "question": "A 72-year-old man comes to the physician for medical clearance for a molar extraction. He feels well. He reports he is able to climb 3 flights of stairs without experiencing any shortness of breath. He has hypertension, type 2 diabetes mellitus, and ischemic heart disease. He underwent an aortic valve replacement for severe aortic stenosis last year. 12 years ago, he underwent a cardiac angioplasty and had 2 stents placed. Current medications include aspirin, warfarin, lisinopril, metformin, sitagliptin, and simvastatin. His temperature is 37.1\u00b0C (98.8\u00b0F), pulse is 92/min, and blood pressure is 136/82 mm Hg. A systolic ejection click is heard at the right second intercostal space. Which of the following is the most appropriate next step in management?",
+  "options": [
+    "A. Administer oral amoxicillin 1 hour before the procedure",
+    "B. Obtain echocardiography prior to procedure",
+    "C. Avoid nitrous oxide during the procedure",
+    "D. Discontinue aspirin and warfarin 72 hours prior to procedure"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Cardiologist": 0.3,
+        "Hematologist": 0.25,
+        "Endocrinologist": 0.2,
+        "Anesthesiologist": 0.15,
+        "Dentist/Oral Surgeon": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

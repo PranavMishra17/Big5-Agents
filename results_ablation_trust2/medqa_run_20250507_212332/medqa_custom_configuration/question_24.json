@@ -1,0 +1,66 @@
+{
+  "question": "A 65-year-old woman arrives for her annual physical. She has no specific complaints. She has seasonal allergies and takes loratadine. She had a cholecystectomy 15 years ago. Her last menstrual period was 9 years ago. Both her mother and her maternal aunt had breast cancer. A physical examination is unremarkable. The patient is given the pneumococcal conjugate vaccine and the shingles vaccine. A dual-energy x-ray absorptiometry (DEXA) scan is obtained. Her T-score is -2.6. She is prescribed a new medication. The next month the patient returns to her primary care physician complaining of hot flashes. Which of the following is the most likely medication the patient was prescribed?",
+  "options": [
+    "A. Alendronate",
+    "B. Denosumab",
+    "C. Raloxifene",
+    "D. Zoledronic acid"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 1.0
+      },
+      "agent_weights": {
+        "Endocrinologist": 0.3,
+        "Pharmacologist": 0.25,
+        "Gynecologist": 0.2,
+        "Oncologist": 0.15,
+        "Primary Care Physician": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

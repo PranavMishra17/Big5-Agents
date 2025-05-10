@@ -1,0 +1,66 @@
+{
+  "question": "A 34-year-old woman presents with recurrent panic attacks that have been worsening over the past 5 weeks. She also says she has been seeing things that are not present in reality and is significantly bothered by a short attention span which has badly affected her job in the past 6 months. No significant past medical history. No current medications. The patient is afebrile and vital signs are within normal limits. Her BMI is 34 kg/m2. Physical examination is unremarkable. The patient has prescribed antipsychotic medication. She expresses concerns about any effects of the new medication on her weight. Which of the following medications would be the best course of treatment in this patient?",
+  "options": [
+    "A. Ziprasidone",
+    "B. Clozapine",
+    "C. Clonazepam",
+    "D. Chlorpromazine"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Psychiatrist": 0.4,
+        "Pharmacologist": 0.25,
+        "Endocrinologist": 0.15,
+        "Clinical Psychologist": 0.1,
+        "Nutritionist/Dietitian": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

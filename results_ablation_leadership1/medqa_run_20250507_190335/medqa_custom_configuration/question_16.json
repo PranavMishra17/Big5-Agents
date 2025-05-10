@@ -1,0 +1,66 @@
+{
+  "question": "A 16-year-old boy presents to his pediatrician because he has noticed white plaques forming on his tongue over the last 5 days. He recently returned from a boy scout trip where he traveled across the country and hiked through the woods. His past medical history is significant for asthma for which he uses an inhaler as needed. He says that during the trip he felt short of breath several times and had to use the inhaler. He also says that several of his friends appeared to get sick on the same trip and were coughing a lot. He has not experienced any other symptoms since returning from the trip. On presentation, he is found to have white plaques on the tongue that can be scraped off. Which of the following is a characteristic of the most likely cause of this patient's disease?",
+  "options": [
+    "A. Acute angle branching",
+    "B. Broad-based budding",
+    "C. Germ tube formation",
+    "D. Virus"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 0.9
+      },
+      "agent_weights": {
+        "Pediatrician": 0.2,
+        "Infectious Disease Specialist": 0.25,
+        "Pulmonologist": 0.2,
+        "Oral Pathologist": 0.15,
+        "Pharmacologist": 0.1
+      },
+      "total_weight": 0.9,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "question": "A 26-year-old woman presents to a physician for genetic counseling, because she is worried about trying to have a child. Specifically, she had 2 siblings that died young from a lysosomal storage disorder and is afraid that her own children will have the same disorder. Her background is Ashkenazi Jewish, but she says that her husband's background is mixed European heritage. Her physician says that since her partner is not of Jewish background, their chance of having a child with Niemann-Pick disease is dramatically decreased. Which of the following genetic principles best explains why there is an increased prevalence of this disease in some populations?",
+  "options": [
+    "A. Founder effect",
+    "B. Gene flow",
+    "C. Imprinting",
+    "D. Natural selection"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 5
+      },
+      "weighted_votes": {
+        "A": 1.0
+      },
+      "agent_weights": {
+        "Medical Geneticist": 0.3,
+        "Genetic Counselor": 0.25,
+        "Population Geneticist": 0.2,
+        "Biochemist": 0.15,
+        "Epidemiologist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 15,
+        "B": 0,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

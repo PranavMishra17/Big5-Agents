@@ -1,0 +1,17 @@
+{
+  "majority_voting": {
+    "correct": 19,
+    "total": 22,
+    "accuracy": 0.8636363636363636
+  },
+  "weighted_voting": {
+    "correct": 19,
+    "total": 22,
+    "accuracy": 0.8636363636363636
+  },
+  "borda_count": {
+    "correct": 19,
+    "total": 22,
+    "accuracy": 0.8636363636363636
+  }
+}

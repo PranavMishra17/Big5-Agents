@@ -1,0 +1,66 @@
+{
+  "question": "A 47-year-old woman presents to her physician for a routine checkup. She is in good health and has no complaints. Past medical history is significant for type 2 diabetes mellitus and obesity. She recently started metformin and is tolerating the mild side effects, but her fasting blood glucose levels range from 160\u2013190 mg/dL. Today, her blood pressure is 125/82 mm Hg, the heart rate is 90/min, the respiratory rate is 17/min, and the temperature is 37.0\u00b0C (98.6\u00b0F). On physical exam, she appears well developed and obese. Her heart has a regular rate and rhythm and his lungs are clear to auscultation bilaterally. Her fasting glucose level is 175 mg/dL and her A1c is 7.1%. Her physician decides to add canagliflozin to her current treatment regimen. Which of the following should be evaluated before starting this medication?",
+  "options": [
+    "A. \u03b3-glutamyltransferase",
+    "B. \u03b2-hCG levels",
+    "C. Alanine aminotransferase",
+    "D. Serum creatinine"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Endocrinologist": 0.3,
+        "Nephrologist": 0.25,
+        "Pharmacologist": 0.2,
+        "Cardiologist": 0.15,
+        "Internal Medicine Specialist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

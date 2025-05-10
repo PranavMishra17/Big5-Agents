@@ -1,0 +1,62 @@
+{
+  "question": "A 48-year-old Caucasian male suffering from ischemic heart disease is placed on a heart transplant list. Months later, he receives a heart from a matched donor. During an endomyocardial biopsy performed 3 weeks later, there is damage consistent with acute graft rejection. What is most likely evident on the endomyocardial biopsy?",
+  "options": [
+    "A. Granuloma",
+    "B. Tissue necrosis",
+    "C. Fibrosis",
+    "D. Lymphocytic infiltrate"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "weighted_votes": {
+        "D": 0.2
+      },
+      "agent_weights": {
+        "Pathologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 2,
+        "C": 1,
+        "D": 3
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

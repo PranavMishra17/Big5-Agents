@@ -1,0 +1,62 @@
+{
+  "question": "A 28-year-old woman is brought to a counselor by her father after he found out that she is being physically abused by her husband. The father reports that she refuses to end the relationship with her husband despite the physical abuse. She says that she feels uneasy when her husband is not around. She adds, \u201cI'm worried that if I leave him, my life will only get worse.\u201d She has never been employed since they got married because she is convinced that nobody would hire her. Her husband takes care of most household errands and pays all of the bills. Physical examination shows several bruises on the thighs and back. Which of the following is the most likely diagnosis?",
+  "options": [
+    "A. Borderline personality disorder",
+    "B. Separation anxiety disorder",
+    "C. Dependent personality disorder",
+    "D. Avoidant personality disorder"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 1
+      },
+      "weighted_votes": {
+        "C": 0.2
+      },
+      "agent_weights": {
+        "Psychiatrist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 3,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

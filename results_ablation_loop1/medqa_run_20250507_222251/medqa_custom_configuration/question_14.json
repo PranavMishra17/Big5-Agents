@@ -1,0 +1,66 @@
+{
+  "question": "A 50-year-old woman presents with a severe headache and vomiting. She says that symptoms onset after attending a wine tasting at the local brewery. She says that her headache is mostly at the back of her head and that she has been nauseous and vomited twice. Past medical history is significant for depression diagnosed 20 years ago but now well-controlled with medication. She also has significant vitamin D deficiency. Current medications are phenelzine and a vitamin D supplement. The patient denies any smoking history, alcohol or recreational drug use. On physical examination, the patient is diaphoretic. Her pupils are dilated. Which of the following is most likely to be elevated in this patient?",
+  "options": [
+    "A. Serum creatinine",
+    "B. Temperature",
+    "C. Creatine phosphokinase",
+    "D. Blood pressure"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Neurologist": 0.3,
+        "Pharmacologist": 0.25,
+        "Toxicologist": 0.2,
+        "Psychiatrist": 0.15,
+        "Emergency Medicine Physician": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

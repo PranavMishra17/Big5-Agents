@@ -1,0 +1,62 @@
+{
+  "question": "A previously healthy 13-year-old boy is brought to the physician because of a lump beneath his right nipple that he discovered 1 week ago while showering. He has allergic rhinitis treated with cetirizine. He is at the 65th percentile for height and 80th percentile for weight. Examination shows a mildly tender, firm, 2-cm subareolar mass in the right breast; there are no nipple or skin changes. The left breast shows no abnormalities. Sexual development is Tanner stage 3. Which of the following is the most likely explanation for this patient's breast lump?",
+  "options": [
+    "A. Leydig cell tumor",
+    "B. Adverse effect of medication",
+    "C. Invasive ductal carcinoma",
+    "D. Normal development"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 1
+      },
+      "weighted_votes": {
+        "D": 0.2
+      },
+      "agent_weights": {
+        "Pediatrician": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 3
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

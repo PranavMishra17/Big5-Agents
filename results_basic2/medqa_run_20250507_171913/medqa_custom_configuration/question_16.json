@@ -1,0 +1,62 @@
+{
+  "question": "A 3-month-old African American infant presents to the hospital with 2 days of fever, \"coke\"-colored urine, and jaundice. The pregnancy was uneventful except the infant was found to have hyperbilirubinemia that was treated with phototherapy. The mother explains that she breastfeeds her child and recently was treated herself for a UTI with trimethoprim-sulfamethoxazole (TMP-SMX). Which of the following diseases is similarly inherited as the disease experienced by the child?",
+  "options": [
+    "A. Marfan syndrome",
+    "B. Sickle cell anemia",
+    "C. Hemophilia A",
+    "D. Beta thalassemia"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 1
+      },
+      "weighted_votes": {
+        "B": 0.2
+      },
+      "agent_weights": {
+        "Hematologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 3,
+        "C": 1,
+        "D": 2
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": false,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": false,
+      "confidence": 1.0
+    }
+  }
+}

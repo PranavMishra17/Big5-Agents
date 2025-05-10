@@ -1,0 +1,66 @@
+{
+  "question": "A 54-year-old woman comes to the physician with abdominal distention and mild diffuse abdominal discomfort. She has not had nausea, vomiting, fever, or chills. She was diagnosed with alcoholic liver cirrhosis 2 years ago. Examination shows a protruding, distended abdomen that is dull to percussion with a positive fluid wave. Ultrasonography shows mild to moderate ascites. Appropriate treatment of the patient's condition is started. Four days later, the patient experiences palpitations and chest pain at home. She is brought to the emergency department, where her temperature is 37.3\u00b0C (99.1\u00b0F), pulse is 182/min, respirations are 18/min, and blood pressure is 82/50 mm Hg. An ECG shows ventricular tachycardia. Initial laboratory studies show:\nSerum\nNa+ 131 mEq/L\nK+ 2.9 mEq/L\nCl- 92 mEq/L\nBicarbonate 34 mEq/L\nUrea nitrogen 42 mg/dL\nCreatinine 4.8 mg/dL\nGlucose 90 mg/dL\nCa2+ 8.1 mg/dL\nMg2+ 1.5 mg/dL\nPhosphate 4.7 mg/dL\nArterial Blood Gas\npH 7.52\npCO2 45 mm Hg\npO2 90.2 mm Hg\nShe is successfully cardioverted to normal sinus rhythm. Which of the following treatments is most likely responsible for this patient's presentation?\"",
+  "options": [
+    "A. Hydrochlorothiazide",
+    "B. Furosemide",
+    "C. Lisinopril",
+    "D. Mannitol"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "weighted_votes": {
+        "B": 1.0
+      },
+      "agent_weights": {
+        "Hepatologist": 0.25,
+        "Cardiologist": 0.2,
+        "Nephrologist": 0.2,
+        "Pharmacologist": 0.2,
+        "Critical Care Specialist": 0.15
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 15,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

@@ -1,0 +1,66 @@
+{
+  "question": "A 44-year-old female patient comes to the physician\u2019s office with her husband with complaints of abdominal pain. For the past 4 months, she has experienced cramping right upper quadrant pain that starts after meals. The physician performs a right upper quadrant ultrasound that shows round echogenic masses in the gallbladder. The physician offers an elective cholecystectomy to the patient to improve her symptoms and explains the procedure in detail to the patient including potential risks and complications. The patient acknowledges and communicates her understanding of her diagnosis as well as the surgery and decides to proceed with the surgery in one month. The patient signs a form indicating her consent to this procedure. Which of the following must also be communicated to the patient at this time?",
+  "options": [
+    "A. A family member must also provide consent for this procedure",
+    "B. The patient must give consent again before the procedure",
+    "C. The patient has the right to revoke her consent at any time before the procedure",
+    "D. The results of the procedure must be disclosed to her husband"
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 0.9
+      },
+      "agent_weights": {
+        "Gastroenterologist": 0.2,
+        "General Surgeon": 0.25,
+        "Radiologist": 0.2,
+        "Anesthesiologist": 0.15,
+        "Medical Ethicist": 0.1
+      },
+      "total_weight": 0.9,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

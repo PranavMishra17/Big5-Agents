@@ -1,0 +1,66 @@
+{
+  "question": "A 29-year-old G1P0 presents to her obstetrician for her first prenatal care visit at 12 weeks gestation by last menstrual period. She states that her breasts are very tender and swollen, and her exercise endurance has declined. She otherwise feels well. She is concerned about preterm birth, as she heard that certain cervical procedures increase the risk. The patient has a gynecologic history of loop electrosurgical excision procedure (LEEP) for cervical dysplasia several years ago and has had negative Pap smears since then. She also has mild intermittent asthma that is well controlled with occasional use of her albuterol inhaler. At this visit, this patient\u2019s temperature is 98.6\u00b0F (37.0\u00b0C), pulse is 69/min, blood pressure is 119/61 mmHg, and respirations are 13/min. Cardiopulmonary exam is unremarkable, and the uterine fundus is just palpable at the pelvic brim. Pelvic exam reveals normal female external genitalia, a closed and slightly soft cervix, a 12-week-size uterus, and no adnexal masses. Which of the following is the best method for evaluating for possible cervical incompetence in this patient?",
+  "options": [
+    "A. Transabdominal ultrasound in the first trimester",
+    "B. Transabdominal ultrasound at 18 weeks gestation",
+    "C. Transvaginal ultrasound in the first trimester",
+    "D. Transvaginal ultrasound at 18 weeks gestation"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Obstetrician": 0.4,
+        "Gynecologist": 0.25,
+        "Maternal-Fetal Medicine Specialist": 0.2,
+        "Radiologist": 0.1,
+        "Pulmonologist": 0.05
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

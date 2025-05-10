@@ -1,0 +1,66 @@
+{
+  "question": "A 23-year-old woman visits her general practitioner with left ear pain and fever. She complains of multiple episodes of respiratory infection including bronchitis, laryngitis, and sinusitis. She was diagnosed with systemic lupus erythematosus with nephritis 8 months ago and was placed on oral prednisone. Currently, she takes prednisone daily. Her vital signs are as follows: blood pressure 130/85 mm Hg, heart rate 79/min, respiratory rate 16/min, and temperature 37.5\u00b0C (99.5\u00b0F). Her weight is 78 kg (172 lb) and height is 169 cm (5 ft 6 in). Physical examination reveals a swollen erythematous left eardrum, erythematous macular rash over sun-exposed skin, and slight calf edema. Inhibition of which of the following pathways causes diminished immune cell activation in this patient?",
+  "options": [
+    "A. Wnt pathway",
+    "B. NF-k\u00df pathways",
+    "C. PI3K/AKT/mTOR pathway",
+    "D. Notch pathway"
+  ],
+  "ground_truth": "B",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "B",
+      "vote_counts": {
+        "B": 5
+      },
+      "weighted_votes": {
+        "B": 1.0
+      },
+      "agent_weights": {
+        "Rheumatologist": 0.3,
+        "Immunologist": 0.25,
+        "Infectious Disease Specialist": 0.2,
+        "Nephrologist": 0.15,
+        "Dermatologist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "B",
+      "borda_scores": {
+        "A": 0,
+        "B": 15,
+        "C": 0,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

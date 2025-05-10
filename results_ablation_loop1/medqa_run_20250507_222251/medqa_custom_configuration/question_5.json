@@ -1,0 +1,66 @@
+{
+  "question": "A 45-year-old man comes to the physician for his routine health maintenance examination. He was diagnosed with diabetes mellitus 4 years ago. His medical history is otherwise unremarkable. He takes no medications other than daily metformin. He has consumed a can of beer every night for the past 10 years. His blood pressure is 145/90 mm Hg. His body mass index is 31 kg/m2. Physical examination shows no abnormalities. Laboratory studies show:\nPartial thromboplastin time (activated) 30 seconds (N=25-40 seconds)\nProthrombin time 13 seconds (N=11-15 seconds)\nInternational normalized ratio 1.2\nSerum albumin 4 g/dL\nBilirubin, total 0.9 mg/dL\nDirect 0.2 mg/dL\nAlkaline phosphatase 45 U/L\nAspartate aminotransferase (AST, GOT) 43 U/L\nAlanine aminotransferase (ALT, GPT) 56 U/L\n\u03b3-Glutamyltransferase (GGT) 43 U/L (N=5-50 U/L)\nHepatitis A antibody Negative\nHepatitis B surface antigen Negative\nHepatitis C antibody Negative\nLiver biopsy shows excessive intracellular fat accumulation, hepatocyte ballooning, and perivenular infiltration of lymphocytes and neutrophils without significant fibrosis. Which of the following best describes these findings?",
+  "options": [
+    "A. Alcoholic fatty liver",
+    "B. Alcoholic hepatitis",
+    "C. Nonalcoholic-fatty-liver-disease-induced cirrhosis",
+    "D. Nonalcoholic steatohepatitis"
+  ],
+  "ground_truth": "D",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "D",
+      "vote_counts": {
+        "D": 5
+      },
+      "weighted_votes": {
+        "D": 1.0
+      },
+      "agent_weights": {
+        "Hepatologist": 0.3,
+        "Endocrinologist": 0.25,
+        "Pathologist": 0.2,
+        "Nutritionist/Dietitian": 0.15,
+        "Primary Care Physician": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "D",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 0,
+        "D": 15
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

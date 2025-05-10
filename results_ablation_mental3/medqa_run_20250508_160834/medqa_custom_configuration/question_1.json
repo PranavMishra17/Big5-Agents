@@ -1,0 +1,62 @@
+{
+  "question": "A 40-year-old male with a history of chronic alcoholism recently received a liver transplant. Two weeks following the transplant, the patient presents with a skin rash and frequent episodes of bloody diarrhea. A colonoscopy is performed and biopsy reveals apoptosis of colonic epithelial cells. What is most likely mediating these symptoms?",
+  "options": [
+    "A. Donor T-cells",
+    "B. Recipient T-cells",
+    "C. Donor B-cells",
+    "D. Recipient B-cells"
+  ],
+  "ground_truth": "A",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 1
+      },
+      "total_votes": 1,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "A",
+      "vote_counts": {
+        "A": 1
+      },
+      "weighted_votes": {
+        "A": 0.2
+      },
+      "agent_weights": {
+        "Gastroenterologist": 0.2
+      },
+      "total_weight": 0.2,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "A",
+      "borda_scores": {
+        "A": 3,
+        "B": 2,
+        "C": 1,
+        "D": 0
+      },
+      "total_possible_score": 3.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}

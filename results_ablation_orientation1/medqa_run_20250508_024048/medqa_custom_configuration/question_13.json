@@ -1,0 +1,66 @@
+{
+  "question": "A 54-year-old man is brought to the emergency department because of progressive tingling and weakness in both of his legs for the past two days. The patient reports that his symptoms interfere with his ability to walk. Two weeks ago, he had an upper respiratory tract infection, which resolved spontaneously. His vital signs are within normal limits. Examination shows weakness in the lower extremities with absent deep tendon reflexes. Reflexes are 1+ in the upper extremities. Sensation to pinprick and light touch is intact. Romberg's test is negative. Laboratory studies show a leukocyte count of 12,000/mm3. Cerebrospinal fluid analysis results show:\nOpening pressure normal\nProtein 200 mg/dL\nGlucose 70 mg/dL\nWhite blood cells 4/mm3\nThis patient is at increased risk for which of the following conditions?\"",
+  "options": [
+    "A. Thymoma",
+    "B. Urinary incontinence",
+    "C. Respiratory failure",
+    "D. Hypertrophic cardiomyopathy\n\""
+  ],
+  "ground_truth": "C",
+  "decisions": {
+    "majority_voting": {
+      "method": "majority_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "total_votes": 5,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "method": "weighted_voting",
+      "winning_option": "C",
+      "vote_counts": {
+        "C": 5
+      },
+      "weighted_votes": {
+        "C": 1.0
+      },
+      "agent_weights": {
+        "Neurologist": 0.4,
+        "Infectious Disease Specialist": 0.2,
+        "Immunologist": 0.2,
+        "Emergency Medicine Physician": 0.1,
+        "Laboratory Medicine Specialist": 0.1
+      },
+      "total_weight": 1.0,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "method": "borda_count",
+      "winning_option": "C",
+      "borda_scores": {
+        "A": 0,
+        "B": 0,
+        "C": 15,
+        "D": 0
+      },
+      "total_possible_score": 15.0,
+      "confidence": 1.0
+    }
+  },
+  "performance": {
+    "majority_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "weighted_voting": {
+      "correct": true,
+      "confidence": 1.0
+    },
+    "borda_count": {
+      "correct": true,
+      "confidence": 1.0
+    }
+  }
+}
