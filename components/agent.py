@@ -32,6 +32,7 @@ class Agent:
                  use_shared_mental_model: bool = False,
                  use_team_orientation: bool = False,
                  use_mutual_trust: bool = False,
+                 n_max: int = 5,
                  examples: Optional[List[Dict[str, str]]] = None):
         """
         Initialize an LLM-based agent with a specific role.
@@ -53,6 +54,7 @@ class Agent:
         self.use_shared_mental_model = use_shared_mental_model
         self.use_team_orientation = use_team_orientation
         self.use_mutual_trust = use_mutual_trust
+        self.n_max = n_max
         self.examples = examples or []
         self.conversation_history = []
         self.knowledge_base = {}

@@ -7,7 +7,8 @@ import logging
 import os
 import json
 from typing import Dict, Any, List
-from datetime import datetime, time
+from datetime import datetime
+import time
 
 from simulator import AgentSystemSimulator
 import config
@@ -42,6 +43,7 @@ def run_simulation(
     use_recruitment: bool = None,
     recruitment_method: str = None,
     recruitment_pool: str = None,
+    n_max: int = 5,
     runs= 1
 ) -> Dict[str, Any]:
     """
@@ -79,7 +81,8 @@ def run_simulation(
             random_leader=random_leader,
             use_recruitment=use_recruitment,
             recruitment_method=recruitment_method,
-            recruitment_pool=recruitment_pool
+            recruitment_pool=recruitment_pool,
+            n_max=n_max
         )
         
         # Run the simulation
@@ -195,7 +198,7 @@ def run_all_configurations(runs=1):
     """
     # Define configurations to test
     configurations = [
-        # Baseline (no features)
+        # No teamwork components, no recruitment
         {
             "name": "Baseline", 
             "leadership": False, 
@@ -203,7 +206,20 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": False,
             "shared_mental_model": False,
             "team_orientation": False,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": False
+        },
+        # No teamwork components, only basic recruitment (1 agent)
+        {
+            "name": "Basic Recruitment Only", 
+            "leadership": False, 
+            "closed_loop": False,
+            "mutual_monitoring": False,
+            "shared_mental_model": False,
+            "team_orientation": False,
+            "mutual_trust": False,
+            "recruitment": True,
+            "recruitment_method": "basic" 
         },
         # Single features
         {
@@ -213,7 +229,9 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": False,
             "shared_mental_model": False,
             "team_orientation": False,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": True,
+            #"recruitment_method": "intermediate" if n_max is not None else "adaptive"
         },
         {
             "name": "Closed-loop", 
@@ -519,6 +537,9 @@ def main():
     parser.add_argument('--recruitment-pool', type=str, choices=['general', 'medical'], 
                       default='general', help='Pool of roles to recruit from')
     
+    parser.add_argument('--n-max', type=int, default=5, 
+                      help='Maximum number of agents for intermediate team (default: 5)')
+    
     args = parser.parse_args()
     
     # Set up logging
@@ -528,9 +549,14 @@ def main():
     print(f"\nTask: {config.TASK['name']}")
     print(f"Type: {config.TASK['type']}")
     
+    # If n_max is specified, automatically set recruitment method to intermediate
+    if args.n_max is not None:
+        args.recruitment = True
+        args.recruitment_method = "intermediate"
+    
     if args.all:
         logging.info(f"Running all feature combinations with {args.runs} runs per configuration")
-        run_all_configurations(runs=args.runs)
+        run_all_configurations(runs=args.runs, n_max=args.n_max if args.n_max is not None else 5)
     else:
         logging.info("Running single simulation")
         
@@ -553,7 +579,8 @@ def main():
             random_leader=args.random_leader,
             use_recruitment=args.recruitment,
             recruitment_method=args.recruitment_method,
-            recruitment_pool=args.recruitment_pool
+            recruitment_pool=args.recruitment_pool,
+             n_max=args.n_max if args.n_max is not None else 5
         )
         
         # Determine which features were used

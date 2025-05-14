@@ -99,7 +99,7 @@ def determine_complexity(question, method="adaptive"):
     return complexity
     
 
-def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general") -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max: int = 5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
     Recruit appropriate agents based on question complexity.
     
@@ -107,6 +107,7 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
         question: The question or task to address
         complexity: The complexity level (basic, intermediate, advanced)
         recruitment_pool: The pool of agent types to recruit from
+        n_max: Maximum number of agents for intermediate team
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -115,17 +116,17 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
     if complexity == "basic":
         return recruit_basic_team(question, recruitment_pool)
     elif complexity == "intermediate":
-        return recruit_intermediate_team(question, recruitment_pool)
+        return recruit_intermediate_team(question, recruitment_pool, n_max)
     elif complexity == "advanced":
         return recruit_advanced_team(question, recruitment_pool)
     else:
         # Default to intermediate if unknown complexity
-        return recruit_intermediate_team(question, recruitment_pool)
+        return recruit_intermediate_team(question, recruitment_pool, n_max)
 
 
 def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
-    Recruit a single specialized expert for basic questions, following the MDAgents approach.
+    Recruit a single medical generalist for basic questions.
     
     Args:
         question: The question or task
@@ -134,56 +135,37 @@ def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, 
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
-    # Create a medical agent to handle basic queries
-    medical_agent = Agent(
-        role="Medical Agent",
-        expertise_description="A specialized medical expert with comprehensive medical knowledge"
-    )
-       
-    # For basic tasks, we follow the MDAgents paper by having a single specialized agent
-    # with task-specific expertise rather than using our default roles
+    # Create a single medical generalist
+    role = "Medical Generalist"
+    expertise = "A general medical practitioner with broad knowledge across medical disciplines"
     
-    # Create the specialized agent with a specific role based on question analysis
-    analysis_prompt = RECRUITMENT_PROMPTS["medical_specialty"].format(
-        question=question
-    ) 
-    # Get the appropriate specialty
-    specialty_response = medical_agent.chat(analysis_prompt)
-    
-    # Extract specialty (simple approach - first line or first sentence)
-    specialty = specialty_response.strip().split('\n')[0].split('.')[0]
-    
-    # Clean up any extraneous text
-    if ':' in specialty:
-        specialty = specialty.split(':', 1)[1].strip()
-    
-    # Create a domain-specific expertise description
-    expertise_description = f"Specialized in {specialty} with comprehensive medical knowledge"
-    
-    # Create the specialized agent
+    # Create the generalist agent
     agent = ModularAgent(
-        role_type=specialty, 
-        use_team_leadership=True,  # Single agent is always its own leader
-        use_closed_loop_comm=config.USE_CLOSED_LOOP_COMM,
-        use_mutual_monitoring=config.USE_MUTUAL_MONITORING,
-        use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL
+        role_type=role, 
+        use_team_leadership=False,  
+        use_closed_loop_comm=False,  # Skip teamwork components for single agent
+        use_mutual_monitoring=False,
+        use_shared_mental_model=False,
+        use_team_orientation=False,
+        use_mutual_trust=False
     )
     
-    # Create the agents dictionary with our single specialized agent
-    agents = {specialty: agent}
+    # Create the agents dictionary
+    agents = {role: agent}
     
-    # Log recruitment
-    logging.info(f"Basic complexity: Recruited single expert '{specialty}'")
+    logging.info(f"Basic complexity: Recruited single Medical Generalist")
     
     return agents, agent
 
-def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+
+def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
-    Recruit a team of specialists with hierarchical relationships, following MDAgents approach.
+    Recruit a team of specialists with hierarchical relationships.
     
     Args:
         question: The question or task
         recruitment_pool: The pool of agent types
+        n_max: Maximum number of agents to recruit
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -194,10 +176,10 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
         expertise_description="Assembles teams of medical experts for collaborative problem-solving"
     )
     
-    # Determine number of agents to recruit (5 in MDAgents paper)
-    num_agents = 5
+    # Determine number of agents to recruit
+    num_agents = n_max
     
-    # Create prompt for team selection following MDAgents approach
+    # Create prompt for team selection
     selection_prompt = RECRUITMENT_PROMPTS["team_selection"].format(
         question=question,
         num_agents=num_agents
@@ -205,7 +187,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
 
     response = recruiter.chat(selection_prompt)
     
-    # Parse selected team - similar to MDAgents
+    # Parse selected team
     lines = [line.strip() for line in response.split('\n') if line.strip()]
     selected_team = []
     leader_role = None
@@ -268,17 +250,26 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
         if len(selected_team) >= num_agents:
             break
     
-    # If no team members found, create a default team with weights
-    if not selected_team:
-        selected_team = [
+    # If no team members found or less than specified, create a default team
+    if len(selected_team) < num_agents:
+        # Create default roles to fill the team
+        default_roles = [
             ("Internist", "General medical knowledge and diagnosis", "Leader", 0.25),
             ("Cardiologist", "Heart and cardiovascular system", "Independent", 0.2),
             ("Neurologist", "Brain and nervous system disorders", "Independent", 0.2),
             ("Pathologist", "Disease diagnosis through laboratory tests", "Independent", 0.15),
             ("Radiologist", "Medical imaging interpretation", "Independent", 0.2)
         ]
-        leader_role = "Internist"
-        weights = {role: weight for role, _, _, weight in selected_team}
+        
+        # Add default roles until we reach num_agents
+        for role_info in default_roles:
+            if len(selected_team) >= num_agents:
+                break
+            if not any(role_info[0] == team_role[0] for team_role in selected_team):
+                selected_team.append(role_info)
+        
+        if not leader_role:
+            leader_role = "Internist"
     
     # If no leader designated, choose the first as leader
     if not leader_role:
@@ -298,7 +289,9 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
             use_team_leadership=is_leader,
             use_closed_loop_comm=config.USE_CLOSED_LOOP_COMM,
             use_mutual_monitoring=config.USE_MUTUAL_MONITORING,
-            use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL
+            use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
+            use_team_orientation=config.USE_TEAM_ORIENTATION,
+            use_mutual_trust=config.USE_MUTUAL_TRUST
         )
         
         # Store weight in agent's knowledge base
@@ -309,7 +302,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str) -> Tuple[Dic
         if is_leader:
             leader = agent
     
-    # Log recruitment and weights
+    # Log recruitment
     logging.info(f"Intermediate complexity: Recruited team of {len(agents)} experts with leader '{leader_role}'")
     logging.info(f"Agent weights: {weights}")
     

@@ -27,7 +27,8 @@ class ModularAgent(Agent):
                  use_mutual_monitoring: bool = False,
                  use_shared_mental_model: bool = False,
                     use_team_orientation: bool = False,
-                    use_mutual_trust: bool = False
+                    use_mutual_trust: bool = False,
+                    n_max: int = 5
                  
                  ):
         """
@@ -57,7 +58,8 @@ class ModularAgent(Agent):
             use_mutual_monitoring=use_mutual_monitoring,
             use_shared_mental_model=use_shared_mental_model,
             use_team_orientation=use_team_orientation,
-            use_mutual_trust=use_mutual_trust
+            use_mutual_trust=use_mutual_trust,
+            n_max=n_max
         )
         
         # Track whether this agent has leadership capabilities
@@ -347,7 +349,8 @@ def create_agent_team(use_team_leadership=True,
                       use_recruitment=False,
                       question=None,
                       recruitment_method="adaptive",
-                      recruitment_pool="general") -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+                      recruitment_pool="general",
+                      n_max=5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
     Create a team of agents with different specializations.
     
@@ -363,6 +366,7 @@ def create_agent_team(use_team_leadership=True,
         question: The question or task (required if use_recruitment is True)
         recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
         recruitment_pool: Pool of agent roles to recruit from
+        n_max: Maximum number of agents for intermediate team
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -377,7 +381,7 @@ def create_agent_team(use_team_leadership=True,
         complexity = determine_complexity(question, recruitment_method)
         
         # Recruit appropriate agents
-        return recruit_agents(question, complexity, recruitment_pool)
+        return recruit_agents(question, complexity, recruitment_pool, n_max)
     
     # Default to original implementation if recruitment not enabled
     # Determine leadership assignment
@@ -406,7 +410,8 @@ def create_agent_team(use_team_leadership=True,
             use_mutual_monitoring=use_mutual_monitoring,
             use_shared_mental_model=use_shared_mental_model,
             use_team_orientation=use_team_orientation,
-            use_mutual_trust=use_mutual_trust
+            use_mutual_trust=use_mutual_trust,
+            n_max=n_max
         )
         
         agents[role] = agent
@@ -429,5 +434,7 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f"  Shared Mental Model: {use_shared_mental_model}")
     logging.info(f"  Team Orientation: {use_team_orientation}")
     logging.info(f"  Mutual Trust: {use_mutual_trust}")
+    logging.info(f" n_max: {n_max}")
+    logging.info(f"  Agents: {', '.join(agents.keys())}")
     
     return {"agents": agents, "leader": leader}

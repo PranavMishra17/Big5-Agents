@@ -10,8 +10,8 @@ import json
 import random
 import sys
 from typing import Dict, Any, List, Optional
-from datetime import datetime, time
-import openai
+from datetime import datetime
+import time
 from tqdm import tqdm
 
 from datasets import load_dataset
@@ -198,7 +198,8 @@ def run_questions_with_configuration(
     dataset_type: str,
     configuration: Dict[str, bool],
     output_dir: Optional[str] = None,
-    max_retries: int = 3
+    max_retries: int = 3,
+    n_max: int = 5
 ) -> Dict[str, Any]:
     """
     Run questions with specific configuration, handling errors gracefully.
@@ -232,6 +233,8 @@ def run_questions_with_configuration(
     # Process each question
     for i, question in enumerate(tqdm(questions, desc=f"{config_name}")):
         question_result = {"question_index": i}
+        simulator = None  # Initialize simulator variable
+        performance = None  # Initialize performance variable
         
         try:
             # Format the question for the task
@@ -251,6 +254,8 @@ def run_questions_with_configuration(
             # Try to run the simulation with retries
             for attempt in range(max_retries):
                 try:
+                    if simulator is not None and hasattr(simulator, "metadata") and "complexity" in simulator.metadata:
+                        complexity = simulator.metadata["complexity"]
                     # Create simulator
                     simulator = AgentSystemSimulator(
                         simulation_id=f"{dataset_type}_{config_name.lower().replace(' ', '_')}_{i}",
@@ -260,7 +265,8 @@ def run_questions_with_configuration(
                         use_shared_mental_model=configuration.get("shared_mental_model", False),
                         use_recruitment=configuration.get("recruitment", False),
                         recruitment_method=configuration.get("recruitment_method", "adaptive"),
-                        recruitment_pool=configuration.get("recruitment_pool", "general")
+                        recruitment_pool=configuration.get("recruitment_pool", "general"),
+                        n_max=n_max if n_max is not None else 5
                     )
                     
                     # Run simulation
@@ -271,14 +277,15 @@ def run_questions_with_configuration(
                     question_result["decisions"] = simulation_results["decision_results"]
                     question_result["performance"] = performance.get("task_performance", {})
                     
-                    # Update summary statistics
-                    for method in ["majority_voting", "weighted_voting", "borda_count"]:
-                        if method in performance.get("task_performance", {}):
-                            method_perf = performance["task_performance"][method]
-                            if "correct" in method_perf:
-                                results["summary"][method]["total"] += 1
-                                if method_perf["correct"]:
-                                    results["summary"][method]["correct"] += 1
+                    if performance is not None:
+                        # Update summary statistics
+                        for method in ["majority_voting", "weighted_voting", "borda_count"]:
+                            if method in performance.get("task_performance", {}):
+                                method_perf = performance["task_performance"][method]
+                                if "correct" in method_perf:
+                                    results["summary"][method]["total"] += 1
+                                    if method_perf["correct"]:
+                                        results["summary"][method]["correct"] += 1
                     
                     # Simulation succeeded, break the retry loop
                     break
@@ -428,7 +435,8 @@ def run_dataset(
     mutual_trust_factor: float = 0.8,
     recruitment: bool = False,
     recruitment_method: str = "adaptive",
-    recruitment_pool: str = "general"
+    recruitment_pool: str = "general",
+    n_max: int = None
 ) -> Dict[str, Any]:
     """
     Run a dataset through the agent system.
@@ -479,6 +487,7 @@ def run_dataset(
     if run_all_configs:
         configurations = [
             # Baseline (no features)
+            # Baseline (no features)
             {
                 "name": "Baseline", 
                 "leadership": False, 
@@ -489,6 +498,18 @@ def run_dataset(
                 "mutual_trust": False,
                 "recruitment": False
             },
+            # Basic recruitment (1 agent)
+            {
+                "name": "Basic Recruitment", 
+                "leadership": False, 
+                "closed_loop": False,
+                "mutual_monitoring": False,
+                "shared_mental_model": False,
+                "team_orientation": False,
+                "mutual_trust": False,
+                "recruitment": True,
+                "recruitment_method": "basic"
+            },
             # Single features
             {
                 "name": "Leadership", 
@@ -498,7 +519,9 @@ def run_dataset(
                 "shared_mental_model": False,
                 "team_orientation": False,
                 "mutual_trust": False,
-                "recruitment": False
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             },
             {
                 "name": "Closed-loop", 
@@ -508,7 +531,9 @@ def run_dataset(
                 "shared_mental_model": False,
                 "team_orientation": False,
                 "mutual_trust": False,
-                "recruitment": False
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             },
             {
                 "name": "Mutual Monitoring", 
@@ -518,7 +543,9 @@ def run_dataset(
                 "shared_mental_model": False,
                 "team_orientation": False,
                 "mutual_trust": False,
-                "recruitment": False
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             },
             {
                 "name": "Shared Mental Model", 
@@ -528,7 +555,9 @@ def run_dataset(
                 "shared_mental_model": True,
                 "team_orientation": False,
                 "mutual_trust": False,
-                "recruitment": False
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             },
             {
                 "name": "Team Orientation", 
@@ -538,7 +567,9 @@ def run_dataset(
                 "shared_mental_model": False,
                 "team_orientation": True,
                 "mutual_trust": False,
-                "recruitment": False
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             },
             {
                 "name": "Mutual Trust", 
@@ -548,29 +579,9 @@ def run_dataset(
                 "shared_mental_model": False,
                 "team_orientation": False,
                 "mutual_trust": True,
-                "recruitment": False
-            },
-            # Recruitment feature
-            {
-                "name": "Recruitment", 
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": False,
-                "team_orientation": False,
-                "mutual_trust": False,
-                "recruitment": True
-            },
-            # All features
-            {
-                "name": "All Features", 
-                "leadership": True, 
-                "closed_loop": True,
-                "mutual_monitoring": True,
-                "shared_mental_model": True,
-                "team_orientation": True,
-                "mutual_trust": True,
-                "recruitment": False
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             },
             # All features with recruitment
             {
@@ -581,7 +592,9 @@ def run_dataset(
                 "shared_mental_model": True,
                 "team_orientation": True,
                 "mutual_trust": True,
-                "recruitment": True
+                "recruitment": True,
+                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "n_max": n_max
             }
         ]
     else:
@@ -594,7 +607,9 @@ def run_dataset(
             "shared_mental_model": shared_mental_model,
             "team_orientation": team_orientation,
             "mutual_trust": mutual_trust,
-            "recruitment": recruitment
+            "recruitment": recruitment,            
+            "recruitment_method": recruitment_method,
+            "n_max": n_max
         }]
     
     # Run each configuration
@@ -609,7 +624,8 @@ def run_dataset(
             questions,
             dataset_type,
             config,
-            run_output_dir
+            run_output_dir,
+            n_max=config.get("n_max")
         )
         all_results.append(result)
     
@@ -672,11 +688,18 @@ def main():
                       choices=['general', 'medical'], 
                       default='medical' if '--dataset' in sys.argv and sys.argv[sys.argv.index('--dataset')+1] in ['medqa', 'pubmedqa'] else 'general', 
                       help='Pool of roles to recruit from')
+    parser.add_argument('--n-max', type=int, default=None, 
+                      help='Maximum number of agents for intermediate team')
     
     args = parser.parse_args()
     
     # Set up logging
     setup_logging()
+
+    # If n_max is specified, automatically set recruitment method to intermediate
+    if args.n_max is not None:
+        args.recruitment = True
+        args.recruitment_method = "intermediate"
     
     # Run dataset
     results = run_dataset(
@@ -694,7 +717,8 @@ def main():
         mutual_trust_factor=args.trust_factor,
         recruitment=args.recruitment,
         recruitment_method=args.recruitment_method,
-        recruitment_pool=args.recruitment_pool
+        recruitment_pool=args.recruitment_pool,
+        n_max=args.n_max
     )
     
     # Print overall summary

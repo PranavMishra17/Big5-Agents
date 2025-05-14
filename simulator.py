@@ -41,7 +41,8 @@ class AgentSystemSimulator:
              random_leader: bool = False,
              use_recruitment: bool = None,
              recruitment_method: str = None,
-             recruitment_pool: str = None):
+             recruitment_pool: str = None,
+             n_max: int = 5):
         """
         Initialize the simulator.
         
@@ -58,6 +59,7 @@ class AgentSystemSimulator:
             use_recruitment: Whether to use dynamic agent recruitment
             recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
             recruitment_pool: Pool of agent roles to recruit from
+             n_max: Maximum number of agents for intermediate team
         """
         # Set simulation ID and configuration
         self.simulation_id = simulation_id or f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -74,6 +76,7 @@ class AgentSystemSimulator:
         self.recruitment_method = recruitment_method or config.RECRUITMENT_METHOD
         self.recruitment_pool = recruitment_pool or "general"
         self.random_leader = random_leader
+        self.n_max = n_max
         self.metadata = {}
         # Inside __init__
         if use_recruitment:
@@ -97,6 +100,7 @@ class AgentSystemSimulator:
             "recruitment_method": self.recruitment_method,
             "recruitment_pool": self.recruitment_pool,
             "random_leader": self.random_leader,
+            "n_max": self.n_max,
             "task": config.TASK["name"]
         }
         
@@ -119,7 +123,8 @@ class AgentSystemSimulator:
             use_recruitment=self.use_recruitment,
             question=config.TASK["description"] if self.use_recruitment else None,
             recruitment_method=self.recruitment_method,
-            recruitment_pool=self.recruitment_pool
+            recruitment_pool=self.recruitment_pool,
+            n_max=self.n_max,
         )
         
         # Handle returned team data structure
