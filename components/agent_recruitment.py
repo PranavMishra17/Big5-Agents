@@ -7,7 +7,6 @@ import random
 from typing import Dict, List, Any, Tuple
 
 from components.agent import Agent
-from components.modular_agent import ModularAgent, create_agent_team
 import config
 
 from utils.prompts import RECRUITMENT_PROMPTS
@@ -99,32 +98,22 @@ def determine_complexity(question, method="adaptive"):
     return complexity
     
 
-def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max: int = 5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max = 5, recruitment_method: str = "adaptive"):
     """
     Recruit appropriate agents based on question complexity.
-    
-    Args:
-        question: The question or task to address
-        complexity: The complexity level (basic, intermediate, advanced)
-        recruitment_pool: The pool of agent types to recruit from
-        n_max: Maximum number of agents for intermediate team
-        
-    Returns:
-        Tuple of (agents dictionary, leader agent)
     """
-
-    if complexity == "basic":
+    if complexity == "basic" or recruitment_method == "basic":
+        logging.info("Using basic recruitment (single agent)")
         return recruit_basic_team(question, recruitment_pool)
-    elif complexity == "intermediate":
+    elif complexity == "intermediate" or recruitment_method == "intermediate":
         return recruit_intermediate_team(question, recruitment_pool, n_max)
     elif complexity == "advanced":
         return recruit_advanced_team(question, recruitment_pool)
     else:
-        # Default to intermediate if unknown complexity
         return recruit_intermediate_team(question, recruitment_pool, n_max)
 
 
-def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+def recruit_basic_team(question: str, recruitment_pool: str):
     """
     Recruit a single medical generalist for basic questions.
     
@@ -135,6 +124,7 @@ def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, 
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
+    from components.modular_agent import ModularAgent  # Local import
     # Create a single medical generalist
     role = "Medical Generalist"
     expertise = "A general medical practitioner with broad knowledge across medical disciplines"
@@ -151,14 +141,14 @@ def recruit_basic_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, 
     )
     
     # Create the agents dictionary
-    agents = {role: agent}
+    agents = {"Medical Generalist": agent}
     
     logging.info(f"Basic complexity: Recruited single Medical Generalist")
     
     return agents, agent
 
 
-def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5):
     """
     Recruit a team of specialists with hierarchical relationships.
     
@@ -170,6 +160,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
+    from components.modular_agent import ModularAgent  # Local import
     # Create a recruiter agent
     recruiter = Agent(
         role="Recruiter",
@@ -249,19 +240,18 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
         # Stop when we have enough agents
         if len(selected_team) >= num_agents:
             break
-    
+
+    selected_team = selected_team[:n_max]
     # If no team members found or less than specified, create a default team
+    # If team members < n_max, create appropriate medical defaults
     if len(selected_team) < num_agents:
-        # Create default roles to fill the team
         default_roles = [
-            ("Internist", "General medical knowledge and diagnosis", "Leader", 0.25),
-            ("Cardiologist", "Heart and cardiovascular system", "Independent", 0.2),
-            ("Neurologist", "Brain and nervous system disorders", "Independent", 0.2),
-            ("Pathologist", "Disease diagnosis through laboratory tests", "Independent", 0.15),
-            ("Radiologist", "Medical imaging interpretation", "Independent", 0.2)
+            ("Medical Generalist", "Broad knowledge across medical disciplines", "Leader", 0.3),
+            ("Medical Specialist", "Focused expertise in relevant area", "Independent", 0.3),
+            ("Diagnostician", "Expert in diagnostic reasoning", "Independent", 0.4)
         ]
         
-        # Add default roles until we reach num_agents
+        # Add roles until we reach num_agents
         for role_info in default_roles:
             if len(selected_team) >= num_agents:
                 break
@@ -269,7 +259,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
                 selected_team.append(role_info)
         
         if not leader_role:
-            leader_role = "Internist"
+            leader_role = "Medical Generalist"
     
     # If no leader designated, choose the first as leader
     if not leader_role:
@@ -308,7 +298,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
     
     return agents, leader
 
-def recruit_advanced_team(question: str, recruitment_pool: str) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+def recruit_advanced_team(question: str, recruitment_pool: str):
     """
     Recruit multiple specialized teams for advanced questions, following MDAgents approach.
     
@@ -418,7 +408,7 @@ def recruit_advanced_team(question: str, recruitment_pool: str) -> Tuple[Dict[st
     # Create all agents
     agents = {}
     leader = None
-    
+    from components.modular_agent import ModularAgent  # Local import
     # Use a prefix to make roles unique across teams
     for team_idx, team in enumerate(teams):
         team_prefix = f"{team_idx+1}_{team['name'].split('(')[0].strip()}_"

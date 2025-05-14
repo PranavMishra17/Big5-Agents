@@ -3,8 +3,9 @@ Modular agent implementation for the agent system.
 """
 
 from typing import List, Dict, Any, Optional
-import random
+import random, sys
 import logging
+import traceback
 
 from components.agent import Agent
 import config
@@ -371,17 +372,26 @@ def create_agent_team(use_team_leadership=True,
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
+    #global recruit_agents, determine_complexity  # Ensure variables remain in scope
 
     # Use recruitment if enabled
     if use_recruitment and question:
-        # Import here to avoid circular imports
-        from components.agent_recruitment import determine_complexity, recruit_agents
-        
-        # Determine complexity
-        complexity = determine_complexity(question, recruitment_method)
-        
-        # Recruit appropriate agents
-        return recruit_agents(question, complexity, recruitment_pool, n_max)
+        try:
+            # Import with better error handling
+            from components.agent_recruitment import determine_complexity, recruit_agents
+            logging.info(f"Attempting to import recruitment modules...")
+            #from components.agent_recruitment import determine_complexity, recruit_agents
+            logging.info(f"Successfully imported, calling recruit_agents with n_max={n_max}")
+            
+            # Determine complexity
+            complexity = determine_complexity(question, recruitment_method)
+            
+            # Call with all parameters
+            return recruit_agents(question, complexity, recruitment_pool, n_max, recruitment_method)
+        except Exception as e:
+            logging.error(f"Recruitment error: {str(e)}")
+           
+            logging.error(traceback.format_exc())
     
     # Default to original implementation if recruitment not enabled
     # Determine leadership assignment
@@ -437,4 +447,5 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f" n_max: {n_max}")
     logging.info(f"  Agents: {', '.join(agents.keys())}")
     
-    return {"agents": agents, "leader": leader}
+    # Pass recruitment_method to recruit_agents
+    return recruit_agents(question, complexity, recruitment_pool, n_max, recruitment_method)

@@ -8,8 +8,8 @@ import json
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime, time
 
-from components.agent_recruitment import determine_complexity
 from components.modular_agent import ModularAgent, create_agent_team
+from components.agent_recruitment import determine_complexity, recruit_agents
 from components.closed_loop import ClosedLoopCommunication
 from components.mutual_monitoring import MutualMonitoring
 from components.shared_mental_model import SharedMentalModel
@@ -110,22 +110,47 @@ class AgentSystemSimulator:
             log_dir=config.LOG_DIR,
             config=self.config
         )
+
+        # Log configuration properly
+        logging.info(f"Initializing simulator with n_max: {self.n_max}")
         
-        # Create agent team
-        team_data = create_agent_team(
-            use_team_leadership=self.use_team_leadership,
-            use_closed_loop_comm=self.use_closed_loop_comm,
-            use_mutual_monitoring=self.use_mutual_monitoring,
-            use_shared_mental_model=self.use_shared_mental_model,
-            use_team_orientation=self.use_team_orientation,
-            use_mutual_trust=self.use_mutual_trust,
-            random_leader=self.random_leader,
-            use_recruitment=self.use_recruitment,
-            question=config.TASK["description"] if self.use_recruitment else None,
-            recruitment_method=self.recruitment_method,
-            recruitment_pool=self.recruitment_pool,
-            n_max=self.n_max,
-        )
+
+        # Create agent team with proper imports to avoid the "recruit_agents not in scope" error
+        if self.use_recruitment and config.TASK.get("description"):
+            # Local import to avoid circular import problems
+            try:
+                # Use global imports
+                complexity = determine_complexity(config.TASK["description"], self.recruitment_method)
+                self.metadata["complexity"] = complexity
+                logging.info(f"Recruiting agents: method={self.recruitment_method}, complexity={complexity}, n_max={self.n_max}")
+    
+                            
+                team_data = recruit_agents(
+                    config.TASK["description"],
+                    complexity,
+                    self.recruitment_pool,
+                    self.n_max,
+                    self.recruitment_method
+                )
+                self.agents, self.leader = team_data
+            except Exception as e:
+                logging.error(f"Recruitment failed: {str(e)}, using default team")
+        else:
+            # Create agent team
+            team_data = create_agent_team(
+                use_team_leadership=self.use_team_leadership,
+                use_closed_loop_comm=self.use_closed_loop_comm,
+                use_mutual_monitoring=self.use_mutual_monitoring,
+                use_shared_mental_model=self.use_shared_mental_model,
+                use_team_orientation=self.use_team_orientation,
+                use_mutual_trust=self.use_mutual_trust,
+                random_leader=self.random_leader,
+                use_recruitment=self.use_recruitment,
+                question=config.TASK["description"] if self.use_recruitment else None,
+                recruitment_method=self.recruitment_method,
+                recruitment_pool=self.recruitment_pool,
+                n_max=self.n_max,
+            )
         
         # Handle returned team data structure
         if isinstance(team_data, dict) and "agents" in team_data and "leader" in team_data:

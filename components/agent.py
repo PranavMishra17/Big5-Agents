@@ -176,9 +176,7 @@ class Agent:
         self.messages.append({"role": "user", "content": message})
         
         # Get response from LLM
-        response = self.client.predict_messages(
-            messages=self.messages
-        )
+        response = self.client.invoke(messages=self.messages)
         
         # Extract and store the response
         assistant_message = response.content

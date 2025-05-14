@@ -18,6 +18,7 @@ from datasets import load_dataset
 from simulator import AgentSystemSimulator
 import config
 from utils.logger import SimulationLogger
+from components.agent_recruitment import determine_complexity, recruit_agents
 
 def setup_logging():
     """Set up logging for the dataset runner."""
@@ -210,6 +211,9 @@ def run_questions_with_configuration(
     from components import agent_recruitment
     agent_recruitment.reset_complexity_metrics()
 
+    if configuration.get("name") == "Baseline":
+        configuration["recruitment"] = False
+        
     # Setup output directory
     run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
     if run_output_dir:
@@ -266,7 +270,7 @@ def run_questions_with_configuration(
                         use_recruitment=configuration.get("recruitment", False),
                         recruitment_method=configuration.get("recruitment_method", "adaptive"),
                         recruitment_pool=configuration.get("recruitment_pool", "general"),
-                        n_max=n_max if n_max is not None else 5
+                        n_max=n_max
                     )
                     
                     # Run simulation
@@ -292,13 +296,16 @@ def run_questions_with_configuration(
                 
                 except Exception as e:
                     error_str = str(e)
+                    import traceback
+                    error_details = traceback.format_exc()
+                    logging.error(f"Full error details: {error_details}")
                     
                     # Check for different error types
                     if attempt < max_retries - 1:
                         # Content filter errors
                         if "content" in error_str.lower() and "filter" in error_str.lower():
                             error_type = "content_filter"
-                            wait_time = 2
+                            wait_time = min(5 * (attempt + 1), 30)
                             logging.warning(f"Content filter triggered, retry {attempt+1} for question {i}")
                         
                         # Rate limit errors
@@ -350,6 +357,10 @@ def run_questions_with_configuration(
                         json.dump(output_data, f, indent=2)
                 except Exception as e:
                     logging.error(f"Failed to save results for question {i}: {str(e)}")
+                    error_str = str(e)
+                    import traceback
+                    error_details = traceback.format_exc()
+                    logging.error(f"Full error details: {error_details}")
         
         except Exception as e:
             # Errors in task formatting or other pre-simulation errors
@@ -360,6 +371,10 @@ def run_questions_with_configuration(
                 "error_type": "processing",
                 "error": str(e)
             })
+            error_str = str(e)
+            import traceback
+            error_details = traceback.format_exc()
+            logging.error(f"Full error details: {error_details}")
         
         # Always add the question result, even if it has errors
         results["question_results"].append(question_result)
@@ -391,6 +406,10 @@ def run_questions_with_configuration(
                 json.dump(results["errors"], f, indent=2)
         except Exception as e:
             logging.error(f"Failed to save summary results: {str(e)}")
+            error_str = str(e)
+            import traceback
+            error_details = traceback.format_exc()
+            logging.error(f"Full error details: {error_details}")
     
     # Print summary
     print(f"\nSummary for {config_name} on {dataset_type}:")
@@ -496,7 +515,8 @@ def run_dataset(
                 "shared_mental_model": False,
                 "team_orientation": False,
                 "mutual_trust": False,
-                "recruitment": False
+                "recruitment": False,
+                "n_max": n_max
             },
             # Basic recruitment (1 agent)
             {
@@ -508,7 +528,8 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "basic"
+                "recruitment_method": "basic",
+                "n_max": n_max
             },
             # Single features
             {
