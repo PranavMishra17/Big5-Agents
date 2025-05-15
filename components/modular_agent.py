@@ -339,7 +339,10 @@ class ModularAgent(Agent):
 
 
 
-# Modify the create_agent_team function to support recruitment
+"""
+Fixed create_agent_team function to resolve import issues.
+"""
+
 def create_agent_team(use_team_leadership=True, 
                       use_closed_loop_comm=False, 
                       use_mutual_monitoring=False,
@@ -372,28 +375,32 @@ def create_agent_team(use_team_leadership=True,
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
-    #global recruit_agents, determine_complexity  # Ensure variables remain in scope
-
     # Use recruitment if enabled
     if use_recruitment and question:
         try:
             # Import with better error handling
             from components.agent_recruitment import determine_complexity, recruit_agents
-            logging.info(f"Attempting to import recruitment modules...")
-            #from components.agent_recruitment import determine_complexity, recruit_agents
-            logging.info(f"Successfully imported, calling recruit_agents with n_max={n_max}")
+            logging.info(f"Successfully imported recruitment modules")
             
             # Determine complexity
             complexity = determine_complexity(question, recruitment_method)
+            logging.info(f"Question complexity determined as: {complexity}")
             
             # Call with all parameters
+            logging.info(f"Calling recruit_agents with n_max={n_max}, method={recruitment_method}")
             return recruit_agents(question, complexity, recruitment_pool, n_max, recruitment_method)
+        except ImportError as e:
+            logging.error(f"Failed to import recruitment modules: {str(e)}")
+            logging.error(traceback.format_exc())
+            logging.warning("Falling back to default team creation")
         except Exception as e:
             logging.error(f"Recruitment error: {str(e)}")
-           
             logging.error(traceback.format_exc())
+            logging.warning("Falling back to default team creation")
     
-    # Default to original implementation if recruitment not enabled
+    # Default to original implementation if recruitment not enabled or failed
+    logging.info(f"Creating default agent team with n_max={n_max}")
+    
     # Determine leadership assignment
     if random_leader:
         # Randomly choose one agent to be leader
@@ -444,8 +451,7 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f"  Shared Mental Model: {use_shared_mental_model}")
     logging.info(f"  Team Orientation: {use_team_orientation}")
     logging.info(f"  Mutual Trust: {use_mutual_trust}")
-    logging.info(f" n_max: {n_max}")
+    logging.info(f"  n_max: {n_max}")
     logging.info(f"  Agents: {', '.join(agents.keys())}")
     
-    # Pass recruitment_method to recruit_agents
-    return recruit_agents(question, complexity, recruitment_pool, n_max, recruitment_method)
+    return agents, leader

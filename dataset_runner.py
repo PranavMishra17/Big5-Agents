@@ -194,6 +194,10 @@ def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     return task
 
 
+"""
+Fixed configurations setup in dataset_runner.py to properly handle n_max parameter.
+"""
+
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],
     dataset_type: str,
@@ -211,9 +215,10 @@ def run_questions_with_configuration(
     from components import agent_recruitment
     agent_recruitment.reset_complexity_metrics()
 
+    # Make sure configuration has recruitment properly set
     if configuration.get("name") == "Baseline":
         configuration["recruitment"] = False
-        
+    
     # Setup output directory
     run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
     if run_output_dir:
@@ -258,19 +263,19 @@ def run_questions_with_configuration(
             # Try to run the simulation with retries
             for attempt in range(max_retries):
                 try:
-                    if simulator is not None and hasattr(simulator, "metadata") and "complexity" in simulator.metadata:
-                        complexity = simulator.metadata["complexity"]
-                    # Create simulator
+                    # Create simulator with proper n_max parameter
                     simulator = AgentSystemSimulator(
                         simulation_id=f"{dataset_type}_{config_name.lower().replace(' ', '_')}_{i}",
                         use_team_leadership=configuration.get("leadership", False),
                         use_closed_loop_comm=configuration.get("closed_loop", False),
                         use_mutual_monitoring=configuration.get("mutual_monitoring", False),
                         use_shared_mental_model=configuration.get("shared_mental_model", False),
+                        use_team_orientation=configuration.get("team_orientation", False),
+                        use_mutual_trust=configuration.get("mutual_trust", False),
                         use_recruitment=configuration.get("recruitment", False),
                         recruitment_method=configuration.get("recruitment_method", "adaptive"),
                         recruitment_pool=configuration.get("recruitment_pool", "general"),
-                        n_max=n_max
+                        n_max=configuration.get("n_max", n_max)  # Use configuration-specific n_max or default
                     )
                     
                     # Run simulation
@@ -357,11 +362,7 @@ def run_questions_with_configuration(
                         json.dump(output_data, f, indent=2)
                 except Exception as e:
                     logging.error(f"Failed to save results for question {i}: {str(e)}")
-                    error_str = str(e)
-                    import traceback
-                    error_details = traceback.format_exc()
-                    logging.error(f"Full error details: {error_details}")
-        
+            
         except Exception as e:
             # Errors in task formatting or other pre-simulation errors
             logging.error(f"Error processing question {i}: {str(e)}")
@@ -371,10 +372,6 @@ def run_questions_with_configuration(
                 "error_type": "processing",
                 "error": str(e)
             })
-            error_str = str(e)
-            import traceback
-            error_details = traceback.format_exc()
-            logging.error(f"Full error details: {error_details}")
         
         # Always add the question result, even if it has errors
         results["question_results"].append(question_result)
@@ -406,10 +403,6 @@ def run_questions_with_configuration(
                 json.dump(results["errors"], f, indent=2)
         except Exception as e:
             logging.error(f"Failed to save summary results: {str(e)}")
-            error_str = str(e)
-            import traceback
-            error_details = traceback.format_exc()
-            logging.error(f"Full error details: {error_details}")
     
     # Print summary
     print(f"\nSummary for {config_name} on {dataset_type}:")
@@ -420,7 +413,7 @@ def run_questions_with_configuration(
     if results["errors"]:
         print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
 
-    # Add before returning results
+    # Add complexity metrics before returning results
     from components import agent_recruitment
     if hasattr(agent_recruitment, "complexity_counts") and hasattr(agent_recruitment, "complexity_correct"):
         results["complexity_metrics"] = {
@@ -434,10 +427,13 @@ def run_questions_with_configuration(
             count = results["complexity_metrics"]["counts"].get(level, 0)
             correct = results["complexity_metrics"]["correct"].get(level, 0)
             results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
-
         
     return results
 
+
+"""
+Fix recruitment configurations in run_dataset to ensure proper n_max handling.
+"""
 
 def run_dataset(
     dataset_type: str,
@@ -455,7 +451,7 @@ def run_dataset(
     recruitment: bool = False,
     recruitment_method: str = "adaptive",
     recruitment_pool: str = "general",
-    n_max: int = None
+    n_max: int = 5
 ) -> Dict[str, Any]:
     """
     Run a dataset through the agent system.
@@ -476,11 +472,17 @@ def run_dataset(
         recruitment: Use dynamic agent recruitment
         recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
         recruitment_pool: Pool of agent roles to recruit from
+        n_max: Maximum number of agents for intermediate teams
         
     Returns:
         Results dictionary
     """
-
+    # Ensure n_max has a default value
+    if n_max is None:
+        n_max = 5
+    
+    # Log parameters
+    logging.info(f"Running dataset: {dataset_type}, n_max={n_max}, recruitment_method={recruitment_method}")
 
     # Load the dataset
     if dataset_type == "medqa":
@@ -505,22 +507,25 @@ def run_dataset(
     # Define configurations to test
     if run_all_configs:
         configurations = [
-            # Baseline (no features)
-            # Baseline (no features)
+            # Baseline - a single Medical Generalist agent (using basic recruitment)
             {
                 "name": "Baseline", 
+                "description": "Single Medical Generalist agent, no teamwork components",
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
                 "shared_mental_model": False,
                 "team_orientation": False,
                 "mutual_trust": False,
-                "recruitment": False,
-                "n_max": n_max
+                "recruitment": True,  # Set to True but will be handled specially
+                "recruitment_method": "basic",  # Force basic recruitment for Baseline
+                "n_max": 1  # Always use just 1 agent for Baseline
             },
-            # Basic recruitment (1 agent)
+            
+            # Standard Team - uses specified n_max agents (using intermediate recruitment)
             {
-                "name": "Basic Recruitment", 
+                "name": "Standard Team", 
+                "description": f"Team of {n_max} agents with no teamwork components, using intermediate recruitment",
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
@@ -528,12 +533,15 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "basic",
-                "n_max": n_max
+                "recruitment_method": "intermediate",  # Use intermediate recruitment method
+                "recruitment_pool": recruitment_pool,
+                "n_max": n_max  # Use specified n_max value
             },
-            # Single features
+            
+            # Single features with intermediate recruitment
             {
                 "name": "Leadership", 
+                "description": f"Team of {n_max} agents with leadership component",
                 "leadership": True, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
@@ -541,11 +549,13 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             },
             {
                 "name": "Closed-loop", 
+                "description": f"Team of {n_max} agents with closed-loop communication",
                 "leadership": False, 
                 "closed_loop": True,
                 "mutual_monitoring": False,
@@ -553,11 +563,13 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             },
             {
                 "name": "Mutual Monitoring", 
+                "description": f"Team of {n_max} agents with mutual monitoring",
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": True,
@@ -565,11 +577,13 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             },
             {
                 "name": "Shared Mental Model", 
+                "description": f"Team of {n_max} agents with shared mental model",
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
@@ -577,11 +591,13 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             },
             {
                 "name": "Team Orientation", 
+                "description": f"Team of {n_max} agents with team orientation",
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
@@ -589,11 +605,13 @@ def run_dataset(
                 "team_orientation": True,
                 "mutual_trust": False,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             },
             {
                 "name": "Mutual Trust", 
+                "description": f"Team of {n_max} agents with mutual trust",
                 "leadership": False, 
                 "closed_loop": False,
                 "mutual_monitoring": False,
@@ -601,12 +619,14 @@ def run_dataset(
                 "team_orientation": False,
                 "mutual_trust": True,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             },
             # All features with recruitment
             {
                 "name": "All Features with Recruitment", 
+                "description": f"Team of {n_max} agents with all teamwork components",
                 "leadership": True, 
                 "closed_loop": True,
                 "mutual_monitoring": True,
@@ -614,7 +634,8 @@ def run_dataset(
                 "team_orientation": True,
                 "mutual_trust": True,
                 "recruitment": True,
-                "recruitment_method": "intermediate" if n_max is not None else "adaptive",
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
                 "n_max": n_max
             }
         ]
@@ -630,23 +651,39 @@ def run_dataset(
             "mutual_trust": mutual_trust,
             "recruitment": recruitment,            
             "recruitment_method": recruitment_method,
+            "recruitment_pool": recruitment_pool,
             "n_max": n_max
         }]
     
     # Run each configuration
     all_results = []
     for config in configurations:
-        # Add recruitment settings to all configs
+        # Ensure each config has proper n_max value
+        if "n_max" not in config:
+            config["n_max"] = n_max
+        
+        # Special handling for Baseline - always use basic recruitment with 1 agent
+        if config["name"] == "Baseline":
+            config["recruitment"] = True
+            config["recruitment_method"] = "basic"
+            config["n_max"] = 1
+        
+        # Add recruitment settings to all configs if recruitment is enabled
         if config["recruitment"]:
-            config["recruitment_method"] = recruitment_method
-            config["recruitment_pool"] = recruitment_pool
+            config["recruitment_method"] = config.get("recruitment_method", recruitment_method)
+            config["recruitment_pool"] = config.get("recruitment_pool", recruitment_pool)
+        
+        # Log current configuration with description if available
+        description = config.get("description", "")
+        desc_str = f" - {description}" if description else ""
+        logging.info(f"Running configuration: {config['name']}{desc_str}, recruitment={config['recruitment']}, method={config['recruitment_method']}, n_max={config['n_max']}")
         
         result = run_questions_with_configuration(
             questions,
             dataset_type,
             config,
             run_output_dir,
-            n_max=config.get("n_max")
+            n_max=config.get("n_max", n_max)
         )
         all_results.append(result)
     
@@ -666,6 +703,241 @@ def run_dataset(
             json.dump(combined_results, f, indent=2)
     
     return combined_results
+
+
+
+"""
+Updated run_questions_with_configuration to handle all configurations correctly.
+"""
+
+def run_questions_with_configuration(
+    questions: List[Dict[str, Any]],
+    dataset_type: str,
+    configuration: Dict[str, bool],
+    output_dir: Optional[str] = None,
+    max_retries: int = 3,
+    n_max: int = 5
+) -> Dict[str, Any]:
+    """
+    Run questions with specific configuration, handling errors gracefully.
+    """
+    config_name = configuration.get("name", "unknown")
+    logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
+    
+    from components import agent_recruitment
+    agent_recruitment.reset_complexity_metrics()
+
+    # Make sure configuration has proper recruitment method and n_max
+    if config_name == "Baseline":
+        # Baseline always uses basic recruitment with 1 agent
+        configuration["recruitment"] = True
+        configuration["recruitment_method"] = "basic"
+        configuration["n_max"] = 1
+    elif config_name != "Custom Configuration":
+        # All other named configurations use intermediate recruitment with specified n_max
+        configuration["recruitment"] = True
+        configuration["recruitment_method"] = "intermediate"
+        if "n_max" not in configuration:
+            configuration["n_max"] = n_max
+    
+    # Setup output directory
+    run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
+    if run_output_dir:
+        os.makedirs(run_output_dir, exist_ok=True)
+    
+    # Results collection
+    results = {
+        "configuration": config_name,
+        "dataset": dataset_type,
+        "num_questions": len(questions),
+        "timestamp": datetime.now().isoformat(),
+        "question_results": [],
+        "errors": [],
+        "summary": {
+            "majority_voting": {"correct": 0, "total": 0},
+            "weighted_voting": {"correct": 0, "total": 0},
+            "borda_count": {"correct": 0, "total": 0}
+        }
+    }
+    
+    # Process each question
+    for i, question in enumerate(tqdm(questions, desc=f"{config_name}")):
+        question_result = {"question_index": i}
+        simulator = None  # Initialize simulator variable
+        performance = None  # Initialize performance variable
+        
+        try:
+            # Format the question for the task
+            if dataset_type == "medqa":
+                task = format_medqa_for_task(question)
+            elif dataset_type == "pubmedqa":
+                task = format_pubmedqa_for_task(question)
+            else:
+                raise ValueError(f"Unknown dataset type: {dataset_type}")
+            
+            question_result["question"] = task["description"]
+            question_result["ground_truth"] = task.get("ground_truth", "")
+            
+            # Update task configuration
+            config.TASK = task
+            
+            # Try to run the simulation with retries
+            for attempt in range(max_retries):
+                try:
+                    # Create simulator with configuration parameters
+                    simulator = AgentSystemSimulator(
+                        simulation_id=f"{dataset_type}_{config_name.lower().replace(' ', '_')}_{i}",
+                        use_team_leadership=configuration.get("leadership", False),
+                        use_closed_loop_comm=configuration.get("closed_loop", False),
+                        use_mutual_monitoring=configuration.get("mutual_monitoring", False),
+                        use_shared_mental_model=configuration.get("shared_mental_model", False),
+                        use_team_orientation=configuration.get("team_orientation", False),
+                        use_mutual_trust=configuration.get("mutual_trust", False),
+                        use_recruitment=configuration.get("recruitment", False),
+                        recruitment_method=configuration.get("recruitment_method", "adaptive"),
+                        recruitment_pool=configuration.get("recruitment_pool", "general"),
+                        n_max=configuration.get("n_max", n_max)  # Use configuration-specific n_max or default
+                    )
+                    
+                    # Run simulation
+                    simulation_results = simulator.run_simulation()
+                    performance = simulator.evaluate_performance()
+                    
+                    # Store decisions and performance
+                    question_result["decisions"] = simulation_results["decision_results"]
+                    question_result["performance"] = performance.get("task_performance", {})
+                    
+                    if performance is not None:
+                        # Update summary statistics
+                        for method in ["majority_voting", "weighted_voting", "borda_count"]:
+                            if method in performance.get("task_performance", {}):
+                                method_perf = performance["task_performance"][method]
+                                if "correct" in method_perf:
+                                    results["summary"][method]["total"] += 1
+                                    if method_perf["correct"]:
+                                        results["summary"][method]["correct"] += 1
+                    
+                    # Simulation succeeded, break the retry loop
+                    break
+                
+                except Exception as e:
+                    error_str = str(e)
+                    import traceback
+                    error_details = traceback.format_exc()
+                    logging.error(f"Full error details: {error_details}")
+                    
+                    # Check for different error types
+                    if attempt < max_retries - 1:
+                        # Content filter errors
+                        if "content" in error_str.lower() and "filter" in error_str.lower():
+                            error_type = "content_filter"
+                            wait_time = min(5 * (attempt + 1), 30)
+                            logging.warning(f"Content filter triggered, retry {attempt+1} for question {i}")
+                        
+                        # Rate limit errors
+                        elif any(term in error_str.lower() for term in ["rate", "limit", "timeout", "capacity"]):
+                            error_type = "rate_limit"
+                            wait_time = min(2 ** attempt + 1, 15)  # Exponential backoff
+                            logging.warning(f"Rate limit hit, waiting {wait_time}s before retry {attempt+1}")
+                        
+                        # Other retryable errors
+                        elif any(term in error_str.lower() for term in ["connection", "timeout", "retry", "try again"]):
+                            error_type = "connection"
+                            wait_time = min(2 ** attempt + 1, 10)
+                            logging.warning(f"Connection error, retry {attempt+1} for question {i}")
+                        
+                        # Continue with retry
+                        else:
+                            error_type = "other"
+                            wait_time = 1
+                            logging.warning(f"Unknown error, retry {attempt+1} for question {i}")
+                        
+                        time.sleep(wait_time)
+                        continue
+                    
+                    # Last attempt failed, record error
+                    question_result["error"] = f"API error: {error_str}"
+                    results["errors"].append({
+                        "question_index": i,
+                        "error_type": "api_error",
+                        "error": error_str
+                    })
+                    logging.error(f"Failed after {max_retries} retries for question {i}: {error_str}")
+                    break
+            
+            # Save individual question results
+            if run_output_dir:
+                try:
+                    with open(os.path.join(run_output_dir, f"question_{i}.json"), 'w') as f:
+                        output_data = {
+                            "question": task["description"],
+                            "options": task.get("options", []),
+                            "ground_truth": task.get("ground_truth", "")
+                        }
+                        if "decisions" in question_result:
+                            output_data["decisions"] = question_result["decisions"]
+                        if "performance" in question_result:
+                            output_data["performance"] = question_result["performance"]
+                        if "error" in question_result:
+                            output_data["error"] = question_result["error"]
+                        json.dump(output_data, f, indent=2)
+                except Exception as e:
+                    logging.error(f"Failed to save results for question {i}: {str(e)}")
+            
+        except Exception as e:
+            # Errors in task formatting or other pre-simulation errors
+            logging.error(f"Error processing question {i}: {str(e)}")
+            question_result["error"] = f"Processing error: {str(e)}"
+            results["errors"].append({
+                "question_index": i,
+                "error_type": "processing",
+                "error": str(e)
+            })
+        
+        # Always add the question result, even if it has errors
+        results["question_results"].append(question_result)
+    
+    # Calculate accuracy for each method
+    for method in ["majority_voting", "weighted_voting", "borda_count"]:
+        method_summary = results["summary"][method]
+        method_summary["accuracy"] = method_summary["correct"] / method_summary["total"] if method_summary["total"] > 0 else 0.0
+
+    # Add complexity metrics before returning results
+    from components import agent_recruitment
+    if hasattr(agent_recruitment, "complexity_counts") and hasattr(agent_recruitment, "complexity_correct"):
+        results["complexity_metrics"] = {
+            "counts": agent_recruitment.complexity_counts.copy(),
+            "correct": agent_recruitment.complexity_correct.copy(),
+            "accuracy": {}
+        }
+        
+        # Calculate accuracy for each complexity level
+        for level in ["basic", "intermediate", "advanced"]:
+            count = results["complexity_metrics"]["counts"].get(level, 0)
+            correct = results["complexity_metrics"]["correct"].get(level, 0)
+            results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
+    
+    # Save overall results
+    if run_output_dir:
+        try:
+            with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
+                json.dump(results["summary"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
+                json.dump(results["errors"], f, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to save summary results: {str(e)}")
+    
+    # Print summary
+    print(f"\nSummary for {config_name} on {dataset_type}:")
+    for method, stats in results["summary"].items():
+        if "accuracy" in stats:
+            print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
+    
+    if results["errors"]:
+        print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+        
+    return results
 
 
 def main():

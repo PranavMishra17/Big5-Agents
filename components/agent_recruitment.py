@@ -1,9 +1,9 @@
 """
-Agent recruitment module for dynamically assembling specialized agent teams.
+Improved agent_recruitment.py functions to better handle n_max parameter and fix scope issues.
 """
-
 import logging
 import random
+import traceback
 from typing import Dict, List, Any, Tuple
 
 from components.agent import Agent
@@ -11,8 +11,6 @@ import config
 
 from utils.prompts import RECRUITMENT_PROMPTS
 
-
-# Global counters for complexity tracking
 # Global counters for complexity tracking
 complexity_counts = {
     "basic": 0,
@@ -27,9 +25,9 @@ complexity_correct = {
     "advanced": 0
 }
 
-# In agent_recruitment.py
 # Reset counters at the beginning of each run
 def reset_complexity_metrics():
+    """Reset complexity metrics counters."""
     global complexity_counts, complexity_correct
     complexity_counts = {"basic": 0, "intermediate": 0, "advanced": 0}
     complexity_correct = {"basic": 0, "intermediate": 0, "advanced": 0}
@@ -47,7 +45,7 @@ def determine_complexity(question, method="adaptive"):
     """
     global complexity_counts
     
-    if method != "adaptive":
+    if method in ["basic", "intermediate", "advanced"]:
         complexity = method
     else:
         # For adaptive method, try evaluation with error handling
@@ -62,15 +60,17 @@ def determine_complexity(question, method="adaptive"):
             )
 
             try:
-                response = evaluator.chat(prompt.format(question=question))
+                response = evaluator.chat(prompt)
                 
                 # Extract complexity classification
-                if "1)" in response.lower() or "low" in response.lower():
+                if "1)" in response.lower() or "low" in response.lower() or "basic" in response.lower():
                     complexity = "basic"
-                elif "2)" in response.lower() or "moderate" in response.lower():
+                elif "2)" in response.lower() or "moderate" in response.lower() or "intermediate" in response.lower():
                     complexity = "intermediate"
                 else:
                     complexity = "advanced"
+                    
+                logging.info(f"Complexity determination: {complexity}")
             except Exception as e:
                 # API error fallback: use heuristic approach
                 logging.error(f"Error in complexity evaluation: {str(e)}")
@@ -88,34 +88,59 @@ def determine_complexity(question, method="adaptive"):
                 else:
                     complexity = "basic"
                 logging.info(f"Used fallback complexity determination: {complexity}")
-        except:
+        except Exception as e:
             # Default if all else fails
-            logging.error("Critical error in complexity determination, using default")
+            logging.error(f"Critical error in complexity determination, using default: {str(e)}")
+            logging.error(traceback.format_exc())
             complexity = "intermediate"
     
     # Update counter
     complexity_counts[complexity] += 1
     return complexity
-    
 
 def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max = 5, recruitment_method: str = "adaptive"):
     """
     Recruit appropriate agents based on question complexity.
+    
+    Args:
+        question: The question or task to analyze
+        complexity: Determined complexity level ("basic", "intermediate", or "advanced")
+        recruitment_pool: Pool of agent types to recruit from
+        n_max: Maximum number of agents to recruit for intermediate team
+        recruitment_method: Method for agent recruitment
+        
+    Returns:
+        Tuple of (agents dictionary, leader agent)
     """
+    # Import here to avoid circular imports
+    from components.modular_agent import ModularAgent
+    
+    logging.info(f"Recruiting agents using method: {recruitment_method}, complexity: {complexity}, n_max: {n_max}")
+    
     if complexity == "basic" or recruitment_method == "basic":
         logging.info("Using basic recruitment (single agent)")
         return recruit_basic_team(question, recruitment_pool)
     elif complexity == "intermediate" or recruitment_method == "intermediate":
+        logging.info(f"Using intermediate recruitment with n_max={n_max}")
         return recruit_intermediate_team(question, recruitment_pool, n_max)
-    elif complexity == "advanced":
+    elif complexity == "advanced" or recruitment_method == "advanced":
+        logging.info("Using advanced recruitment (MDT structure)")
         return recruit_advanced_team(question, recruitment_pool)
     else:
+        logging.info(f"Unrecognized complexity/method: {complexity}/{recruitment_method}, falling back to intermediate")
         return recruit_intermediate_team(question, recruitment_pool, n_max)
 
+
+
+
+"""
+Updated recruit_basic_team function to always return a single Medical Generalist.
+"""
 
 def recruit_basic_team(question: str, recruitment_pool: str):
     """
     Recruit a single medical generalist for basic questions.
+    Always returns exactly ONE agent, regardless of n_max.
     
     Args:
         question: The question or task
@@ -125,6 +150,7 @@ def recruit_basic_team(question: str, recruitment_pool: str):
         Tuple of (agents dictionary, leader agent)
     """
     from components.modular_agent import ModularAgent  # Local import
+    
     # Create a single medical generalist
     role = "Medical Generalist"
     expertise = "A general medical practitioner with broad knowledge across medical disciplines"
@@ -143,10 +169,14 @@ def recruit_basic_team(question: str, recruitment_pool: str):
     # Create the agents dictionary
     agents = {"Medical Generalist": agent}
     
-    logging.info(f"Basic complexity: Recruited single Medical Generalist")
+    logging.info(f"Basic recruitment: Created a single Medical Generalist (ignoring n_max)")
     
     return agents, agent
 
+
+"""
+Ensure recruit_intermediate_team respects n_max parameter.
+"""
 
 def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5):
     """
@@ -161,14 +191,19 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
         Tuple of (agents dictionary, leader agent)
     """
     from components.modular_agent import ModularAgent  # Local import
+    
+    # Log recruitment parameters
+    logging.info(f"Intermediate team recruitment: n_max={n_max}, pool={recruitment_pool}")
+    
     # Create a recruiter agent
     recruiter = Agent(
         role="Recruiter",
         expertise_description="Assembles teams of medical experts for collaborative problem-solving"
     )
     
-    # Determine number of agents to recruit
+    # Determine number of agents to recruit (use n_max as provided)
     num_agents = n_max
+    logging.info(f"Will recruit {num_agents} agents for intermediate team")
     
     # Create prompt for team selection
     selection_prompt = RECRUITMENT_PROMPTS["team_selection"].format(
@@ -240,11 +275,15 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
         # Stop when we have enough agents
         if len(selected_team) >= num_agents:
             break
-
-    selected_team = selected_team[:n_max]
+    
+    # Apply n_max constraint
+    if len(selected_team) > n_max:
+        logging.info(f"Limiting team size from {len(selected_team)} to {n_max}")
+        selected_team = selected_team[:n_max]
+    
     # If no team members found or less than specified, create a default team
-    # If team members < n_max, create appropriate medical defaults
     if len(selected_team) < num_agents:
+        # If team members < n_max, create appropriate medical defaults
         default_roles = [
             ("Medical Generalist", "Broad knowledge across medical disciplines", "Leader", 0.3),
             ("Medical Specialist", "Focused expertise in relevant area", "Independent", 0.3),
@@ -298,6 +337,7 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
     
     return agents, leader
 
+
 def recruit_advanced_team(question: str, recruitment_pool: str):
     """
     Recruit multiple specialized teams for advanced questions, following MDAgents approach.
@@ -309,6 +349,8 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
+    from components.modular_agent import ModularAgent  # Local import
+    
     # Create a strategic team designer
     recruiter = Agent(
         role="Strategic Team Designer",
@@ -408,7 +450,7 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
     # Create all agents
     agents = {}
     leader = None
-    from components.modular_agent import ModularAgent  # Local import
+    
     # Use a prefix to make roles unique across teams
     for team_idx, team in enumerate(teams):
         team_prefix = f"{team_idx+1}_{team['name'].split('(')[0].strip()}_"
@@ -428,7 +470,9 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
                 use_team_leadership=is_leader,  # Enable leadership for team leaders
                 use_closed_loop_comm=config.USE_CLOSED_LOOP_COMM,
                 use_mutual_monitoring=config.USE_MUTUAL_MONITORING,
-                use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL
+                use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
+                use_team_orientation=config.USE_TEAM_ORIENTATION,
+                use_mutual_trust=config.USE_MUTUAL_TRUST
             )
             
             # Add hierarchical information to knowledge base
@@ -448,7 +492,7 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
     # If no chief coordinator found, use first team leader
     if not leader:
         for role, agent in agents.items():
-            if agent.can_lead:
+            if hasattr(agent, 'can_lead') and agent.can_lead:
                 leader = agent
                 break
     

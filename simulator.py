@@ -5,6 +5,7 @@ Simulator for running agent system interactions.
 import os
 import logging
 import json
+import traceback
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime, time
 
@@ -22,13 +23,15 @@ from components.mutual_trust import MutualTrust
 from utils.prompts import DISCUSSION_PROMPTS
 
 
+"""
+Updated AgentSystemSimulator initialization in simulator.py to properly handle n_max parameter.
+"""
 
 class AgentSystemSimulator:
     """
     Simulator for running agent system with modular teamwork components.
     """
     
-    # Update the AgentSystemSimulator __init__ method to support recruitment
     def __init__(self, 
              simulation_id: str = None,
              use_team_leadership: bool = None,
@@ -59,7 +62,7 @@ class AgentSystemSimulator:
             use_recruitment: Whether to use dynamic agent recruitment
             recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
             recruitment_pool: Pool of agent roles to recruit from
-             n_max: Maximum number of agents for intermediate team
+            n_max: Maximum number of agents for intermediate team (default: 5)
         """
         # Set simulation ID and configuration
         self.simulation_id = simulation_id or f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -76,14 +79,24 @@ class AgentSystemSimulator:
         self.recruitment_method = recruitment_method or config.RECRUITMENT_METHOD
         self.recruitment_pool = recruitment_pool or "general"
         self.random_leader = random_leader
-        self.n_max = n_max
+        
+        # Ensure n_max has a valid value
+        self.n_max = n_max if n_max is not None else 5
+        
         self.metadata = {}
+        
         # Inside __init__
         if use_recruitment:
             if recruitment_method == "adaptive":
                 # Get actual complexity from agent_recruitment
-                actual_complexity = determine_complexity(config.TASK["description"], method=recruitment_method)
-                self.metadata["complexity"] = actual_complexity
+                complexity = "unknown"
+                try:
+                    from components.agent_recruitment import determine_complexity
+                    complexity = determine_complexity(config.TASK["description"], method=recruitment_method)
+                    self.metadata["complexity"] = complexity
+                except Exception as e:
+                    logging.error(f"Failed to determine complexity: {str(e)}")
+                    self.metadata["complexity"] = "intermediate"  # Default fallback
             else:
                 self.metadata["complexity"] = recruitment_method
         
@@ -101,7 +114,7 @@ class AgentSystemSimulator:
             "recruitment_pool": self.recruitment_pool,
             "random_leader": self.random_leader,
             "n_max": self.n_max,
-            "task": config.TASK["name"]
+            "task": config.TASK.get("name", "Unknown")
         }
         
         # Setup logging
@@ -114,30 +127,52 @@ class AgentSystemSimulator:
         # Log configuration properly
         logging.info(f"Initializing simulator with n_max: {self.n_max}")
         
+        # Agents dictionary and leader
+        self.agents = {}
+        self.leader = None
 
         # Create agent team with proper imports to avoid the "recruit_agents not in scope" error
         if self.use_recruitment and config.TASK.get("description"):
             # Local import to avoid circular import problems
             try:
-                # Use global imports
+                # Import from agent_recruitment module
+                from components.agent_recruitment import determine_complexity, recruit_agents
                 complexity = determine_complexity(config.TASK["description"], self.recruitment_method)
                 self.metadata["complexity"] = complexity
                 logging.info(f"Recruiting agents: method={self.recruitment_method}, complexity={complexity}, n_max={self.n_max}")
-    
-                            
-                team_data = recruit_agents(
+                
+                # Call recruit_agents with proper parameters
+                agents, leader = recruit_agents(
                     config.TASK["description"],
                     complexity,
                     self.recruitment_pool,
                     self.n_max,
                     self.recruitment_method
                 )
-                self.agents, self.leader = team_data
+                self.agents = agents
+                self.leader = leader
+                
             except Exception as e:
                 logging.error(f"Recruitment failed: {str(e)}, using default team")
+                logging.error(f"Traceback: {traceback.format_exc()}")
+                
+                # Fall back to creating a default team
+                from components.modular_agent import create_agent_team
+                self.agents, self.leader = create_agent_team(
+                    use_team_leadership=self.use_team_leadership,
+                    use_closed_loop_comm=self.use_closed_loop_comm,
+                    use_mutual_monitoring=self.use_mutual_monitoring,
+                    use_shared_mental_model=self.use_shared_mental_model,
+                    use_team_orientation=self.use_team_orientation,
+                    use_mutual_trust=self.use_mutual_trust,
+                    random_leader=self.random_leader,
+                    use_recruitment=False,  # Don't try recruitment again
+                    n_max=self.n_max
+                )
         else:
-            # Create agent team
-            team_data = create_agent_team(
+            # Create agent team without recruitment
+            from components.modular_agent import create_agent_team
+            self.agents, self.leader = create_agent_team(
                 use_team_leadership=self.use_team_leadership,
                 use_closed_loop_comm=self.use_closed_loop_comm,
                 use_mutual_monitoring=self.use_mutual_monitoring,
@@ -145,20 +180,9 @@ class AgentSystemSimulator:
                 use_team_orientation=self.use_team_orientation,
                 use_mutual_trust=self.use_mutual_trust,
                 random_leader=self.random_leader,
-                use_recruitment=self.use_recruitment,
-                question=config.TASK["description"] if self.use_recruitment else None,
-                recruitment_method=self.recruitment_method,
-                recruitment_pool=self.recruitment_pool,
-                n_max=self.n_max,
+                use_recruitment=False,
+                n_max=self.n_max
             )
-        
-        # Handle returned team data structure
-        if isinstance(team_data, dict) and "agents" in team_data and "leader" in team_data:
-            self.agents = team_data["agents"]
-            self.leader = team_data["leader"]
-        else:
-            # Unpack tuple return value (agents, leader)
-            self.agents, self.leader = team_data
         
         # Initialize teamwork components
         self.comm_handler = ClosedLoopCommunication() if self.use_closed_loop_comm else None
@@ -213,7 +237,7 @@ class AgentSystemSimulator:
         if self.use_mutual_trust:
             component_config.append(f"Mutual Trust (factor: {self.mutual_trust_factor:.1f})")
         if self.use_recruitment:
-            component_config.append(f"Agent Recruitment ({self.recruitment_method})")
+            component_config.append(f"Agent Recruitment ({self.recruitment_method}, n_max={self.n_max})")
             
         config_str = ", ".join(component_config) if component_config else "No teamwork components"
         self.logger.logger.info(f"Components enabled: {config_str}")

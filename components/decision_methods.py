@@ -24,6 +24,10 @@ class DecisionMethods:
         self.logger.info("Initialized decision methods handler")
 
 
+    """
+    Fix extract_answer_option method to always return uppercase letters.
+    """
+
     def extract_answer_option(self, content):
         """Extract answer option from various content formats."""
         if not isinstance(content, str):
@@ -31,17 +35,18 @@ class DecisionMethods:
         
         # Standard answer formats
         patterns = [
-            r"ANSWER:\s*([A-D])",
-            r"FINAL ANSWER:\s*([A-D])",
-            r"\*\*([A-D])\.",
-            r"^([A-D])\.",
-            r"option\s+([A-D])",
-            r"selected?:?\s*([A-D])"
+            r"ANSWER:\s*([A-Da-d])",
+            r"FINAL ANSWER:\s*([A-Da-d])",
+            r"\*\*([A-Da-d])\.",
+            r"^([A-Da-d])\.",
+            r"option\s+([A-Da-d])",
+            r"selected?:?\s*([A-Da-d])"
         ]
         
         for pattern in patterns:
             match = re.search(pattern, content, re.IGNORECASE)
             if match:
+                # Always return uppercase 
                 return match.group(1).upper()
         
         # Check for antibody mentions
@@ -58,6 +63,9 @@ class DecisionMethods:
                 
         return None
 
+    """
+    Fix majority_voting and weighted_voting methods to ensure case consistency.
+    """
 
     def majority_voting(self, agent_responses):
         """Apply majority voting to select the most common option."""
@@ -74,12 +82,17 @@ class DecisionMethods:
                 elif "extract" in response and isinstance(response["extract"], dict):
                     if "answer" in response["extract"]:
                         preference = response["extract"]["answer"]
+                        if preference:  # Ensure it's not None
+                            preference = preference.upper()  # Convert to uppercase
             # Handle string responses
             elif isinstance(response, str):
                 preference = self.extract_answer_option(response)
             
             # Register the vote if preference was found
             if preference:
+                # Ensure uppercase
+                preference = preference.upper()
+                
                 if preference not in votes:
                     votes[preference] = 0
                 votes[preference] += 1
@@ -95,63 +108,6 @@ class DecisionMethods:
             "vote_counts": votes,
             "total_votes": total_votes,
             "confidence": max_votes / total_votes if total_votes > 0 else 0
-        }
-
-
-    def borda_count(self, agent_responses):
-        """Apply Borda count to MCQ tasks."""
-        import re
-        
-        borda_scores = {"A": 0, "B": 0, "C": 0, "D": 0}
-        num_rankings = 0
-        
-        for agent_role, response_data in agent_responses.items():
-            if "final_decision" in response_data:
-                # Look for ranking pattern with improved regex
-                # Handle bold markdown, optional spaces, and variations
-                ranking_pattern = r"[Mm]y\s+ranking:?\s*\*?([A-D])\*?,\s*\*?([A-D])\*?,\s*\*?([A-D])\*?,\s*\*?([A-D])\*?"
-                match = re.search(ranking_pattern, response_data["final_decision"], re.IGNORECASE)
-                
-                if match:
-                    # Extract ranking
-                    ranking = list(match.groups())
-                    num_rankings += 1
-                    
-                    # Assign Borda points (3 for 1st place, 2 for 2nd, etc.)
-                    for i, option in enumerate(ranking):
-                        borda_scores[option] += 3 - i  # 3, 2, 1, 0 points
-                    
-                    logging.info(f"Borda count: {agent_role} ranking extracted: {ranking}")
-                else:
-                    # Fallback: look for ranking mentioned in a different format
-                    alt_pattern = r"ranking.*?([A-D]).*?([A-D]).*?([A-D]).*?([A-D])"
-                    alt_match = re.search(alt_pattern, response_data["final_decision"], re.IGNORECASE)
-                    
-                    if alt_match:
-                        ranking = list(alt_match.groups())
-                        num_rankings += 1
-                        for i, option in enumerate(ranking):
-                            borda_scores[option] += 3 - i
-                        logging.info(f"Borda count: {agent_role} alt ranking extracted: {ranking}")
-                    else:
-                        # Second fallback: just extract the answer
-                        answer = self.extract_answer_option(response_data["final_decision"])
-                        if answer:
-                            borda_scores[answer] += 3
-                            num_rankings += 1
-                            logging.info(f"Borda count: {agent_role} only answer found: {answer}")
-        
-        # Find winner and calculate confidence
-        winning_option = max(borda_scores.items(), key=lambda x: x[1])[0] if borda_scores else None
-        total_possible_score = num_rankings * 3.0
-        confidence = borda_scores[winning_option] / total_possible_score if winning_option and total_possible_score > 0 else 0
-        
-        return {
-            "method": "borda_count",
-            "winning_option": winning_option,
-            "borda_scores": borda_scores,
-            "total_possible_score": total_possible_score,
-            "confidence": confidence
         }
 
 
@@ -173,10 +129,15 @@ class DecisionMethods:
                 elif "extract" in response_data and isinstance(response_data["extract"], dict):
                     if "answer" in response_data["extract"]:
                         preference = response_data["extract"]["answer"]
+                        if preference:  # Ensure it's not None
+                            preference = preference.upper()  # Convert to uppercase
                     if "confidence" in response_data["extract"]:
                         confidence = response_data["extract"]["confidence"]
             
             if preference:
+                # Ensure uppercase
+                preference = preference.upper()
+                
                 # Get agent weight from response data or use default
                 weight = response_data.get("weight", 0.2)
                 
@@ -216,6 +177,71 @@ class DecisionMethods:
             "weighted_votes": weighted_votes,
             "agent_weights": agent_weights_used,
             "total_weight": total_weight,
+            "confidence": confidence
+        }
+
+
+
+    """
+    Fix borda_count method to handle case insensitivity.
+    """
+
+    def borda_count(self, agent_responses):
+        """Apply Borda count to MCQ tasks."""
+        import re
+        
+        # Initialize scores with uppercase letters
+        borda_scores = {"A": 0, "B": 0, "C": 0, "D": 0}
+        num_rankings = 0
+        
+        for agent_role, response_data in agent_responses.items():
+            if "final_decision" in response_data:
+                # Look for ranking pattern with improved regex
+                # Handle bold markdown, optional spaces, and variations
+                ranking_pattern = r"[Mm]y\s+ranking:?\s*\*?([A-Da-d])\*?,\s*\*?([A-Da-d])\*?,\s*\*?([A-Da-d])\*?,\s*\*?([A-Da-d])\*?"
+                match = re.search(ranking_pattern, response_data["final_decision"], re.IGNORECASE)
+                
+                if match:
+                    # Extract ranking, and convert all to uppercase
+                    ranking = [option.upper() for option in match.groups()]
+                    num_rankings += 1
+                    
+                    # Assign Borda points (3 for 1st place, 2 for 2nd, etc.)
+                    for i, option in enumerate(ranking):
+                        borda_scores[option] += 3 - i  # 3, 2, 1, 0 points
+                    
+                    logging.info(f"Borda count: {agent_role} ranking extracted: {ranking}")
+                else:
+                    # Fallback: look for ranking mentioned in a different format
+                    alt_pattern = r"ranking.*?([A-Da-d]).*?([A-Da-d]).*?([A-Da-d]).*?([A-Da-d])"
+                    alt_match = re.search(alt_pattern, response_data["final_decision"], re.IGNORECASE)
+                    
+                    if alt_match:
+                        ranking = [option.upper() for option in alt_match.groups()]
+                        num_rankings += 1
+                        for i, option in enumerate(ranking):
+                            borda_scores[option] += 3 - i
+                        logging.info(f"Borda count: {agent_role} alt ranking extracted: {ranking}")
+                    else:
+                        # Second fallback: just extract the answer
+                        answer = self.extract_answer_option(response_data["final_decision"])
+                        if answer:
+                            # Make sure answer is uppercase
+                            answer = answer.upper()
+                            borda_scores[answer] += 3
+                            num_rankings += 1
+                            logging.info(f"Borda count: {agent_role} only answer found: {answer}")
+        
+        # Find winner and calculate confidence
+        winning_option = max(borda_scores.items(), key=lambda x: x[1])[0] if borda_scores else None
+        total_possible_score = num_rankings * 3.0
+        confidence = borda_scores[winning_option] / total_possible_score if winning_option and total_possible_score > 0 else 0
+        
+        return {
+            "method": "borda_count",
+            "winning_option": winning_option,
+            "borda_scores": borda_scores,
+            "total_possible_score": total_possible_score,
             "confidence": confidence
         }
 

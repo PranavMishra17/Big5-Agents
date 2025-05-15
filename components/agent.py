@@ -160,6 +160,8 @@ class Agent:
         """
         return self.knowledge_base.get(key)
     
+
+
     def chat(self, message: str) -> str:
         """
         Send a message to the agent and get a response.
@@ -175,18 +177,30 @@ class Agent:
         # Add the user message to the conversation
         self.messages.append({"role": "user", "content": message})
         
-        # Get response from LLM
-        response = self.client.invoke(messages=self.messages)
+        # Get response from LLM - fix for LangChain API change
+        try:
+            # New LangChain API style
+            response = self.client.invoke(self.messages)
+            assistant_message = response.content
+        except TypeError as e:
+            if "missing 1 required positional argument: 'input'" in str(e):
+                # Fall back to old style invocation
+                self.logger.info("Falling back to older LangChain API style")
+                response = self.client.invoke(input=self.messages)
+                assistant_message = response.content
+            else:
+                # Re-raise if it's a different TypeError
+                raise
         
         # Extract and store the response
-        assistant_message = response.content
         self.messages.append({"role": "assistant", "content": assistant_message})
         self.conversation_history.append({"user": message, "assistant": assistant_message})
         
         self.logger.info(f"Responded: {assistant_message[:100]}...")
         
         return assistant_message
-    
+
+
     def get_conversation_history(self) -> List[Dict[str, str]]:
         """Get the conversation history."""
         return self.conversation_history
