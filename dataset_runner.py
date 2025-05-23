@@ -434,94 +434,40 @@ def run_questions_with_configuration(
 """
 Fix recruitment configurations in run_dataset to ensure proper n_max handling.
 """
+"""
+# Baseline - a single Medical Generalist agent (using basic recruitment)
+{
+    "name": "Baseline", 
+    "description": "Single Medical Generalist agent, no teamwork components",
+    "leadership": False, 
+    "closed_loop": False,
+    "mutual_monitoring": False,
+    "shared_mental_model": False,
+    "team_orientation": False,
+    "mutual_trust": False,
+    "recruitment": True,  # Set to True but will be handled specially
+    "recruitment_method": "basic",  # Force basic recruitment for Baseline
+    "n_max": 1  # Always use just 1 agent for Baseline
+},
 
-def run_dataset(
-    dataset_type: str,
-    num_questions: int = 50,
-    random_seed: int = 42,
-    run_all_configs: bool = False,
-    output_dir: Optional[str] = None,
-    leadership: bool = False,
-    closed_loop: bool = False,
-    mutual_monitoring: bool = False,
-    shared_mental_model: bool = False,
-    team_orientation: bool = False,
-    mutual_trust: bool = False,
-    mutual_trust_factor: float = 0.8,
-    recruitment: bool = False,
-    recruitment_method: str = "adaptive",
-    recruitment_pool: str = "general",
-    n_max: int = 5
-) -> Dict[str, Any]:
-    """
-    Run a dataset through the agent system.
-    
-    Args:
-        dataset_type: Type of dataset ("medqa" or "pubmedqa")
-        num_questions: Number of questions to process
-        random_seed: Random seed for reproducibility
-        run_all_configs: Whether to run all configurations
-        output_dir: Optional output directory for results
-        leadership: Use team leadership
-        closed_loop: Use closed-loop communication
-        mutual_monitoring: Use mutual performance monitoring
-        shared_mental_model: Use shared mental model
-        team_orientation: Use team orientation
-        mutual_trust: Use mutual trust
-        mutual_trust_factor: Mutual trust factor (0.0-1.0)
-        recruitment: Use dynamic agent recruitment
-        recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
-        recruitment_pool: Pool of agent roles to recruit from
-        n_max: Maximum number of agents for intermediate teams
-        
-    Returns:
-        Results dictionary
-    """
-    # Ensure n_max has a default value
-    if n_max is None:
-        n_max = 5
-    
-    # Log parameters
-    logging.info(f"Running dataset: {dataset_type}, n_max={n_max}, recruitment_method={recruitment_method}")
+# Standard Team - uses specified n_max agents (using intermediate recruitment)
+{
+    "name": "Standard Team", 
+    "description": f"Team of {n_max} agents with no teamwork components, using intermediate recruitment",
+    "leadership": False, 
+    "closed_loop": False,
+    "mutual_monitoring": False,
+    "shared_mental_model": False,
+    "team_orientation": False,
+    "mutual_trust": False,
+    "recruitment": True,
+    "recruitment_method": "intermediate",  # Use intermediate recruitment method
+    "recruitment_pool": recruitment_pool,
+    "n_max": n_max  # Use specified n_max value
+},
 
-    # Load the dataset
-    if dataset_type == "medqa":
-        questions = load_medqa_dataset(num_questions, random_seed)
-    elif dataset_type == "pubmedqa":
-        questions = load_pubmedqa_dataset(num_questions, random_seed)
-    else:
-        logging.error(f"Unknown dataset type: {dataset_type}")
-        return {"error": f"Unknown dataset type: {dataset_type}"}
-    
-    if not questions:
-        return {"error": "No questions loaded"}
-    
-    # Setup output directory
-    if output_dir:
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        run_output_dir = os.path.join(output_dir, f"{dataset_type}_run_{timestamp}")
-        os.makedirs(run_output_dir, exist_ok=True)
-    else:
-        run_output_dir = None
-    
-    # Define configurations to test
-    if run_all_configs:
-        configurations = [
-            # Baseline - a single Medical Generalist agent (using basic recruitment)
-            {
-                "name": "Baseline", 
-                "description": "Single Medical Generalist agent, no teamwork components",
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": False,
-                "team_orientation": False,
-                "mutual_trust": False,
-                "recruitment": True,  # Set to True but will be handled specially
-                "recruitment_method": "basic",  # Force basic recruitment for Baseline
-                "n_max": 1  # Always use just 1 agent for Baseline
-            },
-            
+
+
             # Standard Team - uses specified n_max agents (using intermediate recruitment)
             {
                 "name": "Standard Team", 
@@ -537,7 +483,7 @@ def run_dataset(
                 "recruitment_pool": recruitment_pool,
                 "n_max": n_max  # Use specified n_max value
             },
-            
+
             # Single features with intermediate recruitment
             {
                 "name": "Leadership", 
@@ -632,6 +578,96 @@ def run_dataset(
                 "mutual_monitoring": True,
                 "shared_mental_model": True,
                 "team_orientation": True,
+                "mutual_trust": True,
+                "recruitment": True,
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
+                "n_max": n_max
+            }
+"""
+
+
+def run_dataset(
+    dataset_type: str,
+    num_questions: int = 50,
+    random_seed: int = 42,
+    run_all_configs: bool = False,
+    output_dir: Optional[str] = None,
+    leadership: bool = False,
+    closed_loop: bool = False,
+    mutual_monitoring: bool = False,
+    shared_mental_model: bool = False,
+    team_orientation: bool = False,
+    mutual_trust: bool = False,
+    mutual_trust_factor: float = 0.8,
+    recruitment: bool = False,
+    recruitment_method: str = "adaptive",
+    recruitment_pool: str = "general",
+    n_max: int = 5
+) -> Dict[str, Any]:
+    """
+    Run a dataset through the agent system.
+    
+    Args:
+        dataset_type: Type of dataset ("medqa" or "pubmedqa")
+        num_questions: Number of questions to process
+        random_seed: Random seed for reproducibility
+        run_all_configs: Whether to run all configurations
+        output_dir: Optional output directory for results
+        leadership: Use team leadership
+        closed_loop: Use closed-loop communication
+        mutual_monitoring: Use mutual performance monitoring
+        shared_mental_model: Use shared mental model
+        team_orientation: Use team orientation
+        mutual_trust: Use mutual trust
+        mutual_trust_factor: Mutual trust factor (0.0-1.0)
+        recruitment: Use dynamic agent recruitment
+        recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
+        recruitment_pool: Pool of agent roles to recruit from
+        n_max: Maximum number of agents for intermediate teams
+        
+    Returns:
+        Results dictionary
+    """
+    # Ensure n_max has a default value
+    if n_max is None:
+        n_max = 5
+    
+    # Log parameters
+    logging.info(f"Running dataset: {dataset_type}, n_max={n_max}, recruitment_method={recruitment_method}")
+
+    # Load the dataset
+    if dataset_type == "medqa":
+        questions = load_medqa_dataset(num_questions, random_seed)
+    elif dataset_type == "pubmedqa":
+        questions = load_pubmedqa_dataset(num_questions, random_seed)
+    else:
+        logging.error(f"Unknown dataset type: {dataset_type}")
+        return {"error": f"Unknown dataset type: {dataset_type}"}
+    
+    if not questions:
+        return {"error": "No questions loaded"}
+    
+    # Setup output directory
+    if output_dir:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        run_output_dir = os.path.join(output_dir, f"{dataset_type}_run_{timestamp}")
+        os.makedirs(run_output_dir, exist_ok=True)
+    else:
+        run_output_dir = None
+    
+    # Define configurations to test
+    if run_all_configs:
+        configurations = [
+
+            {
+                "name": "Custom improving with Recruitment", 
+                "description": f"Team of {n_max} agents with all teamwork components",
+                "leadership": True, 
+                "closed_loop": False,
+                "mutual_monitoring": False,
+                "shared_mental_model": True,
+                "team_orientation": False,
                 "mutual_trust": True,
                 "recruitment": True,
                 "recruitment_method": "intermediate",

@@ -156,13 +156,7 @@ OPEN_ENDED_TASK_EXAMPLE = {
 
 # Agent roles and expertise
 AGENT_ROLES = {
-    "Critical Analyst": "Approaches problems with analytical rigor, questioning assumptions and evaluating evidence. Brings expertise in logical reasoning, statistical analysis, and critical thinking methodology.",
-    
-    "Domain Expert": "Provides specialized knowledge relevant to the task domain. Has deep understanding of principles, historical context, and technical aspects of the subject matter.",
-    
-    "Creative Strategist": "Offers innovative perspectives and approaches to problem solving. Specializes in making connections between disparate concepts and thinking beyond conventional solutions.",
-    
-    "Process Facilitator": "Focuses on optimizing the collaborative process and ensuring methodical evaluation. Brings expertise in decision frameworks, consensus building, and structured problem solving."
+   "Generalist": "A general medical practitioner with broad knowledge across medical disciplines. "
 }
 
 # Decision method weights
@@ -200,7 +194,7 @@ RECRUITMENT_POOLS = {
         "Pediatrician - Specializes in child and adolescent health",
         "Psychiatrist - Focuses on mental health disorders",
         "Rheumatologist - Specializes in autoimmune and joint disorders",
-        "Hematologist - Focuses on blood disorders and diseases"
+        "Hematologist - Focuses on blood disorders and diseases",
         "Medical Geneticist - Specializes in the study of genes and heredity",
         "Neonatologist - Focuses on the care of newborn infants, especially those who are premature or have medical issues",
         "Otolaryngologist - Specializes in ear, nose, and throat disorders (ENT Surgeon)",
@@ -213,14 +207,7 @@ RECRUITMENT_POOLS = {
     ],
 
     "general": [
-        "Critical Analyst - Approaches problems with analytical rigor, questioning assumptions and evaluating evidence",
-        "Domain Expert - Provides specialized knowledge relevant to the task domain",
-        "Creative Strategist - Offers innovative perspectives and approaches to problem solving",
-        "Process Facilitator - Focuses on optimizing the collaborative process and ensuring methodical evaluation",
-        "Systems Thinker - Analyzes how different components interact and affect each other",
-        "Data Specialist - Evaluates quantitative information and statistical patterns",
-        "Risk Assessor - Identifies potential problems and evaluates their likelihood and impact",
-        "Implementation Expert - Focuses on practical execution and operational constraints"
+        "Medical Generalist - A general medical practitioner with broad knowledge across medical disciplines."
     ]
 }
 
