@@ -20,7 +20,7 @@ import config
 from components.team_orientation import TeamOrientation
 from components.mutual_trust import MutualTrust
 
-from utils.prompts import DISCUSSION_PROMPTS
+from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS
 
 
 """
@@ -438,7 +438,7 @@ class AgentSystemSimulator:
             })
             
             return leader_definition
-    
+        
 
     def _run_collaborative_discussion(self, agent_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         """
@@ -465,12 +465,20 @@ class AgentSystemSimulator:
             # Create collaborative prompt
             if len(other_analyses) > 0:
                 other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
-                                                 for other_role, analysis in other_analyses.items()])
-                        
-                collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
-                    initial_analysis=agent_analyses[role]['analysis'],
-                    teammates_analyses=other_analyses_text
-                )
+                                                for other_role, analysis in other_analyses.items()])
+                
+                # Use appropriate prompt based on task type
+                task_type = config.TASK.get("type", "mcq")
+                if task_type == "yes_no_maybe":
+                    collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(
+                        initial_analysis=agent_analyses[role]['analysis'],
+                        teammates_analyses=other_analyses_text
+                    )
+                else:
+                    collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
+                        initial_analysis=agent_analyses[role]['analysis'],
+                        teammates_analyses=other_analyses_text
+                    )
 
                 # Apply mutual monitoring if enabled
                 if self.use_mutual_monitoring and self.mutual_monitor:
@@ -612,11 +620,15 @@ class AgentSystemSimulator:
         if self.use_team_leadership and self.leader:
             # Create synthesis context with all agent decisions
             context = "\n\n".join([f"{role}:\n{decision['final_decision']}" 
-                                 for role, decision in agent_decisions.items() 
-                                 if role != self.leader.role])
+                                for role, decision in agent_decisions.items() 
+                                if role != self.leader.role])
             
-            # Have leader synthesize
-            leader_synthesis = self.leader.leadership_action("synthesize", context)
+            # Use appropriate synthesis prompt based on task type
+            task_type = config.TASK.get("type", "mcq")
+            if task_type == "yes_no_maybe":
+                leader_synthesis = self.leader.leadership_action("synthesize_yes_no_maybe", context)
+            else:
+                leader_synthesis = self.leader.leadership_action("synthesize", context)
             
             # Log to leadership channel
             self.logger.log_leadership_action(
@@ -649,7 +661,6 @@ class AgentSystemSimulator:
             }
         
         return agent_decisions
-    
 
 
     def _apply_decision_methods(self, agent_decisions):
@@ -781,6 +792,20 @@ class AgentSystemSimulator:
         
         return performance
     
+    def _evaluate_performance(self) -> Dict[str, Any]:
+        """
+        Evaluate the performance of the simulation.
+        
+        Returns:
+            Dictionary with performance metrics
+        """
+        performance = {
+            "task_performance": self._evaluate_task_performance(),
+            "teamwork_performance": self._evaluate_teamwork_performance()
+        }
+        
+        return performance
+
 
     def _evaluate_task_performance(self) -> Dict[str, Any]:
         """
@@ -795,8 +820,71 @@ class AgentSystemSimulator:
             return self._evaluate_ranking_performance()
         elif task_type == "mcq":
             return self._evaluate_mcq_performance()
+        elif task_type == "yes_no_maybe":
+            return self._evaluate_yes_no_maybe_performance()
         else:
             return {"metric": "qualitative", "note": "No quantitative metric for this task type"}
+
+
+    def _evaluate_yes_no_maybe_performance(self) -> Dict[str, Any]:
+        """Evaluate performance on yes/no/maybe tasks."""
+        ground_truth = config.TASK.get("ground_truth", "").lower()
+        
+        if not ground_truth or ground_truth not in ["yes", "no", "maybe"]:
+            return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
+        
+        metrics = {}
+        
+        # Evaluate each decision method
+        for method, result in self.results["decision_results"].items():
+            if result and "winning_option" in result:
+                selected = result["winning_option"]
+                
+                # Check if the selected option matches ground truth
+                correct = selected == ground_truth if selected else False
+                
+                metrics[method] = {
+                    "correct": correct,
+                    "confidence": result.get("confidence", 0)
+                }
+        
+        return metrics
+    
+    def leadership_action(self, action_type: str, context: str = None) -> str:
+        """
+        Perform a leadership action if this agent has leadership capabilities.
+        
+        Args:
+            action_type: Type of leadership action
+            context: Optional context information
+            
+        Returns:
+            Result of the leadership action, or explanation if not a leader
+        """
+        if not self.can_lead:
+            return f"As a {self.role} without leadership designation, I cannot perform leadership actions."
+        
+        if action_type == "define_task":
+            prompt = LEADERSHIP_PROMPTS["define_task"].format(
+                task_description=config.TASK['description'],
+                context=context or ''
+            )
+        elif action_type == "synthesize":
+            prompt = LEADERSHIP_PROMPTS["synthesize"].format(
+                context=context or ''
+            )
+        elif action_type == "synthesize_yes_no_maybe":
+            prompt = LEADERSHIP_PROMPTS["synthesize_yes_no_maybe"].format(
+                context=context or ''
+            )
+        elif action_type == "facilitate":
+            prompt = LEADERSHIP_PROMPTS["facilitate"].format(
+                context=context or ''
+            )
+        else:
+            return f"Unknown leadership action: {action_type}"
+        
+        return self.chat(prompt)
     
 
     def _evaluate_ranking_performance(self) -> Dict[str, Any]:

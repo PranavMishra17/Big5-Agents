@@ -205,6 +205,56 @@ class Agent:
         """Get the conversation history."""
         return self.conversation_history
     
+    
+    def extract_multi_choice_mcq_answer(self, message):
+        """
+        Extract multi-choice MCQ answers from the agent's response.
+        
+        Args:
+            message: Message to analyze
+            
+        Returns:
+            Multi-choice MCQ answers and confidence level
+        """
+        import re
+        
+        # Patterns for multi-choice answers
+        patterns = [
+            r"ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"FINAL ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"selected options?:?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"correct options? (?:are|is):?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, message, re.IGNORECASE)
+            if match:
+                # Extract and clean the answer string
+                answer_str = match.group(1).upper()
+                # Remove 'and', spaces, and split by comma
+                answer_str = answer_str.replace('AND', ',').replace(' ', '')
+                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+                # Remove duplicates and sort
+                answers = sorted(list(set(answers)))
+                confidence = self.extract_confidence(message)
+                return {"answers": answers, "confidence": confidence}
+        
+        # Look for pattern like "Options A and C" or "A, B, and D"
+        option_pattern = r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)"
+        match = re.search(option_pattern, message, re.IGNORECASE)
+        if match:
+            answer_str = match.group(1).upper()
+            answer_str = answer_str.replace('AND', ',').replace(' ', '')
+            answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+            answers = sorted(list(set(answers)))
+            confidence = self.extract_confidence(message)
+            return {"answers": answers, "confidence": confidence}
+        
+        # No clear answers found
+        confidence = self.extract_confidence(message)
+        return {"answers": [], "confidence": confidence}
+
+    # Update extract_response method:
     def extract_response(self, message=None) -> Dict[str, Any]:
         """
         Extract the agent's response to the task from their message.
@@ -226,11 +276,15 @@ class Agent:
             return self.extract_ranking(message)
         elif task_type == "mcq":
             return self.extract_mcq_answer(message)
+        elif task_type == "multi_choice_mcq":
+            return self.extract_multi_choice_mcq_answer(message)
+        elif task_type == "yes_no_maybe":
+            return self.extract_yes_no_maybe_answer(message)
         elif task_type in ["open_ended", "estimation", "selection"]:
             return {"response": message, "confidence": self.extract_confidence(message)}
         else:
             return {"raw_response": message}
-    
+
     def extract_ranking(self, message):
         """
         Extract a ranking from the agent's response.
@@ -318,6 +372,56 @@ class Agent:
         # No clear answer found
         return {"answer": None, "confidence": confidence}
     
+    def extract_yes_no_maybe_answer(self, message):
+        """
+        Extract a yes/no/maybe answer from the agent's response.
+        
+        Args:
+            message: Message to analyze
+            
+        Returns:
+            Yes/no/maybe answer and confidence level
+        """
+        import re
+        
+        # Look for explicit answer patterns
+        answer_patterns = [
+            r"ANSWER:\s*(yes|no|maybe)",
+            r"FINAL ANSWER:\s*(yes|no|maybe)",
+            r"answer is:\s*(yes|no|maybe)",
+            r"my answer:\s*(yes|no|maybe)",
+            r"the answer is:\s*(yes|no|maybe)"
+        ]
+        
+        for pattern in answer_patterns:
+            match = re.search(pattern, message.lower(), re.IGNORECASE)
+            if match:
+                answer = match.group(1).lower()
+                confidence = self.extract_confidence(message)
+                return {"answer": answer, "confidence": confidence}
+        
+        # Look for clear yes/no/maybe statements in the text
+        lower_message = message.lower()
+        
+        # Check for definitive yes
+        if any(phrase in lower_message for phrase in ["yes,", "yes.", "yes\n", "answer: yes", "answer is yes"]):
+            confidence = self.extract_confidence(message)
+            return {"answer": "yes", "confidence": confidence}
+        
+        # Check for definitive no
+        if any(phrase in lower_message for phrase in ["no,", "no.", "no\n", "answer: no", "answer is no"]):
+            confidence = self.extract_confidence(message)
+            return {"answer": "no", "confidence": confidence}
+        
+        # Check for maybe/uncertain
+        if any(phrase in lower_message for phrase in ["maybe", "uncertain", "unclear", "insufficient evidence", "cannot determine"]):
+            confidence = self.extract_confidence(message)
+            return {"answer": "maybe", "confidence": confidence}
+        
+        # No clear answer found
+        confidence = self.extract_confidence(message)
+        return {"answer": None, "confidence": confidence}
+    
     def extract_confidence(self, message):
         """
         Extract a confidence level from the agent's response.
@@ -355,9 +459,9 @@ class Agent:
         
         # Check for linguistic confidence markers if no explicit value found
         if confidence == 0.7:
-            high_confidence_markers = ["certainly", "definitely", "absolutely", "strongly believe", "confident", "sure"]
-            medium_confidence_markers = ["likely", "probably", "think", "believe", "reasonable", "should be"]
-            low_confidence_markers = ["uncertain", "might", "possibly", "guess", "not sure", "doubtful", "maybe"]
+            high_confidence_markers = ["certainly", "definitely", "absolutely", "strongly believe", "confident", "sure", "clear evidence", "conclusive"]
+            medium_confidence_markers = ["likely", "probably", "think", "believe", "reasonable", "should be", "suggests", "indicates"]
+            low_confidence_markers = ["uncertain", "might", "possibly", "guess", "not sure", "doubtful", "maybe", "unclear", "insufficient"]
             
             # Count markers in each category
             high_count = sum(1 for marker in high_confidence_markers if marker in lower_message)

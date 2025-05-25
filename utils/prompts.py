@@ -57,6 +57,22 @@ LEADERSHIP_PROMPTS = {
     Ensure all required elements from the task are addressed.
     """,
     
+    "synthesize_yes_no_maybe": """
+    As the designated leader, synthesize the team's perspectives into a consensus answer for this research question.
+    
+    Context information: {context}
+    
+    Create a final answer that:
+    1. Incorporates the key scientific evidence from each team member
+    2. Balances different perspectives from team members
+    3. Provides clear scientific reasoning for the conclusion
+
+    You MUST begin your response with "ANSWER: X" (replace X with yes, no, or maybe).
+
+    Present your final answer with comprehensive scientific justification based on the abstract context.
+    Ensure your reasoning is grounded in the evidence presented.
+    """,
+    
     "facilitate": """
     As the designated leader, facilitate progress on our current discussion.
     
@@ -387,6 +403,24 @@ TASK_ANALYSIS_PROMPTS = {
     Strictly follow the format requested, unless specified otherwise.
     """,
     
+    "yes_no_maybe_task": """
+    As a {role} with expertise in your domain, analyze the following research question:
+
+    {task_description}
+
+    Based on the abstract context provided:
+    1. Analyze the scientific evidence systematically
+    2. Consider whether the evidence supports, refutes, or is inconclusive regarding the research question
+    3. Apply your specialized knowledge to interpret the findings
+
+    Begin your final answer with "ANSWER: X" (replace X with yes, no, or maybe).
+    Then provide your detailed scientific reasoning, citing specific evidence from the abstract.
+    
+    - Answer "yes" if the evidence clearly supports the statement
+    - Answer "no" if the evidence clearly refutes the statement  
+    - Answer "maybe" if the evidence is insufficient, conflicting, or inconclusive
+    """,
+    
     "general_task": """
     As a {role} with expertise in your domain, analyze the following task:
     
@@ -438,5 +472,23 @@ DISCUSSION_PROMPTS = {
     Begin with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
     Then provide your rationale, integrating insights from your teammates. 
     YOU MUST ANWER IN SAID FORMAT.
+    """,
+    
+    "collaborative_discussion_yes_no_maybe": """
+    You have analyzed the research question, and your teammates have provided their analyses as well.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Your teammates' analyses:
+    {teammates_analyses}
+    
+    Based on all these perspectives, please provide your final answer to the research question.
+    Consider the scientific evidence and insights from your teammates and integrate them with your own expertise.
+    
+    Based on all these perspectives, provide your final answer. 
+    Begin with "ANSWER: X" (replace X with yes, no, or maybe).
+    Then provide your scientific rationale, integrating evidence and insights from your teammates. 
+    YOU MUST ANSWER IN SAID FORMAT.
     """
 }
