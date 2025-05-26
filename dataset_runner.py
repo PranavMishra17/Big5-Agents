@@ -139,36 +139,85 @@ def load_mmlupro_med_dataset(num_questions: int = 50, random_seed: int = 42) -> 
     logging.info(f"Loading MMLU-Pro-Med dataset with {num_questions} random medical questions")
     
     try:
-        # Try the specific medical dataset first
+        # Try multiple approaches to load medical questions
+        medical_questions = []
+        
+        # Approach 1: Try the specific medical dataset first
         try:
-            ds = load_dataset("II-Vietnam/EvalMedical_MMLU-Pro_Medical_Test")
-            medical_questions = list(ds["test"]) if "test" in ds else []
-            logging.info(f"Loaded {len(medical_questions)} questions from EvalMedical_MMLU-Pro_Medical_Test")
-        except Exception as e:
-            logging.warning(f"Failed to load EvalMedical dataset, trying TIGER-Lab: {str(e)}")
-            # Fallback to original TIGER-Lab dataset
             ds = load_dataset("TIGER-Lab/MMLU-Pro")
+            logging.info(f"Loaded TIGER-Lab/MMLU-Pro dataset")
             
-            # Medical-related categories in MMLU-Pro - expanded list
+            # Get all available splits
+            available_splits = list(ds.keys())
+            logging.info(f"Available splits: {available_splits}")
+            
+            # Medical-related categories in MMLU-Pro - comprehensive list
             medical_categories = [
                 "anatomy", "clinical_knowledge", "medical_genetics", 
                 "professional_medicine", "college_medicine", "college_biology",
                 "high_school_biology", "nutrition", "virology", "health",
-                "medicine", "biology", "psychology", "neuroscience"
+                "medicine", "biology", "psychology", "neuroscience",
+                # Add more general categories that might contain medical questions
+                "biochemistry", "pharmacology", "physiology", "pathology",
+                "immunology", "microbiology", "epidemiology"
             ]
             
-            # Filter for medical questions
-            medical_questions = []
-            for split in ["test", "validation", "train"]:
-                if split in ds:
-                    for item in ds[split]:
-                        category = item.get("category", "").lower()
-                        # Check if any medical keyword is in the category
-                        if any(cat in category for cat in medical_categories):
+            # Filter for medical questions from all splits
+            for split in available_splits:
+                logging.info(f"Processing split: {split} with {len(ds[split])} questions")
+                
+                for item in ds[split]:
+                    category = item.get("category", "").lower()
+                    
+                    # Check if any medical keyword is in the category
+                    if any(cat in category for cat in medical_categories):
+                        medical_questions.append(item)
+                        if len(medical_questions) % 100 == 0:  # Log progress
+                            logging.info(f"Found {len(medical_questions)} medical questions so far...")
+                    
+                    # Also check question content for medical terms if category doesn't match
+                    elif category and len(medical_questions) < num_questions * 3:  # Don't over-process
+                        question_text = item.get("question", "").lower()
+                        medical_terms = [
+                            "patient", "diagnosis", "treatment", "symptom", "disease",
+                            "medication", "therapy", "clinical", "medical", "hospital",
+                            "doctor", "physician", "nurse", "surgery", "cancer",
+                            "infection", "virus", "bacteria", "immune", "blood",
+                            "heart", "lung", "brain", "liver", "kidney"
+                        ]
+                        
+                        if any(term in question_text for term in medical_terms):
                             medical_questions.append(item)
+            
+            logging.info(f"Found {len(medical_questions)} medical questions total")
+            
+        except Exception as e:
+            logging.error(f"Failed to load TIGER-Lab dataset: {str(e)}")
+            
+            # Approach 2: Try alternative medical datasets
+            try:
+                logging.info("Trying alternative medical dataset...")
+                ds = load_dataset("cais/mmlu", "anatomy")
+                anatomy_questions = list(ds["test"]) + list(ds.get("validation", []))
+                
+                ds2 = load_dataset("cais/mmlu", "clinical_knowledge") 
+                clinical_questions = list(ds2["test"]) + list(ds2.get("validation", []))
+                
+                ds3 = load_dataset("cais/mmlu", "medical_genetics")
+                genetics_questions = list(ds3["test"]) + list(ds3.get("validation", []))
+                
+                ds4 = load_dataset("cais/mmlu", "professional_medicine")
+                medicine_questions = list(ds4["test"]) + list(ds4.get("validation", []))
+                
+                medical_questions = anatomy_questions + clinical_questions + genetics_questions + medicine_questions
+                logging.info(f"Loaded {len(medical_questions)} questions from MMLU medical subjects")
+                
+            except Exception as e2:
+                logging.error(f"Failed to load alternative datasets: {str(e2)}")
+                return []
         
         if not medical_questions:
-            logging.error("No medical questions found in MMLU-Pro dataset")
+            logging.error("No medical questions found in any MMLU dataset")
             return []
         
         # Set random seed for reproducibility
@@ -304,18 +353,36 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
         task_type = "mcq"
         expected_format = "Single letter selection with rationale"
     else:
-        # Multi-choice question
-        # The correct answers might be stored differently - need to check the dataset structure
+        # Multi-choice question - parse the correct answers
         cop = question_data.get("cop", "")
+        
+        # Handle different formats for multi-choice answers
         if isinstance(cop, int):
             # If it's still a single int for multi-choice, convert it
             ground_truth = chr(64 + cop) if 1 <= cop <= 4 else "A"
         elif isinstance(cop, str):
-            # It might be a string like "1,2" or "A,B"
-            ground_truth = cop
+            # Parse string like "1,2" or "A,B" 
+            if ',' in cop:
+                parts = [p.strip() for p in cop.split(',')]
+                ground_truth_list = []
+                for part in parts:
+                    if part.isdigit() and 1 <= int(part) <= 4:
+                        ground_truth_list.append(chr(64 + int(part)))
+                    elif part.upper() in ['A', 'B', 'C', 'D']:
+                        ground_truth_list.append(part.upper())
+                ground_truth = ','.join(sorted(ground_truth_list)) if ground_truth_list else cop
+            else:
+                # Single answer in string format
+                if cop.isdigit() and 1 <= int(cop) <= 4:
+                    ground_truth = chr(64 + int(cop))
+                elif cop.upper() in ['A', 'B', 'C', 'D']:
+                    ground_truth = cop.upper()
+                else:
+                    ground_truth = cop
         else:
             # Default to string representation
             ground_truth = str(cop)
+            
         task_type = "multi_choice_mcq"
         expected_format = "Multiple letter selections (e.g., A,C or A,B,D) with rationale"
         
@@ -359,16 +426,27 @@ def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]
     # Extract question text
     question_text = question_data.get("question", "")
     
-    # Extract options - it's a dict in MMLU-Pro
-    options_dict = question_data.get("options", {})
-    
-    # Format options as standard MCQ options
+    # Extract options - handle both dict and list formats
+    options_data = question_data.get("options", {})
     options = []
-    for key in sorted(options_dict.keys()):
-        options.append(f"{key}. {options_dict[key]}")
+    
+    if isinstance(options_data, dict):
+        # Format options as standard MCQ options from dict
+        for key in sorted(options_data.keys()):
+            options.append(f"{key}. {options_data[key]}")
+    elif isinstance(options_data, list):
+        # Format options as standard MCQ options from list
+        for i, option in enumerate(options_data):
+            options.append(f"{chr(65+i)}. {option}")
     
     # Get correct answer
     ground_truth = question_data.get("answer", "")
+    
+    # Handle different answer formats
+    if not ground_truth and "answer_idx" in question_data:
+        answer_idx = question_data.get("answer_idx")
+        if isinstance(answer_idx, int) and 0 <= answer_idx < len(options):
+            ground_truth = chr(65 + answer_idx)  # Convert 0->A, 1->B, etc.
     
     # Get answer index if available
     answer_idx = question_data.get("answer_idx", "")
@@ -544,17 +622,37 @@ def run_questions_with_configuration(
                     
                     if performance is not None:
                         # Update summary statistics
-                        methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
+                        task_performance = performance.get("task_performance", {})
+                        
+                        # Handle different task types properly
                         if dataset_type == "pubmedqa":
-                            methods_to_check.append("yes_no_maybe_voting")
+                            # For PubMedQA, look for yes_no_maybe_voting method
+                            for method in ["majority_voting", "weighted_voting", "borda_count"]:
+                                if method in task_performance:
+                                    method_perf = task_performance[method]
+                                    if "correct" in method_perf:
+                                        results["summary"][method]["total"] += 1
+                                        if method_perf["correct"]:
+                                            results["summary"][method]["correct"] += 1
                             
-                        for method in methods_to_check:
-                            if method in performance.get("task_performance", {}):
-                                method_perf = performance["task_performance"][method]
-                                if "correct" in method_perf:
-                                    results["summary"][method]["total"] += 1
-                                    if method_perf["correct"]:
-                                        results["summary"][method]["correct"] += 1
+                            # Special handling for yes_no_maybe_voting if it exists
+                            if "yes_no_maybe_voting" in task_performance:
+                                yes_no_perf = task_performance["yes_no_maybe_voting"]
+                                if "correct" in yes_no_perf:
+                                    results["summary"]["yes_no_maybe_voting"]["total"] += 1
+                                    if yes_no_perf["correct"]:
+                                        results["summary"]["yes_no_maybe_voting"]["correct"] += 1
+                        else:
+                            # For other datasets, handle normally
+                            methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
+                                
+                            for method in methods_to_check:
+                                if method in task_performance:
+                                    method_perf = task_performance[method]
+                                    if "correct" in method_perf:
+                                        results["summary"][method]["total"] += 1
+                                        if method_perf["correct"]:
+                                            results["summary"][method]["correct"] += 1
                     
                     # Simulation succeeded, break the retry loop
                     break

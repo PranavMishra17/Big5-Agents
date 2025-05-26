@@ -20,7 +20,7 @@ import config
 from components.team_orientation import TeamOrientation
 from components.mutual_trust import MutualTrust
 
-from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS
+from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS, get_adaptive_prompt
 
 
 """
@@ -442,7 +442,7 @@ class AgentSystemSimulator:
 
     def _run_collaborative_discussion(self, agent_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
         """
-        Run collaborative discussion between agents.
+        Run collaborative discussion between agents using adaptive prompting.
         
         Args:
             agent_analyses: Initial analyses from each agent
@@ -451,6 +451,7 @@ class AgentSystemSimulator:
             Dictionary mapping agent roles to their final decisions
         """
         agent_decisions = {}
+        task_type = config.TASK.get("type", "mcq")
         
         # For each agent, have them review other agents' analyses
         for role, agent in self.agents.items():
@@ -462,23 +463,37 @@ class AgentSystemSimulator:
                 if other_role != role:
                     other_analyses[other_role] = analysis_data["analysis"]
             
-            # Create collaborative prompt
+            # Create collaborative prompt using adaptive prompting
             if len(other_analyses) > 0:
                 other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
                                                 for other_role, analysis in other_analyses.items()])
                 
-                # Use appropriate prompt based on task type
-                task_type = config.TASK.get("type", "mcq")
-                if task_type == "yes_no_maybe":
-                    collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(
+                # Use adaptive prompt based on task type
+                try:
+                    collaborative_prompt = get_adaptive_prompt(
+                        "collaborative_discussion",
+                        task_type,
                         initial_analysis=agent_analyses[role]['analysis'],
                         teammates_analyses=other_analyses_text
                     )
-                else:
-                    collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
-                        initial_analysis=agent_analyses[role]['analysis'],
-                        teammates_analyses=other_analyses_text
-                    )
+                except Exception as e:
+                    logging.error(f"Error getting adaptive collaborative prompt: {str(e)}")
+                    # Fallback to traditional approach
+                    if task_type == "yes_no_maybe":
+                        collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(
+                            initial_analysis=agent_analyses[role]['analysis'],
+                            teammates_analyses=other_analyses_text
+                        )
+                    elif task_type == "multi_choice_mcq":
+                        collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_multi_choice"].format(
+                            initial_analysis=agent_analyses[role]['analysis'],
+                            teammates_analyses=other_analyses_text
+                        )
+                    else:
+                        collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
+                            initial_analysis=agent_analyses[role]['analysis'],
+                            teammates_analyses=other_analyses_text
+                        )
 
                 # Apply mutual monitoring if enabled
                 if self.use_mutual_monitoring and self.mutual_monitor:
@@ -623,12 +638,8 @@ class AgentSystemSimulator:
                                 for role, decision in agent_decisions.items() 
                                 if role != self.leader.role])
             
-            # Use appropriate synthesis prompt based on task type
-            task_type = config.TASK.get("type", "mcq")
-            if task_type == "yes_no_maybe":
-                leader_synthesis = self.leader.leadership_action("synthesize_yes_no_maybe", context)
-            else:
-                leader_synthesis = self.leader.leadership_action("synthesize", context)
+            # Use adaptive synthesis prompt based on task type
+            leader_synthesis = self.leader.leadership_action("synthesize", context)
             
             # Log to leadership channel
             self.logger.log_leadership_action(
@@ -820,11 +831,71 @@ class AgentSystemSimulator:
             return self._evaluate_ranking_performance()
         elif task_type == "mcq":
             return self._evaluate_mcq_performance()
+        elif task_type == "multi_choice_mcq":
+            return self._evaluate_multi_choice_performance()
         elif task_type == "yes_no_maybe":
             return self._evaluate_yes_no_maybe_performance()
         else:
             return {"metric": "qualitative", "note": "No quantitative metric for this task type"}
 
+    def _evaluate_multi_choice_performance(self) -> Dict[str, Any]:
+        """Evaluate performance on multi-choice MCQ tasks."""
+        ground_truth = config.TASK.get("ground_truth", "")
+        
+        if not ground_truth:
+            return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
+        
+        # Parse ground truth - handle both comma-separated and single answers
+        if isinstance(ground_truth, str):
+            if ',' in ground_truth:
+                ground_truth_set = set(opt.strip().upper() for opt in ground_truth.split(','))
+            else:
+                ground_truth_set = {ground_truth.upper()}
+        else:
+            ground_truth_set = {str(ground_truth).upper()}
+        
+        metrics = {}
+        
+        # Evaluate each decision method
+        for method, result in self.results["decision_results"].items():
+            if result and "winning_options" in result:
+                selected_options = set(result["winning_options"])
+                
+                # Calculate accuracy - exact match of all correct options
+                correct = selected_options == ground_truth_set
+                
+                # Calculate partial credit - intersection over union
+                if ground_truth_set and selected_options:
+                    intersection = len(ground_truth_set.intersection(selected_options))
+                    union = len(ground_truth_set.union(selected_options))
+                    partial_score = intersection / union if union > 0 else 0
+                else:
+                    partial_score = 0
+                
+                metrics[method] = {
+                    "correct": correct,
+                    "partial_score": partial_score,
+                    "confidence": result.get("confidence", 0)
+                }
+            elif result and "winning_option" in result:
+                # Handle case where method returned single option for multi-choice
+                selected = {result["winning_option"]} if result["winning_option"] else set()
+                correct = selected == ground_truth_set
+                
+                if ground_truth_set and selected:
+                    intersection = len(ground_truth_set.intersection(selected))
+                    union = len(ground_truth_set.union(selected))
+                    partial_score = intersection / union if union > 0 else 0
+                else:
+                    partial_score = 0
+                
+                metrics[method] = {
+                    "correct": correct,
+                    "partial_score": partial_score,
+                    "confidence": result.get("confidence", 0)
+                }
+        
+        return metrics
 
     def _evaluate_yes_no_maybe_performance(self) -> Dict[str, Any]:
         """Evaluate performance on yes/no/maybe tasks."""

@@ -1,5 +1,5 @@
 """
-Centralized prompt management for Big5-Agents.
+Centralized prompt management for Big5-Agents with adaptive prompting.
 """
 
 # Agent System Prompts
@@ -55,6 +55,22 @@ LEADERSHIP_PROMPTS = {
 
     Present your final solution with comprehensive justification.
     Ensure all required elements from the task are addressed.
+    """,
+    
+    "synthesize_multi_choice": """
+    As the designated leader, synthesize the team's perspectives into a consensus solution for this multi-choice question.
+    
+    Context information: {context}
+    
+    Create a final solution that:
+    1. Incorporates the key insights from each team member
+    2. Balances different perspectives from team members
+    3. Provides clear reasoning for the final selection of multiple options
+
+    You MUST begin your response with "ANSWERS: X,Y,Z" (replace X,Y,Z with the letters of ALL correct options, e.g., "ANSWERS: A,C" or "ANSWERS: B,D").
+
+    Present your final solution with comprehensive justification for each selected option.
+    Remember: This is a multi-choice question where multiple answers may be correct.
     """,
     
     "synthesize_yes_no_maybe": """
@@ -366,7 +382,7 @@ Above is just an example, thus, you should organize your own unique MDTs but you
 """
 }
 
-# Task Analysis Prompts
+# Task Analysis Prompts - Now with adaptive prompting based on task type
 TASK_ANALYSIS_PROMPTS = {
     "ranking_task": """
     As a {role} with expertise in your domain, analyze the following ranking task:
@@ -403,6 +419,26 @@ TASK_ANALYSIS_PROMPTS = {
     Strictly follow the format requested, unless specified otherwise.
     """,
     
+    "multi_choice_mcq_task": """
+    As a {role} with expertise in your domain, analyze the following multi-choice question where multiple answers may be correct:
+
+    {task_description}
+
+    Options:
+    {options}
+
+    IMPORTANT: This is a multi-choice question where MORE THAN ONE answer may be correct. You must select ALL correct options.
+
+    Based on your specialized knowledge:
+    1. Analyze each option systematically for correctness
+    2. Identify ALL options that are correct or appropriate
+    3. Give your confidence level for your selection
+
+    Begin your final answer with "ANSWERS: X,Y,Z" (replace X,Y,Z with ALL correct option letters, e.g., "ANSWERS: A,C" or "ANSWERS: B,D").
+    Then provide your detailed reasoning for why each selected option is correct and why others are incorrect.
+    Remember: You may need to select multiple options for this question type.
+    """,
+    
     "yes_no_maybe_task": """
     As a {role} with expertise in your domain, analyze the following research question:
 
@@ -436,7 +472,7 @@ TASK_ANALYSIS_PROMPTS = {
     """
 }
 
-# Collaborative Discussion Prompts
+# Collaborative Discussion Prompts - Now adaptive based on task type
 DISCUSSION_PROMPTS = {
     "respond_to_agent": """
     Another team member ({agent_role}) has provided the following input:
@@ -471,7 +507,26 @@ DISCUSSION_PROMPTS = {
     Based on all these perspectives, provide your final answer. 
     Begin with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
     Then provide your rationale, integrating insights from your teammates. 
-    YOU MUST ANWER IN SAID FORMAT.
+    YOU MUST ANSWER IN SAID FORMAT.
+    """,
+    
+    "collaborative_discussion_multi_choice": """
+    You have analyzed the multi-choice task, and your teammates have provided their analyses as well.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Your teammates' analyses:
+    {teammates_analyses}
+    
+    Based on all these perspectives, please provide your final answer to the multi-choice task.
+    Remember: This is a multi-choice question where multiple answers may be correct.
+    Consider the insights from your teammates and integrate them with your own expertise.
+    
+    Based on all these perspectives, provide your final answer. 
+    Begin with "ANSWERS: X,Y,Z" (replace X,Y,Z with ALL correct option letters, e.g., "ANSWERS: A,C" or "ANSWERS: B,D").
+    Then provide your rationale, integrating insights from your teammates and explaining why each selected option is correct.
+    YOU MUST ANSWER IN SAID FORMAT.
     """,
     
     "collaborative_discussion_yes_no_maybe": """
@@ -492,3 +547,50 @@ DISCUSSION_PROMPTS = {
     YOU MUST ANSWER IN SAID FORMAT.
     """
 }
+
+def get_adaptive_prompt(base_key: str, task_type: str, **kwargs) -> str:
+    """
+    Get adaptive prompt based on task type.
+    
+    Args:
+        base_key: Base prompt key (e.g., "mcq_task", "collaborative_discussion")
+        task_type: Task type ("mcq", "multi_choice_mcq", "yes_no_maybe", etc.)
+        **kwargs: Additional formatting arguments
+        
+    Returns:
+        Formatted prompt appropriate for the task type
+    """
+    # Handle task analysis prompts
+    if base_key == "task_analysis":
+        if task_type == "ranking":
+            return TASK_ANALYSIS_PROMPTS["ranking_task"].format(**kwargs)
+        elif task_type == "mcq":
+            return TASK_ANALYSIS_PROMPTS["mcq_task"].format(**kwargs)
+        elif task_type == "multi_choice_mcq":
+            return TASK_ANALYSIS_PROMPTS["multi_choice_mcq_task"].format(**kwargs)
+        elif task_type == "yes_no_maybe":
+            return TASK_ANALYSIS_PROMPTS["yes_no_maybe_task"].format(**kwargs)
+        else:
+            return TASK_ANALYSIS_PROMPTS["general_task"].format(**kwargs)
+    
+    # Handle collaborative discussion prompts
+    elif base_key == "collaborative_discussion":
+        if task_type == "multi_choice_mcq":
+            return DISCUSSION_PROMPTS["collaborative_discussion_multi_choice"].format(**kwargs)
+        elif task_type == "yes_no_maybe":
+            return DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(**kwargs)
+        else:
+            return DISCUSSION_PROMPTS["collaborative_discussion"].format(**kwargs)
+    
+    # Handle leadership synthesis prompts
+    elif base_key == "leadership_synthesis":
+        if task_type == "multi_choice_mcq":
+            return LEADERSHIP_PROMPTS["synthesize_multi_choice"].format(**kwargs)
+        elif task_type == "yes_no_maybe":
+            return LEADERSHIP_PROMPTS["synthesize_yes_no_maybe"].format(**kwargs)
+        else:
+            return LEADERSHIP_PROMPTS["synthesize"].format(**kwargs)
+    
+    # Default fallback
+    else:
+        return f"Unknown prompt key: {base_key}"

@@ -12,7 +12,7 @@ import config
 
 from typing import Tuple
 
-from utils.prompts import LEADERSHIP_PROMPTS, TASK_ANALYSIS_PROMPTS
+from utils.prompts import LEADERSHIP_PROMPTS, TASK_ANALYSIS_PROMPTS, get_adaptive_prompt
 
 
 class ModularAgent(Agent):
@@ -246,19 +246,65 @@ class ModularAgent(Agent):
     
     def analyze_task(self) -> str:
         """
-        Analyze the task based on agent's specialized knowledge.
+        Analyze the task based on agent's specialized knowledge using adaptive prompting.
         
         Returns:
             The agent's analysis
         """
         task_type = config.TASK["type"]
         
-        if task_type == "ranking":
-            return self._analyze_ranking_task()
-        elif task_type == "mcq":
-            return self._analyze_mcq_task()
-        else:
-            return self._analyze_general_task()
+        # Use adaptive prompting based on task type
+        try:
+            if task_type == "ranking":
+                prompt = get_adaptive_prompt(
+                    "task_analysis", 
+                    task_type,
+                    role=self.role,
+                    task_description=config.TASK['description'],
+                    items_to_rank=', '.join(config.TASK['options']),
+                    num_items=len(config.TASK['options'])
+                )
+            elif task_type == "mcq":
+                prompt = get_adaptive_prompt(
+                    "task_analysis",
+                    task_type,
+                    role=self.role,
+                    task_description=config.TASK['description'],
+                    options=chr(10).join(config.TASK['options'])
+                )
+            elif task_type == "multi_choice_mcq":
+                prompt = get_adaptive_prompt(
+                    "task_analysis",
+                    task_type,
+                    role=self.role,
+                    task_description=config.TASK['description'],
+                    options=chr(10).join(config.TASK['options'])
+                )
+            elif task_type == "yes_no_maybe":
+                prompt = get_adaptive_prompt(
+                    "task_analysis",
+                    task_type,
+                    role=self.role,
+                    task_description=config.TASK['description']
+                )
+            else:
+                prompt = get_adaptive_prompt(
+                    "task_analysis",
+                    "general",
+                    role=self.role,
+                    task_description=config.TASK['description']
+                )
+        except Exception as e:
+            logging.error(f"Error getting adaptive prompt: {str(e)}")
+            # Fallback to traditional approach
+            if task_type == "ranking":
+                return self._analyze_ranking_task()
+            elif task_type == "mcq":
+                return self._analyze_mcq_task()
+            else:
+                return self._analyze_general_task()
+        
+        return self.chat(prompt)
     
     def _analyze_ranking_task(self) -> str:
         """Analyze a ranking task."""
@@ -304,7 +350,6 @@ class ModularAgent(Agent):
         
         return self.chat(prompt)
 
-
     def leadership_action(self, action_type: str, context: str = None) -> str:
         """
         Perform a leadership action if this agent has leadership capabilities.
@@ -325,7 +370,22 @@ class ModularAgent(Agent):
                 context=context or ''
             )
         elif action_type == "synthesize":
-            prompt = LEADERSHIP_PROMPTS["synthesize"].format(
+            # Use adaptive prompting for synthesis based on task type
+            task_type = config.TASK.get("type", "mcq")
+            try:
+                prompt = get_adaptive_prompt(
+                    "leadership_synthesis",
+                    task_type,
+                    context=context or ''
+                )
+            except Exception as e:
+                logging.error(f"Error getting adaptive synthesis prompt: {str(e)}")
+                # Fallback to standard synthesis
+                prompt = LEADERSHIP_PROMPTS["synthesize"].format(
+                    context=context or ''
+                )
+        elif action_type == "synthesize_yes_no_maybe":
+            prompt = LEADERSHIP_PROMPTS["synthesize_yes_no_maybe"].format(
                 context=context or ''
             )
         elif action_type == "facilitate":
