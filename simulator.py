@@ -21,6 +21,7 @@ from components.team_orientation import TeamOrientation
 from components.mutual_trust import MutualTrust
 
 from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS, get_adaptive_prompt
+from utils.prompts import extract_answer_option
 
 
 """
@@ -293,10 +294,72 @@ class AgentSystemSimulator:
             self.results["teamwork_metrics"]["shared_mental_model"] = self.mental_model.analyze_mental_model_effectiveness()
             self.logger.logger.info("Shared mental model metrics collected")
         
+
+        
+        # Enhanced results structure
+        enhanced_results = {
+            "simulation_metadata": {
+                "simulation_id": self.simulation_id,
+                "timestamp": datetime.now().isoformat(),
+                "task_info": {
+                    "name": config.TASK.get("name", ""),
+                    "type": config.TASK.get("type", ""),
+                    "description": config.TASK.get("description", "")[:200] + "...",
+                    "options": config.TASK.get("options", [])
+                }
+            },
+            "recruitment_info": {
+                "complexity_selected": None,
+                "agents_recruited": [],
+                "recruitment_method": self.recruitment_method if hasattr(self, 'recruitment_method') else None,
+                "recruitment_reasoning": ""
+            },
+            "agent_responses": {},
+            "all_dialogues": [],  # All conversations/exchanges
+            "disagreement_analysis": {},
+            "decision_results": {},
+            "performance_metrics": {}
+        }
+        
+        # Capture recruitment info if used
+        if self.use_recruitment:
+            complexity = determine_complexity(config.TASK)
+            agents = recruit_agents(complexity, self.recruitment_method, self.recruitment_pool, self.n_max)
+            
+            enhanced_results["recruitment_info"] = {
+                "complexity_selected": complexity,
+                "agents_recruited": [{"role": agent.role, "expertise": getattr(agent, 'expertise', []), 
+                                    "weight": getattr(agent, 'weight', 0.2)} for agent in agents],
+                "recruitment_method": self.recruitment_method,
+                "recruitment_reasoning": f"Selected {complexity} complexity with {len(agents)} agents"
+            }
+        
+        # Run the actual simulation
+        simulation_results = self._run_core_simulation()
+        
+        # Extract individual agent responses
+        for agent_role, response_data in simulation_results.get("agent_responses", {}).items():
+            enhanced_results["agent_responses"][agent_role] = {
+                "final_answer": self._extract_agent_answer(response_data),
+                "confidence": self._extract_confidence(response_data),
+                "reasoning": self._extract_reasoning(response_data),
+                "full_response": response_data
+            }
+        
+        # Capture all dialogues/exchanges
+        enhanced_results["all_dialogues"] = simulation_results.get("exchanges", [])
+        
+        # Detect disagreement
+        enhanced_results["disagreement_analysis"] = self.detect_agent_disagreement(
+            simulation_results.get("agent_responses", {}))
+        
+        # Decision aggregation results
+        enhanced_results["decision_results"] = simulation_results.get("decision_results", {})
+
         # Save results
         self.save_results()
         
-        return self.results
+        return enhanced_results
     
     
     def _run_task_analysis(self) -> Dict[str, Dict[str, Any]]:
@@ -441,237 +504,246 @@ class AgentSystemSimulator:
         
 
     def _run_collaborative_discussion(self, agent_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
-        """
-        Run collaborative discussion between agents using adaptive prompting.
-        
-        Args:
-            agent_analyses: Initial analyses from each agent
+            """
+            Run collaborative discussion between agents using adaptive prompting.
             
-        Returns:
-            Dictionary mapping agent roles to their final decisions
-        """
-        agent_decisions = {}
-        task_type = config.TASK.get("type", "mcq")
-        
-        # For each agent, have them review other agents' analyses
-        for role, agent in self.agents.items():
-            self.logger.logger.info(f"Running collaborative discussion for {role}")
+            Args:
+                agent_analyses: Initial analyses from each agent
+                
+            Returns:
+                Dictionary mapping agent roles to their final decisions
+            """
+            agent_decisions = {}
+            task_type = config.TASK.get("type", "mcq")
             
-            # Collect other agents' analyses
-            other_analyses = {}
-            for other_role, analysis_data in agent_analyses.items():
-                if other_role != role:
-                    other_analyses[other_role] = analysis_data["analysis"]
-            
-            # Create collaborative prompt using adaptive prompting
-            if len(other_analyses) > 0:
-                other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
-                                                for other_role, analysis in other_analyses.items()])
+            # For each agent, have them review other agents' analyses
+            for role, agent in self.agents.items():
+                self.logger.logger.info(f"Running collaborative discussion for {role}")
                 
-                # Use adaptive prompt based on task type
-                try:
-                    collaborative_prompt = get_adaptive_prompt(
-                        "collaborative_discussion",
-                        task_type,
-                        initial_analysis=agent_analyses[role]['analysis'],
-                        teammates_analyses=other_analyses_text
-                    )
-                except Exception as e:
-                    logging.error(f"Error getting adaptive collaborative prompt: {str(e)}")
-                    # Fallback to traditional approach
-                    if task_type == "yes_no_maybe":
-                        collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(
-                            initial_analysis=agent_analyses[role]['analysis'],
-                            teammates_analyses=other_analyses_text
-                        )
-                    elif task_type == "multi_choice_mcq":
-                        collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_multi_choice"].format(
-                            initial_analysis=agent_analyses[role]['analysis'],
-                            teammates_analyses=other_analyses_text
-                        )
-                    else:
-                        collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
-                            initial_analysis=agent_analyses[role]['analysis'],
-                            teammates_analyses=other_analyses_text
-                        )
-
-                # Apply mutual monitoring if enabled
-                if self.use_mutual_monitoring and self.mutual_monitor:
-                    # For each teammate's analysis, generate monitoring feedback
-                    for other_role, analysis in other_analyses.items():
-                        # Extract the response
-                        other_agent = self.agents[other_role]
-                        extract = other_agent.extract_response(analysis)
-                        
-                        # Monitor the response
-                        monitoring_result = self.mutual_monitor.monitor_agent_response(
-                            other_role,
-                            analysis,
-                            None  # No separate reasoning provided
-                        )
-                        
-                        # Generate feedback if issues detected
-                        if monitoring_result["issues_detected"]:
-                            feedback = self.mutual_monitor.generate_feedback(
-                                monitoring_result,
-                                role
-                            )
-                            
-                            # Log to monitoring channel
-                            self.logger.log_monitoring_action(
-                                role,
-                                other_role,
-                                monitoring_result["issues"],
-                                feedback
-                            )
-                            
-                            # Add monitoring feedback to collaborative prompt
-                            collaborative_prompt += f"""
-                            
-                            Based on your monitoring of {other_role}'s analysis, you've identified these issues:
-                            {feedback}
-                            
-                            Consider these points in your final response.
-                            """
+                # Collect other agents' analyses
+                other_analyses = {}
+                for other_role, analysis_data in agent_analyses.items():
+                    if other_role != role:
+                        other_analyses[other_role] = analysis_data["analysis"]
                 
-                # Enhance with shared mental model if enabled
-                if self.use_shared_mental_model and self.mental_model:
-                    collaborative_prompt = self.mental_model.enhance_agent_prompt(role, collaborative_prompt)
-                
-                # Use closed-loop communication if enabled
-                if self.use_closed_loop_comm and self.comm_handler:
-                    # Select first agent that isn't the current one to acknowledge
-                    responder_role = next((r for r in self.agents if r != role), None)
+                # Create collaborative prompt using adaptive prompting
+                if len(other_analyses) > 0:
+                    other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
+                                                    for other_role, analysis in other_analyses.items()])
                     
-                    if responder_role:
-                        responder = self.agents[responder_role]
-                        
-                        # Facilitate closed-loop exchange
-                        exchange = self.comm_handler.facilitate_exchange(
-                            agent,
-                            responder,
-                            collaborative_prompt
+                    # Use adaptive prompt based on task type
+                    try:
+                        collaborative_prompt = get_adaptive_prompt(
+                            "collaborative_discussion",
+                            task_type,
+                            initial_analysis=agent_analyses[role]['analysis'],
+                            teammates_analyses=other_analyses_text
                         )
+                    except Exception as e:
+                        logging.error(f"Error getting adaptive collaborative prompt: {str(e)}")
+                        # Fallback to traditional approach
+                        if task_type == "yes_no_maybe":
+                            collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(
+                                initial_analysis=agent_analyses[role]['analysis'],
+                                teammates_analyses=other_analyses_text
+                            )
+                        elif task_type == "multi_choice_mcq":
+                            collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion_multi_choice"].format(
+                                initial_analysis=agent_analyses[role]['analysis'],
+                                teammates_analyses=other_analyses_text
+                            )
+                        else:
+                            collaborative_prompt = DISCUSSION_PROMPTS["collaborative_discussion"].format(
+                                initial_analysis=agent_analyses[role]['analysis'],
+                                teammates_analyses=other_analyses_text
+                            )
+
+                    # Apply mutual monitoring if enabled
+                    if self.use_mutual_monitoring and self.mutual_monitor:
+                        # For each teammate's analysis, generate monitoring feedback
+                        for other_role, analysis in other_analyses.items():
+                            # Extract the response
+                            other_agent = self.agents[other_role]
+                            extract = other_agent.extract_response(analysis)
+                            
+                            # Monitor the response
+                            monitoring_result = self.mutual_monitor.monitor_agent_response(
+                                other_role,
+                                analysis,
+                                None  # No separate reasoning provided
+                            )
+                            
+                            # Generate feedback if issues detected
+                            if monitoring_result["issues_detected"]:
+                                feedback = self.mutual_monitor.generate_feedback(
+                                    monitoring_result,
+                                    role
+                                )
+                                
+                                # Log to monitoring channel
+                                self.logger.log_monitoring_action(
+                                    role,
+                                    other_role,
+                                    monitoring_result["issues"],
+                                    feedback
+                                )
+                                
+                                # Add monitoring feedback to collaborative prompt
+                                collaborative_prompt += f"""
+                                
+                                Based on your monitoring of {other_role}'s analysis, you've identified these issues:
+                                {feedback}
+                                
+                                Consider these points in your final response.
+                                """
+                    
+                    # Enhance with shared mental model if enabled
+                    if self.use_shared_mental_model and self.mental_model:
+                        collaborative_prompt = self.mental_model.enhance_agent_prompt(role, collaborative_prompt)
+                    
+                    # Use closed-loop communication if enabled
+                    if self.use_closed_loop_comm and self.comm_handler:
+                        # Select first agent that isn't the current one to acknowledge
+                        responder_role = next((r for r in self.agents if r != role), None)
                         
-                        # Log to closed-loop channel
-                        self.logger.log_closed_loop(
+                        if responder_role:
+                            responder = self.agents[responder_role]
+                            
+                            # Facilitate closed-loop exchange
+                            exchange = self.comm_handler.facilitate_exchange(
+                                agent,
+                                responder,
+                                collaborative_prompt
+                            )
+                            
+                            # Log to closed-loop channel
+                            self.logger.log_closed_loop(
+                                "collaborative_discussion",
+                                role,
+                                responder_role,
+                                exchange[0],
+                                exchange[1],
+                                exchange[2]
+                            )
+                            
+                            # Extract the substantive content
+                            content = self.comm_handler.extract_content_from_exchange(exchange)
+                            
+                            # Store the final decision
+                            final_decision = content["sender_content"]
+                            
+                            # Store in results for logging
+                            self.results["exchanges"].append({
+                                "type": "collaborative_discussion",
+                                "communication": "closed_loop",
+                                "sender": role,
+                                "receiver": responder_role,
+                                "initial_message": exchange[0],
+                                "acknowledgment": exchange[1],
+                                "verification": exchange[2]
+                            })
+                        else:
+                            # Fallback to standard communication
+                            final_decision = agent.chat(collaborative_prompt)
+                    else:
+                        # Standard communication - GET RESPONSE FROM AGENT
+                        final_decision = agent.chat(collaborative_prompt)
+                        
+                        # Log to main discussion channel
+                        self.logger.log_main_discussion(
                             "collaborative_discussion",
                             role,
-                            responder_role,
-                            exchange[0],
-                            exchange[1],
-                            exchange[2]
+                            final_decision
                         )
                         
-                        # Extract the substantive content
-                        content = self.comm_handler.extract_content_from_exchange(exchange)
-                        
-                        # Store the final decision
-                        final_decision = content["sender_content"]
-                        
-                        # Store in results
+                        # Store in results for logging - ALWAYS ADD CONVERSATION
                         self.results["exchanges"].append({
                             "type": "collaborative_discussion",
-                            "communication": "closed_loop",
+                            "communication": "standard",
                             "sender": role,
-                            "receiver": responder_role,
-                            "initial_message": exchange[0],
-                            "acknowledgment": exchange[1],
-                            "verification": exchange[2]
+                            "message": final_decision
                         })
-                    else:
-                        # Fallback to standard communication
-                        final_decision = agent.chat(collaborative_prompt)
                 else:
-                    # Standard communication
-                    final_decision = agent.chat(collaborative_prompt)
+                    # If there are no other agents, still use the initial analysis but add conversation entry
+                    final_decision = agent_analyses[role]["analysis"]
                     
-                    # Log to main discussion channel
-                    self.logger.log_main_discussion(
-                        "collaborative_discussion",
-                        role,
-                        final_decision
-                    )
-                    
-                    # Store in results
+                    # Even with single agent, log the "discussion" (which is just their analysis)
                     self.results["exchanges"].append({
                         "type": "collaborative_discussion",
                         "communication": "standard",
                         "sender": role,
                         "message": final_decision
                     })
-            else:
-                # If there are no other agents, use the initial analysis
-                final_decision = agent_analyses[role]["analysis"]
-            
-            # Update shared mental model if enabled
-            if self.use_shared_mental_model and self.mental_model:
-                understanding = self.mental_model.extract_understanding_from_message(final_decision)
-                self.mental_model.update_shared_understanding(role, understanding)
                 
-                # Log to shared mental model channel
-                self.logger.log_mental_model_update(
-                    role,
-                    understanding,
-                    self.mental_model.convergence_metrics[-1]["overall_convergence"] if self.mental_model.convergence_metrics else 0.0
+                # Update shared mental model if enabled
+                if self.use_shared_mental_model and self.mental_model:
+                    understanding = self.mental_model.extract_understanding_from_message(final_decision)
+                    self.mental_model.update_shared_understanding(role, understanding)
+                    
+                    # Log to shared mental model channel
+                    self.logger.log_mental_model_update(
+                        role,
+                        understanding,
+                        self.mental_model.convergence_metrics[-1]["overall_convergence"] if self.mental_model.convergence_metrics else 0.0
+                    )
+                
+                # Extract the response structure
+                extracted = agent.extract_response(final_decision)
+                
+                # Get agent weight from knowledge base
+                weight = agent.get_from_knowledge_base("weight")
+                if weight is None:
+                    weight = 0.2  # Default weight
+                
+                # Store the agent's decision with weight
+                agent_decisions[role] = {
+                    "final_decision": final_decision,
+                    "extract": extracted,
+                    "weight": weight  # Include the weight
+                }
+            
+            # If leadership is enabled, have leader synthesize the team's decision
+            if self.use_team_leadership and self.leader:
+                # Create synthesis context with all agent decisions
+                context = "\n\n".join([f"{role}:\n{decision['final_decision']}" 
+                                    for role, decision in agent_decisions.items() 
+                                    if role != self.leader.role])
+                
+                # Use adaptive synthesis prompt based on task type
+                leader_synthesis = self.leader.leadership_action("synthesize", context)
+                
+                # Log to leadership channel
+                self.logger.log_leadership_action(
+                    "synthesis",
+                    leader_synthesis
                 )
+                
+                # Log to main discussion channel
+                self.logger.log_main_discussion(
+                    "leadership_synthesis",
+                    self.leader.role,
+                    leader_synthesis
+                )
+                
+                # Store in results - ALWAYS ADD LEADERSHIP CONVERSATION
+                self.results["exchanges"].append({
+                    "type": "leadership_synthesis",
+                    "communication": "standard",
+                    "sender": self.leader.role,
+                    "message": leader_synthesis
+                })
+                
+                # Extract the response
+                leader_extract = self.leader.extract_response(leader_synthesis)
+                
+                # Update leader's decision
+                agent_decisions[self.leader.role] = {
+                    "final_decision": leader_synthesis,
+                    "extract": leader_extract,
+                    "weight": agent_decisions[self.leader.role].get("weight", 0.2)
+                }
             
-            # Extract the response structure
-            extracted = agent.extract_response(final_decision)
-            
-            # Get agent weight from knowledge base
-            weight = agent.get_from_knowledge_base("weight")
-            if weight is None:
-                weight = 0.2  # Default weight
-            
-            # Store the agent's decision with weight
-            agent_decisions[role] = {
-                "final_decision": final_decision,
-                "extract": extracted,
-                "weight": weight  # Include the weight
-            }
-        
-        # If leadership is enabled, have leader synthesize the team's decision
-        if self.use_team_leadership and self.leader:
-            # Create synthesis context with all agent decisions
-            context = "\n\n".join([f"{role}:\n{decision['final_decision']}" 
-                                for role, decision in agent_decisions.items() 
-                                if role != self.leader.role])
-            
-            # Use adaptive synthesis prompt based on task type
-            leader_synthesis = self.leader.leadership_action("synthesize", context)
-            
-            # Log to leadership channel
-            self.logger.log_leadership_action(
-                "synthesis",
-                leader_synthesis
-            )
-            
-            # Log to main discussion channel
-            self.logger.log_main_discussion(
-                "leadership_synthesis",
-                self.leader.role,
-                leader_synthesis
-            )
-            
-            # Store in results
-            self.results["exchanges"].append({
-                "type": "leadership_synthesis",
-                "communication": "standard",
-                "sender": self.leader.role,
-                "message": leader_synthesis
-            })
-            
-            # Extract the response
-            leader_extract = self.leader.extract_response(leader_synthesis)
-            
-            # Update leader's decision
-            agent_decisions[self.leader.role] = {
-                "final_decision": leader_synthesis,
-                "extract": leader_extract
-            }
-        
-        return agent_decisions
+            return agent_decisions
 
 
     def _apply_decision_methods(self, agent_decisions):
@@ -701,6 +773,12 @@ class AgentSystemSimulator:
 
     def _apply_standard_decision_methods(self, agent_decisions):
         """Apply standard decision methods for basic/intermediate tasks."""
+        logging.info(f"Applying standard decision methods to {len(agent_decisions)} agent responses")
+        
+        # Log all agent decisions for debugging
+        for role, decision in agent_decisions.items():
+            logging.info(f"Agent {role}: extract = {decision.get('extract', {})}")
+        
         # Apply majority voting
         majority_result = self.decision_methods.majority_voting(agent_decisions)
         logging.info(f"Majority voting result: {majority_result}")
@@ -771,7 +849,58 @@ class AgentSystemSimulator:
                 "decision_team": final_team_name
             }
         }
+    
+    
+    def _extract_agent_answer(self, response_data):
+        """Extract clean answer from agent response"""
+        if isinstance(response_data, dict):
+            if "final_decision" in response_data:
+                return extract_answer_option(response_data["final_decision"])
+            elif "extract" in response_data and "answer" in response_data["extract"]:
+                return response_data["extract"]["answer"]
+        return extract_answer_option(str(response_data))
+    
+    def _extract_confidence(self, response_data):
+        """Extract confidence score"""
+        if isinstance(response_data, dict):
+            if "extract" in response_data and "confidence" in response_data["extract"]:
+                return response_data["extract"]["confidence"]
+            return response_data.get("confidence", 1.0)
+        return 1.0
+    
+    def _extract_reasoning(self, response_data):
+        """Extract reasoning/rationale"""
+        if isinstance(response_data, dict):
+            return response_data.get("final_decision", str(response_data))[:500] + "..."
+        return str(response_data)[:500] + "..."
 
+    def detect_agent_disagreement(agent_responses):
+        """Detect if agents disagree on answers"""
+        answers = []
+        for agent_role, response in agent_responses.items():
+            if isinstance(response, dict):
+                if "final_decision" in response:
+                    answer = extract_answer_option(response["final_decision"])
+                elif "extract" in response and "answer" in response["extract"]:
+                    answer = response["extract"]["answer"]
+                else:
+                    answer = None
+            else:
+                answer = extract_answer_option(str(response))
+            
+            if answer:
+                answers.append(answer.upper())
+        
+        # Check for disagreement
+        unique_answers = set(answers)
+        disagreement = len(unique_answers) > 1
+        
+        return {
+            "has_disagreement": disagreement,
+            "unique_answers": list(unique_answers),
+            "answer_distribution": {ans: answers.count(ans) for ans in unique_answers},
+            "total_agents": len(answers)
+        }
 
     def save_results(self) -> str:
         """

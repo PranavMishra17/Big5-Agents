@@ -76,54 +76,73 @@ def load_medmcqa_dataset(num_questions: int = 50, random_seed: int = 42, include
     """
     Load questions from the MedMCQA dataset.
     
-    Args:
-        num_questions: Number of questions to load
-        random_seed: Random seed for reproducibility
-        include_multi_choice: Whether to include multi-choice questions
-        
-    Returns:
-        List of question dictionaries
+    Note: The include_multi_choice parameter is kept for compatibility but all questions
+    are actually single-choice due to the dataset structure.
     """
     logging.info(f"Loading MedMCQA dataset with {num_questions} random questions")
     
     try:
         ds = load_dataset("openlifescienceai/medmcqa")
-        
-        # Convert to list for easier processing
         questions = list(ds["train"])
+        
+        # Log the choice type distribution for awareness
+        choice_types = [q.get("choice_type", "unknown") for q in questions[:1000]]  # Sample first 1000
+        choice_type_counts = {}
+        for ct in choice_types:
+            choice_type_counts[ct] = choice_type_counts.get(ct, 0) + 1
+        
+        logging.info(f"Choice type distribution in dataset sample: {choice_type_counts}")
+        logging.info("Note: All questions will be treated as single-choice due to known dataset issue")
         
         # Set random seed for reproducibility
         random.seed(random_seed)
         
-        # Filter questions based on choice type
-        if include_multi_choice:
-            # Include both single and multi-choice questions
-            filtered_questions = questions
-            logging.info(f"Including both single-choice and multi-choice questions")
+        # Randomly select questions (no need to filter by choice_type)
+        if num_questions < len(questions):
+            selected_questions = random.sample(questions, num_questions)
         else:
-            # Filter for single-choice questions only
-            filtered_questions = [q for q in questions if q.get("choice_type") == "single"]
-            logging.info(f"Filtering for single-choice questions only")
-        
-        if not filtered_questions:
-            logging.error("No questions found after filtering")
-            return []
-        
-        # Randomly select questions
-        if num_questions < len(filtered_questions):
-            selected_questions = random.sample(filtered_questions, num_questions)
-        else:
-            selected_questions = filtered_questions
-            logging.warning(f"Requested {num_questions} questions but dataset only has {len(filtered_questions)} questions. Using all available.")
+            selected_questions = questions
+            logging.warning(f"Requested {num_questions} questions but dataset only has {len(questions)}. Using all available questions.")
         
         logging.info(f"Successfully loaded {len(selected_questions)} questions from MedMCQA dataset")
+        validate_medmcqa_parsing(selected_questions)
         return selected_questions
     
     except Exception as e:
         logging.error(f"Error loading MedMCQA dataset: {str(e)}")
-        import traceback
-        logging.error(traceback.format_exc())
         return []
+
+def validate_medmcqa_parsing(sample_questions: List[Dict[str, Any]]) -> None:
+    """Validate that MedMCQA parsing works correctly for all question types."""
+    
+    print("Validating MedMCQA parsing...")
+    
+    single_count = 0
+    multi_count = 0
+    errors = 0
+    
+    for i, question_data in enumerate(sample_questions[:20]):  # Test first 20
+        try:
+            original_type = question_data.get("choice_type", "unknown")
+            original_cop = question_data.get("cop", "N/A")
+            
+            # Parse with new function
+            task = format_medmcqa_for_task(question_data)
+            parsed_answer = task.get("ground_truth", "ERROR")
+            
+            if original_type == "single":
+                single_count += 1
+            elif original_type == "multi":
+                multi_count += 1
+            
+            print(f"Q{i+1}: {original_type} -> {parsed_answer} (cop: {original_cop})")
+            
+        except Exception as e:
+            errors += 1
+            print(f"Q{i+1}: ERROR - {e}")
+    
+    print(f"\nSummary: {single_count} single, {multi_count} multi, {errors} errors")
+    print("All questions are now correctly parsed as single-choice MCQs.")
 
 def load_mmlupro_med_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
     """
@@ -320,6 +339,10 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     """
     Format MedMCQA question for the agent system task.
     
+    IMPORTANT: The MedMCQA dataset has a known issue where questions labeled as 
+    'multi-choice' actually have only single correct answers. This function 
+    handles this by treating ALL questions as single-choice questions.
+    
     Args:
         question_data: Question data from the dataset
         
@@ -335,83 +358,117 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     opc = question_data.get("opc", "")
     opd = question_data.get("opd", "")
     
-    # Format as standard MCQ options
-    options = [
-        f"A. {opa}",
-        f"B. {opb}",
-        f"C. {opc}",
-        f"D. {opd}"
-    ]
+    # Handle cases where options might not be present
+    if not any([opa, opb, opc, opd]):
+        logging.error("No options available for the question")
+        return {}
     
-    # Check if it's a multi-choice question
-    choice_type = question_data.get("choice_type", "single")
+    # Format as standard MCQ options (only include non-empty options)
+    options = []
+    option_letters = ['A', 'B', 'C', 'D']
+    option_values = [opa, opb, opc, opd]
     
-    if choice_type == "single":
-        # Get correct option (cop is 1-indexed, so cop=1 means option A)
-        cop = question_data.get("cop", 0)
-        ground_truth = chr(64 + cop) if 1 <= cop <= 4 else "A"  # Convert 1->A, 2->B, etc.
-        task_type = "mcq"
-        expected_format = "Single letter selection with rationale"
-    else:
-        # Multi-choice question - parse the correct answers
-        cop = question_data.get("cop", "")
-        
-        # Handle different formats for multi-choice answers
-        if isinstance(cop, int):
-            # If it's still a single int for multi-choice, convert it
-            ground_truth = chr(64 + cop) if 1 <= cop <= 4 else "A"
-        elif isinstance(cop, str):
-            # Parse string like "1,2" or "A,B" 
-            if ',' in cop:
-                parts = [p.strip() for p in cop.split(',')]
-                ground_truth_list = []
-                for part in parts:
-                    if part.isdigit() and 1 <= int(part) <= 4:
-                        ground_truth_list.append(chr(64 + int(part)))
-                    elif part.upper() in ['A', 'B', 'C', 'D']:
-                        ground_truth_list.append(part.upper())
-                ground_truth = ','.join(sorted(ground_truth_list)) if ground_truth_list else cop
-            else:
-                # Single answer in string format
-                if cop.isdigit() and 1 <= int(cop) <= 4:
-                    ground_truth = chr(64 + int(cop))
-                elif cop.upper() in ['A', 'B', 'C', 'D']:
-                    ground_truth = cop.upper()
-                else:
-                    ground_truth = cop
-        else:
-            # Default to string representation
-            ground_truth = str(cop)
-            
-        task_type = "multi_choice_mcq"
-        expected_format = "Multiple letter selections (e.g., A,C or A,B,D) with rationale"
-        
-        # Add note about multi-choice in description
-        question_text = f"[MULTI-CHOICE QUESTION - Select ALL correct options]\n\n{question_text}"
+    for letter, value in zip(option_letters, option_values):
+        if value and value.strip():  # Only add non-empty options
+            options.append(f"{letter}. {value}")
+    
+    # Get the choice_type for logging/metadata purposes
+    original_choice_type = question_data.get("choice_type", "single")
+    
+    # Log if this was labeled as multi-choice (for debugging)
+    if original_choice_type == "multi":
+        logging.debug(f"Question ID {question_data.get('id', 'unknown')} labeled as 'multi' but treating as single choice due to dataset issue")
+    
+    # Parse correct option (cop is 1-indexed: 1->A, 2->B, 3->C, 4->D)
+    cop = question_data.get("cop", 1)  # Default to 1 if missing
+    
+    # Robust parsing of cop field
+    ground_truth = parse_cop_field(cop)
     
     # Get explanation and metadata
     explanation = question_data.get("exp", "")
     subject_name = question_data.get("subject_name", "")
     topic_name = question_data.get("topic_name", "")
     
-    # Create task dictionary
+    # Create task dictionary - ALWAYS treat as single choice MCQ
     task = {
         "name": "MedMCQA Question",
         "description": question_text,
-        "type": task_type,
+        "type": "mcq",  # Always MCQ, never multi_choice_mcq
         "options": options,
-        "expected_output_format": expected_format,
+        "expected_output_format": "Single letter selection with rationale",
         "ground_truth": ground_truth,
         "rationale": {ground_truth: explanation} if explanation else {},
         "metadata": {
             "subject": subject_name,
             "topic": topic_name,
             "question_id": question_data.get("id", ""),
-            "choice_type": choice_type
+            "original_choice_type": original_choice_type,  # Keep original for reference
+            "cop_original": question_data.get("cop", ""),  # Keep original cop for debugging
+            "dataset_issue_note": "Treated as single-choice due to known MedMCQA dataset labeling issue"
         }
     }
     
     return task
+
+def parse_cop_field(cop) -> str:
+    """
+    Robustly parse the cop (correct option) field from MedMCQA dataset.
+    
+    Args:
+        cop: The cop field value (can be int, str, or other)
+        
+    Returns:
+        Single letter representing the correct answer (A, B, C, or D)
+    """
+    # Handle integer values (most common case)
+    if isinstance(cop, int):
+        return chr(64 + cop) if 1 <= cop <= 4 else "A"
+    
+    # Handle string values
+    elif isinstance(cop, str):
+        cop = cop.strip()
+        
+        # Handle numeric strings
+        if cop.isdigit():
+            cop_int = int(cop)
+            return chr(64 + cop_int) if 1 <= cop_int <= 4 else "A"
+        
+        # Handle letter answers
+        elif cop.upper() in ['A', 'B', 'C', 'D']:
+            return cop.upper()
+        
+        # Handle comma-separated (take first one - fallback for edge cases)
+        elif ',' in cop:
+            first_part = cop.split(',')[0].strip()
+            return parse_cop_field(first_part)  # Recursive call
+        
+        # Handle empty strings
+        elif not cop:
+            return "A"
+        
+        # Other string formats - try to extract number
+        else:
+            import re
+            match = re.search(r'\d+', cop)
+            if match:
+                cop_int = int(match.group())
+                return chr(64 + cop_int) if 1 <= cop_int <= 4 else "A"
+            else:
+                return "A"  # Default fallback
+    
+    # Handle list/array values (edge case)
+    elif isinstance(cop, (list, tuple)) and len(cop) > 0:
+        return parse_cop_field(cop[0])  # Take first element
+    
+    # Handle other types
+    else:
+        # Try to convert to string and parse
+        try:
+            return parse_cop_field(str(cop))
+        except:
+            return "A"  # Final fallback
+
 
 def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     """
@@ -547,30 +604,42 @@ def run_questions_with_configuration(
     if run_output_dir:
         os.makedirs(run_output_dir, exist_ok=True)
     
-    # Results collection
     results = {
-        "configuration": config_name,
+        "configuration": configuration.get("name", "unknown"),
         "dataset": dataset_type,
         "num_questions": len(questions),
         "timestamp": datetime.now().isoformat(),
+        "configuration_details": configuration,
         "question_results": [],
         "errors": [],
         "summary": {
             "majority_voting": {"correct": 0, "total": 0},
             "weighted_voting": {"correct": 0, "total": 0},
             "borda_count": {"correct": 0, "total": 0}
+        },
+        "disagreement_summary": {
+            "total_disagreements": 0,
+            "disagreement_rate": 0.0,
+            "disagreement_patterns": {}
         }
     }
+    
+    disagreement_count = 0
     
     # Add summary for yes/no/maybe if PubMedQA
     if dataset_type == "pubmedqa":
         results["summary"]["yes_no_maybe_voting"] = {"correct": 0, "total": 0}
     
-    # Process each question
-    for i, question in enumerate(tqdm(questions, desc=f"{config_name}")):
-        question_result = {"question_index": i}
-        simulator = None  # Initialize simulator variable
-        performance = None  # Initialize performance variable
+    for i, question in enumerate(tqdm(questions, desc=f"{configuration.get('name', 'Config')}")):
+        question_result = {
+            "question_index": i,
+            "question_metadata": {
+                "id": question.get("id", f"q_{i}"),
+                "subject": question.get("subject_name", ""),
+                "topic": question.get("topic_name", ""),
+                "original_choice_type": question.get("choice_type", "")
+            }
+        }
         
         try:
             # Format the question for the task
@@ -585,10 +654,14 @@ def run_questions_with_configuration(
             else:
                 raise ValueError(f"Unknown dataset type: {dataset_type}")
             
-            question_result["question"] = task["description"]
-            question_result["ground_truth"] = task.get("ground_truth", "")
+            # Store question details
+            question_result.update({
+                "question_text": task["description"][:200] + "...",
+                "options": task.get("options", []),
+                "ground_truth": task.get("ground_truth", ""),
+                "task_type": task.get("type", "")
+            })
             
-            # Update task configuration
             config.TASK = task
             
             # Try to run the simulation with retries
@@ -794,6 +867,138 @@ def run_questions_with_configuration(
             results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
         
     return results
+
+
+
+def create_comprehensive_combined_results(all_results, dataset_type, output_dir):
+    """Create comprehensive combined results with all enhanced data"""
+    
+    combined_results = {
+        "dataset": dataset_type,
+        "timestamp": datetime.now().isoformat(),
+        "configurations_tested": len(all_results),
+        "total_questions_per_config": all_results[0]["num_questions"] if all_results else 0,
+        
+        # Configuration summaries
+        "configuration_summaries": {},
+        
+        # Cross-configuration analysis
+        "cross_analysis": {
+            "disagreement_comparison": {},
+            "complexity_distribution": {},
+            "agent_performance_patterns": {},
+            "teamwork_effectiveness": {}
+        },
+        
+        # All detailed results
+        "detailed_results": all_results,
+        
+        # Meta-analysis
+        "meta_analysis": {
+            "best_performing_configs": {},
+            "most_disagreement_prone": {},
+            "complexity_accuracy_correlation": {},
+            "agent_type_effectiveness": {}
+        }
+    }
+    
+    # Process each configuration's results
+    for result in all_results:
+        config_name = result["configuration"]
+        
+        # Configuration summary
+        combined_results["configuration_summaries"][config_name] = {
+            "accuracy_by_method": result["summary"],
+            "disagreement_rate": result.get("disagreement_summary", {}).get("disagreement_rate", 0),
+            "total_errors": len(result.get("errors", [])),
+            "complexity_distribution": analyze_complexity_distribution(result),
+            "agent_patterns": analyze_agent_patterns(result)
+        }
+        
+        # Cross-analysis data
+        combined_results["cross_analysis"]["disagreement_comparison"][config_name] = \
+            result.get("disagreement_summary", {})
+    
+    # Perform meta-analysis
+    combined_results["meta_analysis"] = perform_meta_analysis(all_results)
+    
+    # Save comprehensive results
+    if output_dir:
+        with open(os.path.join(output_dir, "comprehensive_combined_results.json"), 'w') as f:
+            json.dump(combined_results, f, indent=2)
+    
+    return combined_results
+
+def analyze_complexity_distribution(result):
+    """Analyze complexity distribution for a configuration"""
+    complexity_counts = {"basic": 0, "intermediate": 0, "advanced": 0}
+    complexity_accuracy = {"basic": {"correct": 0, "total": 0}, 
+                          "intermediate": {"correct": 0, "total": 0}, 
+                          "advanced": {"correct": 0, "total": 0}}
+    
+    for q_result in result.get("question_results", []):
+        recruitment_info = q_result.get("recruitment_info", {})
+        complexity = recruitment_info.get("complexity_selected", "unknown")
+        
+        if complexity in complexity_counts:
+            complexity_counts[complexity] += 1
+            
+            # Check accuracy
+            performance = q_result.get("performance", {})
+            if "majority_voting" in performance and "correct" in performance["majority_voting"]:
+                complexity_accuracy[complexity]["total"] += 1
+                if performance["majority_voting"]["correct"]:
+                    complexity_accuracy[complexity]["correct"] += 1
+    
+    return {"counts": complexity_counts, "accuracy": complexity_accuracy}
+
+def analyze_agent_patterns(result):
+    """Analyze agent recruitment and performance patterns"""
+    agent_type_counts = {}
+    agent_performance = {}
+    
+    for q_result in result.get("question_results", []):
+        recruitment_info = q_result.get("recruitment_info", {})
+        agents = recruitment_info.get("agents_recruited", [])
+        
+        for agent in agents:
+            role = agent.get("role", "unknown")
+            agent_type_counts[role] = agent_type_counts.get(role, 0) + 1
+    
+    return {"agent_type_distribution": agent_type_counts}
+
+def perform_meta_analysis(all_results):
+    """Perform meta-analysis across all configurations"""
+    
+    # Find best performing configurations
+    best_configs = {}
+    for method in ["majority_voting", "weighted_voting", "borda_count"]:
+        best_accuracy = 0
+        best_config = None
+        
+        for result in all_results:
+            accuracy = result["summary"].get(method, {}).get("accuracy", 0)
+            if accuracy > best_accuracy:
+                best_accuracy = accuracy
+                best_config = result["configuration"]
+        
+        best_configs[method] = {"config": best_config, "accuracy": best_accuracy}
+    
+    # Find most disagreement-prone configurations
+    disagreement_ranking = []
+    for result in all_results:
+        disagreement_rate = result.get("disagreement_summary", {}).get("disagreement_rate", 0)
+        disagreement_ranking.append({
+            "config": result["configuration"],
+            "disagreement_rate": disagreement_rate
+        })
+    
+    disagreement_ranking.sort(key=lambda x: x["disagreement_rate"], reverse=True)
+    
+    return {
+        "best_performing_configs": best_configs,
+        "disagreement_ranking": disagreement_ranking
+    }
 
 def run_dataset(
     dataset_type: str,

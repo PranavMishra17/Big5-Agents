@@ -414,13 +414,16 @@ TASK_ANALYSIS_PROMPTS = {
     2. Provide a ranking of the options from most to least appropriate
     3. Give your confidence level for each option
 
-    Begin your final answer with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
-    Then provide your full ranking (e.g., "My ranking: A, C, B, D") followed by your detailed reasoning.
-    Strictly follow the format requested, unless specified otherwise.
+    REQUIRED FORMAT:
+    Start your response with "ANSWER: X" (where X is A, B, C, or D)
+    Then provide "RANKING: A, C, B, D" (your order from best to worst)
+    Finally, give your detailed reasoning.
+
+    Remember: You must select exactly ONE option and provide a clear ranking.
     """,
     
     "multi_choice_mcq_task": """
-    As a {role} with expertise in your domain, analyze the following multi-choice question where multiple answers may be correct:
+    As a {role} with expertise in your domain, analyze the following multi-choice question where MULTIPLE answers may be correct:
 
     {task_description}
 
@@ -434,8 +437,10 @@ TASK_ANALYSIS_PROMPTS = {
     2. Identify ALL options that are correct or appropriate
     3. Give your confidence level for your selection
 
-    Begin your final answer with "ANSWERS: X,Y,Z" (replace X,Y,Z with ALL correct option letters, e.g., "ANSWERS: A,C" or "ANSWERS: B,D").
+    REQUIRED FORMAT:
+    Start your response with "ANSWERS: X,Y,Z" (where X,Y,Z are ALL correct option letters, e.g., "ANSWERS: A,C" or "ANSWERS: B,D")
     Then provide your detailed reasoning for why each selected option is correct and why others are incorrect.
+
     Remember: You may need to select multiple options for this question type.
     """,
     

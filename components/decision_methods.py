@@ -25,106 +25,112 @@ class DecisionMethods:
         self.logger.info("Initialized decision methods handler")
 
     def extract_answer_option(self, content):
-        """Extract answer option from various content formats."""
+        """Extract answer option from various content formats with improved parsing."""
         if not isinstance(content, str):
             return None
         
-        # Standard answer formats for MCQ
+        # Standard answer formats for MCQ - now with more explicit patterns
         patterns = [
-            r"ANSWER:\s*([A-Da-d])",
-            r"FINAL ANSWER:\s*([A-Da-d])",
-            r"\*\*([A-Da-d])\.",
-            r"^([A-Da-d])\.",
-            r"option\s+([A-Da-d])",
-            r"selected?:?\s*([A-Da-d])"
+            r"ANSWER:\s*([A-Da-d])",           # ANSWER: A
+            r"FINAL ANSWER:\s*([A-Da-d])",     # FINAL ANSWER: A  
+            r"^ANSWER:\s*([A-Da-d])",          # Start of line
+            r"answer is:?\s*([A-Da-d])",       # answer is: A
+            r"my answer:?\s*([A-Da-d])",       # my answer: A
+            r"the answer:?\s*([A-Da-d])",      # the answer: A
+            r"option\s+([A-Da-d])",            # option A
+            r"choose\s+([A-Da-d])",            # choose A
+            r"select\s+([A-Da-d])",            # select A
+            r"\*\*([A-Da-d])\.\*\*",          # **A.**
+            r"^([A-Da-d])\.",                  # A. at start of line
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, content, re.IGNORECASE)
+            match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
             if match:
-                # Always return uppercase 
                 return match.group(1).upper()
         
-        # Check for antibody mentions (specific to some medical questions)
-        antibody_map = {
-            "A": ["anti-nmda", "nmda receptor"],
-            "B": ["anti-lgi1", "lgi1"],
-            "C": ["anti-gaba", "gaba-b"],
-            "D": ["anti-ampa", "ampa receptor"]
-        }
-        
-        for option, keywords in antibody_map.items():
-            if any(keyword in content.lower() for keyword in keywords):
-                return option
+        # Look for ranking format and extract first option
+        ranking_match = re.search(r"RANKING:\s*([A-Da-d])(?:\s*,|\s|$)", content, re.IGNORECASE)
+        if ranking_match:
+            return ranking_match.group(1).upper()
                 
         return None
-    
+
+    def extract_multi_choice_answers(self, content):
+        """Extract multiple choice answers with improved parsing."""
+        if not isinstance(content, str):
+            return []
+        
+        # Patterns for multi-choice answers - more comprehensive
+        patterns = [
+            r"ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",           # ANSWERS: A,C
+            r"^ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",          # Start of line
+            r"FINAL ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",     # FINAL ANSWERS: A,C
+            r"my answers?:?\s*([A-D](?:\s*,\s*[A-D])*)",       # my answers: A,C
+            r"selected options?:?\s*([A-D](?:\s*,\s*[A-D])*)", # selected options: A,C
+            r"correct options?:?\s*([A-D](?:\s*,\s*[A-D])*)",  # correct options: A,C
+            r"choose:?\s*([A-D](?:\s*,\s*[A-D])*)",            # choose: A,C
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
+            if match:
+                answer_str = match.group(1).upper()
+                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+                return sorted(list(set(answers)))
+        
+        # Fallback: look for pattern like "Options A and C" or "A, B, and D"
+        option_patterns = [
+            r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)",
+            r"letters?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)",
+        ]
+        
+        for pattern in option_patterns:
+            match = re.search(pattern, content, re.IGNORECASE)
+            if match:
+                answer_str = match.group(1).upper()
+                answer_str = answer_str.replace('AND', ',').replace(' ', '')
+                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+                return sorted(list(set(answers)))
+        
+        return []
+
     def extract_yes_no_maybe_answer(self, content):
-        """Extract yes/no/maybe answer from content."""
+        """Extract yes/no/maybe answer with improved parsing."""
         if not isinstance(content, str):
             return None
         
         content_lower = content.lower()
         
-        # Explicit answer patterns
+        # Explicit answer patterns - more comprehensive
         patterns = [
             r"ANSWER:\s*(yes|no|maybe)",
+            r"^ANSWER:\s*(yes|no|maybe)",          # Start of line
             r"FINAL ANSWER:\s*(yes|no|maybe)",
-            r"answer is:\s*(yes|no|maybe)",
-            r"my answer:\s*(yes|no|maybe)",
-            r"the answer is:\s*(yes|no|maybe)"
+            r"answer is:?\s*(yes|no|maybe)",
+            r"my answer:?\s*(yes|no|maybe)",
+            r"the answer is:?\s*(yes|no|maybe)",
+            r"conclusion:?\s*(yes|no|maybe)",
+            r"therefore:?\s*(yes|no|maybe)",
         ]
         
         for pattern in patterns:
-            match = re.search(pattern, content_lower, re.IGNORECASE)
+            match = re.search(pattern, content_lower, re.IGNORECASE | re.MULTILINE)
             if match:
                 return match.group(1).lower()
         
-        # Check for clear yes/no/maybe statements
-        if "yes," in content_lower or "yes." in content_lower or "yes\n" in content_lower:
-            return "yes"
-        elif "no," in content_lower or "no." in content_lower or "no\n" in content_lower:
-            return "no"
-        elif "maybe" in content_lower or "uncertain" in content_lower or "possibly" in content_lower:
-            return "maybe"
+        # Check for clear yes/no/maybe statements at start of lines
+        lines = content_lower.split('\n')
+        for line in lines[:5]:  # Check first 5 lines
+            line = line.strip()
+            if line.startswith('yes,') or line.startswith('yes.') or line == 'yes':
+                return "yes"
+            elif line.startswith('no,') or line.startswith('no.') or line == 'no':
+                return "no"
+            elif line.startswith('maybe') or line.startswith('uncertain') or line.startswith('possibly'):
+                return "maybe"
         
         return None
-
-    def extract_multi_choice_answers(self, content):
-        """Extract multiple choice answers from content (e.g., A,C or A,B,D)."""
-        if not isinstance(content, str):
-            return []
-        
-        import re
-        
-        # Patterns for multi-choice answers
-        patterns = [
-            r"ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",
-            r"FINAL ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",
-            r"selected options?:?\s*([A-D](?:\s*,\s*[A-D])*)",
-            r"correct options? (?:are|is):?\s*([A-D](?:\s*,\s*[A-D])*)"
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, content, re.IGNORECASE)
-            if match:
-                # Extract and clean the answer string
-                answer_str = match.group(1).upper()
-                # Remove spaces and split by comma
-                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
-                # Remove duplicates and sort
-                return sorted(list(set(answers)))
-        
-        # Fallback: look for pattern like "Options A and C" or "A, B, and D"
-        option_pattern = r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)"
-        match = re.search(option_pattern, content, re.IGNORECASE)
-        if match:
-            answer_str = match.group(1).upper()
-            answer_str = answer_str.replace('AND', ',').replace(' ', '')
-            answers = [a.strip() for a in answer_str.split(',') if a.strip()]
-            return sorted(list(set(answers)))
-        
-        return []
 
     def multi_choice_voting(self, agent_responses):
         """Apply voting to multi-choice MCQ tasks."""
@@ -188,8 +194,6 @@ class DecisionMethods:
         
         if task_type == "yes_no_maybe":
             return self._majority_voting_yes_no_maybe(agent_responses)
-        elif task_type == "multi_choice_mcq":
-            return self.multi_choice_voting(agent_responses)
         
         votes = {}
         max_votes = 0
