@@ -569,6 +569,93 @@ def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     
     return task
 
+def detect_agent_disagreement(agent_responses):
+    """Detect if agents disagree on answers"""
+    answers = []
+    for agent_role, response in agent_responses.items():
+        answer = None
+        if isinstance(response, dict):
+            if "final_decision" in response:
+                # Extract answer from final_decision text
+                answer = extract_answer_option(response["final_decision"])
+            elif "extract" in response and isinstance(response["extract"], dict):
+                if "answer" in response["extract"]:
+                    answer = response["extract"]["answer"]
+        elif isinstance(response, str):
+            answer = extract_answer_option(response)
+        
+        if answer:
+            answers.append(answer.upper())
+    
+    unique_answers = set(answers)
+    disagreement = len(unique_answers) > 1
+    
+    return {
+        "has_disagreement": disagreement,
+        "unique_answers": list(unique_answers),
+        "answer_distribution": {ans: answers.count(ans) for ans in unique_answers},
+        "total_agents": len(answers),
+        "all_answers": answers
+    }
+
+def extract_answer_option(content):
+    """Extract answer option from agent response content"""
+    if not isinstance(content, str):
+        return None
+    
+    import re
+    patterns = [
+        r"ANSWER:\s*([A-Da-d])",
+        r"FINAL ANSWER:\s*([A-Da-d])",
+        r"answer is:?\s*([A-Da-d])",
+        r"my answer:?\s*([A-Da-d])",
+        r"option\s+([A-Da-d])",
+        r"^([A-Da-d])\.",
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
+        if match:
+            return match.group(1).upper()
+    return None
+
+def extract_agent_responses_info(simulation_results):
+    """Extract detailed agent response information"""
+    agent_responses_info = {}
+    agent_responses = simulation_results.get("agent_responses", {})
+
+
+    
+    for agent_role, response_data in agent_responses.items():
+        info = {
+            "final_answer": None,
+            "confidence": 1.0,
+            "reasoning": "",
+            "full_response": response_data
+        }
+        
+        if isinstance(response_data, dict):
+            # Extract answer
+            if "final_decision" in response_data:
+                info["final_answer"] = extract_answer_option(response_data["final_decision"])
+                info["reasoning"] = response_data["final_decision"][:500] + "..." if len(response_data["final_decision"]) > 500 else response_data["final_decision"]
+            elif "extract" in response_data and isinstance(response_data["extract"], dict):
+                if "final_decision" in response_data:
+                    info["final_answer"] = extract_answer_option(response_data["final_decision"])
+                if "confidence" in response_data["extract"]:
+                    info["confidence"] = response_data["extract"]["confidence"]
+            
+            # Extract confidence if available
+            if "confidence" in response_data:
+                info["confidence"] = response_data["confidence"]
+        else:
+            info["final_answer"] = extract_answer_option(str(response_data))
+            info["reasoning"] = str(response_data)[:500] + "..." if len(str(response_data)) > 500 else str(response_data)
+        
+        agent_responses_info[agent_role] = info
+    
+    return agent_responses_info
+
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],
     dataset_type: str,
@@ -579,6 +666,7 @@ def run_questions_with_configuration(
 ) -> Dict[str, Any]:
     """
     Run questions with specific configuration, handling errors gracefully.
+    Enhanced with comprehensive logging and disagreement detection.
     """
     config_name = configuration.get("name", "unknown")
     logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
@@ -588,12 +676,10 @@ def run_questions_with_configuration(
 
     # Make sure configuration has proper recruitment method and n_max
     if config_name == "Baseline":
-        # Baseline always uses basic recruitment with 1 agent
         configuration["recruitment"] = True
         configuration["recruitment_method"] = "basic"
         configuration["n_max"] = 1
     elif config_name != "Custom Configuration":
-        # All other named configurations use intermediate recruitment with specified n_max
         configuration["recruitment"] = True
         configuration["recruitment_method"] = "intermediate"
         if "n_max" not in configuration:
@@ -604,8 +690,9 @@ def run_questions_with_configuration(
     if run_output_dir:
         os.makedirs(run_output_dir, exist_ok=True)
     
+    # Enhanced results structure
     results = {
-        "configuration": configuration.get("name", "unknown"),
+        "configuration": config_name,
         "dataset": dataset_type,
         "num_questions": len(questions),
         "timestamp": datetime.now().isoformat(),
@@ -621,7 +708,9 @@ def run_questions_with_configuration(
             "total_disagreements": 0,
             "disagreement_rate": 0.0,
             "disagreement_patterns": {}
-        }
+        },
+        "complexity_distribution": {"basic": 0, "intermediate": 0, "advanced": 0},
+        "agent_recruitment_summary": {}
     }
     
     disagreement_count = 0
@@ -630,7 +719,7 @@ def run_questions_with_configuration(
     if dataset_type == "pubmedqa":
         results["summary"]["yes_no_maybe_voting"] = {"correct": 0, "total": 0}
     
-    for i, question in enumerate(tqdm(questions, desc=f"{configuration.get('name', 'Config')}")):
+    for i, question in enumerate(tqdm(questions, desc=f"{config_name}")):
         question_result = {
             "question_index": i,
             "question_metadata": {
@@ -638,8 +727,20 @@ def run_questions_with_configuration(
                 "subject": question.get("subject_name", ""),
                 "topic": question.get("topic_name", ""),
                 "original_choice_type": question.get("choice_type", "")
-            }
+            },
+            "recruitment_info": {
+                "complexity_selected": None,
+                "agents_recruited": [],
+                "recruitment_method": configuration.get("recruitment_method", "none"),
+                "recruitment_reasoning": ""
+            },
+            "agent_responses": {},
+            "disagreement_analysis": {},
+            "disagreement_flag": False
         }
+        
+        simulator = None
+        performance = None
         
         try:
             # Format the question for the task
@@ -679,12 +780,102 @@ def run_questions_with_configuration(
                         use_recruitment=configuration.get("recruitment", False),
                         recruitment_method=configuration.get("recruitment_method", "adaptive"),
                         recruitment_pool=configuration.get("recruitment_pool", "general"),
-                        n_max=configuration.get("n_max", n_max)  # Use configuration-specific n_max or default
+                        n_max=configuration.get("n_max", n_max)
                     )
+
+                    # In dataset_runner.py, after simulator creation:
+                    if hasattr(simulator, 'metadata') and 'complexity' in simulator.metadata:
+                        question_result["recruitment_info"]["complexity_selected"] = simulator.metadata['complexity']
+
+                    if hasattr(simulator, 'agents') and simulator.agents:
+                        agents_info = []
+                        for role, agent in simulator.agents.items():
+                            agents_info.append({
+                                "role": role,
+                                "weight": getattr(agent, 'weight', 0.2)
+                            })
+                        question_result["recruitment_info"]["agents_recruited"] = agents_info
                     
                     # Run simulation
                     simulation_results = simulator.run_simulation()
                     performance = simulator.evaluate_performance()
+
+
+                    
+                    # Extract recruitment information
+                    if hasattr(simulator, 'recruited_agents') and simulator.recruited_agents:
+                        recruited_agents_info = []
+                        for agent in simulator.recruited_agents:
+                            if isinstance(agent, dict):
+                                # Handle case where agent is already a dictionary
+                                agent_info = {
+                                    "role": agent.get("role", "Unknown"),
+                                    "expertise": agent.get("expertise", []),
+                                    "weight": agent.get("weight", 0.2),
+                                    "specialization": agent.get("specialization", "")
+                                }
+                            else:
+                                # Handle case where agent is an object
+                                agent_info = {
+                                    "role": getattr(agent, 'role', 'Unknown'),
+                                    "expertise": getattr(agent, 'expertise', []),
+                                    "weight": getattr(agent, 'weight', 0.2),
+                                    "specialization": getattr(agent, 'specialization', '')
+                                }
+                            recruited_agents_info.append(agent_info)
+                        
+                        question_result["recruitment_info"]["agents_recruited"] = recruited_agents_info
+                    
+                    # Extract complexity if available
+                    if hasattr(simulator, 'task_complexity'):
+                        complexity = simulator.task_complexity
+                        question_result["recruitment_info"]["complexity_selected"] = complexity
+                        question_result["recruitment_info"]["recruitment_reasoning"] = f"Selected {complexity} complexity"
+                        
+                        # Update complexity distribution
+                        if complexity in results["complexity_distribution"]:
+                            results["complexity_distribution"][complexity] += 1
+                    
+                    # Extract detailed agent responses
+                    question_result["agent_responses"] = extract_agent_responses_info(simulation_results)
+
+                    # ADD HERE: Track mind changes
+                    if hasattr(simulation_results, 'agent_analyses') and hasattr(simulation_results, 'agent_decisions'):
+                        mind_changes = track_agent_mind_changes(
+                            simulation_results.get('agent_analyses', {}), 
+                            simulation_results.get('agent_decisions', {})
+                        )
+                        
+                        change_count = sum(1 for change in mind_changes.values() if change["changed_mind"])
+                        question_result["mind_change_analysis"] = {
+                            "total_agents": len(mind_changes),
+                            "agents_who_changed": change_count,
+                            "change_rate": change_count / len(mind_changes) if mind_changes else 0,
+                            "individual_changes": mind_changes
+                        }
+
+                    # Detect disagreement (existing code continues here)
+                    disagreement_analysis = detect_agent_disagreement(simulation_results.get("agent_responses", {}))
+                    question_result["disagreement_analysis"] = disagreement_analysis
+
+                    # In dataset_runner.py, add mind change tracking:
+                    if "agent_analyses" in simulation_results and "agent_responses" in simulation_results:
+                        mind_changes = track_agent_mind_changes(
+                            simulation_results["agent_analyses"], 
+                            simulation_results["agent_responses"]
+                        )
+                        question_result["mind_change_analysis"] = mind_changes
+                    
+                    if disagreement_analysis.get("has_disagreement", False):
+                        disagreement_count += 1
+                        question_result["disagreement_flag"] = True
+                        
+                        # Track disagreement patterns
+                        pattern = disagreement_analysis["answer_distribution"]
+                        pattern_key = "-".join(sorted(pattern.keys()))
+                        if pattern_key:
+                            results["disagreement_summary"]["disagreement_patterns"][pattern_key] = \
+                                results["disagreement_summary"]["disagreement_patterns"].get(pattern_key, 0) + 1
                     
                     # Store decisions and performance
                     question_result["decisions"] = simulation_results["decision_results"]
@@ -699,7 +890,6 @@ def run_questions_with_configuration(
                         
                         # Handle different task types properly
                         if dataset_type == "pubmedqa":
-                            # For PubMedQA, look for yes_no_maybe_voting method
                             for method in ["majority_voting", "weighted_voting", "borda_count"]:
                                 if method in task_performance:
                                     method_perf = task_performance[method]
@@ -708,7 +898,6 @@ def run_questions_with_configuration(
                                         if method_perf["correct"]:
                                             results["summary"][method]["correct"] += 1
                             
-                            # Special handling for yes_no_maybe_voting if it exists
                             if "yes_no_maybe_voting" in task_performance:
                                 yes_no_perf = task_performance["yes_no_maybe_voting"]
                                 if "correct" in yes_no_perf:
@@ -716,9 +905,7 @@ def run_questions_with_configuration(
                                     if yes_no_perf["correct"]:
                                         results["summary"]["yes_no_maybe_voting"]["correct"] += 1
                         else:
-                            # For other datasets, handle normally
                             methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
-                                
                             for method in methods_to_check:
                                 if method in task_performance:
                                     method_perf = task_performance[method]
@@ -736,29 +923,17 @@ def run_questions_with_configuration(
                     error_details = traceback.format_exc()
                     logging.error(f"Full error details: {error_details}")
                     
-                    # Check for different error types
                     if attempt < max_retries - 1:
-                        # Content filter errors
                         if "content" in error_str.lower() and "filter" in error_str.lower():
-                            error_type = "content_filter"
                             wait_time = min(5 * (attempt + 1), 30)
                             logging.warning(f"Content filter triggered, retry {attempt+1} for question {i}")
-                        
-                        # Rate limit errors
                         elif any(term in error_str.lower() for term in ["rate", "limit", "timeout", "capacity"]):
-                            error_type = "rate_limit"
-                            wait_time = min(2 ** attempt + 1, 15)  # Exponential backoff
+                            wait_time = min(2 ** attempt + 1, 15)
                             logging.warning(f"Rate limit hit, waiting {wait_time}s before retry {attempt+1}")
-                        
-                        # Other retryable errors
                         elif any(term in error_str.lower() for term in ["connection", "timeout", "retry", "try again"]):
-                            error_type = "connection"
                             wait_time = min(2 ** attempt + 1, 10)
                             logging.warning(f"Connection error, retry {attempt+1} for question {i}")
-                        
-                        # Continue with retry
                         else:
-                            error_type = "other"
                             wait_time = 1
                             logging.warning(f"Unknown error, retry {attempt+1} for question {i}")
                         
@@ -775,30 +950,35 @@ def run_questions_with_configuration(
                     logging.error(f"Failed after {max_retries} retries for question {i}: {error_str}")
                     break
             
-            # Save individual question results
+            # Save individual question results with enhanced data
             if run_output_dir:
                 try:
-                    with open(os.path.join(run_output_dir, f"question_{i}.json"), 'w') as f:
-                        output_data = {
-                            "question": task["description"],
-                            "options": task.get("options", []),
-                            "ground_truth": task.get("ground_truth", ""),
-                            "metadata": task.get("metadata", {})
-                        }
-                        if "decisions" in question_result:
-                            output_data["decisions"] = question_result["decisions"]
-                        if "performance" in question_result:
-                            output_data["performance"] = question_result["performance"]
-                        if "agent_conversations" in question_result:
-                            output_data["agent_conversations"] = question_result["agent_conversations"]
-                        if "error" in question_result:
-                            output_data["error"] = question_result["error"]
-                        json.dump(output_data, f, indent=2)
+                    enhanced_output_data = {
+                        "question": task["description"],
+                        "options": task.get("options", []),
+                        "ground_truth": task.get("ground_truth", ""),
+                        "metadata": task.get("metadata", {}),
+                        "recruitment_info": question_result["recruitment_info"],
+                        "agent_responses": question_result["agent_responses"],
+                        "disagreement_analysis": question_result["disagreement_analysis"],
+                        "disagreement_flag": question_result["disagreement_flag"]
+                    }
+                    
+                    if "decisions" in question_result:
+                        enhanced_output_data["decisions"] = question_result["decisions"]
+                    if "performance" in question_result:
+                        enhanced_output_data["performance"] = question_result["performance"]
+                    if "agent_conversations" in question_result:
+                        enhanced_output_data["agent_conversations"] = question_result["agent_conversations"]
+                    if "error" in question_result:
+                        enhanced_output_data["error"] = question_result["error"]
+                    
+                    with open(os.path.join(run_output_dir, f"question_{i}_enhanced.json"), 'w') as f:
+                        json.dump(enhanced_output_data, f, indent=2)
                 except Exception as e:
-                    logging.error(f"Failed to save results for question {i}: {str(e)}")
+                    logging.error(f"Failed to save enhanced results for question {i}: {str(e)}")
             
         except Exception as e:
-            # Errors in task formatting or other pre-simulation errors
             logging.error(f"Error processing question {i}: {str(e)}")
             question_result["error"] = f"Processing error: {str(e)}"
             results["errors"].append({
@@ -810,48 +990,25 @@ def run_questions_with_configuration(
         # Always add the question result, even if it has errors
         results["question_results"].append(question_result)
     
+    # Calculate final disagreement statistics
+    total_processed = len([q for q in results["question_results"] if "error" not in q])
+    results["disagreement_summary"]["total_disagreements"] = disagreement_count
+    results["disagreement_summary"]["disagreement_rate"] = disagreement_count / total_processed if total_processed > 0 else 0
+    
     # Calculate accuracy for each method
     for method in results["summary"].keys():
         method_summary = results["summary"][method]
         method_summary["accuracy"] = method_summary["correct"] / method_summary["total"] if method_summary["total"] > 0 else 0.0
 
-    # After simulation results and performance are obtained
-    if hasattr(simulator, "metadata") and "complexity" in simulator.metadata:
-        complexity = simulator.metadata["complexity"]
-        # Track if this complexity level got the answer correct
-        for method in ["majority_voting", "weighted_voting", "borda_count"]:
-            if method in performance.get("task_performance", {}) and "correct" in performance["task_performance"][method]:
-                if performance["task_performance"][method]["correct"]:
-                    from components import agent_recruitment
-                    if hasattr(agent_recruitment, "complexity_correct"):
-                        agent_recruitment.complexity_correct[complexity] += 1
-                    break  # Just count once if any method got it right
-    
-    # Save overall results
-    if run_output_dir:
-        try:
-            with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
-                json.dump(results["summary"], f, indent=2)
-            
-            with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
-                json.dump(results["errors"], f, indent=2)
-                
-            # Save detailed results with conversations
-            with open(os.path.join(run_output_dir, "detailed_results.json"), 'w') as f:
-                json.dump(results, f, indent=2)
-        except Exception as e:
-            logging.error(f"Failed to save summary results: {str(e)}")
-    
-    # Print summary
-    print(f"\nSummary for {config_name} on {dataset_type}:")
-    for method, stats in results["summary"].items():
-        if "accuracy" in stats:
-            print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
-    
-    if results["errors"]:
-        print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+    # ADD HERE: Calculate mind change summary
+    total_mind_changes = sum(q.get("mind_change_analysis", {}).get("agents_who_changed", 0) 
+                            for q in results["question_results"])
+    results["disagreement_summary"]["mind_change_summary"] = {
+        "total_mind_changes": total_mind_changes,
+        "average_change_rate": total_mind_changes / (total_processed * 5) if total_processed > 0 else 0  # assuming 5 agents
+    }
 
-    # Add complexity metrics before returning results
+    # Add complexity metrics
     from components import agent_recruitment
     if hasattr(agent_recruitment, "complexity_counts") and hasattr(agent_recruitment, "complexity_correct"):
         results["complexity_metrics"] = {
@@ -860,14 +1017,71 @@ def run_questions_with_configuration(
             "accuracy": {}
         }
         
-        # Calculate accuracy for each complexity level
         for level in ["basic", "intermediate", "advanced"]:
             count = results["complexity_metrics"]["counts"].get(level, 0)
             correct = results["complexity_metrics"]["correct"].get(level, 0)
             results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
+    
+    # Save enhanced overall results
+    if run_output_dir:
+        try:
+            with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
+                json.dump(results["summary"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
+                json.dump(results["errors"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "disagreement_analysis.json"), 'w') as f:
+                json.dump(results["disagreement_summary"], f, indent=2)
+                
+            # Save comprehensive detailed results
+            with open(os.path.join(run_output_dir, "detailed_results_enhanced.json"), 'w') as f:
+                json.dump(results, f, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to save enhanced summary results: {str(e)}")
+    
+    # Enhanced summary print
+    print(f"\nSummary for {config_name} on {dataset_type}:")
+    for method, stats in results["summary"].items():
+        if "accuracy" in stats:
+            print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
+    
+    if results["errors"]:
+        print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+    
+    print(f"  Disagreements: {disagreement_count}/{total_processed} questions ({results['disagreement_summary']['disagreement_rate']:.2%})")
+    
+    # Print complexity distribution
+    if any(results["complexity_distribution"].values()):
+        print(f"  Complexity Distribution: {dict(results['complexity_distribution'])}")
         
     return results
 
+
+def track_agent_mind_changes(agent_analyses, agent_decisions):
+    """Track if agents changed their answers after seeing teammates"""
+    mind_changes = {}
+    
+    for agent_role in agent_analyses.keys():
+        # Extract initial answer
+        initial_extract = agent_analyses[agent_role].get("extract", {})
+        initial_answer = initial_extract.get("answer", "").upper() if initial_extract.get("answer") else ""
+        
+        # Extract final answer
+        final_extract = agent_decisions[agent_role].get("extract", {})
+        final_answer = final_extract.get("answer", "").upper() if final_extract.get("answer") else ""
+        
+        # Check if changed
+        changed = initial_answer != final_answer and initial_answer and final_answer
+        
+        mind_changes[agent_role] = {
+            "initial_answer": initial_answer,
+            "final_answer": final_answer, 
+            "changed_mind": changed,
+            "change_direction": f"{initial_answer} → {final_answer}" if changed else None
+        }
+    
+    return mind_changes
 
 
 def create_comprehensive_combined_results(all_results, dataset_type, output_dir):

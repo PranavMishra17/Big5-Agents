@@ -5,6 +5,7 @@ Simulator for running agent system interactions.
 import os
 import logging
 import json
+import re
 import traceback
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime, time
@@ -21,7 +22,6 @@ from components.team_orientation import TeamOrientation
 from components.mutual_trust import MutualTrust
 
 from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS, get_adaptive_prompt
-from utils.prompts import extract_answer_option
 
 
 """
@@ -243,6 +243,34 @@ class AgentSystemSimulator:
         config_str = ", ".join(component_config) if component_config else "No teamwork components"
         self.logger.logger.info(f"Components enabled: {config_str}")
 
+    def _run_core_simulation(self):
+        """
+        Run the core simulation process and return structured results.
+        
+        Returns:
+            Dictionary with agent responses, exchanges, and decision results
+        """
+        # Run task analysis phase
+        agent_analyses = self._run_task_analysis()
+        
+        # Run leadership definition if enabled
+        if self.use_team_leadership and self.leader:
+            self._run_leadership_definition()
+        
+        # Run collaborative discussion
+        agent_decisions = self._run_collaborative_discussion(agent_analyses)
+        
+        # Apply decision methods
+        decision_results = self._apply_decision_methods(agent_decisions)
+        
+        # Return structured results with BOTH initial and final
+        return {
+            "agent_analyses": agent_analyses,      # ADD: Initial phase responses
+            "agent_responses": agent_decisions,    # Final phase responses
+            "exchanges": self.results.get("exchanges", []),
+            "decision_results": decision_results
+        }
+
 
     def run_simulation(self):
         """
@@ -324,18 +352,24 @@ class AgentSystemSimulator:
         # Capture recruitment info if used
         if self.use_recruitment:
             complexity = determine_complexity(config.TASK)
-            agents = recruit_agents(complexity, self.recruitment_method, self.recruitment_pool, self.n_max)
+            agents = recruit_agents(complexity, complexity, self.recruitment_pool, self.n_max)  # Pass actual complexity, not method
             
             enhanced_results["recruitment_info"] = {
                 "complexity_selected": complexity,
-                "agents_recruited": [{"role": agent.role, "expertise": getattr(agent, 'expertise', []), 
-                                    "weight": getattr(agent, 'weight', 0.2)} for agent in agents],
+                "agents_recruited": [
+                    {
+                        "role": agent.get("role", "Unknown") if isinstance(agent, dict) else getattr(agent, 'role', 'Unknown'),
+                        "expertise": agent.get("expertise", []) if isinstance(agent, dict) else getattr(agent, 'expertise', []),
+                        "weight": agent.get("weight", 0.2) if isinstance(agent, dict) else getattr(agent, 'weight', 0.2)
+                    } for agent in agents
+                ],
                 "recruitment_method": self.recruitment_method,
                 "recruitment_reasoning": f"Selected {complexity} complexity with {len(agents)} agents"
             }
         
         # Run the actual simulation
         simulation_results = self._run_core_simulation()
+
         
         # Extract individual agent responses
         for agent_role, response_data in simulation_results.get("agent_responses", {}).items():
@@ -501,7 +535,12 @@ class AgentSystemSimulator:
             })
             
             return leader_definition
-        
+
+    def sanitize_analysis(self, analysis_text):
+        """Remove explicit answers but keep reasoning"""
+        lines = analysis_text.split('\n')
+        filtered = [line for line in lines if not re.match(r'ANSWER:\s*[A-D]', line)]
+        return '\n'.join(filtered)     
 
     def _run_collaborative_discussion(self, agent_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
             """
@@ -528,9 +567,10 @@ class AgentSystemSimulator:
                 
                 # Create collaborative prompt using adaptive prompting
                 if len(other_analyses) > 0:
+                    
                     other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
                                                     for other_role, analysis in other_analyses.items()])
-                    
+                    other_analyses_text = self.sanitize_analysis(other_analyses_text)
                     # Use adaptive prompt based on task type
                     try:
                         collaborative_prompt = get_adaptive_prompt(
@@ -850,15 +890,36 @@ class AgentSystemSimulator:
             }
         }
     
-    
+    def extract_answer_option(self, content):
+        """Extract answer option from agent response content"""
+        if not isinstance(content, str):
+            return None
+        
+        import re
+        patterns = [
+            r"ANSWER:\s*([A-Da-d])",
+            r"FINAL ANSWER:\s*([A-Da-d])",
+            r"answer is:?\s*([A-Da-d])",
+            r"my answer:?\s*([A-Da-d])",
+            r"option\s+([A-Da-d])",
+            r"^([A-Da-d])\.",
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
+            if match:
+                return match.group(1).upper()
+        return None
+
+
     def _extract_agent_answer(self, response_data):
         """Extract clean answer from agent response"""
         if isinstance(response_data, dict):
             if "final_decision" in response_data:
-                return extract_answer_option(response_data["final_decision"])
+                return self.extract_answer_option(response_data["final_decision"])
             elif "extract" in response_data and "answer" in response_data["extract"]:
                 return response_data["extract"]["answer"]
-        return extract_answer_option(str(response_data))
+        return self.extract_answer_option(str(response_data))
     
     def _extract_confidence(self, response_data):
         """Extract confidence score"""
@@ -874,19 +935,19 @@ class AgentSystemSimulator:
             return response_data.get("final_decision", str(response_data))[:500] + "..."
         return str(response_data)[:500] + "..."
 
-    def detect_agent_disagreement(agent_responses):
+    def detect_agent_disagreement(self, agent_responses):
         """Detect if agents disagree on answers"""
         answers = []
         for agent_role, response in agent_responses.items():
             if isinstance(response, dict):
                 if "final_decision" in response:
-                    answer = extract_answer_option(response["final_decision"])
+                    answer = AgentSystemSimulator.extract_answer_option(self, response["final_decision"])
                 elif "extract" in response and "answer" in response["extract"]:
                     answer = response["extract"]["answer"]
                 else:
                     answer = None
             else:
-                answer = extract_answer_option(str(response))
+                answer = AgentSystemSimulator.extract_answer_option(str(response))
             
             if answer:
                 answers.append(answer.upper())
