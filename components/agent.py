@@ -1,510 +1,419 @@
+#!/usr/bin/env python3
 """
-Base agent class for modular agent system.
+LaTeX Resume Optimizer
+Automatically customizes LaTeX resumes based on job descriptions or keywords.
 """
 
-import logging
-import json
-from typing import List, Dict, Any, Optional, Tuple
-
+import argparse
+import os
+import sys
+import re
+import subprocess
+from pathlib import Path
+from datetime import datetime
 from langchain_openai import AzureChatOpenAI
-import config
 
-from utils.prompts import (
-    AGENT_SYSTEM_PROMPTS,
-    LEADERSHIP_PROMPTS,
-    COMMUNICATION_PROMPTS,
-    MONITORING_PROMPTS,
-    MENTAL_MODEL_PROMPTS,
-    ORIENTATION_PROMPTS,
-    TRUST_PROMPTS
-)
+class Config:
+    """Configuration for Azure OpenAI"""
+    AZURE_DEPLOYMENT = "VARELab-GPT4o"
+    AZURE_API_KEY = "428KgVArXb6sFyseVYDjElDDYZnlCnx8pNa8CfU5dCic6gjOK89WJQQJ99BBACYeBjFXJ3w3AAABACOG5gtQ"
+    AZURE_API_VERSION = "2024-08-01-preview"
+    AZURE_ENDPOINT = os.getenv("AZURE_ENDPOINT", "https://vare-lab.openai.azure.com/")  # Fallback URL
+    TEMPERATURE = 0.25
 
-
-class Agent:
-    """Base agent class for modular agent system."""
-    
-    def __init__(self, 
-                 role: str, 
-                 expertise_description: str,
-                 use_team_leadership: bool = False,
-                 use_closed_loop_comm: bool = False,
-                 use_mutual_monitoring: bool = False,
-                 use_shared_mental_model: bool = False,
-                 use_team_orientation: bool = False,
-                 use_mutual_trust: bool = False,
-                 n_max: int = 5,
-                 examples: Optional[List[Dict[str, str]]] = None):
-        """
-        Initialize an LLM-based agent with a specific role.
+class ResumeOptimizer:
+    def __init__(self):
+        self.config = Config()
         
-        Args:
-            role: The role of the agent (e.g., "Critical Analyst")
-            expertise_description: Description of the agent's expertise
-            use_team_leadership: Whether this agent uses team leadership behaviors
-            use_closed_loop_comm: Whether this agent uses closed-loop communication
-            use_mutual_monitoring: Whether this agent uses mutual performance monitoring
-            use_shared_mental_model: Whether this agent uses shared mental models
-            examples: Optional examples to include in the prompt
-        """
-        self.role = role
-        self.expertise_description = expertise_description
-        self.use_team_leadership = use_team_leadership
-        self.use_closed_loop_comm = use_closed_loop_comm
-        self.use_mutual_monitoring = use_mutual_monitoring
-        self.use_shared_mental_model = use_shared_mental_model
-        self.use_team_orientation = use_team_orientation
-        self.use_mutual_trust = use_mutual_trust
-        self.n_max = n_max
-        self.examples = examples or []
-        self.conversation_history = []
-        self.knowledge_base = {}
+        # Debug configuration
+        print("Initializing Azure OpenAI client...")
+        print(f" AZURE_DEPLOYMENT = {self.config.AZURE_DEPLOYMENT}")
+        print(f" AZURE_ENDPOINT = {self.config.AZURE_ENDPOINT}")
+        print(f" AZURE_API_VERSION = {self.config.AZURE_API_VERSION}")
         
-        # Initialize logger
-        self.logger = logging.getLogger(f"agent.{role}")
-
-
-        # Initialize LLM
-        self.client = AzureChatOpenAI(
-            azure_deployment=config.AZURE_DEPLOYMENT,
-            api_key=config.AZURE_API_KEY,
-            api_version=config.AZURE_API_VERSION,
-            azure_endpoint=config.AZURE_ENDPOINT,
-            temperature=config.TEMPERATURE
-        )
-        
-        # Build initial system message
-        self.messages = [
-            {"role": "system", "content": self._build_system_prompt()}
-        ]
-        
-        # Add example conversations if provided
-        if self.examples:
-            for example in self.examples:
-                self.messages.append({"role": "user", "content": example['question']})
-                self.messages.append({
-                    "role": "assistant", 
-                    "content": example['answer'] + "\n\n" + example.get('reason', '')
-                })
-                
-        self.logger.info(f"Initialized {self.role} agent")
-    
-
-    def _build_system_prompt(self) -> str:
-        """Build the system prompt for the agent."""
-        # Base prompt
-        prompt = AGENT_SYSTEM_PROMPTS["base"].format(
-            role=self.role,
-            expertise_description=self.expertise_description,
-            team_name=config.TEAM_NAME,
-            team_goal=config.TEAM_GOAL,
-            task_name=config.TASK['name'],
-            task_description=config.TASK['description'],
-            task_type=config.TASK['type'],
-            expected_output_format=config.TASK.get('expected_output_format', 'not specified')
-        )
-
-        # Add team leadership component if enabled
-        if self.use_team_leadership:
-            prompt += LEADERSHIP_PROMPTS["team_leadership"]
-        
-        # Add closed-loop communication component if enabled
-        if self.use_closed_loop_comm:
-            prompt += COMMUNICATION_PROMPTS["closed_loop"]
+        # Validate configuration
+        if not self.config.AZURE_ENDPOINT:
+            print("Error: AZURE_ENDPOINT not set. Please set environment variable or update config.")
+            sys.exit(1)
             
-        # Add mutual performance monitoring if enabled
-        if self.use_mutual_monitoring:
-            prompt += MONITORING_PROMPTS["mutual_monitoring"]
-            
-        # Add shared mental model if enabled
-        if self.use_shared_mental_model:
-            prompt += MENTAL_MODEL_PROMPTS["shared_mental_model"]
+        if not self.config.AZURE_API_KEY:
+            print("Error: AZURE_API_KEY not set.")
+            sys.exit(1)
         
-        # Add team orientation if enabled
-        if self.use_team_orientation:
-            prompt += ORIENTATION_PROMPTS["team_orientation"]
-        
-        # Add mutual trust if enabled
-        if self.use_mutual_trust:
-            # Base mutual trust prompt
-            prompt += TRUST_PROMPTS["mutual_trust_base"]
-            
-            # Adjust for trust levels
-            trust_factor = getattr(self, 'mutual_trust_factor', 0.8)
-            if trust_factor < 0.4:
-                prompt += TRUST_PROMPTS["low_trust"]
-            elif trust_factor > 0.7:
-                prompt += TRUST_PROMPTS["high_trust"]
-        
-        return prompt
-
-    def add_to_knowledge_base(self, key: str, value: Any) -> None:
-        """
-        Add information to the agent's knowledge base.
-        
-        Args:
-            key: The key for the knowledge
-            value: The value of the knowledge
-        """
-        self.knowledge_base[key] = value
-        self.logger.info(f"Added to knowledge base: {key}")
-    
-    def get_from_knowledge_base(self, key: str) -> Any:
-        """
-        Retrieve information from the agent's knowledge base.
-        
-        Args:
-            key: The key for the knowledge
-            
-        Returns:
-            The value of the knowledge, or None if not found
-        """
-        return self.knowledge_base.get(key)
-    
-
-
-    def chat(self, message: str) -> str:
-        """
-        Send a message to the agent and get a response.
-        
-        Args:
-            message: The message to send to the agent
-            
-        Returns:
-            The agent's response
-        """
-        self.logger.info(f"Received message: {message[:100]}...")
-        
-        # Add the user message to the conversation
-        self.messages.append({"role": "user", "content": message})
-        
-        # Get response from LLM - fix for LangChain API change
         try:
-            # New LangChain API style
-            response = self.client.invoke(self.messages)
-            assistant_message = response.content
-        except TypeError as e:
-            if "missing 1 required positional argument: 'input'" in str(e):
-                # Fall back to old style invocation
-                self.logger.info("Falling back to older LangChain API style")
-                response = self.client.invoke(input=self.messages)
-                assistant_message = response.content
+            self.client = AzureChatOpenAI(
+                azure_deployment=self.config.AZURE_DEPLOYMENT,
+                api_key=self.config.AZURE_API_KEY,
+                api_version=self.config.AZURE_API_VERSION,
+                azure_endpoint=self.config.AZURE_ENDPOINT,
+                temperature=self.config.TEMPERATURE
+            )
+            print("Azure OpenAI client initialized successfully!")
+        except Exception as e:
+            print(f"Error initializing Azure OpenAI client: {e}")
+            sys.exit(1)
+
+    def read_file(self, filepath):
+        """Read file content"""
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return f.read().strip()
+        except Exception as e:
+            print(f"Error reading {filepath}: {e}")
+            sys.exit(1)
+
+    def parse_subfiles(self, latex_content, base_dir):
+        """Parse \\subfile commands and read component files"""
+        subfile_pattern = r'\\subfile\{([^}]+)\}'
+        subfiles = re.findall(subfile_pattern, latex_content)
+        
+        if not subfiles:
+            return latex_content, {}
+        
+        print(f"Found {len(subfiles)} subfiles")
+        
+        # Read all subfiles
+        subfile_contents = {}
+        combined_content = latex_content
+        
+        for subfile_path in subfiles:
+            full_path = os.path.join(base_dir, subfile_path)
+            if not full_path.endswith('.tex'):
+                full_path += '.tex'
+            
+            if os.path.exists(full_path):
+                content = self.read_file(full_path)
+                subfile_contents[subfile_path] = content
+                # Replace \\subfile command with actual content for LLM processing
+                combined_content = combined_content.replace(
+                    f'\\subfile{{{subfile_path}}}', 
+                    content
+                )
+                print(f"  - {subfile_path}")
             else:
-                # Re-raise if it's a different TypeError
-                raise
+                print(f"Warning: Subfile not found: {full_path}")
         
-        # Extract and store the response
-        self.messages.append({"role": "assistant", "content": assistant_message})
-        self.conversation_history.append({"user": message, "assistant": assistant_message})
-        
-        self.logger.info(f"Responded: {assistant_message[:100]}...")
-        
-        return assistant_message
+        return combined_content, subfile_contents
 
-
-    def get_conversation_history(self) -> List[Dict[str, str]]:
-        """Get the conversation history."""
-        return self.conversation_history
-    
-    
-    def extract_multi_choice_mcq_answer(self, message):
-        """
-        Extract multi-choice MCQ answers from the agent's response.
+    def split_optimized_content(self, optimized_content, original_latex, subfile_contents):
+        """Split optimized content back into main file and subfiles"""
+        if not subfile_contents:
+            return optimized_content, {}
         
-        Args:
-            message: Message to analyze
-            
-        Returns:
-            Multi-choice MCQ answers and confidence level
-        """
-        import re
+        # Find section boundaries in optimized content
+        sections = {}
+        current_pos = 0
         
-        # Patterns for multi-choice answers
-        patterns = [
-            r"ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
-            r"FINAL ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
-            r"selected options?:?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
-            r"correct options? (?:are|is):?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)"
+        # Use section headers to identify boundaries
+        section_patterns = [
+            r'\\section\{([^}]+)\}',
+            r'\\begin\{center\}.*?\\end\{center\}',
+            r'\\subfile\{([^}]+)\}'
         ]
         
-        for pattern in patterns:
-            match = re.search(pattern, message, re.IGNORECASE)
-            if match:
-                # Extract and clean the answer string
-                answer_str = match.group(1).upper()
-                # Remove 'and', spaces, and split by comma
-                answer_str = answer_str.replace('AND', ',').replace(' ', '')
-                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
-                # Remove duplicates and sort
-                answers = sorted(list(set(answers)))
-                confidence = self.extract_confidence(message)
-                return {"answers": answers, "confidence": confidence}
+        # For modular files, we need to intelligently split
+        # This is a simplified approach - extract recognizable sections
+        for subfile_path, original_content in subfile_contents.items():
+            # Find the section in optimized content that corresponds to this subfile
+            # Look for distinctive markers or section headers
+            if 'education' in subfile_path.lower():
+                edu_match = re.search(r'\\section\{education\}.*?(?=\\section|\Z)', optimized_content, re.DOTALL | re.IGNORECASE)
+                if edu_match:
+                    sections[subfile_path] = edu_match.group(0)
+            elif 'experience' in subfile_path.lower() or 'work' in subfile_path.lower():
+                exp_match = re.search(r'\\section\{.*?experience.*?\}.*?(?=\\section|\Z)', optimized_content, re.DOTALL | re.IGNORECASE)
+                if exp_match:
+                    sections[subfile_path] = exp_match.group(0)
+            elif 'skill' in subfile_path.lower():
+                skill_match = re.search(r'\\section\{.*?skill.*?\}.*?(?=\\section|\Z)', optimized_content, re.DOTALL | re.IGNORECASE)
+                if skill_match:
+                    sections[subfile_path] = skill_match.group(0)
+            elif 'award' in subfile_path.lower():
+                award_match = re.search(r'\\section\{.*?award.*?\}.*?(?=\\section|\Z)', optimized_content, re.DOTALL | re.IGNORECASE)
+                if award_match:
+                    sections[subfile_path] = award_match.group(0)
+            else:
+                # Fallback: use original content
+                sections[subfile_path] = original_content
         
-        # Look for pattern like "Options A and C" or "A, B, and D"
-        option_pattern = r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)"
-        match = re.search(option_pattern, message, re.IGNORECASE)
-        if match:
-            answer_str = match.group(1).upper()
-            answer_str = answer_str.replace('AND', ',').replace(' ', '')
-            answers = [a.strip() for a in answer_str.split(',') if a.strip()]
-            answers = sorted(list(set(answers)))
-            confidence = self.extract_confidence(message)
-            return {"answers": answers, "confidence": confidence}
-        
-        # No clear answers found
-        confidence = self.extract_confidence(message)
-        return {"answers": [], "confidence": confidence}
-
-    # Update extract_response method:
-    def extract_response(self, message=None) -> Dict[str, Any]:
-        """
-        Extract the agent's response to the task from their message.
-        
-        Args:
-            message: Optional message to analyze, defaults to last response
+        # Reconstruct main file with \subfile commands
+        main_content = original_latex
+        for subfile_path in subfile_contents.keys():
+            if subfile_path in sections:
+                # Keep the \subfile command in main file
+                pass
             
-        Returns:
-            Structured response based on task type
-        """
-        if message is None:
-            if not self.conversation_history:
-                return {}
-            message = self.conversation_history[-1]["assistant"]
+        return main_content, sections
+
+    def extract_company_name(self, job_description):
+        """Extract company name from job description"""
+        system_prompt = """Extract the company name from this job description. Return ONLY the company name in a format suitable for filenames (no spaces, special characters). If no company name is found, return 'Company'."""
         
-        task_type = config.TASK["type"]
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=job_description)
+        ]
         
-        if task_type == "ranking":
-            return self.extract_ranking(message)
-        elif task_type == "mcq":
-            return self.extract_mcq_answer(message)
-        elif task_type == "multi_choice_mcq":
-            return self.extract_multi_choice_mcq_answer(message)
-        elif task_type == "yes_no_maybe":
-            return self.extract_yes_no_maybe_answer(message)
-        elif task_type in ["open_ended", "estimation", "selection"]:
-            return {"response": message, "confidence": self.extract_confidence(message)}
+        response = self.client.invoke(messages)
+        company = response.content.strip().replace(' ', '').replace('-', '').replace('.', '')
+        return company if company else "Company"
+    def extract_keywords_from_jd(self, job_description):
+        """Extract relevant keywords from job description using LLM"""
+        system_prompt = """Extract 10-15 most important technical keywords, skills, and technologies from this job description. 
+        Focus on:
+        - Programming languages and frameworks
+        - Technical skills and tools
+        - Industry-specific terms
+        - Required qualifications
+        
+        Return only a comma-separated list of keywords, no explanations."""
+
+        messages = [
+            SystemMessage(content=system_prompt),
+            HumanMessage(content=f"Job Description:\n{job_description}")
+        ]
+        
+        response = self.client.invoke(messages)
+        keywords = response.content.strip()
+        print(f"Extracted keywords: {keywords}")
+        return keywords
+
+    def optimize_resume(self, latex_content, keywords_or_jd, is_jd=False, base_dir="."):
+        """Optimize LaTeX resume with keywords"""
+        
+        # Extract keywords if job description provided
+        if is_jd:
+            keywords = self.extract_keywords_from_jd(keywords_or_jd)
         else:
-            return {"raw_response": message}
+            keywords = keywords_or_jd
 
-    def extract_ranking(self, message):
-        """
-        Extract a ranking from the agent's response.
-        
-        Args:
-            message: Message to analyze
-            
-        Returns:
-            List of ranked items and confidence level
-        """
-        ranking = []
-        lines = message.split('\n')
-        
-        # Look for numbered items (1. Item, 2. Item, etc.)
-        for line in lines:
-            for i in range(1, len(config.TASK["options"]) + 1):
-                if f"{i}." in line or f"{i}:" in line:
-                    for item in config.TASK["options"]:
-                        if item.lower() in line.lower():
-                            ranking.append(item)
-                            break
-        
-        # Check for duplicates and missing items
-        seen_items = set()
-        valid_ranking = []
-        
-        for item in ranking:
-            if item not in seen_items:
-                seen_items.add(item)
-                valid_ranking.append(item)
-        
-        # Add any missing items at the end
-        for item in config.TASK["options"]:
-            if item not in seen_items:
-                valid_ranking.append(item)
-                seen_items.add(item)
-        
-        # Extract confidence level
-        confidence = self.extract_confidence(message)
-        
-        return {
-            "ranking": valid_ranking[:len(config.TASK["options"])],
-            "confidence": confidence
-        }
-    
-    def extract_mcq_answer(self, message):
-        """
-        Extract an MCQ answer from the agent's response.
-        
-        Args:
-            message: Message to analyze
-            
-        Returns:
-            MCQ answer and confidence level
-        """
-        # Look for option identifiers (A, B, C, D, etc.)
-        for line in message.split('\n'):
-            line = line.strip()
-            for option in config.TASK["options"]:
-                option_id = option.split('.')[0].strip() if '.' in option else None
-                if option_id and (line.startswith(option_id) or f"Option {option_id}" in line or f"Answer: {option_id}" in line):
-                    # Extract confidence level
-                    confidence = self.extract_confidence(message)
-                    return {"answer": option_id, "confidence": confidence}
-        
-        # Extract confidence level
-        confidence = self.extract_confidence(message)
-        
-        # If no explicit option identifier is found, look for the full option text
-        for line in message.split('\n'):
-            for option in config.TASK["options"]:
-                # Extract option identifier (A, B, C, etc.)
-                option_id = option.split('.')[0].strip() if '.' in option else None
-                # Check if the full option text is in the line
-                if option[2:].strip().lower() in line.lower():
-                    return {"answer": option_id, "confidence": confidence}
-        
-        # If still not found, try to determine if there's any indication of an answer
-        lower_message = message.lower()
-        for option in config.TASK["options"]:
-            option_id = option.split('.')[0].strip() if '.' in option else None
-            if option_id and f"select {option_id.lower()}" in lower_message or f"choose {option_id.lower()}" in lower_message:
-                return {"answer": option_id, "confidence": confidence}
-        
-        # No clear answer found
-        return {"answer": None, "confidence": confidence}
-    
-    def extract_yes_no_maybe_answer(self, message):
-        """
-        Extract a yes/no/maybe answer from the agent's response.
-        
-        Args:
-            message: Message to analyze
-            
-        Returns:
-            Yes/no/maybe answer and confidence level
-        """
-        import re
-        
-        # Look for explicit answer patterns
-        answer_patterns = [
-            r"ANSWER:\s*(yes|no|maybe)",
-            r"FINAL ANSWER:\s*(yes|no|maybe)",
-            r"answer is:\s*(yes|no|maybe)",
-            r"my answer:\s*(yes|no|maybe)",
-            r"the answer is:\s*(yes|no|maybe)"
+        # Parse subfiles if present
+        combined_content, subfile_contents = self.parse_subfiles(latex_content, base_dir)
+
+        messages = [
+            {"role": "system", "content": """You are a LaTeX resume optimization expert. Your task is to modify a LaTeX resume to naturally incorporate relevant keywords while maintaining:
+
+1. EXACT LaTeX structure and formatting
+2. One-page length constraint
+3. Meaningful project descriptions
+4. Strategic keyword placement based on relevance:
+   - Game design keywords → game development projects
+   - ML/AI keywords → machine learning projects  
+   - Web dev keywords → web development projects
+   - General tech keywords → most relevant sections
+
+RULES:
+- Preserve ALL LaTeX commands, packages, and formatting
+- Only modify content within sections, never structure
+- Replace existing content strategically, don't just append
+- Maintain natural language flow
+- Ensure technical accuracy
+- Keep bullet points concise
+- Prioritize high-impact keywords
+
+Return ONLY the modified LaTeX code, no explanations."""},
+            {"role": "user", "content": f"""Original LaTeX Resume:
+{combined_content}
+
+Keywords to incorporate:
+{keywords}
+
+Optimize this resume by strategically incorporating these keywords into relevant sections while maintaining the exact LaTeX structure and one-page constraint."""}
         ]
         
-        for pattern in answer_patterns:
-            match = re.search(pattern, message.lower(), re.IGNORECASE)
-            if match:
-                answer = match.group(1).lower()
-                confidence = self.extract_confidence(message)
-                return {"answer": answer, "confidence": confidence}
+        print("Optimizing resume...")
+        response = self.client.invoke(messages)
+        optimized_content = response.content.strip()
         
-        # Look for clear yes/no/maybe statements in the text
-        lower_message = message.lower()
-        
-        # Check for definitive yes
-        if any(phrase in lower_message for phrase in ["yes,", "yes.", "yes\n", "answer: yes", "answer is yes"]):
-            confidence = self.extract_confidence(message)
-            return {"answer": "yes", "confidence": confidence}
-        
-        # Check for definitive no
-        if any(phrase in lower_message for phrase in ["no,", "no.", "no\n", "answer: no", "answer is no"]):
-            confidence = self.extract_confidence(message)
-            return {"answer": "no", "confidence": confidence}
-        
-        # Check for maybe/uncertain
-        if any(phrase in lower_message for phrase in ["maybe", "uncertain", "unclear", "insufficient evidence", "cannot determine"]):
-            confidence = self.extract_confidence(message)
-            return {"answer": "maybe", "confidence": confidence}
-        
-        # No clear answer found
-        confidence = self.extract_confidence(message)
-        return {"answer": None, "confidence": confidence}
-    
-    def extract_confidence(self, message):
-        """
-        Extract a confidence level from the agent's response.
-        
-        Args:
-            message: Message to analyze
-            
-        Returns:
-            Confidence level (0.0-1.0)
-        """
-        confidence = 0.7  # Default medium-high confidence
-        
-        # Look for explicit confidence statements
-        lower_message = message.lower()
-        
-        if "confidence: " in lower_message:
-            # Try to extract numeric confidence
-            confidence_parts = lower_message.split("confidence: ")[1].split()
-            if confidence_parts:
-                try:
-                    # Handle percentage format
-                    if "%" in confidence_parts[0]:
-                        confidence_value = float(confidence_parts[0].replace("%", "")) / 100
-                        confidence = min(max(confidence_value, 0.0), 1.0)
-                    else:
-                        # Handle decimal format
-                        confidence_value = float(confidence_parts[0])
-                        # If it's on a 0-10 scale, convert to 0-1
-                        if confidence_value > 1.0:
-                            confidence_value /= 10
-                        confidence = min(max(confidence_value, 0.0), 1.0)
-                except ValueError:
-                    # If conversion fails, use linguistic markers
-                    pass
-        
-        # Check for linguistic confidence markers if no explicit value found
-        if confidence == 0.7:
-            high_confidence_markers = ["certainly", "definitely", "absolutely", "strongly believe", "confident", "sure", "clear evidence", "conclusive"]
-            medium_confidence_markers = ["likely", "probably", "think", "believe", "reasonable", "should be", "suggests", "indicates"]
-            low_confidence_markers = ["uncertain", "might", "possibly", "guess", "not sure", "doubtful", "maybe", "unclear", "insufficient"]
-            
-            # Count markers in each category
-            high_count = sum(1 for marker in high_confidence_markers if marker in lower_message)
-            medium_count = sum(1 for marker in medium_confidence_markers if marker in lower_message)
-            low_count = sum(1 for marker in low_confidence_markers if marker in lower_message)
-            
-            # Determine confidence based on most prevalent markers
-            if high_count > medium_count and high_count > low_count:
-                confidence = 0.9
-            elif medium_count > low_count:
-                confidence = 0.7
-            elif low_count > 0:
-                confidence = 0.4
-            
-        return confidence
+        return optimized_content, subfile_contents, latex_content
 
-    def share_knowledge(self, other_agent):
-        """
-        Share knowledge with another agent.
-        
-        Args:
-            other_agent: Agent to share knowledge with
+    def save_optimized_resume(self, optimized_content, subfile_contents, original_latex, output_path, base_dir="."):
+        """Save optimized LaTeX to file(s)"""
+        try:
+            if subfile_contents:
+                # Handle modular resume - split content back into components
+                print("Saving modular resume...")
+                
+                # For modular resumes, we use a smarter approach:
+                # Extract sections from optimized content and map to subfiles
+                optimized_sections = self.extract_sections_from_optimized(optimized_content)
+                
+                # Save main file (keep original structure with \subfile commands)
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(original_latex)
+                
+                # Save optimized subfiles
+                output_dir = os.path.dirname(output_path)
+                subfiles_dir = os.path.join(output_dir, "subsections")
+                os.makedirs(subfiles_dir, exist_ok=True)
+                
+                for subfile_path, original_content in subfile_contents.items():
+                    # Map content based on filename
+                    section_name = self.get_section_name_from_file(subfile_path)
+                    optimized_section = optimized_sections.get(section_name, original_content)
+                    
+                    # Save to new location
+                    output_subfile = os.path.join(subfiles_dir, os.path.basename(subfile_path))
+                    if not output_subfile.endswith('.tex'):
+                        output_subfile += '.tex'
+                    
+                    with open(output_subfile, 'w', encoding='utf-8') as f:
+                        f.write(optimized_section)
+                    print(f"  - {output_subfile}")
+                
+            else:
+                # Handle single-file resume
+                with open(output_path, 'w', encoding='utf-8') as f:
+                    f.write(optimized_content)
+                    
+            print(f"Optimized resume saved to: {output_path}")
             
-        Returns:
-            Shared knowledge dictionary
-        """
-        # Implement shared knowledge - focus on task-relevant information
-        shared_knowledge = {}
+        except Exception as e:
+            print(f"Error saving optimized resume: {e}")
+            sys.exit(1)
+    
+    def extract_sections_from_optimized(self, optimized_content):
+        """Extract sections from optimized content"""
+        sections = {}
         
-        # Share task understanding
-        if "task_understanding" in self.knowledge_base:
-            shared_knowledge["task_understanding"] = self.knowledge_base["task_understanding"]
-            other_agent.add_to_knowledge_base("task_understanding", self.knowledge_base["task_understanding"])
+        # Define section mappings
+        section_mapping = {
+            'education': r'\\section\{education\}.*?(?=\\section|\Z)',
+            'experience': r'\\section\{.*?experience.*?\}.*?(?=\\section|\Z)',
+            'academic_experience': r'\\section\{academic.*?experience.*?\}.*?(?=\\section|\Z)',
+            'work_ex': r'\\section\{.*?(work|professional).*?\}.*?(?=\\section|\Z)',
+            'skills': r'\\section\{.*?skill.*?\}.*?(?=\\section|\Z)',
+            'awards': r'\\section\{.*?award.*?\}.*?(?=\\section|\Z)',
+        }
         
-        # Share domain knowledge
-        if "domain_knowledge" in self.knowledge_base:
-            shared_knowledge["domain_knowledge"] = self.knowledge_base["domain_knowledge"]
-            other_agent.add_to_knowledge_base("domain_knowledge", self.knowledge_base["domain_knowledge"])
+        for section_key, pattern in section_mapping.items():
+            match = re.search(pattern, optimized_content, re.DOTALL | re.IGNORECASE)
+            if match:
+                sections[section_key] = match.group(0)
         
-        # Share reasoning approaches
-        if "reasoning_approaches" in self.knowledge_base:
-            shared_knowledge["reasoning_approaches"] = self.knowledge_base["reasoning_approaches"]
-            other_agent.add_to_knowledge_base("reasoning_approaches", self.knowledge_base["reasoning_approaches"])
+        return sections
+    
+    def get_section_name_from_file(self, filepath):
+        """Get section name from filename"""
+        filename = os.path.basename(filepath).replace('.tex', '')
         
-        self.logger.info(f"Agent {self.role} shared knowledge with {other_agent.role}")
-        return shared_knowledge
+        # Map common filename patterns to section names
+        if 'education' in filename:
+            return 'education'
+        elif 'academic' in filename and 'experience' in filename:
+            return 'academic_experience'
+        elif 'work' in filename or 'experience' in filename:
+            return 'experience'
+        elif 'skill' in filename:
+            return 'skills'
+        elif 'award' in filename:
+            return 'awards'
+        else:
+            return filename
+
+    def compile_pdf(self, latex_file):
+        """Compile LaTeX to PDF using pdflatex"""
+        try:
+            print("Compiling PDF...")
+            result = subprocess.run(
+                ['pdflatex', '-interaction=nonstopmode', latex_file],
+                capture_output=True,
+                text=True,
+                cwd=os.path.dirname(latex_file) or '.'
+            )
+            
+            if result.returncode == 0:
+                pdf_file = latex_file.replace('.tex', '.pdf')
+                print(f"PDF compiled successfully: {pdf_file}")
+                return True
+            else:
+                print(f"PDF compilation failed:\n{result.stderr}")
+                return False
+                
+        except FileNotFoundError:
+            print("pdflatex not found. Install LaTeX distribution (e.g., TeX Live, MiKTeX)")
+            return False
+        except Exception as e:
+            print(f"Error compiling PDF: {e}")
+            return False
+
+def main():
+    parser = argparse.ArgumentParser(description="Optimize LaTeX resume with keywords or job description")
+    parser.add_argument("resume", help="Path to LaTeX resume file (.tex)")
+    parser.add_argument("input_file", help="Path to keywords or job description file (.txt)")
+    parser.add_argument("-o", "--output", help="Output LaTeX file path (default: resume_optimized.tex)")
+    parser.add_argument("--jd", action="store_true", help="Input file contains job description (extract keywords)")
+    parser.add_argument("--pdf", action="store_true", default=True, help="Compile to PDF after optimization (default: True)")
+    parser.add_argument("--no-pdf", action="store_true", help="Skip PDF compilation")
+    parser.add_argument("--keep-tex", action="store_true", help="Keep intermediate .tex files")
+    
+    args = parser.parse_args()
+
+    # Validate input files
+    if not os.path.exists(args.resume):
+        print(f"Error: Resume file not found: {args.resume}")
+        sys.exit(1)
+    
+    if not os.path.exists(args.input_file):
+        print(f"Error: Input file not found: {args.input_file}")
+        sys.exit(1)
+
+    # Set output path - create new folder to preserve originals
+    if args.output:
+        output_path = args.output
+    else:
+        base_name = os.path.splitext(os.path.basename(args.resume))[0]
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        output_dir = f"optimized_resume_{timestamp}"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"{base_name}_optimized.tex")
+
+    # Initialize optimizer
+    optimizer = ResumeOptimizer()
+
+    # Read files
+    print(f"Reading resume: {args.resume}")
+    latex_content = optimizer.read_file(args.resume)
+    
+    print(f"Reading input: {args.input_file}")
+    input_content = optimizer.read_file(args.input_file)
+
+    # Get base directory for subfiles
+    base_dir = os.path.dirname(args.resume) or "."
+
+    # Optimize resume
+    optimized_latex, subfile_contents, original_latex = optimizer.optimize_resume(
+        latex_content, 
+        input_content, 
+        is_jd=args.jd,
+        base_dir=base_dir
+    )
+
+    # Save optimized resume
+    optimizer.save_optimized_resume(
+        optimized_latex, 
+        subfile_contents, 
+        original_latex, 
+        output_path,
+        base_dir
+    )
+
+    # Compile PDF if requested (default behavior)
+    if args.pdf and not args.no_pdf:
+        success = optimizer.compile_pdf(output_path)
+        if success and not args.keep_tex:
+            # Clean up .tex files, keep only PDF
+            try:
+                pdf_path = output_path.replace('.tex', '.pdf')
+                # Remove .tex files but keep PDF
+                for file in os.listdir(os.path.dirname(output_path)):
+                    if file.endswith(('.tex', '.aux', '.log', '.out')):
+                        os.remove(os.path.join(os.path.dirname(output_path), file))
+                print(f"Final output: {pdf_path}")
+            except Exception as e:
+                print(f"Warning: Could not clean up intermediate files: {e}")
+
+    print("Resume optimization completed!")
+
+if __name__ == "__main__":
+    main()

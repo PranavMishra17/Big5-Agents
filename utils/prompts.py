@@ -1,5 +1,5 @@
 """
-Centralized prompt management for Big5-Agents with adaptive prompting.
+Enhanced prompts.py with proper round separation and final decision prompts.
 """
 
 # Agent System Prompts
@@ -31,12 +31,12 @@ LEADERSHIP_PROMPTS = {
     
     {task_description}
     
-    Break this down into clear subtasks, specifying:
+    Break this down into clear steps, specifying:
     1. The objective of each subtask
     2. The sequence in which they should be completed
     3. How to evaluate successful completion
     
-    Provide clear, specific instructions that will guide the team through this process.
+    Provide clear, specific guidance that will guide the team through this process.
     
     Additional context: {context}
     """,
@@ -382,15 +382,17 @@ Above is just an example, thus, you should organize your own unique MDTs but you
 """
 }
 
-# Task Analysis Prompts - Now with adaptive prompting based on task type
+# Task Analysis Prompts - Enhanced with clearer round separation
 TASK_ANALYSIS_PROMPTS = {
     "ranking_task": """
-    As a {role} with expertise in your domain, analyze the following ranking task:
+    As a {role} with expertise in your domain, analyze the following ranking task INDEPENDENTLY:
     
     {task_description}
     
     Items to rank:
     {items_to_rank}
+    
+    IMPORTANT: You are working independently in this round. You have no knowledge of other team members or their thoughts.
     
     Based on your specialized knowledge, provide:
     1. Your analytical approach to this ranking task
@@ -399,85 +401,171 @@ TASK_ANALYSIS_PROMPTS = {
     
     Then provide your complete ranking from 1 (most important) to {num_items} (least important).
     Present your ranking as a numbered list with brief justifications for each item's placement.
+    
+    You MUST provide a final ranking, but focus primarily on your reasoning process.
     """,
     
     "mcq_task": """
-    As a {role} with expertise in your domain, analyze the following multiple-choice question:
+    As a {role} with expertise in your domain, analyze the following multiple-choice question INDEPENDENTLY:
 
     {task_description}
 
     Options:
     {options}
+
+    IMPORTANT: You are working independently in this round. You have no knowledge of other team members or their thoughts.
 
     Based on your specialized knowledge:
     1. Analyze each option systematically
-    2. Provide a ranking of the options from most to least appropriate
-    3. Give your confidence level for each option
+    2. Apply relevant principles from your area of expertise
+    3. Consider the strengths and weaknesses of each option
+    4. Provide your reasoning process
 
-    REQUIRED FORMAT:
-    Start your response with "ANSWER: X" (where X is A, B, C, or D)
-    Then provide "RANKING: A, C, B, D" (your order from best to worst)
-    Finally, give your detailed reasoning.
-
-    Remember: You must select exactly ONE option and provide a clear ranking.
+    You MUST provide your answer, but focus primarily on your analytical reasoning.
+    Start your final answer with "ANSWER: X" (where X is A, B, C, or D) at the end of your analysis.
     """,
     
     "multi_choice_mcq_task": """
-    As a {role} with expertise in your domain, analyze the following multi-choice question where MULTIPLE answers may be correct:
+    As a {role} with expertise in your domain, analyze the following multi-choice question INDEPENDENTLY where MULTIPLE answers may be correct:
 
     {task_description}
 
     Options:
     {options}
 
+    IMPORTANT: You are working independently in this round. You have no knowledge of other team members or their thoughts.
+    
     IMPORTANT: This is a multi-choice question where MORE THAN ONE answer may be correct. You must select ALL correct options.
 
     Based on your specialized knowledge:
     1. Analyze each option systematically for correctness
-    2. Identify ALL options that are correct or appropriate
-    3. Give your confidence level for your selection
+    2. Apply relevant principles from your area of expertise
+    3. Identify ALL options that are correct or appropriate
+    4. Provide your reasoning process
 
-    REQUIRED FORMAT:
-    Start your response with "ANSWERS: X,Y,Z" (where X,Y,Z are ALL correct option letters, e.g., "ANSWERS: A,C" or "ANSWERS: B,D")
-    Then provide your detailed reasoning for why each selected option is correct and why others are incorrect.
-
-    Remember: You may need to select multiple options for this question type.
+    You MUST provide your answers, but focus primarily on your analytical reasoning.
+    Start your final answer with "ANSWERS: X,Y,Z" (where X,Y,Z are ALL correct option letters) at the end of your analysis.
     """,
     
     "yes_no_maybe_task": """
-    As a {role} with expertise in your domain, analyze the following research question:
+    As a {role} with expertise in your domain, analyze the following research question INDEPENDENTLY:
 
     {task_description}
+
+    IMPORTANT: You are working independently in this round. You have no knowledge of other team members or their thoughts.
 
     Based on the abstract context provided:
     1. Analyze the scientific evidence systematically
-    2. Consider whether the evidence supports, refutes, or is inconclusive regarding the research question
-    3. Apply your specialized knowledge to interpret the findings
+    2. Apply relevant principles from your area of expertise
+    3. Consider whether the evidence supports, refutes, or is inconclusive regarding the research question
+    4. Provide your reasoning process
 
-    Begin your final answer with "ANSWER: X" (replace X with yes, no, or maybe).
-    Then provide your detailed scientific reasoning, citing specific evidence from the abstract.
-    
-    - Answer "yes" if the evidence clearly supports the statement
-    - Answer "no" if the evidence clearly refutes the statement  
-    - Answer "maybe" if the evidence is insufficient, conflicting, or inconclusive
+    You MUST provide your answer, but focus primarily on your analytical reasoning.
+    Begin your final answer with "ANSWER: X" (replace X with yes, no, or maybe) at the end of your analysis.
     """,
     
     "general_task": """
-    As a {role} with expertise in your domain, analyze the following task:
+    As a {role} with expertise in your domain, analyze the following task INDEPENDENTLY:
     
     {task_description}
+    
+    IMPORTANT: You are working independently in this round. You have no knowledge of other team members or their thoughts.
     
     Based on your specialized knowledge:
     1. Break down the key components of this task
     2. Identify the most important factors to consider
     3. Apply relevant principles from your area of expertise
+    4. Provide your reasoning process
     
     Then provide your comprehensive response to the task.
     Structure your answer clearly and provide justifications for your key points.
     """
 }
 
-# Collaborative Discussion Prompts - Now adaptive based on task type
+# Final Decision Prompts - NEW SECTION for Round 3
+FINAL_DECISION_PROMPTS = {
+    "mcq_final": """
+    Based on your initial analysis and the team discussion, provide your FINAL INDEPENDENT answer to this multiple-choice question.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Team discussion insights:
+    {discussion_summary}
+    
+    IMPORTANT: You are now making your final independent decision. Consider the insights from the discussion, but make your own judgment.
+    
+    Provide your final answer with reasoning.
+    You MUST begin your response with "ANSWER: X" (replace X with your chosen option A, B, C, or D).
+    Then explain your final reasoning, including how the team discussion influenced (or didn't influence) your decision.
+    """,
+    
+    "multi_choice_final": """
+    Based on your initial analysis and the team discussion, provide your FINAL INDEPENDENT answer to this multi-choice question.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Team discussion insights:
+    {discussion_summary}
+    
+    IMPORTANT: You are now making your final independent decision. This is a multi-choice question where multiple answers may be correct.
+    Consider the insights from the discussion, but make your own judgment.
+    
+    Provide your final answer with reasoning.
+    You MUST begin your response with "ANSWERS: X,Y,Z" (replace with ALL correct option letters, e.g., "ANSWERS: A,C").
+    Then explain your final reasoning, including how the team discussion influenced (or didn't influence) your decision.
+    """,
+    
+    "yes_no_maybe_final": """
+    Based on your initial analysis and the team discussion, provide your FINAL INDEPENDENT answer to this research question.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Team discussion insights:
+    {discussion_summary}
+    
+    IMPORTANT: You are now making your final independent decision. Consider the insights from the discussion, but make your own judgment.
+    
+    Provide your final answer with reasoning.
+    You MUST begin your response with "ANSWER: X" (replace X with yes, no, or maybe).
+    Then explain your final reasoning, including how the team discussion influenced (or didn't influence) your decision.
+    """,
+    
+    "ranking_final": """
+    Based on your initial analysis and the team discussion, provide your FINAL INDEPENDENT ranking.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Team discussion insights:
+    {discussion_summary}
+    
+    IMPORTANT: You are now making your final independent decision. Consider the insights from the discussion, but make your own judgment.
+    
+    Provide your final ranking with reasoning.
+    Present your ranking as a numbered list from 1 (most important) to N (least important).
+    Then explain your final reasoning, including how the team discussion influenced (or didn't influence) your decision.
+    """,
+    
+    "general_final": """
+    Based on your initial analysis and the team discussion, provide your FINAL INDEPENDENT response.
+    
+    Your initial analysis:
+    {initial_analysis}
+    
+    Team discussion insights:
+    {discussion_summary}
+    
+    IMPORTANT: You are now making your final independent decision. Consider the insights from the discussion, but make your own judgment.
+    
+    Provide your final response with reasoning.
+    Explain how the team discussion influenced (or didn't influence) your decision.
+    """
+}
+
+# Collaborative Discussion Prompts - Enhanced for Round 2
 DISCUSSION_PROMPTS = {
     "respond_to_agent": """
     Another team member ({agent_role}) has provided the following input:
@@ -497,75 +585,23 @@ DISCUSSION_PROMPTS = {
     understanding before providing your response.
     """,
     
-    "collaborative_discussion": """
-    You have analyzed the task, and your teammates have provided their analyses as well.
-    
-    Your initial analysis:
-    {initial_analysis}
-    
-    Your teammates' analyses:
-    {teammates_analyses}
-    
-    Based on all these perspectives, please provide your final answer to the task.
-    Consider the insights from your teammates and integrate them with your own expertise.
-    
-    Based on all these perspectives, provide your final answer. 
-    Begin with "ANSWER: X" (replace X with the letter of your chosen option A, B, C, or D).
-    Then provide your rationale, integrating insights from your teammates. 
-    YOU MUST ANSWER IN SAID FORMAT.
-    """,
-    
-    "collaborative_discussion_multi_choice": """
-    You have analyzed the multi-choice task, and your teammates have provided their analyses as well.
-    
-    Your initial analysis:
-    {initial_analysis}
-    
-    Your teammates' analyses:
-    {teammates_analyses}
-    
-    Based on all these perspectives, please provide your final answer to the multi-choice task.
-    Remember: This is a multi-choice question where multiple answers may be correct.
-    Consider the insights from your teammates and integrate them with your own expertise.
-    
-    Based on all these perspectives, provide your final answer. 
-    Begin with "ANSWERS: X,Y,Z" (replace X,Y,Z with ALL correct option letters, e.g., "ANSWERS: A,C" or "ANSWERS: B,D").
-    Then provide your rationale, integrating insights from your teammates and explaining why each selected option is correct.
-    YOU MUST ANSWER IN SAID FORMAT.
-    """,
-    
-    "collaborative_discussion_yes_no_maybe": """
-    You have analyzed the research question, and your teammates have provided their analyses as well.
-    
-    Your initial analysis:
-    {initial_analysis}
-    
-    Your teammates' analyses:
-    {teammates_analyses}
-    
-    Based on all these perspectives, please provide your final answer to the research question.
-    Consider the scientific evidence and insights from your teammates and integrate them with your own expertise.
-    
-    Based on all these perspectives, provide your final answer. 
-    Begin with "ANSWER: X" (replace X with yes, no, or maybe).
-    Then provide your scientific rationale, integrating evidence and insights from your teammates. 
-    YOU MUST ANSWER IN SAID FORMAT.
-    """
+    # Remove the old collaborative_discussion prompts that had explicit answers
+    # These are now handled in the final decision prompts
 }
 
 def get_adaptive_prompt(base_key: str, task_type: str, **kwargs) -> str:
     """
-    Get adaptive prompt based on task type.
+    Get adaptive prompt based on task type with enhanced round support.
     
     Args:
-        base_key: Base prompt key (e.g., "mcq_task", "collaborative_discussion")
+        base_key: Base prompt key (e.g., "task_analysis", "final_decision")
         task_type: Task type ("mcq", "multi_choice_mcq", "yes_no_maybe", etc.)
         **kwargs: Additional formatting arguments
         
     Returns:
-        Formatted prompt appropriate for the task type
+        Formatted prompt appropriate for the task type and round
     """
-    # Handle task analysis prompts
+    # Handle task analysis prompts (Round 1)
     if base_key == "task_analysis":
         if task_type == "ranking":
             return TASK_ANALYSIS_PROMPTS["ranking_task"].format(**kwargs)
@@ -578,14 +614,18 @@ def get_adaptive_prompt(base_key: str, task_type: str, **kwargs) -> str:
         else:
             return TASK_ANALYSIS_PROMPTS["general_task"].format(**kwargs)
     
-    # Handle collaborative discussion prompts
-    elif base_key == "collaborative_discussion":
-        if task_type == "multi_choice_mcq":
-            return DISCUSSION_PROMPTS["collaborative_discussion_multi_choice"].format(**kwargs)
+    # Handle final decision prompts (Round 3)
+    elif base_key == "final_decision":
+        if task_type == "ranking":
+            return FINAL_DECISION_PROMPTS["ranking_final"].format(**kwargs)
+        elif task_type == "mcq":
+            return FINAL_DECISION_PROMPTS["mcq_final"].format(**kwargs)
+        elif task_type == "multi_choice_mcq":
+            return FINAL_DECISION_PROMPTS["multi_choice_final"].format(**kwargs)
         elif task_type == "yes_no_maybe":
-            return DISCUSSION_PROMPTS["collaborative_discussion_yes_no_maybe"].format(**kwargs)
+            return FINAL_DECISION_PROMPTS["yes_no_maybe_final"].format(**kwargs)
         else:
-            return DISCUSSION_PROMPTS["collaborative_discussion"].format(**kwargs)
+            return FINAL_DECISION_PROMPTS["general_final"].format(**kwargs)
     
     # Handle leadership synthesis prompts
     elif base_key == "leadership_synthesis":
