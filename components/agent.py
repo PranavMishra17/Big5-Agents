@@ -12,6 +12,7 @@ import subprocess
 from pathlib import Path
 from datetime import datetime
 from langchain_openai import AzureChatOpenAI
+from langchain.schema import SystemMessage, HumanMessage
 
 class Config:
     """Configuration for Azure OpenAI"""
