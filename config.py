@@ -136,6 +136,8 @@ TASK = {
         "B": "Anti-LGI1 (leucine-rich glioma-inactivated 1) antibodies are strongly associated with limbic encephalitis presenting with subacute memory deficits, confusion, and behavioral changes. The bilateral medial temporal lobe hyperintensities on MRI, mild CSF pleocytosis, and temporal EEG abnormalities are classic findings. While anti-NMDA receptor encephalitis typically presents with more psychiatric symptoms and dyskinesias, anti-GABA-B receptor encephalitis often presents with seizures as the predominant feature, and anti-AMPA receptor encephalitis is less common and often associated with underlying malignancies."
     }
 }
+# Add after existing TASK definition
+TASK_EVALUATION = None  # Stores GT and evaluation data separately from agents
 
 # Example of an open-ended task
 OPEN_ENDED_TASK_EXAMPLE = {

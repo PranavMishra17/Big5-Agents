@@ -63,6 +63,7 @@ class AgentSystemSimulator:
         self.n_max = n_max if n_max is not None else 5
         
         self.metadata = {}
+        self.evaluation_data = getattr(config, 'TASK_EVALUATION', {})
         
         # Setup configuration
         self.config = {
@@ -331,8 +332,9 @@ class AgentSystemSimulator:
             for other_role, analysis_data in round1_analyses.items():
                 if other_role != role:
                     # Sanitize to remove explicit answers
-                    sanitized_analysis = self.sanitize_analysis_comprehensive(analysis_data["analysis"])
-                    other_analyses[other_role] = sanitized_analysis
+                    #sanitized_analysis = self.sanitize_analysis_comprehensive(analysis_data["analysis"])
+                    #other_analyses[other_role] = sanitized_analysis
+                    other_analyses[other_role] = analysis_data["analysis"]
             
             if len(other_analyses) > 0:
                 # Create discussion prompt with sanitized peer analyses
@@ -348,7 +350,7 @@ class AgentSystemSimulator:
                 Your initial analysis:
                 {round1_analyses[role]['analysis']}
                 
-                Your teammates' reasoning (answers removed):
+                Your teammates' reasoning:
                 {other_analyses_text}
                 
                 Based on these different perspectives:
@@ -693,7 +695,7 @@ class AgentSystemSimulator:
 
     def _evaluate_mcq_performance(self) -> Dict[str, Any]:
         """Evaluate performance on MCQ tasks."""
-        ground_truth = config.TASK.get("ground_truth")
+        ground_truth = self.evaluation_data.get("ground_truth") 
         
         if not ground_truth:
             return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
@@ -725,7 +727,7 @@ class AgentSystemSimulator:
 
     def _evaluate_yes_no_maybe_performance(self) -> Dict[str, Any]:
         """Evaluate performance on yes/no/maybe tasks."""
-        ground_truth = config.TASK.get("ground_truth", "").lower()
+        ground_truth = self.evaluation_data.get("ground_truth").lower()
         
         if not ground_truth or ground_truth not in ["yes", "no", "maybe"]:
             return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
@@ -746,7 +748,7 @@ class AgentSystemSimulator:
 
     def _evaluate_ranking_performance(self) -> Dict[str, Any]:
         """Evaluate performance on ranking tasks."""
-        ground_truth = config.TASK.get("ground_truth", [])
+        ground_truth = self.evaluation_data.get("ground_truth")
         
         if not ground_truth:
             return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}

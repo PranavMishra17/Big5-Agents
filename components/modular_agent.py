@@ -80,7 +80,9 @@ class ModularAgent(Agent):
     def _initialize_specialized_knowledge(self):
         """Initialize knowledge specific to the agent's specialization."""
         # Initialize basic task knowledge
-        self.add_to_knowledge_base("task", config.TASK)
+        clean_task = {k: v for k, v in config.TASK.items() 
+                    if k not in ["ground_truth", "rationale"]}
+        self.add_to_knowledge_base("task", clean_task)
         
         # Role-specific initialization
         if self.role_type == "Critical Analyst":
@@ -94,6 +96,11 @@ class ModularAgent(Agent):
         else:
             # General knowledge for non-specialized agents
             self._initialize_general_knowledge()
+
+        # In modular_agent.py _initialize_specialized_knowledge():
+        task_keys = list(config.TASK.keys())
+        assert "ground_truth" not in task_keys, f"GT LEAK: Agent sees {task_keys}"
+        logging.info(f"Agent {self.role} initialized with clean task: {task_keys}")
             
         # Add ground truth if available (for evaluation purposes)
         # if "ground_truth" in config.TASK and "rationale" in config.TASK: self.add_to_knowledge_base("ground_truth", { #"answer": config.TASK["ground_truth"], #"rationale": config.TASK["rationale"]})

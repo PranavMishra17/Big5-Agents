@@ -9,7 +9,7 @@ import os
 import json
 import random
 import sys
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 import time
 from tqdm import tqdm
@@ -295,15 +295,17 @@ def load_pubmedqa_dataset(num_questions: int = 50, random_seed: int = 42) -> Lis
         logging.error(f"Error loading PubMedQA dataset: {str(e)}")
         return []
 
-def format_medqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
+def format_medqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Format MedQA question for the agent system task.
+    Format MedQA question into agent task and evaluation data.
     
     Args:
         question_data: Question data from the dataset
         
     Returns:
-        Task dictionary for config.TASK
+        Tuple of:
+        - agent_task: Task dictionary for agent system input (no GT)
+        - eval_data: Ground truth, rationale, metadata for evaluation
     """
     # Extract question and choices
     question_text = question_data.get("question", "")
@@ -322,94 +324,84 @@ def format_medqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
     # Get the expected output (correct answer)
     expected_output = question_data.get("expected_output", "")
     
-    # Create task dictionary
-    task = {
+    # Create agent task (no ground truth)
+    agent_task = {
         "name": "MedQA Question",
         "description": question_text,
         "type": "mcq",
         "options": options,
-        "expected_output_format": "Single letter selection with rationale",
-        "ground_truth": expected_output,
-        "rationale": {}  # No rationale provided in the dataset
+        "expected_output_format": "Single letter selection with rationale"
     }
     
-    return task
+    # Create evaluation data (with ground truth)
+    eval_data = {
+        "ground_truth": expected_output,
+        "rationale": {},  # No rationale provided in the dataset
+        "metadata": {
+            "dataset": "MedQA",
+            "question_id": question_data.get("id", ""),
+            "metamap": question_data.get("metamap", ""),
+            "answer_idx": question_data.get("answer_idx", "")
+        }
+    }
+    
+    return agent_task, eval_data
 
-def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
+
+def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Format MedMCQA question for the agent system task.
-    
-    IMPORTANT: The MedMCQA dataset has a known issue where questions labeled as 
-    'multi-choice' actually have only single correct answers. This function 
-    handles this by treating ALL questions as single-choice questions.
-    
+    Format MedMCQA question into agent task and evaluation data.
+    Handles dataset inconsistency by treating all as single-choice MCQ.
+
     Args:
-        question_data: Question data from the dataset
-        
+        question_data: Question data from the MedMCQA dataset.
+
     Returns:
-        Task dictionary for config.TASK
+        Tuple of:
+        - agent_task: Task dictionary for agent system input.
+        - eval_data: Ground truth, rationale, metadata for evaluation.
     """
-    # Extract question text
     question_text = question_data.get("question", "")
-    
-    # Extract options
-    opa = question_data.get("opa", "")
-    opb = question_data.get("opb", "")
-    opc = question_data.get("opc", "")
-    opd = question_data.get("opd", "")
-    
-    # Handle cases where options might not be present
-    if not any([opa, opb, opc, opd]):
-        logging.error("No options available for the question")
-        return {}
-    
-    # Format as standard MCQ options (only include non-empty options)
-    options = []
+    opa, opb, opc, opd = question_data.get("opa", ""), question_data.get("opb", ""), question_data.get("opc", ""), question_data.get("opd", "")
     option_letters = ['A', 'B', 'C', 'D']
     option_values = [opa, opb, opc, opd]
-    
-    for letter, value in zip(option_letters, option_values):
-        if value and value.strip():  # Only add non-empty options
-            options.append(f"{letter}. {value}")
-    
-    # Get the choice_type for logging/metadata purposes
+
+    options = [f"{letter}. {value}" for letter, value in zip(option_letters, option_values) if value.strip()]
     original_choice_type = question_data.get("choice_type", "single")
     
-    # Log if this was labeled as multi-choice (for debugging)
     if original_choice_type == "multi":
-        logging.debug(f"Question ID {question_data.get('id', 'unknown')} labeled as 'multi' but treating as single choice due to dataset issue")
+        logging.debug(f"Question ID {question_data.get('id', 'unknown')} labeled as 'multi', treating as single choice.")
     
-    # Parse correct option (cop is 1-indexed: 1->A, 2->B, 3->C, 4->D)
-    cop = question_data.get("cop", 1)  # Default to 1 if missing
-    
-    # Robust parsing of cop field
+    cop = question_data.get("cop", 1)
     ground_truth = parse_cop_field(cop)
-    
-    # Get explanation and metadata
+
     explanation = question_data.get("exp", "")
     subject_name = question_data.get("subject_name", "")
     topic_name = question_data.get("topic_name", "")
-    
-    # Create task dictionary - ALWAYS treat as single choice MCQ
-    task = {
+
+    agent_task = {
         "name": "MedMCQA Question",
         "description": question_text,
-        "type": "mcq",  # Always MCQ, never multi_choice_mcq
+        "type": "mcq",
         "options": options,
-        "expected_output_format": "Single letter selection with rationale",
+        "expected_output_format": "Single letter selection with rationale"
+    }
+
+    eval_data = {
         "ground_truth": ground_truth,
         "rationale": {ground_truth: explanation} if explanation else {},
         "metadata": {
             "subject": subject_name,
             "topic": topic_name,
             "question_id": question_data.get("id", ""),
-            "original_choice_type": original_choice_type,  # Keep original for reference
-            "cop_original": question_data.get("cop", ""),  # Keep original cop for debugging
+            "original_choice_type": original_choice_type,
+            "cop_original": question_data.get("cop", ""),
             "dataset_issue_note": "Treated as single-choice due to known MedMCQA dataset labeling issue"
         }
     }
-    
-    return task
+
+    return agent_task, eval_data
+
 
 def parse_cop_field(cop) -> str:
     """
@@ -470,104 +462,101 @@ def parse_cop_field(cop) -> str:
             return "A"  # Final fallback
 
 
-def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
+def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Format MMLU-Pro medical question for the agent system task.
-    
+    Format MMLU-Pro medical question into agent task and evaluation data.
+
     Args:
-        question_data: Question data from the dataset
-        
+        question_data: Question data from the MMLU-Pro dataset.
+
     Returns:
-        Task dictionary for config.TASK
+        Tuple of:
+        - agent_task: Task for the agent system.
+        - eval_data: Ground truth, rationale, and metadata.
     """
-    # Extract question text
     question_text = question_data.get("question", "")
-    
-    # Extract options - handle both dict and list formats
     options_data = question_data.get("options", {})
     options = []
-    
+
     if isinstance(options_data, dict):
-        # Format options as standard MCQ options from dict
         for key in sorted(options_data.keys()):
             options.append(f"{key}. {options_data[key]}")
     elif isinstance(options_data, list):
-        # Format options as standard MCQ options from list
         for i, option in enumerate(options_data):
             options.append(f"{chr(65+i)}. {option}")
-    
-    # Get correct answer
+
     ground_truth = question_data.get("answer", "")
-    
-    # Handle different answer formats
     if not ground_truth and "answer_idx" in question_data:
-        answer_idx = question_data.get("answer_idx")
-        if isinstance(answer_idx, int) and 0 <= answer_idx < len(options):
-            ground_truth = chr(65 + answer_idx)  # Convert 0->A, 1->B, etc.
-    
-    # Get answer index if available
-    answer_idx = question_data.get("answer_idx", "")
-    
-    # Create task dictionary
-    task = {
+        idx = question_data["answer_idx"]
+        if isinstance(idx, int) and 0 <= idx < len(options):
+            ground_truth = chr(65 + idx)
+
+    agent_task = {
         "name": "MMLU-Pro Medical Question",
         "description": question_text,
         "type": "mcq",
         "options": options,
-        "expected_output_format": "Single letter selection with rationale",
+        "expected_output_format": "Single letter selection with rationale"
+    }
+
+    eval_data = {
         "ground_truth": ground_truth,
-        "rationale": {},  # MMLU-Pro doesn't provide explanations
+        "rationale": {},  # MMLU-Pro provides no rationale
         "metadata": {
             "category": question_data.get("category", ""),
-            "answer_idx": answer_idx
+            "answer_idx": question_data.get("answer_idx", "")
         }
     }
-    
-    return task
 
-def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Dict[str, Any]:
+    return agent_task, eval_data
+
+
+
+def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
-    Format PubMedQA question for the agent system task.
-    
+    Format PubMedQA question into agent task and evaluation data.
+
     Args:
-        question_data: Question data from the dataset
-        
+        question_data: Question data from PubMedQA.
+
     Returns:
-        Task dictionary for config.TASK
+        Tuple of:
+        - agent_task: Task input for the agent.
+        - eval_data: Ground truth and explanation for evaluation.
     """
-    # Extract question and context
     question_text = question_data.get("question", "")
-    context = question_data.get("context", {})
-    
-    # Format context as a string
+    context = question_data.get("context", "")
     context_text = ""
+
     if isinstance(context, dict):
-        for i, (section, text) in enumerate(context.items()):
+        for section, text in context.items():
             context_text += f"{section}: {text}\n\n"
     elif isinstance(context, list):
-        # Some versions of the dataset have context as a list
         context_text = "\n\n".join(context)
     elif isinstance(context, str):
         context_text = context
-    
-    # Get the expected output (correct answer)
+
     expected_output = question_data.get("final_decision", "").lower()
-    
-    # Create task dictionary
-    task = {
+
+    agent_task = {
         "name": "PubMedQA Question",
         "description": f"Research Question: {question_text}\n\nAbstract Context:\n{context_text}",
         "type": "yes_no_maybe",
         "options": ["yes", "no", "maybe"],
-        "expected_output_format": "Answer (yes/no/maybe) with detailed scientific justification",
+        "expected_output_format": "Answer (yes/no/maybe) with detailed scientific justification"
+    }
+
+    eval_data = {
         "ground_truth": expected_output,
         "rationale": {"long_answer": question_data.get("long_answer", "")},
         "metadata": {
             "pubid": question_data.get("pubid", "")
         }
     }
-    
-    return task
+
+    return agent_task, eval_data
+
+
 
 def detect_agent_disagreement(agent_responses):
     """Detect if agents disagree on answers"""
@@ -745,25 +734,26 @@ def run_questions_with_configuration(
         try:
             # Format the question for the task
             if dataset_type == "medqa":
-                task = format_medqa_for_task(question)
+                agent_task, eval_data = format_medqa_for_task(question)
             elif dataset_type == "medmcqa":
-                task = format_medmcqa_for_task(question)
+                agent_task, eval_data = format_medmcqa_for_task(question)
             elif dataset_type == "pubmedqa":
-                task = format_pubmedqa_for_task(question)
+                agent_task, eval_data = format_pubmedqa_for_task(question)
             elif dataset_type == "mmlupro-med":
-                task = format_mmlupro_med_for_task(question)
+                agent_task, eval_data = format_mmlupro_med_for_task(question)
             else:
                 raise ValueError(f"Unknown dataset type: {dataset_type}")
             
             # Store question details
             question_result.update({
-                "question_text": task["description"][:200] + "...",
-                "options": task.get("options", []),
-                "ground_truth": task.get("ground_truth", ""),
-                "task_type": task.get("type", "")
+                "question_text": agent_task["description"][:200] + "...",
+                "options": agent_task.get("options", []),
+                "ground_truth": eval_data.get("ground_truth", ""),
+                "task_type": eval_data.get("type", "")
             })
             
-            config.TASK = task
+            config.TASK = agent_task  # Agents get this (no GT)
+            config.TASK_EVALUATION = eval_data  # Evaluation gets this (with GT)
             
             # Try to run the simulation with retries
             for attempt in range(max_retries):
@@ -954,10 +944,10 @@ def run_questions_with_configuration(
             if run_output_dir:
                 try:
                     enhanced_output_data = {
-                        "question": task["description"],
-                        "options": task.get("options", []),
-                        "ground_truth": task.get("ground_truth", ""),
-                        "metadata": task.get("metadata", {}),
+                        "question": agent_task["description"],
+                        "options": agent_task.get("options", []),
+                        "ground_truth": eval_data.get("ground_truth", ""),
+                        "metadata": eval_data.get("metadata", {}),
                         "recruitment_info": question_result["recruitment_info"],
                         "agent_responses": question_result["agent_responses"],
                         "disagreement_analysis": question_result["disagreement_analysis"],
@@ -1415,6 +1405,22 @@ def run_dataset(
                 "mutual_monitoring": True,
                 "shared_mental_model": True,
                 "team_orientation": True,
+                "mutual_trust": True,
+                "recruitment": True,
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
+                "n_max": n_max
+            },
+
+            # Custom features with proven improvement
+            {
+                "name": "Special set with Recruitment", 
+                "description": f"Team of {n_max} agents with positive teamwork components only",
+                "leadership": True, 
+                "closed_loop": False,
+                "mutual_monitoring": False,
+                "shared_mental_model": True,
+                "team_orientation": False,
                 "mutual_trust": True,
                 "recruitment": True,
                 "recruitment_method": "intermediate",

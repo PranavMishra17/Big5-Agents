@@ -372,37 +372,46 @@ def run_all_configurations(runs=1):
         for method in ["majority_voting", "weighted_voting", "borda_count"]:
             aggregated_results[method][config["name"]] = config_results[method]
     
-    # Calculate aggregated performance for ranking tasks
-    if config.TASK["type"] == "ranking" and "ground_truth" in config.TASK:
-        performance_metrics = calculate_ranking_performance(aggregated_results)
-    elif config.TASK["type"] == "mcq" and "ground_truth" in config.TASK:
-        performance_metrics = calculate_mcq_performance(aggregated_results)
+    # Separate GT from agent task for single-task runs
+    if hasattr(config, 'TASK') and 'ground_truth' in config.TASK:
+        eval_data = {
+            "ground_truth": config.TASK.pop("ground_truth"),
+            "rationale": config.TASK.pop("rationale", {})
+        }
+        config.TASK_EVALUATION = eval_data
+
+    # Calculate aggregated performance
+    if config.TASK["type"] == "ranking" and hasattr(config, "TASK_EVALUATION"):
+        performance_metrics = calculate_ranking_performance(aggregated_results, config.TASK_EVALUATION)
+    elif config.TASK["type"] == "mcq" and hasattr(config, "TASK_EVALUATION"):
+        performance_metrics = calculate_mcq_performance(aggregated_results, config.TASK_EVALUATION)
     else:
         performance_metrics = {
             "note": "No quantitative metrics available for this task type or no ground truth provided"
         }
-    
+
     # Save aggregate results
     output_path = os.path.join(config.OUTPUT_DIR, f"all_configurations_results.json")
     with open(output_path, 'w') as f:
         json.dump({
-            "task": config.TASK["name"],
-            "task_type": config.TASK["type"],
+            "task": config.TASK.get("name", "Unnamed Task"),
+            "task_type": config.TASK.get("type", "unknown"),
             "runs_per_configuration": runs,
             "configurations": configurations,
             "aggregated_results": aggregated_results,
             "performance_metrics": performance_metrics
         }, f, indent=2)
-    
+
     print(f"\nDetailed results saved to: {output_path}")
-    
-    # Print summary for ranking tasks
-    if config.TASK["type"] == "ranking" and "ground_truth" in config.TASK:
+
+    # Print summary
+    if config.TASK["type"] == "ranking" and hasattr(config, "TASK_EVALUATION"):
         print_ranking_summary(performance_metrics)
-    elif config.TASK["type"] == "mcq" and "ground_truth" in config.TASK:
+    elif config.TASK["type"] == "mcq" and hasattr(config, "TASK_EVALUATION"):
         print_mcq_summary(performance_metrics)
-    
+
     return aggregated_results
+
 
 
 def calculate_ranking_performance(aggregated_results):
