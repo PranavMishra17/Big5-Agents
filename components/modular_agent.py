@@ -29,7 +29,9 @@ class ModularAgent(Agent):
                  use_shared_mental_model: bool = False,
                     use_team_orientation: bool = False,
                     use_mutual_trust: bool = False,
-                    n_max: int = 5
+                    n_max: int = 5,
+                    deployment_config: Optional[Dict[str, str]] = None,
+                    agent_index: int = 0
                  
                  ):
         """
@@ -41,6 +43,8 @@ class ModularAgent(Agent):
             use_closed_loop_comm: Whether to use closed-loop communication
             use_mutual_monitoring: Whether to use mutual performance monitoring
             use_shared_mental_model: Whether to use shared mental models
+            deployment_config: Optional specific deployment configuration
+            agent_index: Index of agent for deployment assignment
         """
         # Set role and expertise based on role type
         if role_type in config.AGENT_ROLES:
@@ -60,7 +64,9 @@ class ModularAgent(Agent):
             use_shared_mental_model=use_shared_mental_model,
             use_team_orientation=use_team_orientation,
             use_mutual_trust=use_mutual_trust,
-            n_max=n_max
+            n_max=n_max,
+            deployment_config=deployment_config,
+            agent_index=agent_index
         )
         
         # Track whether this agent has leadership capabilities
@@ -407,7 +413,7 @@ class ModularAgent(Agent):
 
 
 """
-Fixed create_agent_team function to resolve import issues.
+Fixed create_agent_team function to resolve import issues and add deployment support.
 """
 
 def create_agent_team(use_team_leadership=True, 
@@ -423,7 +429,7 @@ def create_agent_team(use_team_leadership=True,
                       recruitment_pool="general",
                       n_max=5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
-    Create a team of agents with different specializations.
+    Create a team of agents with different specializations and deployment distribution.
     
     Args:
         use_team_leadership: Whether to use team leadership
@@ -478,13 +484,17 @@ def create_agent_team(use_team_leadership=True,
     else:
         leader_role = None
     
-    # Create all agents
+    # Create all agents with deployment distribution
     agents = {}
     leader = None
+    agent_index = 0
     
     for role in config.AGENT_ROLES:
         # Determine if this agent should have leadership capabilities
         is_leader = role == leader_role if leader_role else False
+        
+        # Get deployment config for this agent
+        deployment_config = config.get_deployment_for_agent(agent_index)
         
         # Create the agent
         agent = ModularAgent(
@@ -495,7 +505,9 @@ def create_agent_team(use_team_leadership=True,
             use_shared_mental_model=use_shared_mental_model,
             use_team_orientation=use_team_orientation,
             use_mutual_trust=use_mutual_trust,
-            n_max=n_max
+            n_max=n_max,
+            deployment_config=deployment_config,
+            agent_index=agent_index
         )
         
         agents[role] = agent
@@ -503,6 +515,8 @@ def create_agent_team(use_team_leadership=True,
         # Track the leader agent
         if is_leader and use_team_leadership:
             leader = agent
+            
+        agent_index += 1
     
     # Share knowledge between agents
     for role1, agent1 in agents.items():
@@ -520,5 +534,6 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f"  Mutual Trust: {use_mutual_trust}")
     logging.info(f"  n_max: {n_max}")
     logging.info(f"  Agents: {', '.join(agents.keys())}")
+    logging.info(f"  Deployment distribution: {[f'{role}:{agent.deployment_config['name']}' for role, agent in agents.items()]}")
     
     return agents, leader

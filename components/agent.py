@@ -4,6 +4,9 @@ Base agent class for modular agent system.
 
 import logging
 import json
+import time
+import signal
+import threading
 from typing import List, Dict, Any, Optional, Tuple
 
 from langchain_openai import AzureChatOpenAI
@@ -20,6 +23,11 @@ from utils.prompts import (
 )
 
 
+class TimeoutError(Exception):
+    """Custom timeout exception."""
+    pass
+
+
 class Agent:
     """Base agent class for modular agent system."""
     
@@ -33,7 +41,9 @@ class Agent:
                  use_team_orientation: bool = False,
                  use_mutual_trust: bool = False,
                  n_max: int = 5,
-                 examples: Optional[List[Dict[str, str]]] = None):
+                 examples: Optional[List[Dict[str, str]]] = None,
+                 deployment_config: Optional[Dict[str, str]] = None,
+                 agent_index: int = 0):
         """
         Initialize an LLM-based agent with a specific role.
         
@@ -45,6 +55,8 @@ class Agent:
             use_mutual_monitoring: Whether this agent uses mutual performance monitoring
             use_shared_mental_model: Whether this agent uses shared mental models
             examples: Optional examples to include in the prompt
+            deployment_config: Optional specific deployment configuration
+            agent_index: Index of agent for deployment assignment
         """
         self.role = role
         self.expertise_description = expertise_description
@@ -58,18 +70,25 @@ class Agent:
         self.examples = examples or []
         self.conversation_history = []
         self.knowledge_base = {}
+        self.agent_index = agent_index
         
         # Initialize logger
         self.logger = logging.getLogger(f"agent.{role}")
 
-
-        # Initialize LLM
+        # Get deployment configuration
+        if deployment_config:
+            self.deployment_config = deployment_config
+        else:
+            self.deployment_config = config.get_deployment_for_agent(agent_index)
+        
+        # Initialize LLM with specific deployment
         self.client = AzureChatOpenAI(
-            azure_deployment=config.AZURE_DEPLOYMENT,
-            api_key=config.AZURE_API_KEY,
-            api_version=config.AZURE_API_VERSION,
-            azure_endpoint=config.AZURE_ENDPOINT,
-            temperature=config.TEMPERATURE
+            azure_deployment=self.deployment_config["deployment"],
+            api_key=self.deployment_config["api_key"],
+            api_version=self.deployment_config["api_version"],
+            azure_endpoint=self.deployment_config["endpoint"],
+            temperature=config.TEMPERATURE,
+            timeout=config.REQUEST_TIMEOUT
         )
         
         # Build initial system message
@@ -86,7 +105,7 @@ class Agent:
                     "content": example['answer'] + "\n\n" + example.get('reason', '')
                 })
                 
-        self.logger.info(f"Initialized {self.role} agent")
+        self.logger.info(f"Initialized {self.role} agent with deployment {self.deployment_config['name']}")
     
 
     def _build_system_prompt(self) -> str:
@@ -160,11 +179,67 @@ class Agent:
         """
         return self.knowledge_base.get(key)
     
-
+    def _timeout_handler(self, signum, frame):
+        """Handle timeout signal."""
+        raise TimeoutError("Request timed out")
+    
+    def _chat_with_timeout(self, messages: List[Dict[str, str]], timeout: int = None) -> str:
+        """
+        Chat with timeout and retry logic.
+        
+        Args:
+            messages: Messages to send
+            timeout: Timeout in seconds
+            
+        Returns:
+            Assistant's response
+            
+        Raises:
+            TimeoutError: If request times out
+            Exception: If all retries fail
+        """
+        if timeout is None:
+            timeout = config.INACTIVITY_TIMEOUT
+        
+        def target():
+            try:
+                response = self.client.invoke(messages)
+                self._response = response.content
+            except TypeError as e:
+                if "missing 1 required positional argument: 'input'" in str(e):
+                    # Fall back to old style invocation
+                    response = self.client.invoke(input=messages)
+                    self._response = response.content
+                else:
+                    raise
+            except Exception as e:
+                self._exception = e
+        
+        # Reset response and exception
+        self._response = None
+        self._exception = None
+        
+        # Start thread for API call
+        thread = threading.Thread(target=target)
+        thread.start()
+        thread.join(timeout)
+        
+        if thread.is_alive():
+            # Timeout occurred
+            self.logger.warning(f"Request timed out after {timeout} seconds")
+            raise TimeoutError(f"Request timed out after {timeout} seconds")
+        
+        if self._exception:
+            raise self._exception
+        
+        if self._response is None:
+            raise Exception("No response received")
+        
+        return self._response
 
     def chat(self, message: str) -> str:
         """
-        Send a message to the agent and get a response.
+        Send a message to the agent and get a response with retry logic.
         
         Args:
             message: The message to send to the agent
@@ -175,31 +250,60 @@ class Agent:
         self.logger.info(f"Received message: {message[:100]}...")
         
         # Add the user message to the conversation
-        self.messages.append({"role": "user", "content": message})
+        messages = self.messages + [{"role": "user", "content": message}]
         
-        # Get response from LLM - fix for LangChain API change
-        try:
-            # New LangChain API style
-            response = self.client.invoke(self.messages)
-            assistant_message = response.content
-        except TypeError as e:
-            if "missing 1 required positional argument: 'input'" in str(e):
-                # Fall back to old style invocation
-                self.logger.info("Falling back to older LangChain API style")
-                response = self.client.invoke(input=self.messages)
-                assistant_message = response.content
-            else:
-                # Re-raise if it's a different TypeError
-                raise
+        last_exception = None
         
-        # Extract and store the response
-        self.messages.append({"role": "assistant", "content": assistant_message})
-        self.conversation_history.append({"user": message, "assistant": assistant_message})
+        for attempt in range(config.MAX_RETRIES):
+            try:
+                self.logger.info(f"API request attempt {attempt + 1}/{config.MAX_RETRIES} using {self.deployment_config['name']}")
+                
+                # Try with timeout
+                assistant_message = self._chat_with_timeout(messages, config.INACTIVITY_TIMEOUT)
+                
+                # Success - store the response
+                self.messages.append({"role": "user", "content": message})
+                self.messages.append({"role": "assistant", "content": assistant_message})
+                self.conversation_history.append({"user": message, "assistant": assistant_message})
+                
+                self.logger.info(f"Responded successfully: {assistant_message[:100]}...")
+                return assistant_message
+                
+            except TimeoutError as e:
+                last_exception = e
+                self.logger.warning(f"Timeout on attempt {attempt + 1}: {str(e)}")
+                
+                if attempt < config.MAX_RETRIES - 1:
+                    wait_time = config.RETRY_DELAY * (2 ** attempt)  # Exponential backoff
+                    self.logger.info(f"Waiting {wait_time} seconds before retry...")
+                    time.sleep(wait_time)
+                    continue
+                    
+            except Exception as e:
+                last_exception = e
+                error_str = str(e).lower()
+                
+                # Check for recoverable errors
+                if any(term in error_str for term in ["rate", "limit", "timeout", "capacity", "connection"]):
+                    self.logger.warning(f"Recoverable error on attempt {attempt + 1}: {str(e)}")
+                    
+                    if attempt < config.MAX_RETRIES - 1:
+                        if "rate" in error_str or "limit" in error_str:
+                            wait_time = config.RETRY_DELAY * (3 ** attempt)  # Longer wait for rate limits
+                        else:
+                            wait_time = config.RETRY_DELAY * (2 ** attempt)
+                        
+                        self.logger.info(f"Waiting {wait_time} seconds before retry...")
+                        time.sleep(wait_time)
+                        continue
+                else:
+                    # Non-recoverable error
+                    self.logger.error(f"Non-recoverable error: {str(e)}")
+                    raise
         
-        self.logger.info(f"Responded: {assistant_message[:100]}...")
-        
-        return assistant_message
-
+        # All retries failed
+        self.logger.error(f"All {config.MAX_RETRIES} attempts failed. Last error: {str(last_exception)}")
+        raise Exception(f"Failed after {config.MAX_RETRIES} attempts. Last error: {str(last_exception)}")
 
     def get_conversation_history(self) -> List[Dict[str, str]]:
         """Get the conversation history."""

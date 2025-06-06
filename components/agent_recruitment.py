@@ -130,13 +130,6 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
         logging.info(f"Unrecognized complexity/method: {complexity}/{recruitment_method}, falling back to intermediate")
         return recruit_intermediate_team(question, recruitment_pool, n_max)
 
-
-
-
-"""
-Updated recruit_basic_team function to always return a single Medical Generalist.
-"""
-
 def recruit_basic_team(question: str, recruitment_pool: str):
     """
     Recruit a single medical generalist for basic questions.
@@ -155,6 +148,9 @@ def recruit_basic_team(question: str, recruitment_pool: str):
     role = "Medical Generalist"
     expertise = "A general medical practitioner with broad knowledge across medical disciplines"
     
+    # Get deployment config for agent 0
+    deployment_config = config.get_deployment_for_agent(0)
+    
     # Create the generalist agent
     agent = ModularAgent(
         role_type=role, 
@@ -163,24 +159,21 @@ def recruit_basic_team(question: str, recruitment_pool: str):
         use_mutual_monitoring=False,
         use_shared_mental_model=False,
         use_team_orientation=False,
-        use_mutual_trust=False
+        use_mutual_trust=False,
+        deployment_config=deployment_config,
+        agent_index=0
     )
     
     # Create the agents dictionary
     agents = {"Medical Generalist": agent}
     
-    logging.info(f"Basic recruitment: Created a single Medical Generalist (ignoring n_max)")
+    logging.info(f"Basic recruitment: Created a single Medical Generalist with deployment {deployment_config['name']}")
     
     return agents, agent
 
-
-"""
-Ensure recruit_intermediate_team respects n_max parameter.
-"""
-
 def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5):
     """
-    Recruit a team of specialists with hierarchical relationships.
+    Recruit a team of specialists with hierarchical relationships and deployment distribution.
     
     Args:
         question: The question or task
@@ -306,12 +299,16 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
         # Update the first team member's hierarchy to Leader
         selected_team[0] = (leader_role, selected_team[0][1], "Leader", selected_team[0][3])
     
-    # Create agents
+    # Create agents with deployment distribution
     agents = {}
     leader = None
+    agent_index = 0
     
     for role, expertise, hierarchy, weight in selected_team:
         is_leader = hierarchy == "Leader" or role == leader_role
+        
+        # Get deployment config for this agent
+        deployment_config = config.get_deployment_for_agent(agent_index)
         
         agent = ModularAgent(
             role_type=role,
@@ -320,7 +317,9 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
             use_mutual_monitoring=config.USE_MUTUAL_MONITORING,
             use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
             use_team_orientation=config.USE_TEAM_ORIENTATION,
-            use_mutual_trust=config.USE_MUTUAL_TRUST
+            use_mutual_trust=config.USE_MUTUAL_TRUST,
+            deployment_config=deployment_config,
+            agent_index=agent_index
         )
         
         # Store weight in agent's knowledge base
@@ -330,13 +329,16 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
         
         if is_leader:
             leader = agent
+            
+        agent_index += 1
     
     # Log recruitment
+    deployment_info = [f"{role}:{agent.deployment_config['name']}" for role, agent in agents.items()]
     logging.info(f"Intermediate complexity: Recruited team of {len(agents)} experts with leader '{leader_role}'")
     logging.info(f"Agent weights: {weights}")
+    logging.info(f"Deployment distribution: {deployment_info}")
     
     return agents, leader
-
 
 def recruit_advanced_team(question: str, recruitment_pool: str):
     """
@@ -447,9 +449,10 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
         ]
         chief_coordinator = 'Senior Consultant'
     
-    # Create all agents
+    # Create all agents with deployment distribution
     agents = {}
     leader = None
+    agent_index = 0
     
     # Use a prefix to make roles unique across teams
     for team_idx, team in enumerate(teams):
@@ -464,6 +467,9 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
             # Create unique role identifier
             unique_role = f"{team_prefix}{role}"
             
+            # Get deployment config for this agent
+            deployment_config = config.get_deployment_for_agent(agent_index)
+            
             # Create agent
             agent = ModularAgent(
                 role_type=unique_role,  # Use unique identifier as role type
@@ -472,7 +478,9 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
                 use_mutual_monitoring=config.USE_MUTUAL_MONITORING,
                 use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
                 use_team_orientation=config.USE_TEAM_ORIENTATION,
-                use_mutual_trust=config.USE_MUTUAL_TRUST
+                use_mutual_trust=config.USE_MUTUAL_TRUST,
+                deployment_config=deployment_config,
+                agent_index=agent_index
             )
             
             # Add hierarchical information to knowledge base
@@ -488,6 +496,8 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
             # Track chief coordinator as overall leader
             if role == chief_coordinator:
                 leader = agent
+                
+            agent_index += 1
     
     # If no chief coordinator found, use first team leader
     if not leader:
@@ -497,7 +507,9 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
                 break
     
     # Log recruitment
+    deployment_info = [f"{role}:{agent.deployment_config['name']}" for role, agent in agents.items()]
     logging.info(f"Advanced complexity: Recruited {len(agents)} experts in {len(teams)} teams")
     logging.info(f"Chief Coordinator: {chief_coordinator if chief_coordinator else 'Not specified'}")
+    logging.info(f"Deployment distribution: {deployment_info}")
     
     return agents, leader

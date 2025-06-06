@@ -660,6 +660,15 @@ def run_questions_with_configuration(
     config_name = configuration.get("name", "unknown")
     logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
     
+    # Log deployment information
+    deployments = config.get_all_deployments()
+    if len(deployments) > 1:
+        deployment_names = [d['name'] for d in deployments]
+        logging.info(f"Using {len(deployments)} deployments for parallel processing: {deployment_names}")
+        logging.info(f"Parallel processing enabled: {config.ENABLE_PARALLEL_PROCESSING}")
+    else:
+        logging.info(f"Using single deployment: {deployments[0]['name']}")
+    
     from components import agent_recruitment
     agent_recruitment.reset_complexity_metrics()
 
@@ -686,6 +695,11 @@ def run_questions_with_configuration(
         "num_questions": len(questions),
         "timestamp": datetime.now().isoformat(),
         "configuration_details": configuration,
+        "deployment_info": {
+            "deployments_used": deployments,
+            "parallel_processing": config.ENABLE_PARALLEL_PROCESSING,
+            "max_workers": config.MAX_PARALLEL_WORKERS
+        },
         "question_results": [],
         "errors": [],
         "summary": {
@@ -782,15 +796,14 @@ def run_questions_with_configuration(
                         for role, agent in simulator.agents.items():
                             agents_info.append({
                                 "role": role,
-                                "weight": getattr(agent, 'weight', 0.2)
+                                "weight": getattr(agent, 'weight', 0.2),
+                                "deployment": agent.deployment_config['name']
                             })
                         question_result["recruitment_info"]["agents_recruited"] = agents_info
                     
                     # Run simulation
                     simulation_results = simulator.run_simulation()
                     performance = simulator.evaluate_performance()
-
-
                     
                     # Extract recruitment information
                     if hasattr(simulator, 'recruited_agents') and simulator.recruited_agents:
@@ -802,7 +815,8 @@ def run_questions_with_configuration(
                                     "role": agent.get("role", "Unknown"),
                                     "expertise": agent.get("expertise", []),
                                     "weight": agent.get("weight", 0.2),
-                                    "specialization": agent.get("specialization", "")
+                                    "specialization": agent.get("specialization", ""),
+                                    "deployment": agent.get("deployment", "unknown")
                                 }
                             else:
                                 # Handle case where agent is an object
@@ -810,7 +824,8 @@ def run_questions_with_configuration(
                                     "role": getattr(agent, 'role', 'Unknown'),
                                     "expertise": getattr(agent, 'expertise', []),
                                     "weight": getattr(agent, 'weight', 0.2),
-                                    "specialization": getattr(agent, 'specialization', '')
+                                    "specialization": getattr(agent, 'specialization', ''),
+                                    "deployment": getattr(agent, 'deployment_config', {}).get('name', 'unknown')
                                 }
                             recruited_agents_info.append(agent_info)
                         
@@ -1044,6 +1059,11 @@ def run_questions_with_configuration(
     # Print complexity distribution
     if any(results["complexity_distribution"].values()):
         print(f"  Complexity Distribution: {dict(results['complexity_distribution'])}")
+    
+    # Print deployment usage
+    if len(deployments) > 1:
+        print(f"  Deployments Used: {[d['name'] for d in deployments]}")
+        print(f"  Parallel Processing: {config.ENABLE_PARALLEL_PROCESSING}")
         
     return results
 
@@ -1542,6 +1562,14 @@ def main():
     
     # Set up logging
     setup_logging()
+
+    # Log deployment configuration
+    deployments = config.get_all_deployments()
+    logging.info(f"Available deployments: {[d['name'] for d in deployments]}")
+    if len(deployments) > 1:
+        logging.info(f"Multi-deployment parallel processing enabled")
+    else:
+        logging.info(f"Single deployment mode")
 
     # If n_max is specified, automatically set recruitment method to intermediate
     if args.n_max is not None:

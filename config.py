@@ -8,20 +8,51 @@ from typing import Dict, List, Any, Optional
 # Load environment variables
 load_dotenv()
 
-# Azure OpenAI settings
+# Azure OpenAI settings - Multiple deployments for parallel processing
 AZURE_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
-AZURE_DEPLOYMENT = "VARELab-GPT4o"
-AZURE_API_VERSION = "2024-08-01-preview"
+
+# Multiple deployment configuration for parallel processing
+AZURE_DEPLOYMENTS = [
+    {
+        "name": "deployment_1",
+        "deployment": "VARELab-GPT4o",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2024-08-01-preview"
+    },
+    {
+        "name": "deployment_2", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_2', "VARELab-GPT4o-2"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+    }
+]
+
+# Fallback to single deployment if second deployment not configured
+if not AZURE_DEPLOYMENTS[1]["deployment"] or not AZURE_DEPLOYMENTS[1]["api_key"] or not AZURE_DEPLOYMENTS[1]["endpoint"]:
+    AZURE_DEPLOYMENTS = [AZURE_DEPLOYMENTS[0]]  # Use only first deployment
+    print("Warning: Second deployment not configured, using single deployment mode")
+
+# Legacy single deployment support (for backward compatibility)
+AZURE_DEPLOYMENT = AZURE_DEPLOYMENTS[0]["deployment"]
+AZURE_API_VERSION = AZURE_DEPLOYMENTS[0]["api_version"]
 
 # Model settings
 TEMPERATURE = 0.5
 MAX_TOKENS = 1500
 
+# Request timeout settings
+REQUEST_TIMEOUT = 30  # seconds
+MAX_RETRIES = 3
+RETRY_DELAY = 2  # seconds
+INACTIVITY_TIMEOUT = 60  # seconds - detect if request is hanging
+
 # System settings
 LOG_DIR = "logs"
 OUTPUT_DIR = "output"
-SIMULATION_ROUNDS = 3
+SIMULATION_ROUNDS = 2
 
 # Create required directories
 os.makedirs(LOG_DIR, exist_ok=True)
@@ -221,6 +252,27 @@ USE_SHARED_MENTAL_MODEL = False
 USE_TEAM_ORIENTATION = False  # Default disabled
 USE_MUTUAL_TRUST = False  # Default disabled
 
-MUTUAL_TRUST_FACTOR = 0.8  # Default trust level (0.0-1.0)
+MUTUAL_TRUST_FACTOR = 0.9  # Default trust level (0.0-1.0)
 
 USE_AGENT_RECRUITMENT = False  # Default disabled
+
+# Parallel processing settings
+ENABLE_PARALLEL_PROCESSING = len(AZURE_DEPLOYMENTS) > 1
+MAX_PARALLEL_WORKERS = len(AZURE_DEPLOYMENTS)
+
+def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
+    """
+    Get deployment configuration for agent based on round-robin distribution.
+    
+    Args:
+        agent_index: Index of the agent (0-based)
+        
+    Returns:
+        Deployment configuration dictionary
+    """
+    deployment_index = agent_index % len(AZURE_DEPLOYMENTS)
+    return AZURE_DEPLOYMENTS[deployment_index]
+
+def get_all_deployments() -> List[Dict[str, str]]:
+    """Get all available deployment configurations."""
+    return AZURE_DEPLOYMENTS.copy()
