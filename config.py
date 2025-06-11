@@ -27,6 +27,20 @@ AZURE_DEPLOYMENTS = [
         "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
         "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
         "api_version": "2025-01-01-preview"
+    },
+        {
+        "name": "deployment_3", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_3', "VARELab-GPT4o-3"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+        },
+        {
+        "name": "deployment_4", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_3', "VARELab-GPT4o-4"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
     }
 ]
 
