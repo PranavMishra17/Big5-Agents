@@ -1,5 +1,5 @@
 """
-Enhanced logging functionality for agent system.
+Enhanced logging functionality for agent system with question-level parallel processing support.
 """
 
 import os
@@ -9,7 +9,7 @@ import json
 from datetime import datetime
 
 class SimulationLogger:
-    """Enhanced logger for tracking simulation progress and results."""
+    """Enhanced logger for tracking simulation progress and results with deployment info."""
     
     def __init__(self, 
                 simulation_id: str, 
@@ -56,15 +56,21 @@ class SimulationLogger:
         # Initialize the logger
         self.logger = self._setup_logger()
         
-        # Log initial configuration
+        # Log initial configuration including deployment info
+        initial_config = self.config.copy()
+        deployment_name = self.config.get("deployment", "default")
+        initial_config["deployment_used"] = deployment_name
+        
         self.log_event("simulation_started", {
             "simulation_id": simulation_id,
             "timestamp": datetime.now().isoformat(),
-            "config": self.config,
-            "config_name": self.config_name
+            "config": initial_config,
+            "config_name": self.config_name,
+            "deployment": deployment_name,
+            "processing_mode": "question_level_parallel" if len(os.environ.get('AZURE_DEPLOYMENTS', '').split(',')) > 1 else "sequential"
         })
         
-        self.logger.info(f"SimulationLogger initialized for {simulation_id} with configuration: {self.config_name}")
+        self.logger.info(f"SimulationLogger initialized for {simulation_id} with configuration: {self.config_name}, deployment: {deployment_name}")
 
         # Create additional log files for different channels
         self.main_discussion_file = os.path.join(self.run_dir, f"{simulation_id}_main_discussion.jsonl")
@@ -93,11 +99,13 @@ class SimulationLogger:
         ))
         logger.addHandler(file_handler)
         
-        # Console handler
+        # Console handler (reduced verbosity for parallel processing)
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(logging.Formatter(
-            '%(asctime)s - %(levelname)s - %(message)s'
+            '%(asctime)s - %(levelname)s - [%(name)s] %(message)s'
         ))
+        # Set higher log level for console to reduce noise during parallel processing
+        console_handler.setLevel(logging.WARNING)
         logger.addHandler(console_handler)
         
         return logger
@@ -105,7 +113,7 @@ class SimulationLogger:
 
     def log_agent_message(self, agent_role: str, message_type: str, content: str) -> None:
         """
-        Log a complete agent message.
+        Log a complete agent message with deployment info.
         
         Args:
             agent_role: Role of the agent (leader/member)
@@ -113,13 +121,15 @@ class SimulationLogger:
             content: Complete message text
         """
         # Log to standard logger with brief message
-        self.logger.info(f"Agent {agent_role} {message_type} (length: {len(content)})")
+        deployment = self.config.get("deployment", "default")
+        self.logger.info(f"Agent {agent_role} {message_type} (length: {len(content)}) [deployment: {deployment}]")
         
         # Also log as structured event
         self.log_event("agent_message", {
             "agent_role": agent_role,
             "message_type": message_type,
-            "content_length": len(content)
+            "content_length": len(content),
+            "deployment": deployment
         })
     
 
@@ -132,32 +142,39 @@ class SimulationLogger:
         """
         # Create a summary of the results (without the full exchanges)
         results_summary = {k: v for k, v in results.items() if k != "exchanges"}
+        deployment = self.config.get("deployment", "default")
         
         self.log_event("simulation_completed", {
             "simulation_id": self.simulation_id,
-            "summary": results_summary
+            "summary": results_summary,
+            "deployment": deployment
         })
         
-        self.logger.info(f"Simulation {self.simulation_id} completed successfully")
+        self.logger.info(f"Simulation {self.simulation_id} completed successfully [deployment: {deployment}]")
 
 
     def log_event(self, event_type, data):
-        """Log a structured event to the events file."""
+        """Log a structured event to the events file with deployment info."""
         event = {
             "event_type": event_type,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "data": data
         }
         
         with open(self.events_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Event logged: {event_type}")
+        # Reduced verbosity for parallel processing
+        if event_type in ["simulation_started", "simulation_completed"]:
+            self.logger.info(f"Event logged: {event_type}")
+        else:
+            self.logger.debug(f"Event logged: {event_type}")
     
 
     def log_main_discussion(self, stage, agent_role, message):
         """
-        Log main discussion between agents.
+        Log main discussion between agents with deployment info.
         
         Args:
             stage: Current discussion stage (task_analysis, collaborative_discussion, etc.)
@@ -168,18 +185,19 @@ class SimulationLogger:
             "stage": stage,
             "agent_role": agent_role,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "message": message
         }
         
         with open(self.main_discussion_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Main discussion: {stage} - {agent_role}")
+        self.logger.debug(f"Main discussion: {stage} - {agent_role} [deployment: {self.config.get('deployment', 'default')}]")
     
 
     def log_closed_loop(self, stage, sender_role, receiver_role, initial_message, acknowledgment, verification):
         """
-        Log closed-loop communication events.
+        Log closed-loop communication events with deployment info.
         
         Args:
             stage: Current discussion stage
@@ -194,6 +212,7 @@ class SimulationLogger:
             "sender_role": sender_role,
             "receiver_role": receiver_role,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "initial_message": initial_message,
             "acknowledgment": acknowledgment,
             "verification": verification
@@ -202,12 +221,12 @@ class SimulationLogger:
         with open(self.closed_loop_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Closed-loop communication: {stage} - {sender_role} -> {receiver_role}")
+        self.logger.debug(f"Closed-loop communication: {stage} - {sender_role} -> {receiver_role} [deployment: {self.config.get('deployment', 'default')}]")
     
 
     def log_leadership_action(self, action_type, content):
         """
-        Log leader-specific actions.
+        Log leader-specific actions with deployment info.
         
         Args:
             action_type: Type of leadership action (task_definition, synthesis, etc.)
@@ -216,18 +235,19 @@ class SimulationLogger:
         event = {
             "action_type": action_type,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "content": content
         }
         
         with open(self.leadership_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Leadership action: {action_type}")
+        self.logger.debug(f"Leadership action: {action_type} [deployment: {self.config.get('deployment', 'default')}]")
         
 
     def log_monitoring_action(self, monitor_role, target_role, issues, feedback):
         """
-        Log mutual monitoring actions and feedback.
+        Log mutual monitoring actions and feedback with deployment info.
         
         Args:
             monitor_role: Role of the monitoring agent
@@ -239,6 +259,7 @@ class SimulationLogger:
             "monitor_role": monitor_role,
             "target_role": target_role,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "issues_detected": len(issues) > 0,
             "issues": issues,
             "feedback": feedback
@@ -247,12 +268,12 @@ class SimulationLogger:
         with open(self.monitoring_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Monitoring action: {monitor_role} monitored {target_role}, issues: {len(issues)}")
+        self.logger.debug(f"Monitoring action: {monitor_role} monitored {target_role}, issues: {len(issues)} [deployment: {self.config.get('deployment', 'default')}]")
         
 
     def log_mental_model_update(self, agent_role, understanding, convergence):
         """
-        Log shared mental model updates and convergence metrics.
+        Log shared mental model updates and convergence metrics with deployment info.
         
         Args:
             agent_role: Role of the agent
@@ -262,6 +283,7 @@ class SimulationLogger:
         event = {
             "agent_role": agent_role,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "understanding": understanding,
             "convergence": convergence
         }
@@ -269,12 +291,12 @@ class SimulationLogger:
         with open(self.mental_model_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Mental model update from {agent_role}, convergence: {convergence:.2f}")
+        self.logger.debug(f"Mental model update from {agent_role}, convergence: {convergence:.2f} [deployment: {self.config.get('deployment', 'default')}]")
     
     
     def log_decision_output(self, method, result):
         """
-        Log decision method outputs.
+        Log decision method outputs with deployment info.
         
         Args:
             method: Decision method used (majority_voting, weighted_voting, borda_count)
@@ -283,6 +305,7 @@ class SimulationLogger:
         event = {
             "method": method,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "result": result
         }
         
@@ -292,18 +315,18 @@ class SimulationLogger:
         # For ranking tasks, log the top item
         if "final_ranking" in result:
             top_item = result["final_ranking"][0] if result["final_ranking"] else "None"
-            self.logger.info(f"Decision output: {method} - Top item: {top_item}")
+            self.logger.info(f"Decision output: {method} - Top item: {top_item} [deployment: {self.config.get('deployment', 'default')}]")
         # For MCQ tasks, log the selected option
         elif "winning_option" in result:
-            self.logger.info(f"Decision output: {method} - Selected: {result['winning_option']}")
+            self.logger.info(f"Decision output: {method} - Selected: {result['winning_option']} [deployment: {self.config.get('deployment', 'default')}]")
         # For other tasks
         else:
-            self.logger.info(f"Decision output: {method} - Result logged")
+            self.logger.info(f"Decision output: {method} - Result logged [deployment: {self.config.get('deployment', 'default')}]")
 
 
     def log_team_orientation_action(self, agent_role, action_type, details):
         """
-        Log team orientation actions.
+        Log team orientation actions with deployment info.
         
         Args:
             agent_role: Role of the agent
@@ -313,6 +336,7 @@ class SimulationLogger:
         event = {
             "agent_role": agent_role,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "action_type": action_type,
             "details": details
         }
@@ -320,11 +344,11 @@ class SimulationLogger:
         with open(self.team_orientation_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Team orientation action: {action_type} by {agent_role}")
+        self.logger.debug(f"Team orientation action: {action_type} by {agent_role} [deployment: {self.config.get('deployment', 'default')}]")
 
     def log_mutual_trust_event(self, from_role, to_role, event_type, trust_level, details):
         """
-        Log mutual trust events.
+        Log mutual trust events with deployment info.
         
         Args:
             from_role: Role of the agent giving trust
@@ -337,6 +361,7 @@ class SimulationLogger:
             "from_role": from_role,
             "to_role": to_role,
             "timestamp": datetime.now().isoformat(),
+            "deployment": self.config.get("deployment", "default"),
             "event_type": event_type,
             "trust_level": trust_level,
             "details": details
@@ -345,4 +370,31 @@ class SimulationLogger:
         with open(self.mutual_trust_file, 'a') as f:
             f.write(json.dumps(event) + '\n')
         
-        self.logger.info(f"Mutual trust event: {from_role} -> {to_role}, {event_type}, trust: {trust_level:.2f}")
+        self.logger.debug(f"Mutual trust event: {from_role} -> {to_role}, {event_type}, trust: {trust_level:.2f} [deployment: {self.config.get('deployment', 'default')}]")
+
+    def log_parallel_processing_info(self, question_index: int, total_questions: int, batch_info: Dict[str, Any] = None):
+        """
+        Log information about parallel processing progress.
+        
+        Args:
+            question_index: Current question index
+            total_questions: Total number of questions
+            batch_info: Information about the current batch
+        """
+        event = {
+            "event_type": "parallel_processing_progress",
+            "question_index": question_index,
+            "total_questions": total_questions,
+            "progress_percentage": (question_index + 1) / total_questions * 100,
+            "deployment": self.config.get("deployment", "default"),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+        if batch_info:
+            event["batch_info"] = batch_info
+        
+        self.log_event("parallel_processing_progress", event)
+        
+        # Log progress at INFO level for visibility
+        if (question_index + 1) % 10 == 0 or question_index == 0:  # Log every 10 questions or first question
+            self.logger.info(f"Progress: {question_index + 1}/{total_questions} questions ({event['progress_percentage']:.1f}%) [deployment: {self.config.get('deployment', 'default')}]")

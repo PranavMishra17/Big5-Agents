@@ -1,5 +1,5 @@
 """
-Dataset runner for the modular agent system.
+Dataset runner for the modular agent system with question-level parallel processing.
 Runs multiple questions from datasets through the agent system.
 """
 
@@ -13,12 +13,17 @@ from typing import Dict, Any, List, Optional, Tuple
 from datetime import datetime
 import time
 from tqdm import tqdm
+import concurrent.futures
+import threading
 
 from datasets import load_dataset
 from simulator import AgentSystemSimulator
 import config
 from utils.logger import SimulationLogger
 from components.agent_recruitment import determine_complexity, recruit_agents
+
+# Thread-local storage for progress tracking
+thread_local = threading.local()
 
 def setup_logging():
     """Set up logging for the dataset runner."""
@@ -347,7 +352,6 @@ def format_medqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any]
     
     return agent_task, eval_data
 
-
 def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Format MedMCQA question into agent task and evaluation data.
@@ -401,7 +405,6 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
     }
 
     return agent_task, eval_data
-
 
 def parse_cop_field(cop) -> str:
     """
@@ -461,7 +464,6 @@ def parse_cop_field(cop) -> str:
         except:
             return "A"  # Final fallback
 
-
 def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Format MMLU-Pro medical question into agent task and evaluation data.
@@ -510,8 +512,6 @@ def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str
 
     return agent_task, eval_data
 
-
-
 def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Format PubMedQA question into agent task and evaluation data.
@@ -556,8 +556,6 @@ def format_pubmedqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, A
 
     return agent_task, eval_data
 
-
-
 def detect_agent_disagreement(agent_responses):
     """Detect if agents disagree on answers"""
     answers = []
@@ -599,6 +597,9 @@ def extract_answer_option(content):
         r"answer is:?\s*([A-Da-d])",
         r"my answer:?\s*([A-Da-d])",
         r"option\s+([A-Da-d])",
+        r"choose\s+([A-Da-d])",
+        r"select\s+([A-Da-d])",
+        r"\*\*([A-Da-d])\.\*\*",
         r"^([A-Da-d])\.",
     ]
     
@@ -612,8 +613,6 @@ def extract_agent_responses_info(simulation_results):
     """Extract detailed agent response information"""
     agent_responses_info = {}
     agent_responses = simulation_results.get("agent_responses", {})
-
-
     
     for agent_role, response_data in agent_responses.items():
         info = {
@@ -645,6 +644,239 @@ def extract_agent_responses_info(simulation_results):
     
     return agent_responses_info
 
+def process_single_question(question_index: int, 
+                          question: Dict[str, Any],
+                          dataset_type: str,
+                          configuration: Dict[str, Any],
+                          deployment_config: Dict[str, str],
+                          run_output_dir: str,
+                          max_retries: int = 3) -> Dict[str, Any]:
+    """
+    Process a single question with the given configuration and deployment.
+    This function runs independently and in parallel with other questions.
+    
+    Args:
+        question_index: Index of the question in the dataset
+        question: Question data
+        dataset_type: Type of dataset (medqa, medmcqa, etc.)
+        configuration: Configuration dictionary with teamwork settings
+        deployment_config: Specific deployment configuration to use
+        run_output_dir: Output directory for results
+        max_retries: Maximum number of retries for failed questions
+        
+    Returns:
+        Dictionary with question results
+    """
+    # Set up thread-local storage for this question
+    thread_local.question_index = question_index
+    
+    question_result = {
+        "question_index": question_index,
+        "deployment_used": deployment_config['name'],
+        "question_metadata": {
+            "id": question.get("id", f"q_{question_index}"),
+            "subject": question.get("subject_name", ""),
+            "topic": question.get("topic_name", ""),
+            "original_choice_type": question.get("choice_type", "")
+        },
+        "recruitment_info": {
+            "complexity_selected": None,
+            "agents_recruited": [],
+            "recruitment_method": configuration.get("recruitment_method", "none"),
+            "recruitment_reasoning": ""
+        },
+        "agent_responses": {},
+        "disagreement_analysis": {},
+        "disagreement_flag": False
+    }
+    
+    simulator = None
+    performance = None
+    
+    try:
+        # Format the question for the task
+        if dataset_type == "medqa":
+            agent_task, eval_data = format_medqa_for_task(question)
+        elif dataset_type == "medmcqa":
+            agent_task, eval_data = format_medmcqa_for_task(question)
+        elif dataset_type == "pubmedqa":
+            agent_task, eval_data = format_pubmedqa_for_task(question)
+        elif dataset_type == "mmlupro-med":
+            agent_task, eval_data = format_mmlupro_med_for_task(question)
+        else:
+            raise ValueError(f"Unknown dataset type: {dataset_type}")
+        
+        # Store question details
+        question_result.update({
+            "question_text": agent_task["description"][:200] + "...",
+            "options": agent_task.get("options", []),
+            "ground_truth": eval_data.get("ground_truth", ""),
+            "task_type": eval_data.get("type", "")
+        })
+        
+        # Set global task and evaluation data
+        config.TASK = agent_task  # Agents get this (no GT)
+        config.TASK_EVALUATION = eval_data  # Evaluation gets this (with GT)
+        
+        # Try to run the simulation with retries
+        for attempt in range(max_retries):
+            try:
+                # Create unique simulation ID for this question
+                sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_{question_index}_{deployment_config['name']}"
+                
+                # Create simulator with configuration parameters and specific deployment
+                simulator = AgentSystemSimulator(
+                    simulation_id=sim_id,
+                    use_team_leadership=configuration.get("leadership", False),
+                    use_closed_loop_comm=configuration.get("closed_loop", False),
+                    use_mutual_monitoring=configuration.get("mutual_monitoring", False),
+                    use_shared_mental_model=configuration.get("shared_mental_model", False),
+                    use_team_orientation=configuration.get("team_orientation", False),
+                    use_mutual_trust=configuration.get("mutual_trust", False),
+                    use_recruitment=configuration.get("recruitment", False),
+                    recruitment_method=configuration.get("recruitment_method", "adaptive"),
+                    recruitment_pool=configuration.get("recruitment_pool", "general"),
+                    n_max=configuration.get("n_max", 5),
+                    deployment_config=deployment_config  # Specify which deployment to use
+                )
+
+                # Extract recruitment information after simulator creation
+                if hasattr(simulator, 'metadata') and 'complexity' in simulator.metadata:
+                    question_result["recruitment_info"]["complexity_selected"] = simulator.metadata['complexity']
+
+                if hasattr(simulator, 'agents') and simulator.agents:
+                    agents_info = []
+                    for role, agent in simulator.agents.items():
+                        agents_info.append({
+                            "role": role,
+                            "weight": getattr(agent, 'weight', 0.2),
+                            "deployment": agent.deployment_config['name']
+                        })
+                    question_result["recruitment_info"]["agents_recruited"] = agents_info
+                
+                # Run simulation
+                simulation_results = simulator.run_simulation()
+                performance = simulator.evaluate_performance()
+                
+                # Extract detailed agent responses
+                question_result["agent_responses"] = extract_agent_responses_info(simulation_results)
+
+                # Track mind changes if data is available
+                if "agent_analyses" in simulation_results and "agent_responses" in simulation_results:
+                    mind_changes = track_agent_mind_changes(
+                        simulation_results["agent_analyses"], 
+                        simulation_results["agent_responses"]
+                    )
+                    question_result["mind_change_analysis"] = mind_changes
+                
+                # Detect disagreement
+                disagreement_analysis = detect_agent_disagreement(simulation_results.get("agent_responses", {}))
+                question_result["disagreement_analysis"] = disagreement_analysis
+                
+                if disagreement_analysis.get("has_disagreement", False):
+                    question_result["disagreement_flag"] = True
+                
+                # Store decisions and performance
+                question_result["decisions"] = simulation_results["decision_results"]
+                question_result["performance"] = performance.get("task_performance", {})
+                
+                # Store all agent conversations
+                question_result["agent_conversations"] = simulation_results.get("exchanges", [])
+                
+                # Simulation succeeded, break the retry loop
+                break
+            
+            except Exception as e:
+                error_str = str(e)
+                import traceback
+                error_details = traceback.format_exc()
+                logging.error(f"Question {question_index} attempt {attempt+1} failed: {error_str}")
+                logging.error(f"Full error details: {error_details}")
+                
+                if attempt < max_retries - 1:
+                    if "content" in error_str.lower() and "filter" in error_str.lower():
+                        wait_time = min(5 * (attempt + 1), 30)
+                        logging.warning(f"Content filter triggered, retry {attempt+1} for question {question_index}")
+                    elif any(term in error_str.lower() for term in ["rate", "limit", "timeout", "capacity"]):
+                        wait_time = min(2 ** attempt + 1, 15)
+                        logging.warning(f"Rate limit hit, waiting {wait_time}s before retry {attempt+1}")
+                    elif any(term in error_str.lower() for term in ["connection", "timeout", "retry", "try again"]):
+                        wait_time = min(2 ** attempt + 1, 10)
+                        logging.warning(f"Connection error, retry {attempt+1} for question {question_index}")
+                    else:
+                        wait_time = 1
+                        logging.warning(f"Unknown error, retry {attempt+1} for question {question_index}")
+                    
+                    time.sleep(wait_time)
+                    continue
+                
+                # Last attempt failed, record error
+                question_result["error"] = f"API error: {error_str}"
+                logging.error(f"Failed after {max_retries} retries for question {question_index}: {error_str}")
+                break
+        
+        # Save individual question results
+        if run_output_dir:
+            try:
+                enhanced_output_data = {
+                    "question": agent_task["description"],
+                    "options": agent_task.get("options", []),
+                    "ground_truth": eval_data.get("ground_truth", ""),
+                    "metadata": eval_data.get("metadata", {}),
+                    "deployment_used": deployment_config['name'],
+                    "recruitment_info": question_result["recruitment_info"],
+                    "agent_responses": question_result["agent_responses"],
+                    "disagreement_analysis": question_result["disagreement_analysis"],
+                    "disagreement_flag": question_result["disagreement_flag"]
+                }
+                
+                if "decisions" in question_result:
+                    enhanced_output_data["decisions"] = question_result["decisions"]
+                if "performance" in question_result:
+                    enhanced_output_data["performance"] = question_result["performance"]
+                if "agent_conversations" in question_result:
+                    enhanced_output_data["agent_conversations"] = question_result["agent_conversations"]
+                if "error" in question_result:
+                    enhanced_output_data["error"] = question_result["error"]
+                
+                output_filename = f"question_{question_index}_{deployment_config['name']}_enhanced.json"
+                with open(os.path.join(run_output_dir, output_filename), 'w') as f:
+                    json.dump(enhanced_output_data, f, indent=2)
+                    
+            except Exception as e:
+                logging.error(f"Failed to save enhanced results for question {question_index}: {str(e)}")
+        
+    except Exception as e:
+        logging.error(f"Error processing question {question_index}: {str(e)}")
+        question_result["error"] = f"Processing error: {str(e)}"
+    
+    return question_result
+
+def track_agent_mind_changes(agent_analyses, agent_decisions):
+    """Track if agents changed their answers after seeing teammates"""
+    mind_changes = {}
+    
+    for agent_role in agent_analyses.keys():
+        # Extract initial answer
+        initial_extract = agent_analyses[agent_role].get("extract", {})
+        initial_answer = initial_extract.get("answer", "").upper() if initial_extract.get("answer") else ""
+        
+        # Extract final answer
+        final_extract = agent_decisions[agent_role].get("extract", {})
+        final_answer = final_extract.get("answer", "").upper() if final_extract.get("answer") else ""
+        
+        # Check if changed
+        changed = initial_answer != final_answer and initial_answer and final_answer
+        
+        mind_changes[agent_role] = {
+            "initial_answer": initial_answer,
+            "final_answer": final_answer, 
+            "changed_mind": changed,
+            "change_direction": f"{initial_answer} → {final_answer}" if changed else None
+        }
+    
+    return mind_changes
+
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],
     dataset_type: str,
@@ -654,21 +886,30 @@ def run_questions_with_configuration(
     n_max: int = 5
 ) -> Dict[str, Any]:
     """
-    Run questions with specific configuration, handling errors gracefully.
-    Enhanced with comprehensive logging and disagreement detection.
+    Run questions with specific configuration using parallel processing at question level.
+    Each question is assigned to a deployment in round-robin fashion.
+    
+    Args:
+        questions: List of questions to process
+        dataset_type: Type of dataset
+        configuration: Configuration dictionary
+        output_dir: Output directory
+        max_retries: Maximum retries per question
+        n_max: Maximum number of agents for intermediate teams
+        
+    Returns:
+        Dictionary with aggregated results
     """
     config_name = configuration.get("name", "unknown")
     logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
     
-    # Log deployment information
+    # Get all available deployments
     deployments = config.get_all_deployments()
-    if len(deployments) > 1:
-        deployment_names = [d['name'] for d in deployments]
-        logging.info(f"Using {len(deployments)} deployments for parallel processing: {deployment_names}")
-        logging.info(f"Parallel processing enabled: {config.ENABLE_PARALLEL_PROCESSING}")
-    else:
-        logging.info(f"Using single deployment: {deployments[0]['name']}")
+    num_deployments = len(deployments)
     
+    logging.info(f"Using {num_deployments} deployments for parallel question processing: {[d['name'] for d in deployments]}")
+    
+    # Reset complexity metrics
     from components import agent_recruitment
     agent_recruitment.reset_complexity_metrics()
 
@@ -688,7 +929,7 @@ def run_questions_with_configuration(
     if run_output_dir:
         os.makedirs(run_output_dir, exist_ok=True)
     
-    # Enhanced results structure
+    # Initialize results structure
     results = {
         "configuration": config_name,
         "dataset": dataset_type,
@@ -697,8 +938,8 @@ def run_questions_with_configuration(
         "configuration_details": configuration,
         "deployment_info": {
             "deployments_used": deployments,
-            "parallel_processing": config.ENABLE_PARALLEL_PROCESSING,
-            "max_workers": config.MAX_PARALLEL_WORKERS
+            "parallel_processing": "question_level",
+            "num_parallel_questions": num_deployments
         },
         "question_results": [],
         "errors": [],
@@ -713,304 +954,148 @@ def run_questions_with_configuration(
             "disagreement_patterns": {}
         },
         "complexity_distribution": {"basic": 0, "intermediate": 0, "advanced": 0},
-        "agent_recruitment_summary": {}
+        "deployment_usage": {d['name']: 0 for d in deployments}
     }
-    
-    disagreement_count = 0
     
     # Add summary for yes/no/maybe if PubMedQA
     if dataset_type == "pubmedqa":
         results["summary"]["yes_no_maybe_voting"] = {"correct": 0, "total": 0}
     
-    for i, question in enumerate(tqdm(questions, desc=f"{config_name}")):
-        question_result = {
-            "question_index": i,
-            "question_metadata": {
-                "id": question.get("id", f"q_{i}"),
-                "subject": question.get("subject_name", ""),
-                "topic": question.get("topic_name", ""),
-                "original_choice_type": question.get("choice_type", "")
-            },
-            "recruitment_info": {
-                "complexity_selected": None,
-                "agents_recruited": [],
-                "recruitment_method": configuration.get("recruitment_method", "none"),
-                "recruitment_reasoning": ""
-            },
-            "agent_responses": {},
-            "disagreement_analysis": {},
-            "disagreement_flag": False
-        }
-        
-        simulator = None
-        performance = None
-        
-        try:
-            # Format the question for the task
-            if dataset_type == "medqa":
-                agent_task, eval_data = format_medqa_for_task(question)
-            elif dataset_type == "medmcqa":
-                agent_task, eval_data = format_medmcqa_for_task(question)
-            elif dataset_type == "pubmedqa":
-                agent_task, eval_data = format_pubmedqa_for_task(question)
-            elif dataset_type == "mmlupro-med":
-                agent_task, eval_data = format_mmlupro_med_for_task(question)
-            else:
-                raise ValueError(f"Unknown dataset type: {dataset_type}")
-            
-            # Store question details
-            question_result.update({
-                "question_text": agent_task["description"][:200] + "...",
-                "options": agent_task.get("options", []),
-                "ground_truth": eval_data.get("ground_truth", ""),
-                "task_type": eval_data.get("type", "")
-            })
-            
-            config.TASK = agent_task  # Agents get this (no GT)
-            config.TASK_EVALUATION = eval_data  # Evaluation gets this (with GT)
-            
-            # Try to run the simulation with retries
-            for attempt in range(max_retries):
-                try:
-                    # Create simulator with configuration parameters
-                    simulator = AgentSystemSimulator(
-                        simulation_id=f"{dataset_type}_{config_name.lower().replace(' ', '_')}_{i}",
-                        use_team_leadership=configuration.get("leadership", False),
-                        use_closed_loop_comm=configuration.get("closed_loop", False),
-                        use_mutual_monitoring=configuration.get("mutual_monitoring", False),
-                        use_shared_mental_model=configuration.get("shared_mental_model", False),
-                        use_team_orientation=configuration.get("team_orientation", False),
-                        use_mutual_trust=configuration.get("mutual_trust", False),
-                        use_recruitment=configuration.get("recruitment", False),
-                        recruitment_method=configuration.get("recruitment_method", "adaptive"),
-                        recruitment_pool=configuration.get("recruitment_pool", "general"),
-                        n_max=configuration.get("n_max", n_max)
-                    )
-
-                    # In dataset_runner.py, after simulator creation:
-                    if hasattr(simulator, 'metadata') and 'complexity' in simulator.metadata:
-                        question_result["recruitment_info"]["complexity_selected"] = simulator.metadata['complexity']
-
-                    if hasattr(simulator, 'agents') and simulator.agents:
-                        agents_info = []
-                        for role, agent in simulator.agents.items():
-                            agents_info.append({
-                                "role": role,
-                                "weight": getattr(agent, 'weight', 0.2),
-                                "deployment": agent.deployment_config['name']
-                            })
-                        question_result["recruitment_info"]["agents_recruited"] = agents_info
-                    
-                    # Run simulation
-                    simulation_results = simulator.run_simulation()
-                    performance = simulator.evaluate_performance()
-                    
-                    # Extract recruitment information
-                    if hasattr(simulator, 'recruited_agents') and simulator.recruited_agents:
-                        recruited_agents_info = []
-                        for agent in simulator.recruited_agents:
-                            if isinstance(agent, dict):
-                                # Handle case where agent is already a dictionary
-                                agent_info = {
-                                    "role": agent.get("role", "Unknown"),
-                                    "expertise": agent.get("expertise", []),
-                                    "weight": agent.get("weight", 0.2),
-                                    "specialization": agent.get("specialization", ""),
-                                    "deployment": agent.get("deployment", "unknown")
-                                }
-                            else:
-                                # Handle case where agent is an object
-                                agent_info = {
-                                    "role": getattr(agent, 'role', 'Unknown'),
-                                    "expertise": getattr(agent, 'expertise', []),
-                                    "weight": getattr(agent, 'weight', 0.2),
-                                    "specialization": getattr(agent, 'specialization', ''),
-                                    "deployment": getattr(agent, 'deployment_config', {}).get('name', 'unknown')
-                                }
-                            recruited_agents_info.append(agent_info)
-                        
-                        question_result["recruitment_info"]["agents_recruited"] = recruited_agents_info
-                    
-                    # Extract complexity if available
-                    if hasattr(simulator, 'task_complexity'):
-                        complexity = simulator.task_complexity
-                        question_result["recruitment_info"]["complexity_selected"] = complexity
-                        question_result["recruitment_info"]["recruitment_reasoning"] = f"Selected {complexity} complexity"
-                        
-                        # Update complexity distribution
-                        if complexity in results["complexity_distribution"]:
-                            results["complexity_distribution"][complexity] += 1
-                    
-                    # Extract detailed agent responses
-                    question_result["agent_responses"] = extract_agent_responses_info(simulation_results)
-
-                    # ADD HERE: Track mind changes
-                    if hasattr(simulation_results, 'agent_analyses') and hasattr(simulation_results, 'agent_decisions'):
-                        mind_changes = track_agent_mind_changes(
-                            simulation_results.get('agent_analyses', {}), 
-                            simulation_results.get('agent_decisions', {})
-                        )
-                        
-                        change_count = sum(1 for change in mind_changes.values() if change["changed_mind"])
-                        question_result["mind_change_analysis"] = {
-                            "total_agents": len(mind_changes),
-                            "agents_who_changed": change_count,
-                            "change_rate": change_count / len(mind_changes) if mind_changes else 0,
-                            "individual_changes": mind_changes
-                        }
-
-                    # Detect disagreement (existing code continues here)
-                    disagreement_analysis = detect_agent_disagreement(simulation_results.get("agent_responses", {}))
-                    question_result["disagreement_analysis"] = disagreement_analysis
-
-                    # In dataset_runner.py, add mind change tracking:
-                    if "agent_analyses" in simulation_results and "agent_responses" in simulation_results:
-                        mind_changes = track_agent_mind_changes(
-                            simulation_results["agent_analyses"], 
-                            simulation_results["agent_responses"]
-                        )
-                        question_result["mind_change_analysis"] = mind_changes
-                    
-                    if disagreement_analysis.get("has_disagreement", False):
-                        disagreement_count += 1
-                        question_result["disagreement_flag"] = True
-                        
-                        # Track disagreement patterns
-                        pattern = disagreement_analysis["answer_distribution"]
-                        pattern_key = "-".join(sorted(pattern.keys()))
-                        if pattern_key:
-                            results["disagreement_summary"]["disagreement_patterns"][pattern_key] = \
-                                results["disagreement_summary"]["disagreement_patterns"].get(pattern_key, 0) + 1
-                    
-                    # Store decisions and performance
-                    question_result["decisions"] = simulation_results["decision_results"]
-                    question_result["performance"] = performance.get("task_performance", {})
-                    
-                    # Store all agent conversations
-                    question_result["agent_conversations"] = simulation_results.get("exchanges", [])
-                    
-                    if performance is not None:
-                        # Update summary statistics
-                        task_performance = performance.get("task_performance", {})
-                        
-                        # Handle different task types properly
-                        if dataset_type == "pubmedqa":
-                            for method in ["majority_voting", "weighted_voting", "borda_count"]:
-                                if method in task_performance:
-                                    method_perf = task_performance[method]
-                                    if "correct" in method_perf:
-                                        results["summary"][method]["total"] += 1
-                                        if method_perf["correct"]:
-                                            results["summary"][method]["correct"] += 1
-                            
-                            if "yes_no_maybe_voting" in task_performance:
-                                yes_no_perf = task_performance["yes_no_maybe_voting"]
-                                if "correct" in yes_no_perf:
-                                    results["summary"]["yes_no_maybe_voting"]["total"] += 1
-                                    if yes_no_perf["correct"]:
-                                        results["summary"]["yes_no_maybe_voting"]["correct"] += 1
-                        else:
-                            methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
-                            for method in methods_to_check:
-                                if method in task_performance:
-                                    method_perf = task_performance[method]
-                                    if "correct" in method_perf:
-                                        results["summary"][method]["total"] += 1
-                                        if method_perf["correct"]:
-                                            results["summary"][method]["correct"] += 1
-                    
-                    # Simulation succeeded, break the retry loop
-                    break
-                
-                except Exception as e:
-                    error_str = str(e)
-                    import traceback
-                    error_details = traceback.format_exc()
-                    logging.error(f"Full error details: {error_details}")
-                    
-                    if attempt < max_retries - 1:
-                        if "content" in error_str.lower() and "filter" in error_str.lower():
-                            wait_time = min(5 * (attempt + 1), 30)
-                            logging.warning(f"Content filter triggered, retry {attempt+1} for question {i}")
-                        elif any(term in error_str.lower() for term in ["rate", "limit", "timeout", "capacity"]):
-                            wait_time = min(2 ** attempt + 1, 15)
-                            logging.warning(f"Rate limit hit, waiting {wait_time}s before retry {attempt+1}")
-                        elif any(term in error_str.lower() for term in ["connection", "timeout", "retry", "try again"]):
-                            wait_time = min(2 ** attempt + 1, 10)
-                            logging.warning(f"Connection error, retry {attempt+1} for question {i}")
-                        else:
-                            wait_time = 1
-                            logging.warning(f"Unknown error, retry {attempt+1} for question {i}")
-                        
-                        time.sleep(wait_time)
-                        continue
-                    
-                    # Last attempt failed, record error
-                    question_result["error"] = f"API error: {error_str}"
-                    results["errors"].append({
-                        "question_index": i,
-                        "error_type": "api_error",
-                        "error": error_str
-                    })
-                    logging.error(f"Failed after {max_retries} retries for question {i}: {error_str}")
-                    break
-            
-            # Save individual question results with enhanced data
-            if run_output_dir:
-                try:
-                    enhanced_output_data = {
-                        "question": agent_task["description"],
-                        "options": agent_task.get("options", []),
-                        "ground_truth": eval_data.get("ground_truth", ""),
-                        "metadata": eval_data.get("metadata", {}),
-                        "recruitment_info": question_result["recruitment_info"],
-                        "agent_responses": question_result["agent_responses"],
-                        "disagreement_analysis": question_result["disagreement_analysis"],
-                        "disagreement_flag": question_result["disagreement_flag"]
-                    }
-                    
-                    if "decisions" in question_result:
-                        enhanced_output_data["decisions"] = question_result["decisions"]
-                    if "performance" in question_result:
-                        enhanced_output_data["performance"] = question_result["performance"]
-                    if "agent_conversations" in question_result:
-                        enhanced_output_data["agent_conversations"] = question_result["agent_conversations"]
-                    if "error" in question_result:
-                        enhanced_output_data["error"] = question_result["error"]
-                    
-                    with open(os.path.join(run_output_dir, f"question_{i}_enhanced.json"), 'w') as f:
-                        json.dump(enhanced_output_data, f, indent=2)
-                except Exception as e:
-                    logging.error(f"Failed to save enhanced results for question {i}: {str(e)}")
-            
-        except Exception as e:
-            logging.error(f"Error processing question {i}: {str(e)}")
-            question_result["error"] = f"Processing error: {str(e)}"
-            results["errors"].append({
-                "question_index": i,
-                "error_type": "processing",
-                "error": str(e)
-            })
-        
-        # Always add the question result, even if it has errors
-        results["question_results"].append(question_result)
+    # Process questions in parallel batches
+    batch_size = num_deployments
+    num_batches = (len(questions) + batch_size - 1) // batch_size
     
-    # Calculate final disagreement statistics
+    with tqdm(total=len(questions), desc=f"{config_name}") as pbar:
+        for batch_idx in range(num_batches):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, len(questions))
+            batch_questions = questions[batch_start:batch_end]
+            
+            # Prepare futures for this batch
+            future_to_info = {}
+            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(batch_questions), num_deployments)) as executor:
+                # Submit each question in the batch to a different deployment
+                for i, question in enumerate(batch_questions):
+                    question_index = batch_start + i
+                    deployment_index = i % num_deployments  # Round-robin assignment
+                    deployment_config = deployments[deployment_index]
+                    
+                    # Track deployment usage
+                    results["deployment_usage"][deployment_config['name']] += 1
+                    
+                    # Submit the question processing
+                    future = executor.submit(
+                        process_single_question,
+                        question_index,
+                        question,
+                        dataset_type,
+                        configuration,
+                        deployment_config,
+                        run_output_dir,
+                        max_retries
+                    )
+                    
+                    future_to_info[future] = {
+                        "question_index": question_index,
+                        "deployment": deployment_config['name']
+                    }
+                
+                # Collect results as they complete
+                for future in concurrent.futures.as_completed(future_to_info):
+                    info = future_to_info[future]
+                    try:
+                        question_result = future.result()
+                        results["question_results"].append(question_result)
+                        
+                        # Update progress
+                        pbar.update(1)
+                        pbar.set_postfix({
+                            'deployment': info['deployment'],
+                            'processed': len(results["question_results"]),
+                            'errors': len(results["errors"])
+                        })
+                        
+                        # Update summary statistics if no error
+                        if "error" not in question_result and "performance" in question_result:
+                            task_performance = question_result["performance"]
+                            
+                            # Handle different task types properly
+                            if dataset_type == "pubmedqa":
+                                for method in ["majority_voting", "weighted_voting", "borda_count"]:
+                                    if method in task_performance:
+                                        method_perf = task_performance[method]
+                                        if "correct" in method_perf:
+                                            results["summary"][method]["total"] += 1
+                                            if method_perf["correct"]:
+                                                results["summary"][method]["correct"] += 1
+                                
+                                if "yes_no_maybe_voting" in task_performance:
+                                    yes_no_perf = task_performance["yes_no_maybe_voting"]
+                                    if "correct" in yes_no_perf:
+                                        results["summary"]["yes_no_maybe_voting"]["total"] += 1
+                                        if yes_no_perf["correct"]:
+                                            results["summary"]["yes_no_maybe_voting"]["correct"] += 1
+                            else:
+                                methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
+                                for method in methods_to_check:
+                                    if method in task_performance:
+                                        method_perf = task_performance[method]
+                                        if "correct" in method_perf:
+                                            results["summary"][method]["total"] += 1
+                                            if method_perf["correct"]:
+                                                results["summary"][method]["correct"] += 1
+                        
+                        # Track disagreements
+                        if question_result.get("disagreement_flag", False):
+                            results["disagreement_summary"]["total_disagreements"] += 1
+                            
+                            # Track disagreement patterns
+                            disagreement_analysis = question_result.get("disagreement_analysis", {})
+                            pattern = disagreement_analysis.get("answer_distribution", {})
+                            pattern_key = "-".join(sorted(pattern.keys()))
+                            if pattern_key:
+                                results["disagreement_summary"]["disagreement_patterns"][pattern_key] = \
+                                    results["disagreement_summary"]["disagreement_patterns"].get(pattern_key, 0) + 1
+                        
+                        # Track complexity
+                        complexity = question_result.get("recruitment_info", {}).get("complexity_selected")
+                        if complexity and complexity in results["complexity_distribution"]:
+                            results["complexity_distribution"][complexity] += 1
+                        
+                    except Exception as e:
+                        logging.error(f"Error processing question {info['question_index']}: {str(e)}")
+                        results["errors"].append({
+                            "question_index": info['question_index'],
+                            "deployment": info['deployment'],
+                            "error_type": "processing_error",
+                            "error": str(e)
+                        })
+                        pbar.update(1)
+    
+    # Calculate final statistics
     total_processed = len([q for q in results["question_results"] if "error" not in q])
-    results["disagreement_summary"]["total_disagreements"] = disagreement_count
-    results["disagreement_summary"]["disagreement_rate"] = disagreement_count / total_processed if total_processed > 0 else 0
+    results["disagreement_summary"]["disagreement_rate"] = (
+        results["disagreement_summary"]["total_disagreements"] / total_processed 
+        if total_processed > 0 else 0
+    )
     
     # Calculate accuracy for each method
     for method in results["summary"].keys():
         method_summary = results["summary"][method]
-        method_summary["accuracy"] = method_summary["correct"] / method_summary["total"] if method_summary["total"] > 0 else 0.0
+        method_summary["accuracy"] = (
+            method_summary["correct"] / method_summary["total"] 
+            if method_summary["total"] > 0 else 0.0
+        )
 
-    # ADD HERE: Calculate mind change summary
-    total_mind_changes = sum(q.get("mind_change_analysis", {}).get("agents_who_changed", 0) 
-                            for q in results["question_results"])
+    # Calculate mind change summary
+    total_mind_changes = sum(
+        q.get("mind_change_analysis", {}).get("agents_who_changed", 0) 
+        for q in results["question_results"]
+    )
     results["disagreement_summary"]["mind_change_summary"] = {
         "total_mind_changes": total_mind_changes,
-        "average_change_rate": total_mind_changes / (total_processed * 5) if total_processed > 0 else 0  # assuming 5 agents
+        "average_change_rate": total_mind_changes / (total_processed * 5) if total_processed > 0 else 0
     }
 
     # Add complexity metrics
@@ -1038,6 +1123,9 @@ def run_questions_with_configuration(
             
             with open(os.path.join(run_output_dir, "disagreement_analysis.json"), 'w') as f:
                 json.dump(results["disagreement_summary"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "deployment_usage.json"), 'w') as f:
+                json.dump(results["deployment_usage"], f, indent=2)
                 
             # Save comprehensive detailed results
             with open(os.path.join(run_output_dir, "detailed_results_enhanced.json"), 'w') as f:
@@ -1054,45 +1142,16 @@ def run_questions_with_configuration(
     if results["errors"]:
         print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
     
-    print(f"  Disagreements: {disagreement_count}/{total_processed} questions ({results['disagreement_summary']['disagreement_rate']:.2%})")
+    print(f"  Disagreements: {results['disagreement_summary']['total_disagreements']}/{total_processed} questions ({results['disagreement_summary']['disagreement_rate']:.2%})")
     
     # Print complexity distribution
     if any(results["complexity_distribution"].values()):
         print(f"  Complexity Distribution: {dict(results['complexity_distribution'])}")
     
     # Print deployment usage
-    if len(deployments) > 1:
-        print(f"  Deployments Used: {[d['name'] for d in deployments]}")
-        print(f"  Parallel Processing: {config.ENABLE_PARALLEL_PROCESSING}")
+    print(f"  Deployment Usage: {dict(results['deployment_usage'])}")
         
     return results
-
-
-def track_agent_mind_changes(agent_analyses, agent_decisions):
-    """Track if agents changed their answers after seeing teammates"""
-    mind_changes = {}
-    
-    for agent_role in agent_analyses.keys():
-        # Extract initial answer
-        initial_extract = agent_analyses[agent_role].get("extract", {})
-        initial_answer = initial_extract.get("answer", "").upper() if initial_extract.get("answer") else ""
-        
-        # Extract final answer
-        final_extract = agent_decisions[agent_role].get("extract", {})
-        final_answer = final_extract.get("answer", "").upper() if final_extract.get("answer") else ""
-        
-        # Check if changed
-        changed = initial_answer != final_answer and initial_answer and final_answer
-        
-        mind_changes[agent_role] = {
-            "initial_answer": initial_answer,
-            "final_answer": final_answer, 
-            "changed_mind": changed,
-            "change_direction": f"{initial_answer} → {final_answer}" if changed else None
-        }
-    
-    return mind_changes
-
 
 def create_comprehensive_combined_results(all_results, dataset_type, output_dir):
     """Create comprehensive combined results with all enhanced data"""
@@ -1136,7 +1195,8 @@ def create_comprehensive_combined_results(all_results, dataset_type, output_dir)
             "disagreement_rate": result.get("disagreement_summary", {}).get("disagreement_rate", 0),
             "total_errors": len(result.get("errors", [])),
             "complexity_distribution": analyze_complexity_distribution(result),
-            "agent_patterns": analyze_agent_patterns(result)
+            "agent_patterns": analyze_agent_patterns(result),
+            "deployment_usage": result.get("deployment_usage", {})
         }
         
         # Cross-analysis data
@@ -1243,7 +1303,7 @@ def run_dataset(
     n_max: int = 5
 ) -> Dict[str, Any]:
     """
-    Run a dataset through the agent system.
+    Run a dataset through the agent system with question-level parallel processing.
     
     Args:
         dataset_type: Type of dataset ("medqa", "medmcqa", "pubmedqa", "mmlupro-med")
@@ -1296,6 +1356,11 @@ def run_dataset(
         os.makedirs(run_output_dir, exist_ok=True)
     else:
         run_output_dir = None
+    
+    # Log deployment configuration
+    available_deployments = config.get_all_deployments()
+    logging.info(f"Available deployments: {[d['name'] for d in available_deployments]}")
+    logging.info(f"Questions will be distributed across {len(available_deployments)} deployments in round-robin fashion")
     
     # Define configurations to test
     if run_all_configs:
@@ -1466,33 +1531,33 @@ def run_dataset(
     
     # Run each configuration
     all_results = []
-    for config in configurations:
+    for config_dict in configurations:
         # Ensure each config has proper n_max value
-        if "n_max" not in config:
-            config["n_max"] = n_max
+        if "n_max" not in config_dict:
+            config_dict["n_max"] = n_max
         
         # Special handling for Baseline - always use basic recruitment with 1 agent
-        if config["name"] == "Baseline":
-            config["recruitment"] = True
-            config["recruitment_method"] = "basic"
-            config["n_max"] = 1
+        if config_dict["name"] == "Baseline":
+            config_dict["recruitment"] = True
+            config_dict["recruitment_method"] = "basic"
+            config_dict["n_max"] = 1
         
         # Add recruitment settings to all configs if recruitment is enabled
-        if config["recruitment"]:
-            config["recruitment_method"] = config.get("recruitment_method", recruitment_method)
-            config["recruitment_pool"] = config.get("recruitment_pool", recruitment_pool)
+        if config_dict["recruitment"]:
+            config_dict["recruitment_method"] = config_dict.get("recruitment_method", recruitment_method)
+            config_dict["recruitment_pool"] = config_dict.get("recruitment_pool", recruitment_pool)
         
         # Log current configuration with description if available
-        description = config.get("description", "")
+        description = config_dict.get("description", "")
         desc_str = f" - {description}" if description else ""
-        logging.info(f"Running configuration: {config['name']}{desc_str}, recruitment={config['recruitment']}, method={config['recruitment_method']}, n_max={config['n_max']}")
+        logging.info(f"Running configuration: {config_dict['name']}{desc_str}, recruitment={config_dict['recruitment']}, method={config_dict['recruitment_method']}, n_max={config_dict['n_max']}")
         
         result = run_questions_with_configuration(
             questions,
             dataset_type,
-            config,
+            config_dict,
             run_output_dir,
-            n_max=config.get("n_max", n_max)
+            n_max=config_dict.get("n_max", n_max)
         )
         all_results.append(result)
     
@@ -1502,6 +1567,8 @@ def run_dataset(
         "num_questions": num_questions,
         "random_seed": random_seed,
         "timestamp": datetime.now().isoformat(),
+        "parallel_processing": "question_level",
+        "deployments_used": [d['name'] for d in available_deployments],
         "configurations": [r["configuration"] for r in all_results],
         "summaries": {r["configuration"]: r["summary"] for r in all_results}
     }
@@ -1510,6 +1577,9 @@ def run_dataset(
     if run_output_dir:
         with open(os.path.join(run_output_dir, "combined_results.json"), 'w') as f:
             json.dump(combined_results, f, indent=2)
+        
+        # Also create comprehensive combined results
+        create_comprehensive_combined_results(all_results, dataset_type, run_output_dir)
     
     return combined_results
 
@@ -1566,10 +1636,7 @@ def main():
     # Log deployment configuration
     deployments = config.get_all_deployments()
     logging.info(f"Available deployments: {[d['name'] for d in deployments]}")
-    if len(deployments) > 1:
-        logging.info(f"Multi-deployment parallel processing enabled")
-    else:
-        logging.info(f"Single deployment mode")
+    logging.info(f"Question-level parallel processing will be used with {len(deployments)} deployments")
 
     # If n_max is specified, automatically set recruitment method to intermediate
     if args.n_max is not None:
@@ -1604,25 +1671,12 @@ def main():
             if "accuracy" in stats:
                 print(f"  {method.replace('_', ' ').title()}: {stats['accuracy']:.2%} accuracy")
 
-    # Print complexity metrics just once
-    if "complexity_metrics" in results:
-        print("\nComplexity Distribution:")
-        for level in ["basic", "intermediate", "advanced"]:
-            count = results["complexity_metrics"]["counts"].get(level, 0)
-            correct = results["complexity_metrics"]["correct"].get(level, 0)
-            accuracy = correct / count if count > 0 else 0.0
-            print(f"  {level.title()}: {correct}/{count} correct ({accuracy:.2%})")
+    # Print deployment information
+    deployments = config.get_all_deployments()
+    print(f"\nDeployment Information:")
+    print(f"  Total deployments used: {len(deployments)}")
+    print(f"  Deployment names: {[d['name'] for d in deployments]}")
+    print(f"  Processing method: Question-level parallel (each question assigned to a deployment)")
 
 if __name__ == "__main__":
     main()
-
-
-# Example usage:
-# Run 50 random MedMCQA questions with all teamwork components
-# python dataset_runner.py --dataset medmcqa --num-questions 50 --leadership --closedloop --mutual --mental
-
-# Run all configurations on PubMedQA
-# python dataset_runner.py --dataset pubmedqa --num-questions 25 --all
-
-# Run with recruitment on MedMCQA
-# python dataset_runner.py --dataset medmcqa --output-dir ./medmcqa_results --seed 123 --recruitment --recruitment-method adaptive --recruitment-pool medical

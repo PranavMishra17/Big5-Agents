@@ -1,5 +1,6 @@
 """
 Configuration settings for the modular agent system.
+Updated to support question-level parallel processing.
 """
 import os
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ load_dotenv()
 AZURE_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
 
-# Multiple deployment configuration for parallel processing
+# Multiple deployment configuration for question-level parallel processing
 AZURE_DEPLOYMENTS = [
     {
         "name": "deployment_1",
@@ -28,26 +29,37 @@ AZURE_DEPLOYMENTS = [
         "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
         "api_version": "2025-01-01-preview"
     },
-        {
+    {
         "name": "deployment_3", 
         "deployment": os.environ.get('AZURE_DEPLOYMENT_3', "VARELab-GPT4o-3"),
         "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
         "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
         "api_version": "2025-01-01-preview"
-        },
-        {
+    },
+    {
         "name": "deployment_4", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_3', "VARELab-GPT4o-4"),
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-4"),
         "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
         "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
         "api_version": "2025-01-01-preview"
     }
 ]
 
-# Fallback to single deployment if second deployment not configured
-if not AZURE_DEPLOYMENTS[1]["deployment"] or not AZURE_DEPLOYMENTS[1]["api_key"] or not AZURE_DEPLOYMENTS[1]["endpoint"]:
-    AZURE_DEPLOYMENTS = [AZURE_DEPLOYMENTS[0]]  # Use only first deployment
-    print("Warning: Second deployment not configured, using single deployment mode")
+# Fallback to single deployment if additional deployments not configured
+available_deployments = []
+for deployment in AZURE_DEPLOYMENTS:
+    if deployment["deployment"] and deployment["api_key"] and deployment["endpoint"]:
+        available_deployments.append(deployment)
+    else:
+        print(f"Warning: Deployment {deployment['name']} not properly configured, skipping")
+
+if not available_deployments:
+    print("Error: No deployments are properly configured!")
+    AZURE_DEPLOYMENTS = [AZURE_DEPLOYMENTS[0]]  # Use first as fallback
+else:
+    AZURE_DEPLOYMENTS = available_deployments
+
+print(f"Configured {len(AZURE_DEPLOYMENTS)} deployment(s): {[d['name'] for d in AZURE_DEPLOYMENTS]}")
 
 # Legacy single deployment support (for backward compatibility)
 AZURE_DEPLOYMENT = AZURE_DEPLOYMENTS[0]["deployment"]
@@ -181,6 +193,7 @@ TASK = {
         "B": "Anti-LGI1 (leucine-rich glioma-inactivated 1) antibodies are strongly associated with limbic encephalitis presenting with subacute memory deficits, confusion, and behavioral changes. The bilateral medial temporal lobe hyperintensities on MRI, mild CSF pleocytosis, and temporal EEG abnormalities are classic findings. While anti-NMDA receptor encephalitis typically presents with more psychiatric symptoms and dyskinesias, anti-GABA-B receptor encephalitis often presents with seizures as the predominant feature, and anti-AMPA receptor encephalitis is less common and often associated with underlying malignancies."
     }
 }
+
 # Add after existing TASK definition
 TASK_EVALUATION = None  # Stores GT and evaluation data separately from agents
 
@@ -270,13 +283,20 @@ MUTUAL_TRUST_FACTOR = 0.9  # Default trust level (0.0-1.0)
 
 USE_AGENT_RECRUITMENT = False  # Default disabled
 
-# Parallel processing settings
-ENABLE_PARALLEL_PROCESSING = len(AZURE_DEPLOYMENTS) > 1
-MAX_PARALLEL_WORKERS = len(AZURE_DEPLOYMENTS)
+# Parallel processing settings - Updated for question-level parallelism
+ENABLE_QUESTION_PARALLEL = len(AZURE_DEPLOYMENTS) > 1  # Enable question-level parallel processing
+MAX_PARALLEL_QUESTIONS = len(AZURE_DEPLOYMENTS)  # Maximum questions to process in parallel
+
+# Legacy parallel processing settings (deprecated but kept for compatibility)
+ENABLE_PARALLEL_PROCESSING = False  # Agent-level parallelism is now disabled
+MAX_PARALLEL_WORKERS = 1  # Always use sequential agent processing
 
 def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
     """
     Get deployment configuration for agent based on round-robin distribution.
+    
+    NOTE: This function is now used less frequently due to the switch to 
+    question-level parallel processing, but kept for compatibility.
     
     Args:
         agent_index: Index of the agent (0-based)
@@ -287,6 +307,53 @@ def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
     deployment_index = agent_index % len(AZURE_DEPLOYMENTS)
     return AZURE_DEPLOYMENTS[deployment_index]
 
+def get_deployment_for_question(question_index: int) -> Dict[str, str]:
+    """
+    Get deployment configuration for question based on round-robin distribution.
+    
+    This is the primary method for assigning deployments in question-level parallelism.
+    
+    Args:
+        question_index: Index of the question (0-based)
+        
+    Returns:
+        Deployment configuration dictionary
+    """
+    deployment_index = question_index % len(AZURE_DEPLOYMENTS)
+    return AZURE_DEPLOYMENTS[deployment_index]
+
 def get_all_deployments() -> List[Dict[str, str]]:
     """Get all available deployment configurations."""
     return AZURE_DEPLOYMENTS.copy()
+
+def get_parallel_processing_info() -> Dict[str, Any]:
+    """
+    Get information about the current parallel processing configuration.
+    
+    Returns:
+        Dictionary with parallel processing details
+    """
+    return {
+        "question_level_parallel": ENABLE_QUESTION_PARALLEL,
+        "max_parallel_questions": MAX_PARALLEL_QUESTIONS,
+        "num_deployments": len(AZURE_DEPLOYMENTS),
+        "deployment_names": [d['name'] for d in AZURE_DEPLOYMENTS],
+        "agent_level_parallel": ENABLE_PARALLEL_PROCESSING,  # Should be False
+        "processing_mode": "question_level" if ENABLE_QUESTION_PARALLEL else "sequential"
+    }
+
+# Print configuration info on import
+if __name__ == "__main__":
+    print("\n=== Agent System Configuration ===")
+    parallel_info = get_parallel_processing_info()
+    print(f"Processing Mode: {parallel_info['processing_mode']}")
+    print(f"Available Deployments: {parallel_info['num_deployments']}")
+    print(f"Deployment Names: {parallel_info['deployment_names']}")
+    
+    if parallel_info['question_level_parallel']:
+        print(f"Max Parallel Questions: {parallel_info['max_parallel_questions']}")
+        print("Note: Questions will be distributed across deployments in round-robin fashion")
+    else:
+        print("Sequential processing mode (single deployment)")
+    
+    print("=====================================\n")

@@ -1,5 +1,6 @@
 """
 Main entry point for agent system with modular teamwork components.
+Updated to work with the new question-level parallel processing approach.
 """
 
 import argparse
@@ -44,7 +45,8 @@ def run_simulation(
     recruitment_method: str = None,
     recruitment_pool: str = None,
     n_max: int = 5,
-    runs= 1
+    runs= 1,
+    deployment_config: Dict[str, str] = None
 ) -> Dict[str, Any]:
     """
     Run a single agent system simulation with selected teamwork components.
@@ -62,6 +64,7 @@ def run_simulation(
         recruitment_method: Method for recruitment
         recruitment_pool: Pool of agent roles to recruit from
         runs: Number of simulation runs
+        deployment_config: Optional specific deployment configuration
         
     Returns:
         Simulation results
@@ -82,7 +85,8 @@ def run_simulation(
             use_recruitment=use_recruitment,
             recruitment_method=recruitment_method,
             recruitment_pool=recruitment_pool,
-            n_max=n_max
+            n_max=n_max,
+            deployment_config=deployment_config
         )
         
         # Run the simulation
@@ -114,7 +118,7 @@ def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     aggregated = copy.deepcopy(results_list[0])
     
     # Update simulation ID to indicate aggregation
-    aggregated["simulation_id"] = f"{aggregated['simulation_id']}_aggregated_{len(results_list)}_runs"
+    aggregated["simulation_metadata"]["simulation_id"] = f"{aggregated['simulation_metadata']['simulation_id']}_aggregated_{len(results_list)}_runs"
     
     # Initialize aggregation containers
     aggregated["decision_results"]["aggregated"] = {
@@ -135,7 +139,7 @@ def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     for result in results_list:
         # Add run info
         run_summary = {
-            "simulation_id": result["simulation_id"],
+            "simulation_id": result["simulation_metadata"]["simulation_id"],
             "decision_results": result["decision_results"]
         }
         aggregated["all_runs"].append(run_summary)
@@ -148,24 +152,6 @@ def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
             if result["decision_results"].get(method) and result["decision_results"][method].get("confidence"):
                 aggregated["decision_results"]["aggregated"][method]["avg_confidence"] += \
                     result["decision_results"][method]["confidence"]
-        
-        # Aggregate teamwork metrics
-        if "teamwork_metrics" in result:
-            # Trust metrics
-            if "mutual_trust" in result["teamwork_metrics"]:
-                if "average_trust_level" in result["teamwork_metrics"]["mutual_trust"]:
-                    total_trust_level += result["teamwork_metrics"]["mutual_trust"]["average_trust_level"]
-                    trust_count += 1
-                    
-            # Team orientation metrics
-            if "team_orientation" in result["teamwork_metrics"]:
-                if "overall_team_orientation" in result["teamwork_metrics"]["team_orientation"]:
-                    orientation = result["teamwork_metrics"]["team_orientation"]["overall_team_orientation"]
-                    if orientation == "high":
-                        total_team_orientation_score += 1.0
-                    elif orientation == "medium":
-                        total_team_orientation_score += 0.5
-                    orientation_count += 1
     
     # Calculate averages
     for method in ["majority_voting", "weighted_voting", "borda_count"]:
@@ -174,28 +160,24 @@ def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
             aggregated["decision_results"]["aggregated"][method]["accuracy"] = \
                 aggregated["decision_results"]["aggregated"][method]["correct_count"] / len(results_list)
     
-    # Calculate average teamwork metrics
-    if "teamwork_metrics" not in aggregated:
-        aggregated["teamwork_metrics"] = {}
-    
-    aggregated["teamwork_metrics"]["aggregated"] = {
-        "average_trust_level": total_trust_level / max(1, trust_count),
-        "average_team_orientation": total_team_orientation_score / max(1, orientation_count)
-    }
-    
     return aggregated
 
 
-def run_all_configurations(runs=1):
+def run_all_configurations(runs=1, n_max=5):
     """
     Run simulations with individual and all feature combinations.
     
     Args:
         runs: Number of runs per configuration
+        n_max: Maximum number of agents for intermediate teams
         
     Returns:
         Dictionary with results for each configuration
     """
+    # Get available deployments for single-question runs
+    deployments = config.get_all_deployments()
+    default_deployment = deployments[0] if deployments else None
+    
     # Define configurations to test
     configurations = [
         # No teamwork components, no recruitment
@@ -231,7 +213,8 @@ def run_all_configurations(runs=1):
             "team_orientation": False,
             "mutual_trust": False,
             "recruitment": True,
-            #"recruitment_method": "intermediate" if n_max is not None else "adaptive"
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "Closed-loop", 
@@ -240,7 +223,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": False,
             "shared_mental_model": False,
             "team_orientation": False,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "Mutual Monitoring", 
@@ -249,7 +235,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": True,
             "shared_mental_model": False,
             "team_orientation": False,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "Shared Mental Model", 
@@ -258,7 +247,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": False,
             "shared_mental_model": True,
             "team_orientation": False,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         # New single features
         {
@@ -268,7 +260,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": False,
             "shared_mental_model": False,
             "team_orientation": True,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "Mutual Trust", 
@@ -278,7 +273,10 @@ def run_all_configurations(runs=1):
             "shared_mental_model": False,
             "team_orientation": False,
             "mutual_trust": True,
-            "mutual_trust_factor": 0.8
+            "mutual_trust_factor": 0.8,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "High Trust", 
@@ -288,7 +286,10 @@ def run_all_configurations(runs=1):
             "shared_mental_model": False,
             "team_orientation": False,
             "mutual_trust": True,
-            "mutual_trust_factor": 0.9
+            "mutual_trust_factor": 0.9,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "Low Trust", 
@@ -298,7 +299,10 @@ def run_all_configurations(runs=1):
             "shared_mental_model": False,
             "team_orientation": False,
             "mutual_trust": True,
-            "mutual_trust_factor": 0.3
+            "mutual_trust_factor": 0.3,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         # Combination features
         {
@@ -308,7 +312,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": False,
             "shared_mental_model": False,
             "team_orientation": True,
-            "mutual_trust": True
+            "mutual_trust": True,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         # All features
         {
@@ -318,7 +325,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": True,
             "shared_mental_model": True,
             "team_orientation": False,
-            "mutual_trust": False
+            "mutual_trust": False,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         },
         {
             "name": "All Features", 
@@ -327,7 +337,10 @@ def run_all_configurations(runs=1):
             "mutual_monitoring": True,
             "shared_mental_model": True,
             "team_orientation": True,
-            "mutual_trust": True
+            "mutual_trust": True,
+            "recruitment": True,
+            "recruitment_method": "intermediate",
+            "n_max": n_max
         }
     ]
     
@@ -360,7 +373,12 @@ def run_all_configurations(runs=1):
                 use_shared_mental_model=config["shared_mental_model"],
                 use_team_orientation=config.get("team_orientation", False),
                 use_mutual_trust=config.get("mutual_trust", False),
-                mutual_trust_factor=config.get("mutual_trust_factor", 0.8)
+                mutual_trust_factor=config.get("mutual_trust_factor", 0.8),
+                use_recruitment=config.get("recruitment", False),
+                recruitment_method=config.get("recruitment_method", "adaptive"),
+                recruitment_pool=config.get("recruitment_pool", "general"),
+                n_max=config.get("n_max", n_max),
+                deployment_config=default_deployment
             )
             
             # Extract decision results for each method
@@ -397,6 +415,8 @@ def run_all_configurations(runs=1):
             "task": config.TASK.get("name", "Unnamed Task"),
             "task_type": config.TASK.get("type", "unknown"),
             "runs_per_configuration": runs,
+            "n_max": n_max,
+            "deployment_used": default_deployment['name'] if default_deployment else "default",
             "configurations": configurations,
             "aggregated_results": aggregated_results,
             "performance_metrics": performance_metrics
@@ -413,8 +433,7 @@ def run_all_configurations(runs=1):
     return aggregated_results
 
 
-
-def calculate_ranking_performance(aggregated_results):
+def calculate_ranking_performance(aggregated_results, eval_data):
     """Calculate performance metrics for ranking tasks across methods and configurations."""
     performance_metrics = {
         "average_correlation": {},
@@ -444,7 +463,7 @@ def calculate_ranking_performance(aggregated_results):
     
     return performance_metrics
 
-def calculate_mcq_performance(aggregated_results):
+def calculate_mcq_performance(aggregated_results, eval_data):
     """Calculate performance metrics for MCQ tasks across methods and configurations."""
     performance_metrics = {
         "accuracy": {},
@@ -554,6 +573,11 @@ def main():
     # Set up logging
     setup_logging()
     
+    # Log deployment configuration
+    deployments = config.get_all_deployments()
+    logging.info(f"Available deployments: {[d['name'] for d in deployments]}")
+    logging.info(f"Single-question simulation will use first deployment: {deployments[0]['name'] if deployments else 'default'}")
+    
     # Display task information
     print(f"\nTask: {config.TASK['name']}")
     print(f"Type: {config.TASK['type']}")
@@ -564,18 +588,21 @@ def main():
         args.recruitment_method = "intermediate"
     
     if args.all:
-        logging.info(f"Running all feature combinations with {args.runs} runs per configuration")
-        run_all_configurations(runs=args.runs, n_max=args.n_max if args.n_max is not None else 5)
+        logging.info(f"Running all feature combinations with {args.runs} runs per configuration, n_max={args.n_max}")
+        run_all_configurations(runs=args.runs, n_max=args.n_max)
     else:
         logging.info("Running single simulation")
         
-        # Default to all components if none specified
         # Default to all components if none specified
         use_any = args.leadership or args.closedloop or args.mutual or args.mental or args.orientation or args.trust
         
         # If recruitment method is specified, enable recruitment automatically
         if args.recruitment_method != "adaptive":
             args.recruitment = True
+        
+        # Get deployment for single simulation
+        deployments = config.get_all_deployments()
+        deployment_config = deployments[0] if deployments else None
         
         result = run_simulation(
             use_team_leadership=args.leadership if use_any else None,
@@ -589,30 +616,35 @@ def main():
             use_recruitment=args.recruitment,
             recruitment_method=args.recruitment_method,
             recruitment_pool=args.recruitment_pool,
-             n_max=args.n_max if args.n_max is not None else 5
+            n_max=args.n_max if args.n_max is not None else 5,
+            deployment_config=deployment_config
         )
         
-        # Determine which features were used
+        # Determine which features were used from simulation metadata
+        simulation_config = result.get("simulation_metadata", {})
         features = []
-        if result["config"]["use_team_leadership"]:
+        
+        # Since the result format has changed, we need to check the config differently
+        if hasattr(config, 'USE_TEAM_LEADERSHIP') and config.USE_TEAM_LEADERSHIP:
             features.append("Team Leadership")
-        if result["config"]["use_closed_loop_comm"]:
+        if hasattr(config, 'USE_CLOSED_LOOP_COMM') and config.USE_CLOSED_LOOP_COMM:
             features.append("Closed-loop Communication")
-        if result["config"]["use_mutual_monitoring"]:
+        if hasattr(config, 'USE_MUTUAL_MONITORING') and config.USE_MUTUAL_MONITORING:
             features.append("Mutual Performance Monitoring")
-        if result["config"]["use_shared_mental_model"]:
+        if hasattr(config, 'USE_SHARED_MENTAL_MODEL') and config.USE_SHARED_MENTAL_MODEL:
             features.append("Shared Mental Model")
-        if result["config"]["use_team_orientation"]:
+        if hasattr(config, 'USE_TEAM_ORIENTATION') and config.USE_TEAM_ORIENTATION:
             features.append("Team Orientation")
-        if result["config"]["use_mutual_trust"]:
-            features.append(f"Mutual Trust (factor: {result['config']['mutual_trust_factor']:.1f})")
-        if result["config"]["use_recruitment"]:
-            features.append(f"Agent Recruitment ({result['config']['recruitment_method']})")
+        if hasattr(config, 'USE_MUTUAL_TRUST') and config.USE_MUTUAL_TRUST:
+            features.append(f"Mutual Trust (factor: {config.MUTUAL_TRUST_FACTOR:.1f})")
+        if hasattr(config, 'USE_AGENT_RECRUITMENT') and config.USE_AGENT_RECRUITMENT:
+            features.append(f"Agent Recruitment ({config.RECRUITMENT_METHOD})")
         
         features_str = ", ".join(features) if features else "None"
         
         print(f"\nResults Summary:")
         print(f"Teamwork Features: {features_str}")
+        print(f"Deployment Used: {deployment_config['name'] if deployment_config else 'default'}")
         
         # Print decision method results
         print("\nDecision Method Results:")
@@ -634,68 +666,39 @@ def main():
                 print(f"  Result: {results}")
         
         # Show where to find logs
-        sim_id = result["simulation_id"]
-        feature_dir = "_".join(features).lower().replace(" ", "_") if features else "baseline"
+        sim_id = result["simulation_metadata"]["simulation_id"]
         
-        print(f"\nDetailed logs available at: {os.path.join(config.LOG_DIR, feature_dir, sim_id)}")
+        print(f"\nDetailed logs available at: {os.path.join(config.LOG_DIR, sim_id)}")
         
         # Show a performance summary if ground truth is available
-        if "performance" in result:
+        if hasattr(config, "TASK_EVALUATION") and config.TASK_EVALUATION:
             print("\nPerformance Summary:")
             
-            task_perf = result["performance"].get("task_performance", {})
-            
-            if task_perf:
-                if config.TASK["type"] == "ranking":
-                    for method, metrics in task_perf.items():
-                        print(f"  {method.replace('_', ' ').title()}:")
-                        print(f"    Correlation: {metrics.get('correlation', 'N/A'):.4f}")
-                        print(f"    Error: {metrics.get('error', 'N/A')}")
-                elif config.TASK["type"] == "mcq":
-                    for method, metrics in task_perf.items():
-                        print(f"  {method.replace('_', ' ').title()}:")
-                        print(f"    Correct: {metrics.get('correct', 'N/A')}")
-                        print(f"    Confidence: {metrics.get('confidence', 'N/A'):.2f}")
-            else:
-                print("  No quantitative metrics available")
+            # We need to evaluate performance manually since it's not returned in the new format
+            try:
+                # Create a temporary simulator to evaluate performance
+                temp_simulator = AgentSystemSimulator(
+                    deployment_config=deployment_config
+                )
+                temp_simulator.results = {"decision_results": result["decision_results"]}
+                performance = temp_simulator.evaluate_performance()
+                task_perf = performance.get("task_performance", {})
+                
+                if task_perf:
+                    if config.TASK["type"] == "ranking":
+                        for method, metrics in task_perf.items():
+                            print(f"  {method.replace('_', ' ').title()}:")
+                            print(f"    Correlation: {metrics.get('correlation', 'N/A'):.4f}")
+                            print(f"    Error: {metrics.get('error', 'N/A')}")
+                    elif config.TASK["type"] == "mcq":
+                        for method, metrics in task_perf.items():
+                            print(f"  {method.replace('_', ' ').title()}:")
+                            print(f"    Correct: {metrics.get('correct', 'N/A')}")
+                            print(f"    Confidence: {metrics.get('confidence', 'N/A'):.2f}")
+                else:
+                    print("  No quantitative metrics available")
+            except Exception as e:
+                print(f"  Error evaluating performance: {str(e)}")
 
 if __name__ == "__main__":
     main()
-
-
-    """
-    
-    Basic Usage
-# Run simulation with all teamwork components
-python main.py
-
-# Run simulation with specific components
-python main.py --leadership --closedloop --mutual --mental --orientation
-
-# Run with mutual trust and custom trust factor
-python main.py --trust --trust-factor 0.6
-
-# Run with dynamic agent recruitment
-python main.py --recruitment
-
-Command Line Options
---leadership      Enable team leadership component
---closedloop      Enable closed-loop communication
---mutual          Enable mutual performance monitoring
---mental          Enable shared mental model
---orientation     Enable Team Orientataion
---trust           Enable Mutual Trust
---trust-factor    Custom trust factor[0-1]
---all             Run all feature combinations
---random-leader   Randomly assign leadership
---runs N          Number of runs for each configuration (default: 1)
---recruitment     Enable dynamic agent recruitment
---recruitment-method {adaptive|basic|intermediate|advanced}
---recruitment-pool {general|medical}
-
-Running Multiple Configurations
-# Run all possible combinations with 3 runs each
-
-python main.py --all --runs 3
-    
-    """
