@@ -601,9 +601,9 @@ class Agent:
             other_agent.add_to_knowledge_base("task_understanding", self.knowledge_base["task_understanding"])
         
         # Share domain knowledge
-        if "domain_knowledge" in self.knowledge_base:
-            shared_knowledge["domain_knowledge"] = self.knowledge_base["domain_knowledge"]
-            other_agent.add_to_knowledge_base("domain_knowledge", self.knowledge_base["domain_knowledge"])
+        #if "domain_knowledge" in self.knowledge_base:
+            #shared_knowledge["domain_knowledge"] = self.knowledge_base["domain_knowledge"]
+            #other_agent.add_to_knowledge_base("domain_knowledge", self.knowledge_base["domain_knowledge"])
         
         # Share reasoning approaches
         if "reasoning_approaches" in self.knowledge_base:

@@ -44,7 +44,8 @@ class AgentSystemSimulator:
              recruitment_method: str = None,
              recruitment_pool: str = None,
              n_max: int = 5,
-             deployment_config: Dict[str, str] = None):
+             deployment_config: Dict[str, str] = None,
+             question_specific_context=False):
         """Initialize the simulator with a specific deployment configuration."""
         
         # Set simulation ID and configuration
@@ -63,6 +64,7 @@ class AgentSystemSimulator:
         self.recruitment_pool = recruitment_pool or "general"
         self.random_leader = random_leader
         self.n_max = n_max if n_max is not None else 5
+        self.question_specific_context = question_specific_context
         
         # Store deployment configuration for this question
         self.deployment_config = deployment_config
@@ -95,8 +97,8 @@ class AgentSystemSimulator:
             config=self.config
         )
 
-        # Create agent team
-        self._create_agent_team()
+        # Create agent team with isolated context
+        self._create_agent_team(isolated_context=question_specific_context)
         
         # Initialize teamwork components
         self.comm_handler = ClosedLoopCommunication() if self.use_closed_loop_comm else None
@@ -128,7 +130,7 @@ class AgentSystemSimulator:
         deployment_name = self.deployment_config['name'] if self.deployment_config else "default"
         self.logger.logger.info(f"Initialized simulation {self.simulation_id} with deployment: {deployment_name}")
 
-    def _create_agent_team(self):
+    def _create_agent_team(self, isolated_context: bool = False):
         """Create agent team with proper recruitment handling and deployment assignment."""
         if self.use_recruitment and config.TASK.get("description"):
             try:

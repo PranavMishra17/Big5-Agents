@@ -25,6 +25,8 @@ from components.agent_recruitment import determine_complexity, recruit_agents
 # Thread-local storage for progress tracking
 thread_local = threading.local()
 
+
+
 def setup_logging():
     """Set up logging for the dataset runner."""
     # Create logs directory if it doesn't exist
@@ -645,16 +647,16 @@ def extract_agent_responses_info(simulation_results):
     return agent_responses_info
 
 def process_single_question(question_index: int, 
-                          question: Dict[str, Any],
-                          dataset_type: str,
-                          configuration: Dict[str, Any],
-                          deployment_config: Dict[str, str],
-                          run_output_dir: str,
-                          max_retries: int = 3) -> Dict[str, Any]:
+                            question: Dict[str, Any],
+                            dataset_type: str,
+                            configuration: Dict[str, Any],
+                            deployment_config: Dict[str, str],
+                            run_output_dir: str,
+                            max_retries: int = 3) -> Dict[str, Any]:
     """
     Process a single question with the given configuration and deployment.
-    This function runs independently and in parallel with other questions.
-    
+    Creates isolated simulation context for the question.
+
     Args:
         question_index: Index of the question in the dataset
         question: Question data
@@ -663,68 +665,48 @@ def process_single_question(question_index: int,
         deployment_config: Specific deployment configuration to use
         run_output_dir: Output directory for results
         max_retries: Maximum number of retries for failed questions
-        
+
     Returns:
         Dictionary with question results
     """
-    # Set up thread-local storage for this question
-    thread_local.question_index = question_index
+    import copy
+    import gc
+
+    sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_{question_index}_{deployment_config['name']}"
     
+    # Preserve original global TASK to avoid contamination
+    original_task_config = copy.deepcopy(config.TASK)
+
+    # Format question based on dataset type
+    if dataset_type == "medqa":
+        agent_task, eval_data = format_medqa_for_task(question)
+    elif dataset_type == "medmcqa":
+        agent_task, eval_data = format_medmcqa_for_task(question)
+    elif dataset_type == "mmlupro-med":
+        agent_task, eval_data = format_mmlupro_med_for_task(question)
+    elif dataset_type == "pubmedqa":
+        agent_task, eval_data = format_pubmedqa_for_task(question)
+    else:
+        raise ValueError(f"Unknown dataset type: {dataset_type}")
+
+    thread_local.question_index = question_index
+    thread_local.question_task = agent_task
+
+    config.TASK = agent_task
+    config.TASK_EVALUATION = eval_data
+
     question_result = {
         "question_index": question_index,
         "deployment_used": deployment_config['name'],
-        "question_metadata": {
-            "id": question.get("id", f"q_{question_index}"),
-            "subject": question.get("subject_name", ""),
-            "topic": question.get("topic_name", ""),
-            "original_choice_type": question.get("choice_type", "")
-        },
-        "recruitment_info": {
-            "complexity_selected": None,
-            "agents_recruited": [],
-            "recruitment_method": configuration.get("recruitment_method", "none"),
-            "recruitment_reasoning": ""
-        },
+        "recruitment_info": {},
         "agent_responses": {},
         "disagreement_analysis": {},
         "disagreement_flag": False
     }
-    
-    simulator = None
-    performance = None
-    
+
     try:
-        # Format the question for the task
-        if dataset_type == "medqa":
-            agent_task, eval_data = format_medqa_for_task(question)
-        elif dataset_type == "medmcqa":
-            agent_task, eval_data = format_medmcqa_for_task(question)
-        elif dataset_type == "pubmedqa":
-            agent_task, eval_data = format_pubmedqa_for_task(question)
-        elif dataset_type == "mmlupro-med":
-            agent_task, eval_data = format_mmlupro_med_for_task(question)
-        else:
-            raise ValueError(f"Unknown dataset type: {dataset_type}")
-        
-        # Store question details
-        question_result.update({
-            "question_text": agent_task["description"][:200] + "...",
-            "options": agent_task.get("options", []),
-            "ground_truth": eval_data.get("ground_truth", ""),
-            "task_type": eval_data.get("type", "")
-        })
-        
-        # Set global task and evaluation data
-        config.TASK = agent_task  # Agents get this (no GT)
-        config.TASK_EVALUATION = eval_data  # Evaluation gets this (with GT)
-        
-        # Try to run the simulation with retries
         for attempt in range(max_retries):
             try:
-                # Create unique simulation ID for this question
-                sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_{question_index}_{deployment_config['name']}"
-                
-                # Create simulator with configuration parameters and specific deployment
                 simulator = AgentSystemSimulator(
                     simulation_id=sim_id,
                     use_team_leadership=configuration.get("leadership", False),
@@ -737,120 +719,44 @@ def process_single_question(question_index: int,
                     recruitment_method=configuration.get("recruitment_method", "adaptive"),
                     recruitment_pool=configuration.get("recruitment_pool", "general"),
                     n_max=configuration.get("n_max", 5),
-                    deployment_config=deployment_config  # Specify which deployment to use
+                    deployment_config=deployment_config,
+                    question_specific_context=True
                 )
 
-                # Extract recruitment information after simulator creation
-                if hasattr(simulator, 'metadata') and 'complexity' in simulator.metadata:
-                    question_result["recruitment_info"]["complexity_selected"] = simulator.metadata['complexity']
-
-                if hasattr(simulator, 'agents') and simulator.agents:
-                    agents_info = []
-                    for role, agent in simulator.agents.items():
-                        agents_info.append({
-                            "role": role,
-                            "weight": getattr(agent, 'weight', 0.2),
-                            "deployment": agent.deployment_config['name']
-                        })
-                    question_result["recruitment_info"]["agents_recruited"] = agents_info
-                
-                # Run simulation
                 simulation_results = simulator.run_simulation()
                 performance = simulator.evaluate_performance()
-                
-                # Extract detailed agent responses
-                question_result["agent_responses"] = extract_agent_responses_info(simulation_results)
 
-                # Track mind changes if data is available
-                if "agent_analyses" in simulation_results and "agent_responses" in simulation_results:
-                    mind_changes = track_agent_mind_changes(
-                        simulation_results["agent_analyses"], 
-                        simulation_results["agent_responses"]
-                    )
-                    question_result["mind_change_analysis"] = mind_changes
-                
-                # Detect disagreement
-                disagreement_analysis = detect_agent_disagreement(simulation_results.get("agent_responses", {}))
-                question_result["disagreement_analysis"] = disagreement_analysis
-                
-                if disagreement_analysis.get("has_disagreement", False):
+                question_result.update({
+                    "agent_responses": extract_agent_responses_info(simulation_results),
+                    "disagreement_analysis": detect_agent_disagreement(simulation_results.get("agent_responses", {})),
+                    "decisions": simulation_results.get("decision_results", {}),
+                    "performance": performance.get("task_performance", {}),
+                    "agent_conversations": simulation_results.get("exchanges", [])
+                })
+
+                if question_result["disagreement_analysis"].get("has_disagreement", False):
                     question_result["disagreement_flag"] = True
-                
-                # Store decisions and performance
-                question_result["decisions"] = simulation_results["decision_results"]
-                question_result["performance"] = performance.get("task_performance", {})
-                
-                # Store all agent conversations
-                question_result["agent_conversations"] = simulation_results.get("exchanges", [])
-                
-                # Simulation succeeded, break the retry loop
-                break
-            
+
+                break  # Success, break retry loop
+
             except Exception as e:
-                error_str = str(e)
                 import traceback
-                error_details = traceback.format_exc()
-                logging.error(f"Question {question_index} attempt {attempt+1} failed: {error_str}")
-                logging.error(f"Full error details: {error_details}")
-                
-                if attempt < max_retries - 1:
-                    if "content" in error_str.lower() and "filter" in error_str.lower():
-                        wait_time = min(5 * (attempt + 1), 30)
-                        logging.warning(f"Content filter triggered, retry {attempt+1} for question {question_index}")
-                    elif any(term in error_str.lower() for term in ["rate", "limit", "timeout", "capacity"]):
-                        wait_time = min(2 ** attempt + 1, 15)
-                        logging.warning(f"Rate limit hit, waiting {wait_time}s before retry {attempt+1}")
-                    elif any(term in error_str.lower() for term in ["connection", "timeout", "retry", "try again"]):
-                        wait_time = min(2 ** attempt + 1, 10)
-                        logging.warning(f"Connection error, retry {attempt+1} for question {question_index}")
-                    else:
-                        wait_time = 1
-                        logging.warning(f"Unknown error, retry {attempt+1} for question {question_index}")
-                    
-                    time.sleep(wait_time)
-                    continue
-                
-                # Last attempt failed, record error
-                question_result["error"] = f"API error: {error_str}"
-                logging.error(f"Failed after {max_retries} retries for question {question_index}: {error_str}")
-                break
-        
-        # Save individual question results
-        if run_output_dir:
-            try:
-                enhanced_output_data = {
-                    "question": agent_task["description"],
-                    "options": agent_task.get("options", []),
-                    "ground_truth": eval_data.get("ground_truth", ""),
-                    "metadata": eval_data.get("metadata", {}),
-                    "deployment_used": deployment_config['name'],
-                    "recruitment_info": question_result["recruitment_info"],
-                    "agent_responses": question_result["agent_responses"],
-                    "disagreement_analysis": question_result["disagreement_analysis"],
-                    "disagreement_flag": question_result["disagreement_flag"]
-                }
-                
-                if "decisions" in question_result:
-                    enhanced_output_data["decisions"] = question_result["decisions"]
-                if "performance" in question_result:
-                    enhanced_output_data["performance"] = question_result["performance"]
-                if "agent_conversations" in question_result:
-                    enhanced_output_data["agent_conversations"] = question_result["agent_conversations"]
-                if "error" in question_result:
-                    enhanced_output_data["error"] = question_result["error"]
-                
-                output_filename = f"question_{question_index}_{deployment_config['name']}_enhanced.json"
-                with open(os.path.join(run_output_dir, output_filename), 'w') as f:
-                    json.dump(enhanced_output_data, f, indent=2)
-                    
-            except Exception as e:
-                logging.error(f"Failed to save enhanced results for question {question_index}: {str(e)}")
+                logging.error(f"Question {question_index} attempt {attempt+1} failed: {str(e)}")
+                logging.error(traceback.format_exc())
+                time.sleep(min(2 ** attempt, 15))
         
     except Exception as e:
-        logging.error(f"Error processing question {question_index}: {str(e)}")
+        logging.error(f"Final error processing question {question_index}: {str(e)}")
         question_result["error"] = f"Processing error: {str(e)}"
-    
+
+    finally:
+        config.TASK = original_task_config  # Restore original global task
+        if 'simulator' in locals():
+            del simulator
+        gc.collect()
+
     return question_result
+
 
 def track_agent_mind_changes(agent_analyses, agent_decisions):
     """Track if agents changed their answers after seeing teammates"""

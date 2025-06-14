@@ -11,6 +11,9 @@ import config
 
 from utils.prompts import RECRUITMENT_PROMPTS
 
+import threading
+thread_local = threading.local()
+
 # Global counters for complexity tracking
 complexity_counts = {
     "basic": 0,
@@ -98,37 +101,46 @@ def determine_complexity(question, method="adaptive"):
     complexity_counts[complexity] += 1
     return complexity
 
-def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max = 5, recruitment_method: str = "adaptive"):
+def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max=5, recruitment_method: str = "adaptive"):
     """
     Recruit appropriate agents based on question complexity.
-    
+
     Args:
         question: The question or task to analyze
         complexity: Determined complexity level ("basic", "intermediate", or "advanced")
         recruitment_pool: Pool of agent types to recruit from
         n_max: Maximum number of agents to recruit for intermediate team
         recruitment_method: Method for agent recruitment
-        
+
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
-    # Import here to avoid circular imports
+    import threading
     from components.modular_agent import ModularAgent
-    
+
+    # Add instance ID to avoid agent reuse per thread/question
+    try:
+        instance_id = id(question) + thread_local.question_index
+        logging.debug(f"Using thread-local question index for instance ID: {thread_local.question_index}")
+    except Exception:
+        instance_id = id(question)
+        logging.debug("Thread-local question index not found; falling back to question ID.")
+
     logging.info(f"Recruiting agents using method: {recruitment_method}, complexity: {complexity}, n_max: {n_max}")
-    
+
     if complexity == "basic" or recruitment_method == "basic":
         logging.info("Using basic recruitment (single agent)")
-        return recruit_basic_team(question, recruitment_pool)
+        return recruit_basic_team(question, recruitment_pool, instance_id=instance_id)
     elif complexity == "intermediate" or recruitment_method == "intermediate":
         logging.info(f"Using intermediate recruitment with n_max={n_max}")
-        return recruit_intermediate_team(question, recruitment_pool, n_max)
+        return recruit_intermediate_team(question, recruitment_pool, n_max, instance_id=instance_id)
     elif complexity == "advanced" or recruitment_method == "advanced":
         logging.info("Using advanced recruitment (MDT structure)")
-        return recruit_advanced_team(question, recruitment_pool)
+        return recruit_advanced_team(question, recruitment_pool, instance_id=instance_id)
     else:
         logging.info(f"Unrecognized complexity/method: {complexity}/{recruitment_method}, falling back to intermediate")
-        return recruit_intermediate_team(question, recruitment_pool, n_max)
+        return recruit_intermediate_team(question, recruitment_pool, n_max, instance_id=instance_id)
+
 
 def recruit_basic_team(question: str, recruitment_pool: str):
     """

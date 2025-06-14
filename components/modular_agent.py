@@ -518,11 +518,12 @@ def create_agent_team(use_team_leadership=True,
             
         agent_index += 1
     
-    # Share knowledge between agents
-    for role1, agent1 in agents.items():
-        for role2, agent2 in agents.items():
-            if role1 != role2:
-                agent1.share_knowledge(agent2)
+    # Share knowledge between agents ONLY if shared mental model is enabled
+    if use_shared_mental_model:
+        for role1, agent1 in agents.items():
+            for role2, agent2 in agents.items():
+                if role1 != role2:
+                    agent1.share_knowledge(agent2)
     
     # Log the team configuration
     logging.info(f"Created agent team with configuration:")
