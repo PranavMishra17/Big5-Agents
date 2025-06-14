@@ -1,5 +1,5 @@
 """
-Enhanced simulator.py with sequential agent processing within questions.
+Enhanced simulator.py with isolated task configuration for parallel question processing.
 """
 
 import os
@@ -10,6 +10,7 @@ import traceback
 import time
 from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime
+import copy
 
 from components.modular_agent import ModularAgent, create_agent_team
 from components.agent_recruitment import determine_complexity, recruit_agents
@@ -27,7 +28,7 @@ from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS, get_adaptive_p
 
 class AgentSystemSimulator:
     """
-    Enhanced simulator with sequential agent processing for parallel question handling.
+    Enhanced simulator with isolated task configuration for parallel question handling.
     """
     
     def __init__(self, 
@@ -45,8 +46,10 @@ class AgentSystemSimulator:
              recruitment_pool: str = None,
              n_max: int = 5,
              deployment_config: Dict[str, str] = None,
-             question_specific_context=False):
-        """Initialize the simulator with a specific deployment configuration."""
+             question_specific_context=False,
+             task_config: Dict[str, Any] = None,
+             eval_data: Dict[str, Any] = None):
+        """Initialize the simulator with isolated task configuration."""
         
         # Set simulation ID and configuration
         self.simulation_id = simulation_id or f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
@@ -69,8 +72,11 @@ class AgentSystemSimulator:
         # Store deployment configuration for this question
         self.deployment_config = deployment_config
         
+        # CRITICAL: Store task configuration separately to avoid global state contamination
+        self.task_config = task_config or copy.deepcopy(config.TASK)
+        self.evaluation_data = eval_data or {}
+        
         self.metadata = {}
-        self.evaluation_data = getattr(config, 'TASK_EVALUATION', {})
         
         # Setup configuration
         self.config = {
@@ -86,7 +92,7 @@ class AgentSystemSimulator:
             "recruitment_pool": self.recruitment_pool,
             "random_leader": self.random_leader,
             "n_max": self.n_max,
-            "task": config.TASK.get("name", "Unknown"),
+            "task": self.task_config.get("name", "Unknown"),
             "deployment": self.deployment_config['name'] if self.deployment_config else "default"
         }
         
@@ -114,9 +120,9 @@ class AgentSystemSimulator:
         # Initialize decision methods
         self.decision_methods = DecisionMethods()
         
-        # Initialize shared knowledge
+        # Initialize shared knowledge with isolated task config
         if self.mental_model:
-            self.mental_model.initialize_task_model(config.TASK)
+            self.mental_model.initialize_task_model(self.task_config)
             self.mental_model.initialize_team_model(list(self.agents.keys()))
         
         # Store results
@@ -132,30 +138,22 @@ class AgentSystemSimulator:
 
     def _create_agent_team(self, isolated_context: bool = False):
         """Create agent team with proper recruitment handling and deployment assignment."""
-        if self.use_recruitment and config.TASK.get("description"):
+        if self.use_recruitment and self.task_config.get("description"):
             try:
-                from components.agent_recruitment import determine_complexity, recruit_agents
-                complexity = determine_complexity(config.TASK["description"], self.recruitment_method)
+                from components.agent_recruitment import determine_complexity, recruit_agents_isolated
+                complexity = determine_complexity(self.task_config["description"], self.recruitment_method)
                 self.metadata["complexity"] = complexity
                 
-                # If we have a specific deployment, we need to override the agent creation
-                # to ensure all agents use this deployment
-                if self.deployment_config:
-                    agents, leader = self._recruit_agents_with_deployment(
-                        config.TASK["description"],
-                        complexity,
-                        self.recruitment_pool,
-                        self.n_max,
-                        self.recruitment_method
-                    )
-                else:
-                    agents, leader = recruit_agents(
-                        config.TASK["description"],
-                        complexity,
-                        self.recruitment_pool,
-                        self.n_max,
-                        self.recruitment_method
-                    )
+                # Use isolated recruitment that doesn't read from global config
+                agents, leader = recruit_agents_isolated(
+                    self.task_config["description"],
+                    complexity,
+                    self.recruitment_pool,
+                    self.n_max,
+                    self.recruitment_method,
+                    self.deployment_config,
+                    self.task_config
+                )
                 self.agents = agents
                 self.leader = leader
                 
@@ -170,8 +168,8 @@ class AgentSystemSimulator:
         if self.deployment_config:
             return self._create_team_with_deployment()
         else:
-            from components.modular_agent import create_agent_team
-            return create_agent_team(
+            from components.modular_agent import create_agent_team_isolated
+            return create_agent_team_isolated(
                 use_team_leadership=self.use_team_leadership,
                 use_closed_loop_comm=self.use_closed_loop_comm,
                 use_mutual_monitoring=self.use_mutual_monitoring,
@@ -180,7 +178,9 @@ class AgentSystemSimulator:
                 use_mutual_trust=self.use_mutual_trust,
                 random_leader=self.random_leader,
                 use_recruitment=False,
-                n_max=self.n_max
+                n_max=self.n_max,
+                deployment_config=self.deployment_config,
+                task_config=self.task_config
             )
 
     def _create_team_with_deployment(self):
@@ -201,7 +201,8 @@ class AgentSystemSimulator:
             use_team_orientation=self.use_team_orientation,
             use_mutual_trust=self.use_mutual_trust,
             deployment_config=self.deployment_config,
-            agent_index=0
+            agent_index=0,
+            task_config=self.task_config  # Pass isolated task config
         )
         
         agents[role] = agent
@@ -209,48 +210,6 @@ class AgentSystemSimulator:
             leader = agent
             
         return agents, leader
-
-    def _recruit_agents_with_deployment(self, question, complexity, recruitment_pool, n_max, recruitment_method):
-        """Recruit agents but override all deployments to use the specified one."""
-        from components.agent_recruitment import recruit_agents
-        
-        # Get the recruited team structure first
-        agents, leader = recruit_agents(question, complexity, recruitment_pool, n_max, recruitment_method)
-        
-        # Now recreate all agents with the specified deployment
-        new_agents = {}
-        new_leader = None
-        
-        agent_index = 0
-        for role, agent in agents.items():
-            from components.modular_agent import ModularAgent
-            
-            # Create new agent with specified deployment
-            new_agent = ModularAgent(
-                role_type=role,
-                use_team_leadership=agent.use_team_leadership,
-                use_closed_loop_comm=agent.use_closed_loop_comm,
-                use_mutual_monitoring=agent.use_mutual_monitoring,
-                use_shared_mental_model=agent.use_shared_mental_model,
-                use_team_orientation=agent.use_team_orientation,
-                use_mutual_trust=agent.use_mutual_trust,
-                deployment_config=self.deployment_config,
-                agent_index=agent_index
-            )
-            
-            # Copy any additional attributes
-            if hasattr(agent, 'weight'):
-                new_agent.add_to_knowledge_base("weight", agent.get_from_knowledge_base("weight"))
-            
-            new_agents[role] = new_agent
-            
-            # Check if this was the leader
-            if leader and agent.role == leader.role:
-                new_leader = new_agent
-                
-            agent_index += 1
-        
-        return new_agents, new_leader
 
     def run_simulation(self):
         """
@@ -299,10 +258,10 @@ class AgentSystemSimulator:
                 "timestamp": datetime.now().isoformat(),
                 "deployment": self.deployment_config['name'] if self.deployment_config else "default",
                 "task_info": {
-                    "name": config.TASK.get("name", ""),
-                    "type": config.TASK.get("type", ""),
-                    "description": config.TASK.get("description", "")[:200] + "...",
-                    "options": config.TASK.get("options", [])
+                    "name": self.task_config.get("name", ""),
+                    "type": self.task_config.get("type", ""),
+                    "description": self.task_config.get("description", "")[:200] + "...",
+                    "options": self.task_config.get("options", [])
                 }
             },
             "agent_analyses": round1_analyses,      # Round 1 independent analyses
@@ -325,8 +284,9 @@ class AgentSystemSimulator:
             try:
                 self.logger.logger.info(f"Round 1: Getting analysis from {role}")
                 
-                analysis = agent.analyze_task()
-                extract = agent.extract_response(analysis)
+                # Use the isolated task config instead of global config
+                analysis = agent.analyze_task_isolated(self.task_config)
+                extract = agent.extract_response_isolated(analysis, self.task_config)
                 
                 # Log to main discussion channel
                 self.logger.log_main_discussion(
@@ -408,7 +368,7 @@ class AgentSystemSimulator:
                         # Monitor peer analyses for issues
                         for other_role, analysis in other_analyses.items():
                             other_agent = self.agents[other_role]
-                            extract = other_agent.extract_response(analysis)
+                            extract = other_agent.extract_response_isolated(analysis, self.task_config)
                             
                             monitoring_result = self.mutual_monitor.monitor_agent_response(
                                 other_role, analysis, None
@@ -473,7 +433,7 @@ class AgentSystemSimulator:
         # Process agents sequentially
         for role, agent in self.agents.items():
             try:
-                task_type = config.TASK.get("type", "mcq")
+                task_type = self.task_config.get("type", "mcq")
                 
                 try:
                     final_prompt = get_adaptive_prompt(
@@ -545,8 +505,8 @@ class AgentSystemSimulator:
                     "message": final_decision
                 })
                 
-                # Extract the response structure
-                extracted = agent.extract_response(final_decision)
+                # Extract the response structure using isolated task config
+                extracted = agent.extract_response_isolated(final_decision, self.task_config)
                 
                 # Get agent weight
                 weight = agent.get_from_knowledge_base("weight") or 0.2
@@ -573,7 +533,7 @@ class AgentSystemSimulator:
                                     for role, decision in round3_decisions.items() 
                                     if role != self.leader.role])
                 
-                leader_synthesis = self.leader.leadership_action("synthesize", context)
+                leader_synthesis = self.leader.leadership_action_isolated("synthesize", context, self.task_config)
                 
                 self.logger.log_leadership_action("synthesis", leader_synthesis)
                 self.logger.log_main_discussion("leadership_synthesis", self.leader.role, leader_synthesis)
@@ -586,7 +546,7 @@ class AgentSystemSimulator:
                 })
                 
                 # Update leader's decision
-                leader_extract = self.leader.extract_response(leader_synthesis)
+                leader_extract = self.leader.extract_response_isolated(leader_synthesis, self.task_config)
                 round3_decisions[self.leader.role] = {
                     "final_decision": leader_synthesis,
                     "extract": leader_extract,
@@ -605,7 +565,7 @@ class AgentSystemSimulator:
             return "No leader designated for this simulation."
         
         try:
-            leader_definition = self.leader.leadership_action("define_task")
+            leader_definition = self.leader.leadership_action_isolated("define_task", task_config=self.task_config)
             
             self.logger.log_main_discussion("leadership_definition", self.leader.role, leader_definition)
             self.logger.log_leadership_action("task_definition", leader_definition)
@@ -728,7 +688,7 @@ class AgentSystemSimulator:
 
     def _evaluate_task_performance(self) -> Dict[str, Any]:
         """Evaluate performance on the task itself."""
-        task_type = config.TASK["type"]
+        task_type = self.task_config["type"]
         
         if task_type == "ranking":
             return self._evaluate_ranking_performance()
@@ -775,7 +735,9 @@ class AgentSystemSimulator:
 
     def _evaluate_yes_no_maybe_performance(self) -> Dict[str, Any]:
         """Evaluate performance on yes/no/maybe tasks."""
-        ground_truth = self.evaluation_data.get("ground_truth").lower()
+        ground_truth = self.evaluation_data.get("ground_truth")
+        if ground_truth:
+            ground_truth = ground_truth.lower()
         
         if not ground_truth or ground_truth not in ["yes", "no", "maybe"]:
             return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
@@ -874,7 +836,7 @@ class AgentSystemSimulator:
 
     def _evaluate_multi_choice_performance(self) -> Dict[str, Any]:
         """Evaluate performance on multi-choice MCQ tasks."""
-        ground_truth = config.TASK.get("ground_truth", "")
+        ground_truth = self.evaluation_data.get("ground_truth", "")
         
         if not ground_truth:
             return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}

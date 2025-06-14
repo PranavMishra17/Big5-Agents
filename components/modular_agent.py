@@ -1,11 +1,12 @@
 """
-Modular agent implementation for the agent system.
+Modular agent implementation for the agent system with isolated task configuration support.
 """
 
 from typing import List, Dict, Any, Optional
 import random, sys
 import logging
 import traceback
+import copy
 
 from components.agent import Agent
 import config
@@ -17,7 +18,7 @@ from utils.prompts import LEADERSHIP_PROMPTS, TASK_ANALYSIS_PROMPTS, get_adaptiv
 
 class ModularAgent(Agent):
     """
-    Modular agent with specialization capabilities.
+    Modular agent with specialization capabilities and isolated task configuration support.
     This agent can specialize in different roles and optionally take leadership positions.
     """
     
@@ -27,15 +28,14 @@ class ModularAgent(Agent):
                  use_closed_loop_comm: bool = False,
                  use_mutual_monitoring: bool = False,
                  use_shared_mental_model: bool = False,
-                    use_team_orientation: bool = False,
-                    use_mutual_trust: bool = False,
-                    n_max: int = 5,
-                    deployment_config: Optional[Dict[str, str]] = None,
-                    agent_index: int = 0
-                 
-                 ):
+                 use_team_orientation: bool = False,
+                 use_mutual_trust: bool = False,
+                 n_max: int = 5,
+                 deployment_config: Optional[Dict[str, str]] = None,
+                 agent_index: int = 0,
+                 task_config: Optional[Dict[str, Any]] = None):
         """
-        Initialize a team member with specific role expertise.
+        Initialize a team member with specific role expertise and isolated task configuration.
         
         Args:
             role_type: The specific role type (from config.AGENT_ROLES)
@@ -43,9 +43,16 @@ class ModularAgent(Agent):
             use_closed_loop_comm: Whether to use closed-loop communication
             use_mutual_monitoring: Whether to use mutual performance monitoring
             use_shared_mental_model: Whether to use shared mental models
+            use_team_orientation: Whether to use team orientation
+            use_mutual_trust: Whether to use mutual trust
+            n_max: Maximum number of agents
             deployment_config: Optional specific deployment configuration
             agent_index: Index of agent for deployment assignment
+            task_config: Isolated task configuration for this question
         """
+        # Store isolated task config or use global as fallback
+        self.isolated_task_config = task_config or copy.deepcopy(config.TASK)
+        
         # Set role and expertise based on role type
         if role_type in config.AGENT_ROLES:
             self.role_type = role_type
@@ -72,7 +79,7 @@ class ModularAgent(Agent):
         # Track whether this agent has leadership capabilities
         self.can_lead = use_team_leadership
         
-        # Initialize specialized knowledge based on role
+        # Initialize specialized knowledge based on role using isolated task config
         self._initialize_specialized_knowledge()
         
         # Create shared knowledge repository that can be accessed by other agents
@@ -84,9 +91,9 @@ class ModularAgent(Agent):
         self.preference_ranking = []
     
     def _initialize_specialized_knowledge(self):
-        """Initialize knowledge specific to the agent's specialization."""
-        # Initialize basic task knowledge
-        clean_task = {k: v for k, v in config.TASK.items() 
+        """Initialize knowledge specific to the agent's specialization using isolated task config."""
+        # Initialize basic task knowledge using isolated config
+        clean_task = {k: v for k, v in self.isolated_task_config.items() 
                     if k not in ["ground_truth", "rationale"]}
         self.add_to_knowledge_base("task", clean_task)
         
@@ -103,15 +110,11 @@ class ModularAgent(Agent):
             # General knowledge for non-specialized agents
             self._initialize_general_knowledge()
 
-        # In modular_agent.py _initialize_specialized_knowledge():
-        task_keys = list(config.TASK.keys())
+        # Verify no ground truth leak
+        task_keys = list(self.isolated_task_config.keys())
         assert "ground_truth" not in task_keys, f"GT LEAK: Agent sees {task_keys}"
         logging.info(f"Agent {self.role} initialized with clean task: {task_keys}")
             
-        # Add ground truth if available (for evaluation purposes)
-        # if "ground_truth" in config.TASK and "rationale" in config.TASK: self.add_to_knowledge_base("ground_truth", { #"answer": config.TASK["ground_truth"], #"rationale": config.TASK["rationale"]})
-            
-    
     def _initialize_critical_analyst_knowledge(self):
         """Initialize knowledge for the Critical Analyst role."""
         self.add_to_knowledge_base("critical_thinking_principles", {
@@ -132,7 +135,7 @@ class ModularAgent(Agent):
     
     def _initialize_domain_expert_knowledge(self):
         """Initialize knowledge for the Domain Expert role."""
-        task_domain = config.TASK["name"].lower()
+        task_domain = self.isolated_task_config["name"].lower()
         
         # Customize domain knowledge based on task
         if "lunar" in task_domain or "space" in task_domain or "nasa" in task_domain:
@@ -259,12 +262,25 @@ class ModularAgent(Agent):
     
     def analyze_task(self) -> str:
         """
-        Analyze the task based on agent's specialized knowledge using adaptive prompting.
+        Analyze the task based on agent's specialized knowledge using adaptive prompting and global config.
+        This is the legacy method that uses global config.TASK.
         
         Returns:
             The agent's analysis
         """
-        task_type = config.TASK["type"]
+        return self.analyze_task_isolated(config.TASK)
+    
+    def analyze_task_isolated(self, task_config: Dict[str, Any]) -> str:
+        """
+        Analyze the task based on agent's specialized knowledge using isolated task configuration.
+        
+        Args:
+            task_config: Isolated task configuration for this question
+            
+        Returns:
+            The agent's analysis
+        """
+        task_type = task_config["type"]
         
         # Use adaptive prompting based on task type
         try:
@@ -273,80 +289,78 @@ class ModularAgent(Agent):
                     "task_analysis", 
                     task_type,
                     role=self.role,
-                    task_description=config.TASK['description'],
-                    items_to_rank=', '.join(config.TASK['options']),
-                    num_items=len(config.TASK['options'])
+                    task_description=task_config['description'],
+                    items_to_rank=', '.join(task_config['options']),
+                    num_items=len(task_config['options'])
                 )
             elif task_type == "mcq":
                 prompt = get_adaptive_prompt(
                     "task_analysis",
                     task_type,
                     role=self.role,
-                    task_description=config.TASK['description'],
-                    options=chr(10).join(config.TASK['options'])
+                    task_description=task_config['description'],
+                    options=chr(10).join(task_config['options'])
                 )
             elif task_type == "multi_choice_mcq":
                 prompt = get_adaptive_prompt(
                     "task_analysis",
                     task_type,
                     role=self.role,
-                    task_description=config.TASK['description'],
-                    options=chr(10).join(config.TASK['options'])
+                    task_description=task_config['description'],
+                    options=chr(10).join(task_config['options'])
                 )
             elif task_type == "yes_no_maybe":
                 prompt = get_adaptive_prompt(
                     "task_analysis",
                     task_type,
                     role=self.role,
-                    task_description=config.TASK['description']
+                    task_description=task_config['description']
                 )
             else:
                 prompt = get_adaptive_prompt(
                     "task_analysis",
                     "general",
                     role=self.role,
-                    task_description=config.TASK['description']
+                    task_description=task_config['description']
                 )
         except Exception as e:
             logging.error(f"Error getting adaptive prompt: {str(e)}")
             # Fallback to traditional approach
             if task_type == "ranking":
-                return self._analyze_ranking_task()
+                return self._analyze_ranking_task(task_config)
             elif task_type == "mcq":
-                return self._analyze_mcq_task()
+                return self._analyze_mcq_task(task_config)
             else:
-                return self._analyze_general_task()
+                return self._analyze_general_task(task_config)
         
         return self.chat(prompt)
     
-    def _analyze_ranking_task(self) -> str:
+    def _analyze_ranking_task(self, task_config: Dict[str, Any]) -> str:
         """Analyze a ranking task."""
         prompt = TASK_ANALYSIS_PROMPTS["ranking_task"].format(
             role=self.role,
-            task_description=config.TASK['description'],
-            items_to_rank=', '.join(config.TASK['options']),
-            num_items=len(config.TASK['options'])
+            task_description=task_config['description'],
+            items_to_rank=', '.join(task_config['options']),
+            num_items=len(task_config['options'])
         )
         
         return self.chat(prompt)
     
-
-    def _analyze_mcq_task(self) -> str:
+    def _analyze_mcq_task(self, task_config: Dict[str, Any]) -> str:
         """Analyze a multiple-choice task."""
         prompt = TASK_ANALYSIS_PROMPTS["mcq_task"].format(
             role=self.role,
-            task_description=config.TASK['description'],
-            options=chr(10).join(config.TASK['options'])
+            task_description=task_config['description'],
+            options=chr(10).join(task_config['options'])
         )
         
         return self.chat(prompt)   
     
-
-    def _analyze_general_task(self) -> str:
+    def _analyze_general_task(self, task_config: Dict[str, Any]) -> str:
         """Analyze a general (open-ended, estimation, etc.) task."""
         prompt = TASK_ANALYSIS_PROMPTS["general_task"].format(
             role=self.role,
-            task_description=config.TASK['description']
+            task_description=task_config['description']
         )
         
         return self.chat(prompt)
@@ -365,7 +379,8 @@ class ModularAgent(Agent):
 
     def leadership_action(self, action_type: str, context: str = None) -> str:
         """
-        Perform a leadership action if this agent has leadership capabilities.
+        Perform a leadership action if this agent has leadership capabilities using global config.
+        This is the legacy method that uses global config.TASK.
         
         Args:
             action_type: Type of leadership action
@@ -374,17 +389,34 @@ class ModularAgent(Agent):
         Returns:
             Result of the leadership action, or explanation if not a leader
         """
+        return self.leadership_action_isolated(action_type, context, config.TASK)
+    
+    def leadership_action_isolated(self, action_type: str, context: str = None, task_config: Dict[str, Any] = None) -> str:
+        """
+        Perform a leadership action if this agent has leadership capabilities using isolated task config.
+        
+        Args:
+            action_type: Type of leadership action
+            context: Optional context information
+            task_config: Isolated task configuration
+            
+        Returns:
+            Result of the leadership action, or explanation if not a leader
+        """
         if not self.can_lead:
             return f"As a {self.role} without leadership designation, I cannot perform leadership actions."
         
+        if task_config is None:
+            task_config = self.isolated_task_config
+        
         if action_type == "define_task":
             prompt = LEADERSHIP_PROMPTS["define_task"].format(
-                task_description=config.TASK['description'],
+                task_description=task_config['description'],
                 context=context or ''
             )
         elif action_type == "synthesize":
             # Use adaptive prompting for synthesis based on task type
-            task_type = config.TASK.get("type", "mcq")
+            task_type = task_config.get("type", "mcq")
             try:
                 prompt = get_adaptive_prompt(
                     "leadership_synthesis",
@@ -410,13 +442,186 @@ class ModularAgent(Agent):
         
         return self.chat(prompt)
 
+    def extract_response_isolated(self, message: str, task_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract the agent's response to the task from their message using isolated task config.
+        
+        Args:
+            message: Message to analyze
+            task_config: Isolated task configuration
+            
+        Returns:
+            Structured response based on task type
+        """
+        task_type = task_config["type"]
+        
+        if task_type == "ranking":
+            return self.extract_ranking_isolated(message, task_config)
+        elif task_type == "mcq":
+            return self.extract_mcq_answer_isolated(message, task_config)
+        elif task_type == "multi_choice_mcq":
+            return self.extract_multi_choice_mcq_answer_isolated(message, task_config)
+        elif task_type == "yes_no_maybe":
+            return self.extract_yes_no_maybe_answer(message)
+        elif task_type in ["open_ended", "estimation", "selection"]:
+            return {"response": message, "confidence": self.extract_confidence(message)}
+        else:
+            return {"raw_response": message}
+
+    # Legacy method for backward compatibility
+    def extract_response(self, message=None) -> Dict[str, Any]:
+        """Legacy wrapper that uses global config.TASK."""
+        if message is None:
+            if not self.conversation_history:
+                return {}
+            message = self.conversation_history[-1]["assistant"]
+        
+        return self.extract_response_isolated(message, config.TASK)
+
+    def extract_ranking_isolated(self, message: str, task_config: Dict[str, Any]):
+        """
+        Extract a ranking from the agent's response using isolated task config.
+        
+        Args:
+            message: Message to analyze
+            task_config: Isolated task configuration
+            
+        Returns:
+            List of ranked items and confidence level
+        """
+        ranking = []
+        lines = message.split('\n')
+        
+        # Look for numbered items (1. Item, 2. Item, etc.)
+        for line in lines:
+            for i in range(1, len(task_config["options"]) + 1):
+                if f"{i}." in line or f"{i}:" in line:
+                    for item in task_config["options"]:
+                        if item.lower() in line.lower():
+                            ranking.append(item)
+                            break
+        
+        # Check for duplicates and missing items
+        seen_items = set()
+        valid_ranking = []
+        
+        for item in ranking:
+            if item not in seen_items:
+                seen_items.add(item)
+                valid_ranking.append(item)
+        
+        # Add any missing items at the end
+        for item in task_config["options"]:
+            if item not in seen_items:
+                valid_ranking.append(item)
+                seen_items.add(item)
+        
+        # Extract confidence level
+        confidence = self.extract_confidence(message)
+        
+        return {
+            "ranking": valid_ranking[:len(task_config["options"])],
+            "confidence": confidence
+        }
+    
+    def extract_mcq_answer_isolated(self, message: str, task_config: Dict[str, Any]):
+        """
+        Extract an MCQ answer from the agent's response using isolated task config.
+        
+        Args:
+            message: Message to analyze
+            task_config: Isolated task configuration
+            
+        Returns:
+            MCQ answer and confidence level
+        """
+        # Look for option identifiers (A, B, C, D, etc.)
+        for line in message.split('\n'):
+            line = line.strip()
+            for option in task_config["options"]:
+                option_id = option.split('.')[0].strip() if '.' in option else None
+                if option_id and (line.startswith(option_id) or f"Option {option_id}" in line or f"Answer: {option_id}" in line):
+                    # Extract confidence level
+                    confidence = self.extract_confidence(message)
+                    return {"answer": option_id, "confidence": confidence}
+        
+        # Extract confidence level
+        confidence = self.extract_confidence(message)
+        
+        # If no explicit option identifier is found, look for the full option text
+        for line in message.split('\n'):
+            for option in task_config["options"]:
+                # Extract option identifier (A, B, C, etc.)
+                option_id = option.split('.')[0].strip() if '.' in option else None
+                # Check if the full option text is in the line
+                if option[2:].strip().lower() in line.lower():
+                    return {"answer": option_id, "confidence": confidence}
+        
+        # If still not found, try to determine if there's any indication of an answer
+        lower_message = message.lower()
+        for option in task_config["options"]:
+            option_id = option.split('.')[0].strip() if '.' in option else None
+            if option_id and f"select {option_id.lower()}" in lower_message or f"choose {option_id.lower()}" in lower_message:
+                return {"answer": option_id, "confidence": confidence}
+        
+        # No clear answer found
+        return {"answer": None, "confidence": confidence}
+    
+    def extract_multi_choice_mcq_answer_isolated(self, message: str, task_config: Dict[str, Any]):
+        """
+        Extract multi-choice MCQ answers from the agent's response using isolated task config.
+        
+        Args:
+            message: Message to analyze
+            task_config: Isolated task configuration
+            
+        Returns:
+            Multi-choice MCQ answers and confidence level
+        """
+        import re
+        
+        # Patterns for multi-choice answers
+        patterns = [
+            r"ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"FINAL ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"selected options?:?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"correct options? (?:are|is):?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, message, re.IGNORECASE)
+            if match:
+                # Extract and clean the answer string
+                answer_str = match.group(1).upper()
+                # Remove 'and', spaces, and split by comma
+                answer_str = answer_str.replace('AND', ',').replace(' ', '')
+                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+                # Remove duplicates and sort
+                answers = sorted(list(set(answers)))
+                confidence = self.extract_confidence(message)
+                return {"answers": answers, "confidence": confidence}
+        
+        # Look for pattern like "Options A and C" or "A, B, and D"
+        option_pattern = r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)"
+        match = re.search(option_pattern, message, re.IGNORECASE)
+        if match:
+            answer_str = match.group(1).upper()
+            answer_str = answer_str.replace('AND', ',').replace(' ', '')
+            answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+            answers = sorted(list(set(answers)))
+            confidence = self.extract_confidence(message)
+            return {"answers": answers, "confidence": confidence}
+        
+        # No clear answers found
+        confidence = self.extract_confidence(message)
+        return {"answers": [], "confidence": confidence}
 
 
 """
-Fixed create_agent_team function to resolve import issues and add deployment support.
+Fixed create_agent_team function to resolve import issues and add deployment support with isolated task config.
 """
 
-def create_agent_team(use_team_leadership=True, 
+def create_agent_team_isolated(use_team_leadership=True, 
                       use_closed_loop_comm=False, 
                       use_mutual_monitoring=False,
                       use_shared_mental_model=False,
@@ -427,9 +632,11 @@ def create_agent_team(use_team_leadership=True,
                       question=None,
                       recruitment_method="adaptive",
                       recruitment_pool="general",
-                      n_max=5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+                      n_max=5,
+                      deployment_config=None,
+                      task_config=None) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
     """
-    Create a team of agents with different specializations and deployment distribution.
+    Create a team of agents with different specializations and deployment distribution using isolated task config.
     
     Args:
         use_team_leadership: Whether to use team leadership
@@ -444,6 +651,8 @@ def create_agent_team(use_team_leadership=True,
         recruitment_method: Method for recruitment (adaptive, fixed, basic, intermediate, advanced)
         recruitment_pool: Pool of agent roles to recruit from
         n_max: Maximum number of agents for intermediate team
+        deployment_config: Specific deployment configuration to use
+        task_config: Isolated task configuration
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -452,7 +661,7 @@ def create_agent_team(use_team_leadership=True,
     if use_recruitment and question:
         try:
             # Import with better error handling
-            from components.agent_recruitment import determine_complexity, recruit_agents
+            from components.agent_recruitment import determine_complexity, recruit_agents_isolated
             logging.info(f"Successfully imported recruitment modules")
             
             # Determine complexity
@@ -460,8 +669,8 @@ def create_agent_team(use_team_leadership=True,
             logging.info(f"Question complexity determined as: {complexity}")
             
             # Call with all parameters
-            logging.info(f"Calling recruit_agents with n_max={n_max}, method={recruitment_method}")
-            return recruit_agents(question, complexity, recruitment_pool, n_max, recruitment_method)
+            logging.info(f"Calling recruit_agents_isolated with n_max={n_max}, method={recruitment_method}")
+            return recruit_agents_isolated(question, complexity, recruitment_pool, n_max, recruitment_method, deployment_config, task_config)
         except ImportError as e:
             logging.error(f"Failed to import recruitment modules: {str(e)}")
             logging.error(traceback.format_exc())
@@ -473,6 +682,9 @@ def create_agent_team(use_team_leadership=True,
     
     # Default to original implementation if recruitment not enabled or failed
     logging.info(f"Creating default agent team with n_max={n_max}")
+    
+    # Use isolated task config or fallback to global
+    task_config = task_config or config.TASK
     
     # Determine leadership assignment
     if random_leader:
@@ -493,8 +705,11 @@ def create_agent_team(use_team_leadership=True,
         # Determine if this agent should have leadership capabilities
         is_leader = role == leader_role if leader_role else False
         
-        # Get deployment config for this agent
-        deployment_config = config.get_deployment_for_agent(agent_index)
+        # Get deployment config for this agent (override if provided)
+        if deployment_config:
+            agent_deployment_config = deployment_config
+        else:
+            agent_deployment_config = config.get_deployment_for_agent(agent_index)
         
         # Create the agent
         agent = ModularAgent(
@@ -506,8 +721,9 @@ def create_agent_team(use_team_leadership=True,
             use_team_orientation=use_team_orientation,
             use_mutual_trust=use_mutual_trust,
             n_max=n_max,
-            deployment_config=deployment_config,
-            agent_index=agent_index
+            deployment_config=agent_deployment_config,
+            agent_index=agent_index,
+            task_config=task_config  # Pass isolated task config
         )
         
         agents[role] = agent
@@ -526,6 +742,7 @@ def create_agent_team(use_team_leadership=True,
                     agent1.share_knowledge(agent2)
     
     # Log the team configuration
+    deployment_name = deployment_config['name'] if deployment_config else "distributed"
     logging.info(f"Created agent team with configuration:")
     logging.info(f"  Team Leadership: {use_team_leadership} (Leader: {leader_role if leader_role else 'None'})")
     logging.info(f"  Closed-loop Communication: {use_closed_loop_comm}")
@@ -535,6 +752,37 @@ def create_agent_team(use_team_leadership=True,
     logging.info(f"  Mutual Trust: {use_mutual_trust}")
     logging.info(f"  n_max: {n_max}")
     logging.info(f"  Agents: {', '.join(agents.keys())}")
-    logging.info(f"  Deployment distribution: {[f'{role}:{agent.deployment_config['name']}' for role, agent in agents.items()]}")
+    logging.info(f"  Deployment: {deployment_name}")
     
     return agents, leader
+
+# Legacy function for backward compatibility
+def create_agent_team(use_team_leadership=True, 
+                      use_closed_loop_comm=False, 
+                      use_mutual_monitoring=False,
+                      use_shared_mental_model=False,
+                      use_team_orientation=False,
+                      use_mutual_trust=False,
+                      random_leader=False,
+                      use_recruitment=False,
+                      question=None,
+                      recruitment_method="adaptive",
+                      recruitment_pool="general",
+                      n_max=5) -> Tuple[Dict[str, ModularAgent], ModularAgent]:
+    """Legacy wrapper that uses global config.TASK."""
+    return create_agent_team_isolated(
+        use_team_leadership=use_team_leadership,
+        use_closed_loop_comm=use_closed_loop_comm,
+        use_mutual_monitoring=use_mutual_monitoring,
+        use_shared_mental_model=use_shared_mental_model,
+        use_team_orientation=use_team_orientation,
+        use_mutual_trust=use_mutual_trust,
+        random_leader=random_leader,
+        use_recruitment=use_recruitment,
+        question=question,
+        recruitment_method=recruitment_method,
+        recruitment_pool=recruitment_pool,
+        n_max=n_max,
+        deployment_config=None,
+        task_config=config.TASK
+    )

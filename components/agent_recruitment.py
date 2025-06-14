@@ -1,5 +1,6 @@
 """
 Improved agent_recruitment.py functions to better handle n_max parameter and fix scope issues.
+Now supports isolated task configuration to prevent parallel processing conflicts.
 """
 import logging
 import random
@@ -103,7 +104,23 @@ def determine_complexity(question, method="adaptive"):
 
 def recruit_agents(question: str, complexity: str, recruitment_pool: str = "general", n_max=5, recruitment_method: str = "adaptive"):
     """
-    Recruit appropriate agents based on question complexity.
+    Legacy recruit_agents function that uses global config.TASK.
+    
+    Args:
+        question: The question or task to analyze
+        complexity: Determined complexity level ("basic", "intermediate", or "advanced")
+        recruitment_pool: Pool of agent types to recruit from
+        n_max: Maximum number of agents to recruit for intermediate team
+        recruitment_method: Method for agent recruitment
+
+    Returns:
+        Tuple of (agents dictionary, leader agent)
+    """
+    return recruit_agents_isolated(question, complexity, recruitment_pool, n_max, recruitment_method, None, config.TASK)
+
+def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: str = "general", n_max=5, recruitment_method: str = "adaptive", deployment_config=None, task_config=None):
+    """
+    Recruit appropriate agents based on question complexity using isolated task configuration.
 
     Args:
         question: The question or task to analyze
@@ -111,6 +128,8 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
         recruitment_pool: Pool of agent types to recruit from
         n_max: Maximum number of agents to recruit for intermediate team
         recruitment_method: Method for agent recruitment
+        deployment_config: Specific deployment configuration to use for all agents
+        task_config: Isolated task configuration
 
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -130,26 +149,29 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
 
     if complexity == "basic" or recruitment_method == "basic":
         logging.info("Using basic recruitment (single agent)")
-        return recruit_basic_team(question, recruitment_pool, instance_id=instance_id)
+        return recruit_basic_team_isolated(question, recruitment_pool, deployment_config, task_config, instance_id=instance_id)
     elif complexity == "intermediate" or recruitment_method == "intermediate":
         logging.info(f"Using intermediate recruitment with n_max={n_max}")
-        return recruit_intermediate_team(question, recruitment_pool, n_max, instance_id=instance_id)
+        return recruit_intermediate_team_isolated(question, recruitment_pool, n_max, deployment_config, task_config, instance_id=instance_id)
     elif complexity == "advanced" or recruitment_method == "advanced":
         logging.info("Using advanced recruitment (MDT structure)")
-        return recruit_advanced_team(question, recruitment_pool, instance_id=instance_id)
+        return recruit_advanced_team_isolated(question, recruitment_pool, deployment_config, task_config, instance_id=instance_id)
     else:
         logging.info(f"Unrecognized complexity/method: {complexity}/{recruitment_method}, falling back to intermediate")
-        return recruit_intermediate_team(question, recruitment_pool, n_max, instance_id=instance_id)
+        return recruit_intermediate_team_isolated(question, recruitment_pool, n_max, deployment_config, task_config, instance_id=instance_id)
 
 
-def recruit_basic_team(question: str, recruitment_pool: str):
+def recruit_basic_team_isolated(question: str, recruitment_pool: str, deployment_config=None, task_config=None, instance_id=None):
     """
-    Recruit a single medical generalist for basic questions.
+    Recruit a single medical generalist for basic questions using isolated configuration.
     Always returns exactly ONE agent, regardless of n_max.
     
     Args:
         question: The question or task
         recruitment_pool: The pool of agent types
+        deployment_config: Specific deployment configuration to use
+        task_config: Isolated task configuration
+        instance_id: Instance identifier for this question
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -160,8 +182,11 @@ def recruit_basic_team(question: str, recruitment_pool: str):
     role = "Medical Generalist"
     expertise = "A general medical practitioner with broad knowledge across medical disciplines"
     
-    # Get deployment config for agent 0
-    deployment_config = config.get_deployment_for_agent(0)
+    # Get deployment config for agent 0 or use provided one
+    if deployment_config:
+        agent_deployment_config = deployment_config
+    else:
+        agent_deployment_config = config.get_deployment_for_agent(0)
     
     # Create the generalist agent
     agent = ModularAgent(
@@ -172,25 +197,29 @@ def recruit_basic_team(question: str, recruitment_pool: str):
         use_shared_mental_model=False,
         use_team_orientation=False,
         use_mutual_trust=False,
-        deployment_config=deployment_config,
-        agent_index=0
+        deployment_config=agent_deployment_config,
+        agent_index=0,
+        task_config=task_config  # Pass isolated task config
     )
     
     # Create the agents dictionary
     agents = {"Medical Generalist": agent}
     
-    logging.info(f"Basic recruitment: Created a single Medical Generalist with deployment {deployment_config['name']}")
+    logging.info(f"Basic recruitment: Created a single Medical Generalist with deployment {agent_deployment_config['name']}")
     
     return agents, agent
 
-def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5):
+def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_max: int = 5, deployment_config=None, task_config=None, instance_id=None):
     """
-    Recruit a team of specialists with hierarchical relationships and deployment distribution.
+    Recruit a team of specialists with hierarchical relationships and deployment distribution using isolated config.
     
     Args:
         question: The question or task
         recruitment_pool: The pool of agent types
         n_max: Maximum number of agents to recruit
+        deployment_config: Specific deployment configuration to use for all agents
+        task_config: Isolated task configuration
+        instance_id: Instance identifier for this question
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -319,8 +348,11 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
     for role, expertise, hierarchy, weight in selected_team:
         is_leader = hierarchy == "Leader" or role == leader_role
         
-        # Get deployment config for this agent
-        deployment_config = config.get_deployment_for_agent(agent_index)
+        # Get deployment config for this agent or use provided one
+        if deployment_config:
+            agent_deployment_config = deployment_config
+        else:
+            agent_deployment_config = config.get_deployment_for_agent(agent_index)
         
         agent = ModularAgent(
             role_type=role,
@@ -330,8 +362,9 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
             use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
             use_team_orientation=config.USE_TEAM_ORIENTATION,
             use_mutual_trust=config.USE_MUTUAL_TRUST,
-            deployment_config=deployment_config,
-            agent_index=agent_index
+            deployment_config=agent_deployment_config,
+            agent_index=agent_index,
+            task_config=task_config  # Pass isolated task config
         )
         
         # Store weight in agent's knowledge base
@@ -352,13 +385,16 @@ def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int =
     
     return agents, leader
 
-def recruit_advanced_team(question: str, recruitment_pool: str):
+def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deployment_config=None, task_config=None, instance_id=None):
     """
-    Recruit multiple specialized teams for advanced questions, following MDAgents approach.
+    Recruit multiple specialized teams for advanced questions, following MDAgents approach using isolated config.
     
     Args:
         question: The question or task
         recruitment_pool: The pool of agent types
+        deployment_config: Specific deployment configuration to use for all agents
+        task_config: Isolated task configuration
+        instance_id: Instance identifier for this question
         
     Returns:
         Tuple of (agents dictionary, leader agent)
@@ -479,8 +515,11 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
             # Create unique role identifier
             unique_role = f"{team_prefix}{role}"
             
-            # Get deployment config for this agent
-            deployment_config = config.get_deployment_for_agent(agent_index)
+            # Get deployment config for this agent or use provided one
+            if deployment_config:
+                agent_deployment_config = deployment_config
+            else:
+                agent_deployment_config = config.get_deployment_for_agent(agent_index)
             
             # Create agent
             agent = ModularAgent(
@@ -491,8 +530,9 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
                 use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
                 use_team_orientation=config.USE_TEAM_ORIENTATION,
                 use_mutual_trust=config.USE_MUTUAL_TRUST,
-                deployment_config=deployment_config,
-                agent_index=agent_index
+                deployment_config=agent_deployment_config,
+                agent_index=agent_index,
+                task_config=task_config  # Pass isolated task config
             )
             
             # Add hierarchical information to knowledge base
@@ -525,3 +565,16 @@ def recruit_advanced_team(question: str, recruitment_pool: str):
     logging.info(f"Deployment distribution: {deployment_info}")
     
     return agents, leader
+
+# Legacy functions for backward compatibility
+def recruit_basic_team(question: str, recruitment_pool: str, instance_id=None):
+    """Legacy wrapper that uses global config."""
+    return recruit_basic_team_isolated(question, recruitment_pool, None, config.TASK, instance_id)
+
+def recruit_intermediate_team(question: str, recruitment_pool: str, n_max: int = 5, instance_id=None):
+    """Legacy wrapper that uses global config."""
+    return recruit_intermediate_team_isolated(question, recruitment_pool, n_max, None, config.TASK, instance_id)
+
+def recruit_advanced_team(question: str, recruitment_pool: str, instance_id=None):
+    """Legacy wrapper that uses global config."""
+    return recruit_advanced_team_isolated(question, recruitment_pool, None, config.TASK, instance_id)

@@ -1,5 +1,5 @@
 """
-Base agent class for modular agent system.
+Base agent class for modular agent system with isolated task configuration support.
 """
 
 import logging
@@ -8,6 +8,7 @@ import time
 import signal
 import threading
 from typing import List, Dict, Any, Optional, Tuple
+import copy
 
 from langchain_openai import AzureChatOpenAI
 import config
@@ -29,7 +30,7 @@ class TimeoutError(Exception):
 
 
 class Agent:
-    """Base agent class for modular agent system."""
+    """Base agent class for modular agent system with isolated task configuration support."""
     
     def __init__(self, 
                  role: str, 
@@ -54,6 +55,9 @@ class Agent:
             use_closed_loop_comm: Whether this agent uses closed-loop communication
             use_mutual_monitoring: Whether this agent uses mutual performance monitoring
             use_shared_mental_model: Whether this agent uses shared mental models
+            use_team_orientation: Whether this agent uses team orientation
+            use_mutual_trust: Whether this agent uses mutual trust
+            n_max: Maximum number of agents
             examples: Optional examples to include in the prompt
             deployment_config: Optional specific deployment configuration
             agent_index: Index of agent for deployment assignment
@@ -91,7 +95,7 @@ class Agent:
             timeout=config.REQUEST_TIMEOUT
         )
         
-        # Build initial system message
+        # Build initial system message using global config (for backward compatibility)
         self.messages = [
             {"role": "system", "content": self._build_system_prompt()}
         ]
@@ -107,19 +111,21 @@ class Agent:
                 
         self.logger.info(f"Initialized {self.role} agent with deployment {self.deployment_config['name']}")
     
-
-    def _build_system_prompt(self) -> str:
-        """Build the system prompt for the agent."""
+    def _build_system_prompt(self, task_config: Dict[str, Any] = None) -> str:
+        """Build the system prompt for the agent using isolated or global task config."""
+        # Use provided task config or fall back to global
+        task_config = task_config or config.TASK
+        
         # Base prompt
         prompt = AGENT_SYSTEM_PROMPTS["base"].format(
             role=self.role,
             expertise_description=self.expertise_description,
             team_name=config.TEAM_NAME,
             team_goal=config.TEAM_GOAL,
-            task_name=config.TASK['name'],
-            task_description=config.TASK['description'],
-            task_type=config.TASK['type'],
-            expected_output_format=config.TASK.get('expected_output_format', 'not specified')
+            task_name=task_config['name'],
+            task_description=task_config['description'],
+            task_type=task_config['type'],
+            expected_output_format=task_config.get('expected_output_format', 'not specified')
         )
 
         # Add team leadership component if enabled
@@ -309,7 +315,6 @@ class Agent:
         """Get the conversation history."""
         return self.conversation_history
     
-    
     def extract_multi_choice_mcq_answer(self, message):
         """
         Extract multi-choice MCQ answers from the agent's response.
@@ -361,7 +366,8 @@ class Agent:
     # Update extract_response method:
     def extract_response(self, message=None) -> Dict[str, Any]:
         """
-        Extract the agent's response to the task from their message.
+        Extract the agent's response to the task from their message using global config.
+        This is the legacy method for backward compatibility.
         
         Args:
             message: Optional message to analyze, defaults to last response
@@ -374,14 +380,27 @@ class Agent:
                 return {}
             message = self.conversation_history[-1]["assistant"]
         
-        task_type = config.TASK["type"]
+        return self.extract_response_isolated(message, config.TASK)
+    
+    def extract_response_isolated(self, message: str, task_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Extract the agent's response to the task from their message using isolated task config.
+        
+        Args:
+            message: Message to analyze
+            task_config: Isolated task configuration
+            
+        Returns:
+            Structured response based on task type
+        """
+        task_type = task_config["type"]
         
         if task_type == "ranking":
-            return self.extract_ranking(message)
+            return self.extract_ranking_isolated(message, task_config)
         elif task_type == "mcq":
-            return self.extract_mcq_answer(message)
+            return self.extract_mcq_answer_isolated(message, task_config)
         elif task_type == "multi_choice_mcq":
-            return self.extract_multi_choice_mcq_answer(message)
+            return self.extract_multi_choice_mcq_answer_isolated(message, task_config)
         elif task_type == "yes_no_maybe":
             return self.extract_yes_no_maybe_answer(message)
         elif task_type in ["open_ended", "estimation", "selection"]:
@@ -389,12 +408,13 @@ class Agent:
         else:
             return {"raw_response": message}
 
-    def extract_ranking(self, message):
+    def extract_ranking_isolated(self, message: str, task_config: Dict[str, Any]):
         """
-        Extract a ranking from the agent's response.
+        Extract a ranking from the agent's response using isolated task config.
         
         Args:
             message: Message to analyze
+            task_config: Isolated task configuration
             
         Returns:
             List of ranked items and confidence level
@@ -404,9 +424,9 @@ class Agent:
         
         # Look for numbered items (1. Item, 2. Item, etc.)
         for line in lines:
-            for i in range(1, len(config.TASK["options"]) + 1):
+            for i in range(1, len(task_config["options"]) + 1):
                 if f"{i}." in line or f"{i}:" in line:
-                    for item in config.TASK["options"]:
+                    for item in task_config["options"]:
                         if item.lower() in line.lower():
                             ranking.append(item)
                             break
@@ -421,7 +441,7 @@ class Agent:
                 valid_ranking.append(item)
         
         # Add any missing items at the end
-        for item in config.TASK["options"]:
+        for item in task_config["options"]:
             if item not in seen_items:
                 valid_ranking.append(item)
                 seen_items.add(item)
@@ -430,16 +450,21 @@ class Agent:
         confidence = self.extract_confidence(message)
         
         return {
-            "ranking": valid_ranking[:len(config.TASK["options"])],
+            "ranking": valid_ranking[:len(task_config["options"])],
             "confidence": confidence
         }
     
-    def extract_mcq_answer(self, message):
+    def extract_ranking(self, message):
+        """Legacy wrapper that uses global config.TASK."""
+        return self.extract_ranking_isolated(message, config.TASK)
+    
+    def extract_mcq_answer_isolated(self, message: str, task_config: Dict[str, Any]):
         """
-        Extract an MCQ answer from the agent's response.
+        Extract an MCQ answer from the agent's response using isolated task config.
         
         Args:
             message: Message to analyze
+            task_config: Isolated task configuration
             
         Returns:
             MCQ answer and confidence level
@@ -447,7 +472,7 @@ class Agent:
         # Look for option identifiers (A, B, C, D, etc.)
         for line in message.split('\n'):
             line = line.strip()
-            for option in config.TASK["options"]:
+            for option in task_config["options"]:
                 option_id = option.split('.')[0].strip() if '.' in option else None
                 if option_id and (line.startswith(option_id) or f"Option {option_id}" in line or f"Answer: {option_id}" in line):
                     # Extract confidence level
@@ -459,7 +484,7 @@ class Agent:
         
         # If no explicit option identifier is found, look for the full option text
         for line in message.split('\n'):
-            for option in config.TASK["options"]:
+            for option in task_config["options"]:
                 # Extract option identifier (A, B, C, etc.)
                 option_id = option.split('.')[0].strip() if '.' in option else None
                 # Check if the full option text is in the line
@@ -468,13 +493,66 @@ class Agent:
         
         # If still not found, try to determine if there's any indication of an answer
         lower_message = message.lower()
-        for option in config.TASK["options"]:
+        for option in task_config["options"]:
             option_id = option.split('.')[0].strip() if '.' in option else None
             if option_id and f"select {option_id.lower()}" in lower_message or f"choose {option_id.lower()}" in lower_message:
                 return {"answer": option_id, "confidence": confidence}
         
         # No clear answer found
         return {"answer": None, "confidence": confidence}
+    
+    def extract_mcq_answer(self, message):
+        """Legacy wrapper that uses global config.TASK."""
+        return self.extract_mcq_answer_isolated(message, config.TASK)
+    
+    def extract_multi_choice_mcq_answer_isolated(self, message: str, task_config: Dict[str, Any]):
+        """
+        Extract multi-choice MCQ answers from the agent's response using isolated task config.
+        
+        Args:
+            message: Message to analyze
+            task_config: Isolated task configuration
+            
+        Returns:
+            Multi-choice MCQ answers and confidence level
+        """
+        import re
+        
+        # Patterns for multi-choice answers
+        patterns = [
+            r"ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"FINAL ANSWERS?:\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"selected options?:?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)",
+            r"correct options? (?:are|is):?\s*([A-D],?\s*(?:and\s*)?[A-D]?(?:,?\s*(?:and\s*)?[A-D])?(?:,?\s*(?:and\s*)?[A-D])?)"
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, message, re.IGNORECASE)
+            if match:
+                # Extract and clean the answer string
+                answer_str = match.group(1).upper()
+                # Remove 'and', spaces, and split by comma
+                answer_str = answer_str.replace('AND', ',').replace(' ', '')
+                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+                # Remove duplicates and sort
+                answers = sorted(list(set(answers)))
+                confidence = self.extract_confidence(message)
+                return {"answers": answers, "confidence": confidence}
+        
+        # Look for pattern like "Options A and C" or "A, B, and D"
+        option_pattern = r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)"
+        match = re.search(option_pattern, message, re.IGNORECASE)
+        if match:
+            answer_str = match.group(1).upper()
+            answer_str = answer_str.replace('AND', ',').replace(' ', '')
+            answers = [a.strip() for a in answer_str.split(',') if a.strip()]
+            answers = sorted(list(set(answers)))
+            confidence = self.extract_confidence(message)
+            return {"answers": answers, "confidence": confidence}
+        
+        # No clear answers found
+        confidence = self.extract_confidence(message)
+        return {"answers": [], "confidence": confidence}
     
     def extract_yes_no_maybe_answer(self, message):
         """

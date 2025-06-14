@@ -1,6 +1,6 @@
 """
-Dataset runner for the modular agent system with question-level parallel processing.
-Runs multiple questions from datasets through the agent system.
+Dataset runner for the modular agent system with fixed question-level parallel processing.
+Runs multiple questions from datasets through the agent system with proper isolation.
 """
 
 import argparse
@@ -15,6 +15,7 @@ import time
 from tqdm import tqdm
 import concurrent.futures
 import threading
+import copy
 
 from datasets import load_dataset
 from simulator import AgentSystemSimulator
@@ -24,8 +25,6 @@ from components.agent_recruitment import determine_complexity, recruit_agents
 
 # Thread-local storage for progress tracking
 thread_local = threading.local()
-
-
 
 def setup_logging():
     """Set up logging for the dataset runner."""
@@ -134,8 +133,8 @@ def validate_medmcqa_parsing(sample_questions: List[Dict[str, Any]]) -> None:
             original_cop = question_data.get("cop", "N/A")
             
             # Parse with new function
-            task = format_medmcqa_for_task(question_data)
-            parsed_answer = task.get("ground_truth", "ERROR")
+            task, eval_data = format_medmcqa_for_task(question_data)
+            parsed_answer = eval_data.get("ground_truth", "ERROR")
             
             if original_type == "single":
                 single_count += 1
@@ -669,14 +668,12 @@ def process_single_question(question_index: int,
     Returns:
         Dictionary with question results
     """
-    import copy
     import gc
+    import traceback
 
-    sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_{question_index}_{deployment_config['name']}"
+    # Create unique simulation ID for this question
+    sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_q{question_index}_{deployment_config['name']}"
     
-    # Preserve original global TASK to avoid contamination
-    original_task_config = copy.deepcopy(config.TASK)
-
     # Format question based on dataset type
     if dataset_type == "medqa":
         agent_task, eval_data = format_medqa_for_task(question)
@@ -689,15 +686,15 @@ def process_single_question(question_index: int,
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
+    # Set thread-local data for this question
     thread_local.question_index = question_index
     thread_local.question_task = agent_task
-
-    config.TASK = agent_task
-    config.TASK_EVALUATION = eval_data
+    thread_local.question_eval = eval_data
 
     question_result = {
         "question_index": question_index,
         "deployment_used": deployment_config['name'],
+        "simulation_id": sim_id,
         "recruitment_info": {},
         "agent_responses": {},
         "disagreement_analysis": {},
@@ -707,6 +704,7 @@ def process_single_question(question_index: int,
     try:
         for attempt in range(max_retries):
             try:
+                # Create simulator with isolated task configuration
                 simulator = AgentSystemSimulator(
                     simulation_id=sim_id,
                     use_team_leadership=configuration.get("leadership", False),
@@ -720,8 +718,13 @@ def process_single_question(question_index: int,
                     recruitment_pool=configuration.get("recruitment_pool", "general"),
                     n_max=configuration.get("n_max", 5),
                     deployment_config=deployment_config,
-                    question_specific_context=True
+                    question_specific_context=True,
+                    task_config=agent_task,  # Pass task directly to simulator
+                    eval_data=eval_data      # Pass evaluation data directly
                 )
+
+                # Log that we're starting processing for this question
+                logging.info(f"Processing question {question_index} with deployment {deployment_config['name']}, sim_id: {sim_id}")
 
                 simulation_results = simulator.run_simulation()
                 performance = simulator.evaluate_performance()
@@ -737,10 +740,16 @@ def process_single_question(question_index: int,
                 if question_result["disagreement_analysis"].get("has_disagreement", False):
                     question_result["disagreement_flag"] = True
 
+                # Save individual question result to file
+                if run_output_dir:
+                    question_result_file = os.path.join(run_output_dir, f"question_{question_index}_result.json")
+                    with open(question_result_file, 'w') as f:
+                        json.dump(question_result, f, indent=2)
+                    logging.info(f"Saved question {question_index} result to {question_result_file}")
+
                 break  # Success, break retry loop
 
             except Exception as e:
-                import traceback
                 logging.error(f"Question {question_index} attempt {attempt+1} failed: {str(e)}")
                 logging.error(traceback.format_exc())
                 time.sleep(min(2 ** attempt, 15))
@@ -750,13 +759,17 @@ def process_single_question(question_index: int,
         question_result["error"] = f"Processing error: {str(e)}"
 
     finally:
-        config.TASK = original_task_config  # Restore original global task
+        # Clean up thread-local data and force garbage collection
+        if hasattr(thread_local, 'question_task'):
+            delattr(thread_local, 'question_task')
+        if hasattr(thread_local, 'question_eval'):
+            delattr(thread_local, 'question_eval')
+        
         if 'simulator' in locals():
             del simulator
         gc.collect()
 
     return question_result
-
 
 def track_agent_mind_changes(agent_analyses, agent_decisions):
     """Track if agents changed their answers after seeing teammates"""
