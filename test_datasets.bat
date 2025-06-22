@@ -11,7 +11,7 @@ REM ============================================================================
 REM =============================================================================
 REM MedMCQA Dataset - Special Set: Leadership + Mutual Trust
 REM =============================================================================
-python dataset_runner.py --dataset medmcqa --num-questions 10 --recruitment --recruitment-method intermediate --output-dir ./results/medrag/medmcqa_specialsetINT --leadership --trust --medrag --seed 111
+python dataset_runner.py --dataset medmcqa --num-questions 4 --recruitment --recruitment-method intermediate --output-dir ./results/medrag/medmcqa_specialsetINT --leadership --trust --medrag --seed 111
 ::python dataset_runner.py --dataset medmcqa --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/special/medmcqa_specialsetINT --leadership --trust --seed 222
 ::python dataset_runner.py --dataset medmcqa --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/special/medmcqa_specialsetINT --leadership --trust --seed 333
 

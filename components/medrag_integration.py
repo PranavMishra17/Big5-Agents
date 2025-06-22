@@ -1,6 +1,5 @@
 """
-MedRAG integration component for enhanced medical knowledge retrieval.
-Integrates with the Big5-Agents system to provide RAG-enhanced knowledge.
+Fixed MedRAG integration component that properly works with Azure OpenAI.
 """
 
 import logging
@@ -16,8 +15,7 @@ import config
 
 class MedRAGIntegration:
     """
-    Handles MedRAG integration for knowledge enhancement in the agent system.
-    Works with both shared mental models and individual agent knowledge banks.
+    Fixed MedRAG integration for knowledge enhancement in the agent system.
     """
     
     def __init__(self, 
@@ -28,13 +26,6 @@ class MedRAGIntegration:
                  deployment_config: Optional[Dict[str, str]] = None):
         """
         Initialize MedRAG integration.
-        
-        Args:
-            llm_name: LLM to use for MedRAG (configured for Azure OpenAI)
-            retriever_name: Retriever model name
-            corpus_name: Corpus to retrieve from
-            k_retrieval: Number of snippets to retrieve
-            deployment_config: Azure OpenAI deployment configuration
         """
         self.logger = logging.getLogger("medrag.integration")
         self.llm_name = llm_name
@@ -68,7 +59,7 @@ class MedRAGIntegration:
     def _initialize_medrag(self):
         """Initialize MedRAG with proper error handling."""
         try:
-            # Import MedRAG from the actual source
+            # Import our fixed MedRAG implementation
             from medrag import MedRAG
             
             # Configure for Azure OpenAI using the deployment config
@@ -86,7 +77,6 @@ class MedRAGIntegration:
                 retriever_name=self.retriever_name,
                 corpus_name=self.corpus_name,
                 azure_config=azure_config,
-                db_dir="./corpus",
                 corpus_cache=True  # Enable caching for performance
             )
             
@@ -95,7 +85,6 @@ class MedRAGIntegration:
         except ImportError as e:
             self._initialization_error = f"MedRAG not available: {str(e)}"
             self.logger.error(f"Failed to import MedRAG: {str(e)}")
-            self.logger.error("Ensure MedRAG is properly installed and src/medrag.py is available")
             
         except Exception as e:
             self._initialization_error = f"MedRAG initialization failed: {str(e)}"
@@ -116,14 +105,6 @@ class MedRAGIntegration:
                           question_id: str = None) -> Dict[str, Any]:
         """
         Retrieve relevant medical knowledge for a question using MedRAG.
-        
-        Args:
-            question: Medical question text
-            options: List of answer options (for MCQ)
-            question_id: Unique identifier for caching
-            
-        Returns:
-            Dictionary containing retrieved knowledge and metadata
         """
         if not self.is_available():
             self.logger.warning(f"MedRAG not available: {self._initialization_error}")
@@ -270,6 +251,7 @@ class MedRAGIntegration:
         
         return {
             "available": True,
+            "success": True,
             "question": question,
             "knowledge_snippets": knowledge_snippets,
             "summary": summary,
@@ -349,13 +331,6 @@ class MedRAGIntegration:
                                retrieved_knowledge: Dict[str, Any]) -> bool:
         """
         Enhance individual agent's knowledge base with retrieved knowledge.
-        
-        Args:
-            agent: Agent instance to enhance
-            retrieved_knowledge: Knowledge retrieved from MedRAG
-            
-        Returns:
-            True if knowledge was successfully added
         """
         if not retrieved_knowledge.get("available", False):
             self.logger.warning("Cannot enhance agent knowledge: no valid knowledge retrieved")
@@ -387,13 +362,6 @@ class MedRAGIntegration:
                                   retrieved_knowledge: Dict[str, Any]) -> bool:
         """
         Enhance shared mental model with retrieved knowledge.
-        
-        Args:
-            mental_model: SharedMentalModel instance
-            retrieved_knowledge: Knowledge retrieved from MedRAG
-            
-        Returns:
-            True if knowledge was successfully added
         """
         if not retrieved_knowledge.get("available", False):
             self.logger.warning("Cannot enhance shared mental model: no valid knowledge retrieved")
@@ -406,12 +374,6 @@ class MedRAGIntegration:
                 "key_snippets": retrieved_knowledge["knowledge_snippets"][:3],  # Top 3 for sharing
                 "medical_insights": retrieved_knowledge.get("medrag_insights", {})
             }
-            
-            # Update task knowledge with medical context
-            if "current_task" in mental_model.task_knowledge:
-                mental_model.task_knowledge["current_task"]["medical_context"] = self._create_medical_context(
-                    retrieved_knowledge["knowledge_snippets"]
-                )
             
             self.logger.debug("Enhanced shared mental model with MedRAG knowledge")
             return True
@@ -445,12 +407,6 @@ class MedRAGIntegration:
     def get_enhancement_prompt_addition(self, retrieved_knowledge: Dict[str, Any]) -> str:
         """
         Generate prompt addition for agents with retrieved knowledge.
-        
-        Args:
-            retrieved_knowledge: Knowledge retrieved from MedRAG
-            
-        Returns:
-            String to add to agent prompts
         """
         if not retrieved_knowledge.get("available", False):
             return ""
@@ -459,38 +415,27 @@ class MedRAGIntegration:
         if not snippets:
             return ""
         
-        # Import formatting function from prompts
-        try:
-            from utils.prompts import format_medical_snippets_for_prompt, get_medrag_prompt
+        # Format prompt addition
+        prompt_addition = "\n\n=== RETRIEVED MEDICAL KNOWLEDGE ===\n"
+        prompt_addition += f"The following medical knowledge has been retrieved to assist with this question:\n\n"
+        
+        # Add top 3 most relevant snippets
+        top_snippets = sorted(snippets, key=lambda x: x.get("relevance_score", 0), reverse=True)[:3]
+        
+        for i, snippet in enumerate(top_snippets, 1):
+            content = snippet["content"]
+            if len(content) > 200:
+                content = content[:200] + "..."
             
-            # Format snippets for prompt
-            formatted_data = format_medical_snippets_for_prompt(snippets, max_snippets=3)
-            
-            # Use MedRAG prompt template
-            prompt_addition = get_medrag_prompt("medrag_agent_enhancement", **formatted_data)
-            
-        except ImportError:
-            # Fallback formatting
-            prompt_addition = "\n\n=== RETRIEVED MEDICAL KNOWLEDGE ===\n"
-            prompt_addition += f"The following medical knowledge has been retrieved to assist with this question:\n\n"
-            
-            # Add top 3 most relevant snippets
-            top_snippets = sorted(snippets, key=lambda x: x.get("relevance_score", 0), reverse=True)[:3]
-            
-            for i, snippet in enumerate(top_snippets, 1):
-                content = snippet["content"]
-                if len(content) > 200:
-                    content = content[:200] + "..."
-                
-                prompt_addition += f"{i}. {snippet.get('title', 'Medical Reference')}: {content}\n\n"
-            
-            # Add MedRAG insights if available
-            insights = retrieved_knowledge.get("medrag_insights", {})
-            if insights.get("reasoning"):
-                prompt_addition += f"Additional clinical reasoning: {insights['reasoning'][:200]}...\n\n"
-            
-            prompt_addition += "Consider this retrieved medical knowledge in your analysis and decision-making.\n"
-            prompt_addition += "=== END RETRIEVED KNOWLEDGE ===\n"
+            prompt_addition += f"{i}. {snippet.get('title', 'Medical Reference')}: {content}\n\n"
+        
+        # Add MedRAG insights if available
+        insights = retrieved_knowledge.get("medrag_insights", {})
+        if insights.get("reasoning"):
+            prompt_addition += f"Additional clinical reasoning: {insights['reasoning'][:200]}...\n\n"
+        
+        prompt_addition += "Consider this retrieved medical knowledge in your analysis and decision-making.\n"
+        prompt_addition += "=== END RETRIEVED KNOWLEDGE ===\n"
         
         return prompt_addition
     
@@ -499,15 +444,6 @@ class MedRAGIntegration:
         with self._cache_lock:
             self._knowledge_cache.clear()
         self.logger.info("Cleared MedRAG knowledge cache")
-    
-    def get_cache_stats(self) -> Dict[str, Any]:
-        """Get cache statistics."""
-        with self._cache_lock:
-            return {
-                "cache_size": len(self._knowledge_cache),
-                "total_retrievals": len(self._knowledge_cache),
-                "cache_keys": list(self._knowledge_cache.keys())[:5]  # First 5 keys
-            }
 
 
 def create_medrag_integration(deployment_config: Optional[Dict[str, str]] = None,
@@ -515,14 +451,6 @@ def create_medrag_integration(deployment_config: Optional[Dict[str, str]] = None
                             corpus_name: str = "Textbooks") -> Optional[MedRAGIntegration]:
     """
     Factory function to create MedRAG integration with error handling.
-    
-    Args:
-        deployment_config: Azure OpenAI deployment configuration
-        retriever_name: MedRAG retriever to use
-        corpus_name: Medical corpus to retrieve from
-        
-    Returns:
-        MedRAGIntegration instance or None if initialization fails
     """
     try:
         integration = MedRAGIntegration(

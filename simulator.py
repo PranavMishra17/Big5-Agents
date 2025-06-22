@@ -228,24 +228,19 @@ class AgentSystemSimulator:
             
         return agents, leader
 
+
     def _enhance_agents_with_medrag(self, use_medrag: bool = False) -> Optional[Dict[str, Any]]:
         """
-        Enhance agents with MedRAG retrieved knowledge if enabled.
-        
-        Args:
-            use_medrag: Whether to use MedRAG knowledge enhancement
-            
-        Returns:
-            Retrieved knowledge dictionary or None if not used/failed
+        Enhanced MedRAG integration with proper Azure OpenAI configuration.
         """
         if not use_medrag:
             self.logger.logger.debug("MedRAG enhancement disabled")
             return None
         
         try:
-            # Create MedRAG integration
+            # Create MedRAG integration with the SAME deployment config as agents
             medrag_integration = create_medrag_integration(
-                deployment_config=self.deployment_config,
+                deployment_config=self.deployment_config,  # Use same deployment as agents
                 retriever_name="MedCPT",
                 corpus_name="Textbooks"
             )
@@ -272,6 +267,16 @@ class AgentSystemSimulator:
             
             if not retrieved_knowledge.get("available", False):
                 self.logger.logger.warning(f"MedRAG retrieval failed: {retrieved_knowledge.get('error', 'Unknown error')}")
+                # Still store the attempt for metrics
+                self.results["medrag_enhancement"] = {
+                    "enabled": True,
+                    "success": False,
+                    "error": retrieved_knowledge.get('error', 'Unknown error'),
+                    "agents_enhanced": 0,
+                    "total_agents": len(self.agents),
+                    "snippets_retrieved": 0,
+                    "retrieval_time": retrieved_knowledge.get('retrieval_time', 0)
+                }
                 return retrieved_knowledge
             
             # Enhance agents with retrieved knowledge
@@ -285,17 +290,13 @@ class AgentSystemSimulator:
                 )
                 if success:
                     self.logger.logger.info("Enhanced shared mental model with MedRAG knowledge")
-                else:
-                    self.logger.logger.warning("Failed to enhance shared mental model with MedRAG")
             
-            # Method 2: Enhance individual agents (works even without shared mental model)
+            # Method 2: Enhance individual agents
             for role, agent in self.agents.items():
                 success = medrag_integration.enhance_agent_knowledge(agent, retrieved_knowledge)
                 if success:
                     enhanced_agents += 1
                     self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
-                else:
-                    self.logger.logger.warning(f"Failed to enhance {role} with MedRAG knowledge")
             
             # Method 3: Add knowledge to agent prompts
             knowledge_prompt_addition = medrag_integration.get_enhancement_prompt_addition(retrieved_knowledge)
@@ -313,7 +314,7 @@ class AgentSystemSimulator:
                 f"{num_snippets} knowledge snippets retrieved in {retrieval_time:.2f}s"
             )
             
-            # Store for results
+            # Store for results - CRITICAL: Proper metrics storage
             self.results["medrag_enhancement"] = {
                 "enabled": True,
                 "success": True,
@@ -337,10 +338,13 @@ class AgentSystemSimulator:
                 "success": False,
                 "error": error_msg,
                 "agents_enhanced": 0,
-                "total_agents": len(self.agents)
+                "total_agents": len(self.agents),
+                "snippets_retrieved": 0,
+                "retrieval_time": 0
             }
             
             return None
+    
 
     def run_simulation(self):
         """
