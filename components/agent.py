@@ -4,6 +4,7 @@ Base agent class for modular agent system with isolated task configuration suppo
 
 import logging
 import json
+import re
 import time
 import signal
 import threading
@@ -554,55 +555,111 @@ class Agent:
         confidence = self.extract_confidence(message)
         return {"answers": [], "confidence": confidence}
     
-    def extract_yes_no_maybe_answer(self, message):
-        """
-        Extract a yes/no/maybe answer from the agent's response.
+    def _majority_voting_yes_no_maybe(self, agent_responses):
+        """Apply majority voting to yes/no/maybe tasks."""
+        votes = {"yes": 0, "no": 0, "maybe": 0}
         
-        Args:
-            message: Message to analyze
+        for agent_role, response_data in agent_responses.items():
+            answer = None
             
-        Returns:
-            Yes/no/maybe answer and confidence level
-        """
-        import re
+            if isinstance(response_data, dict):
+                if "final_decision" in response_data:
+                    answer = self.extract_yes_no_maybe_answer(response_data["final_decision"])
+                elif "extract" in response_data and isinstance(response_data["extract"], dict):
+                    if "answer" in response_data["extract"]:
+                        answer = response_data["extract"]["answer"]
+                        if answer and answer.lower() in ["yes", "no", "maybe"]:
+                            answer = answer.lower()
+            elif isinstance(response_data, str):
+                answer = self.extract_yes_no_maybe_answer(response_data)
+            
+            if answer and answer in votes:
+                votes[answer] += 1
         
-        # Look for explicit answer patterns
-        answer_patterns = [
+        # Find winning option
+        total_votes = sum(votes.values())
+        winning_option = max(votes, key=votes.get) if total_votes > 0 else None
+        
+        return {
+            "method": "majority_voting",
+            "winning_option": winning_option,
+            "vote_counts": votes,
+            "total_votes": total_votes,
+            "confidence": votes.get(winning_option, 0) / total_votes if total_votes > 0 else 0
+        }
+
+    # Fix 2: Update extract_yes_no_maybe_answer in decision_methods.py
+    def extract_yes_no_maybe_answer(self, content):
+        """Extract yes/no/maybe answer with improved parsing."""
+        if not isinstance(content, str):
+            return None
+        
+        content_lower = content.lower()
+        
+        # Explicit answer patterns - more comprehensive
+        patterns = [
             r"ANSWER:\s*(yes|no|maybe)",
+            r"^ANSWER:\s*(yes|no|maybe)",          # Start of line
             r"FINAL ANSWER:\s*(yes|no|maybe)",
-            r"answer is:\s*(yes|no|maybe)",
-            r"my answer:\s*(yes|no|maybe)",
-            r"the answer is:\s*(yes|no|maybe)"
+            r"answer is:?\s*(yes|no|maybe)",
+            r"my answer:?\s*(yes|no|maybe)",
+            r"the answer is:?\s*(yes|no|maybe)",
+            r"conclusion:?\s*(yes|no|maybe)",
+            r"therefore:?\s*(yes|no|maybe)",
         ]
         
-        for pattern in answer_patterns:
-            match = re.search(pattern, message.lower(), re.IGNORECASE)
+        for pattern in patterns:
+            match = re.search(pattern, content_lower, re.IGNORECASE | re.MULTILINE)
             if match:
-                answer = match.group(1).lower()
-                confidence = self.extract_confidence(message)
-                return {"answer": answer, "confidence": confidence}
+                return match.group(1).lower()
         
-        # Look for clear yes/no/maybe statements in the text
-        lower_message = message.lower()
+        # Check for clear yes/no/maybe statements at start of lines
+        lines = content_lower.split('\n')
+        for line in lines[:5]:  # Check first 5 lines
+            line = line.strip()
+            if line.startswith('yes,') or line.startswith('yes.') or line == 'yes':
+                return "yes"
+            elif line.startswith('no,') or line.startswith('no.') or line == 'no':
+                return "no"
+            elif line.startswith('maybe') or line.startswith('uncertain') or line.startswith('possibly'):
+                return "maybe"
         
-        # Check for definitive yes
-        if any(phrase in lower_message for phrase in ["yes,", "yes.", "yes\n", "answer: yes", "answer is yes"]):
-            confidence = self.extract_confidence(message)
-            return {"answer": "yes", "confidence": confidence}
+        return None
+
+    # Fix 3: Update simulator.py _evaluate_yes_no_maybe_performance method
+    def _evaluate_yes_no_maybe_performance(self) -> Dict[str, Any]:
+        """Evaluate performance on yes/no/maybe tasks."""
+        ground_truth = self.evaluation_data.get("ground_truth")
+        if ground_truth:
+            ground_truth = ground_truth.lower()
         
-        # Check for definitive no
-        if any(phrase in lower_message for phrase in ["no,", "no.", "no\n", "answer: no", "answer is no"]):
-            confidence = self.extract_confidence(message)
-            return {"answer": "no", "confidence": confidence}
+        if not ground_truth or ground_truth not in ["yes", "no", "maybe"]:
+            return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
         
-        # Check for maybe/uncertain
-        if any(phrase in lower_message for phrase in ["maybe", "uncertain", "unclear", "insufficient evidence", "cannot determine"]):
-            confidence = self.extract_confidence(message)
-            return {"answer": "maybe", "confidence": confidence}
+        metrics = {}
         
-        # No clear answer found
-        confidence = self.extract_confidence(message)
-        return {"answer": None, "confidence": confidence}
+        for method, result in self.results["decision_results"].items():
+            if result and "winning_option" in result:
+                selected = result["winning_option"]
+                if selected:
+                    selected = selected.lower()
+                correct = selected == ground_truth if selected else False
+                
+                metrics[method] = {
+                    "correct": correct,
+                    "confidence": result.get("confidence", 0),
+                    "selected": selected,
+                    "ground_truth": ground_truth
+                }
+            else:
+                metrics[method] = {
+                    "correct": False,
+                    "confidence": 0,
+                    "selected": None,
+                    "ground_truth": ground_truth
+                }
+        
+        return metrics
     
     def extract_confidence(self, message):
         """

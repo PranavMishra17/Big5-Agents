@@ -422,7 +422,7 @@ TASK_ANALYSIS_PROMPTS = {
     4. Provide your reasoning process
 
     You MUST provide your answer, but focus primarily on your analytical reasoning.
-    Start your final answer with "ANSWER: X" (where X is A, B, C, or D) at the end of your analysis.
+    Start your final answer with "ANSWER: X" (where X is the correct option letter) at the end of your analysis.
     """,
     
     "multi_choice_mcq_task": """
@@ -496,7 +496,7 @@ FINAL_DECISION_PROMPTS = {
     IMPORTANT: You are now making your final independent decision. Consider the insights from the discussion, but make your own judgment.
     
     Provide your final answer with reasoning.
-    You MUST begin your response with "ANSWER: X" (replace X with your chosen option A, B, C, or D).
+    You MUST begin your response with "ANSWER: X" (replace X with your chosen option letter).
     Then explain your final reasoning, including how the team discussion influenced (or didn't influence) your decision.
     """,
     

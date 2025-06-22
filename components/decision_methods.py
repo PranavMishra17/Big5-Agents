@@ -11,89 +11,307 @@ import config
 class DecisionMethods:
     """
     Implements different decision methods for aggregating agent responses.
-    
-    Supports multiple decision methods:
-    1. Majority Voting - Each agent gets one vote with equal weight
-    2. Weighted Voting - Votes are weighted by agent expertise and confidence
-    3. Borda Count - Points assigned based on preference ranking
-    4. Yes/No/Maybe Voting - For research questions requiring binary or uncertain answers
+    Updated to support isolated task configuration.
     """
     
-    def __init__(self):
-        """Initialize the decision methods handler."""
+    def __init__(self, task_config: Dict[str, Any] = None):
+        """Initialize with optional task configuration."""
         self.logger = logging.getLogger("decision.methods")
+        self.task_config = task_config
         self.logger.info("Initialized decision methods handler")
 
-    def extract_answer_option(self, content):
-        """Extract answer option from various content formats with improved parsing."""
-        if not isinstance(content, str):
-            return None
-        
-        # Standard answer formats for MCQ - now with more explicit patterns
-        patterns = [
-            r"ANSWER:\s*([A-Da-d])",           # ANSWER: A
-            r"FINAL ANSWER:\s*([A-Da-d])",     # FINAL ANSWER: A  
-            r"^ANSWER:\s*([A-Da-d])",          # Start of line
-            r"answer is:?\s*([A-Da-d])",       # answer is: A
-            r"my answer:?\s*([A-Da-d])",       # my answer: A
-            r"the answer:?\s*([A-Da-d])",      # the answer: A
-            r"option\s+([A-Da-d])",            # option A
-            r"choose\s+([A-Da-d])",            # choose A
-            r"select\s+([A-Da-d])",            # select A
-            r"\*\*([A-Da-d])\.\*\*",          # **A.**
-            r"^([A-Da-d])\.",                  # A. at start of line
-        ]
-        
-        for pattern in patterns:
-            match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
-            if match:
-                return match.group(1).upper()
-        
-        # Look for ranking format and extract first option
-        ranking_match = re.search(r"RANKING:\s*([A-Da-d])(?:\s*,|\s|$)", content, re.IGNORECASE)
-        if ranking_match:
-            return ranking_match.group(1).upper()
-                
-        return None
+    def set_task_config(self, task_config: Dict[str, Any]):
+        """Set the task configuration for this decision session."""
+        self.task_config = task_config
 
-    def extract_multi_choice_answers(self, content):
-        """Extract multiple choice answers with improved parsing."""
-        if not isinstance(content, str):
-            return []
+
+    def majority_voting(self, agent_responses, task_config: Dict[str, Any] = None):
+        """Apply majority voting supporting A-J options."""
+        task_config = task_config or self.task_config
+        if not task_config:
+            import config
+            task_config = config.TASK
+            
+        task_type = task_config.get("type", "mcq")
         
-        # Patterns for multi-choice answers - more comprehensive
-        patterns = [
-            r"ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",           # ANSWERS: A,C
-            r"^ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",          # Start of line
-            r"FINAL ANSWERS?:\s*([A-D](?:\s*,\s*[A-D])*)",     # FINAL ANSWERS: A,C
-            r"my answers?:?\s*([A-D](?:\s*,\s*[A-D])*)",       # my answers: A,C
-            r"selected options?:?\s*([A-D](?:\s*,\s*[A-D])*)", # selected options: A,C
-            r"correct options?:?\s*([A-D](?:\s*,\s*[A-D])*)",  # correct options: A,C
-            r"choose:?\s*([A-D](?:\s*,\s*[A-D])*)",            # choose: A,C
-        ]
+        if task_type == "yes_no_maybe":
+            return self._majority_voting_yes_no_maybe(agent_responses)
         
-        for pattern in patterns:
-            match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
-            if match:
-                answer_str = match.group(1).upper()
-                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
-                return sorted(list(set(answers)))
+        votes = {}
+        max_votes = 0
         
-        # Fallback: look for pattern like "Options A and C" or "A, B, and D"
-        option_patterns = [
-            r"options?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)",
-            r"letters?\s+([A-D](?:\s*,\s*[A-D])*(?:\s*,?\s*and\s*[A-D])?)",
-        ]
+        # Get valid option letters for this task
+        valid_options = self._get_option_letters(task_config)
         
-        for pattern in option_patterns:
-            match = re.search(pattern, content, re.IGNORECASE)
-            if match:
-                answer_str = match.group(1).upper()
-                answer_str = answer_str.replace('AND', ',').replace(' ', '')
-                answers = [a.strip() for a in answer_str.split(',') if a.strip()]
-                return sorted(list(set(answers)))
+        for agent_role, response in agent_responses.items():
+            preference = None
+            
+            if isinstance(response, dict):
+                if "final_decision" in response:
+                    preference = self.extract_answer_option(response["final_decision"])
+                elif "extract" in response and isinstance(response["extract"], dict):
+                    if "answer" in response["extract"]:
+                        preference = response["extract"]["answer"]
+                        if preference:
+                            preference = preference.upper()
+            elif isinstance(response, str):
+                preference = self.extract_answer_option(response)
+            
+            # Register vote if valid option
+            if preference and preference in valid_options:
+                if preference not in votes:
+                    votes[preference] = 0
+                votes[preference] += 1
+                max_votes = max(max_votes, votes[preference])
+                logging.info(f"Recorded vote from {agent_role}: {preference}")
         
-        return []
+        winning_option = None if not votes else max(votes, key=votes.get)
+        total_votes = sum(votes.values())
+        
+        return {
+            "method": "majority_voting",
+            "winning_option": winning_option,
+            "vote_counts": votes,
+            "total_votes": total_votes,
+            "confidence": max_votes / total_votes if total_votes > 0 else 0
+        }
+
+    def borda_count(self, agent_responses, task_config: Dict[str, Any] = None):
+        """Apply Borda count supporting A-J options."""
+        task_config = task_config or self.task_config
+        if not task_config:
+            import config
+            task_config = config.TASK
+            
+        task_type = task_config.get("type", "mcq")
+        
+        if task_type == "yes_no_maybe":
+            return self._majority_voting_yes_no_maybe(agent_responses)
+        elif task_type == "multi_choice_mcq":
+            return self._borda_count_multi_choice(agent_responses)
+        
+        # Initialize scores for all valid options
+        valid_options = self._get_option_letters(task_config)
+        borda_scores = {option: 0 for option in valid_options}
+        num_rankings = 0
+        max_score = len(valid_options) - 1  # Max points for first place
+        
+        for agent_role, response_data in agent_responses.items():
+            if "final_decision" in response_data:
+                # Look for ranking pattern - updated for A-J
+                option_pattern = "|".join(valid_options + [opt.lower() for opt in valid_options])
+                ranking_pattern = f"[Mm]y\\s+ranking:?\\s*(?:\\*?({option_pattern})\\*?,?\\s*)+"
+                
+                match = re.search(ranking_pattern, response_data["final_decision"], re.IGNORECASE)
+                
+                if match:
+                    # Extract all options in ranking order
+                    options_found = re.findall(f"({option_pattern})", match.group(0), re.IGNORECASE)
+                    ranking = [opt.upper() for opt in options_found if opt.upper() in valid_options]
+                    
+                    if ranking:
+                        num_rankings += 1
+                        # Assign Borda points
+                        for i, option in enumerate(ranking):
+                            points = max_score - i
+                            borda_scores[option] += max(points, 0)
+                        
+                        logging.info(f"Borda count: {agent_role} ranking extracted: {ranking}")
+                        continue
+                
+                # Fallback: just extract single answer
+                answer = self.extract_answer_option(response_data["final_decision"])
+                if answer and answer in valid_options:
+                    borda_scores[answer] += max_score
+                    num_rankings += 1
+                    logging.info(f"Borda count: {agent_role} single answer: {answer}")
+        
+        # Find winner
+        winning_option = max(borda_scores.items(), key=lambda x: x[1])[0] if any(borda_scores.values()) else None
+        total_possible_score = num_rankings * max_score
+        confidence = borda_scores[winning_option] / total_possible_score if winning_option and total_possible_score > 0 else 0
+        
+        return {
+            "method": "borda_count",
+            "winning_option": winning_option,
+            "borda_scores": borda_scores,
+            "total_possible_score": total_possible_score,
+            "confidence": confidence
+        }
+
+    def weighted_voting(self, agent_responses, team_weights=None, task_config: Dict[str, Any] = None):
+        """Apply weighted voting supporting A-J options."""
+        task_config = task_config or self.task_config
+        if not task_config:
+            import config
+            task_config = config.TASK
+            
+        task_type = task_config.get("type", "mcq")
+        
+        if task_type == "yes_no_maybe":
+            return self._weighted_voting_yes_no_maybe(agent_responses, team_weights)
+        elif task_type == "multi_choice_mcq":
+            return self._weighted_voting_multi_choice(agent_responses, team_weights)
+        
+        votes = {}
+        weighted_votes = {}
+        total_weight = 0
+        agent_weights_used = {}
+        
+        # Get valid options
+        valid_options = self._get_option_letters(task_config)
+        
+        for agent_role, response_data in agent_responses.items():
+            preference = None
+            confidence = 1.0
+            
+            if isinstance(response_data, dict):
+                if "final_decision" in response_data:
+                    preference = self.extract_answer_option(response_data["final_decision"])
+                elif "extract" in response_data and isinstance(response_data["extract"], dict):
+                    if "answer" in response_data["extract"]:
+                        preference = response_data["extract"]["answer"]
+                        if preference:
+                            preference = preference.upper()
+                    if "confidence" in response_data["extract"]:
+                        confidence = response_data["extract"]["confidence"]
+            
+            if preference and preference in valid_options:
+                weight = response_data.get("weight", 0.2)
+                
+                # Apply hierarchy multiplier
+                hierarchy_factor = 1.0
+                if "leader" in agent_role.lower() or "chief" in agent_role.lower():
+                    hierarchy_factor = 1.5
+                elif any(x in agent_role for x in ["3_", "Final", "FRDT"]):
+                    hierarchy_factor = 1.3
+                elif any(x in agent_role for x in ["2_", "Expert", "DET"]):
+                    hierarchy_factor = 1.1
+                
+                final_weight = weight * confidence * hierarchy_factor
+                agent_weights_used[agent_role] = final_weight
+                
+                if preference not in votes:
+                    votes[preference] = 0
+                    weighted_votes[preference] = 0
+                
+                votes[preference] += 1
+                weighted_votes[preference] += final_weight
+                total_weight += final_weight
+        
+        winning_option = None if not weighted_votes else max(weighted_votes.items(), key=lambda x: x[1])[0]
+        confidence = weighted_votes.get(winning_option, 0) / total_weight if total_weight > 0 else 0
+        
+        return {
+            "method": "weighted_voting",
+            "winning_option": winning_option,
+            "vote_counts": votes,
+            "weighted_votes": weighted_votes,
+            "agent_weights": agent_weights_used,
+            "total_weight": total_weight,
+            "confidence": confidence
+        }
+
+
+    # Yes/No/Maybe specific methods
+    def _majority_voting_yes_no_maybe(self, agent_responses):
+        """Apply majority voting to yes/no/maybe tasks."""
+        votes = {"yes": 0, "no": 0, "maybe": 0}
+        
+        for agent_role, response_data in agent_responses.items():
+            answer = None
+            
+            if isinstance(response_data, dict):
+                if "final_decision" in response_data:
+                    answer = self.extract_yes_no_maybe_answer(response_data["final_decision"])
+                elif "extract" in response_data and isinstance(response_data["extract"], dict):
+                    if "answer" in response_data["extract"]:
+                        answer = response_data["extract"]["answer"]
+                        if answer and answer.lower() in ["yes", "no", "maybe"]:
+                            answer = answer.lower()
+            elif isinstance(response_data, str):
+                answer = self.extract_yes_no_maybe_answer(response_data)
+            
+            if answer and answer in votes:
+                votes[answer] += 1
+                logging.info(f"Recorded vote from {agent_role}: {answer}")
+        
+        # Find winning option
+        total_votes = sum(votes.values())
+        winning_option = max(votes, key=votes.get) if total_votes > 0 else None
+        
+        logging.info(f"Yes/No/Maybe voting results: {votes}, winner: {winning_option}")
+        
+        return {
+            "method": "majority_voting",
+            "winning_option": winning_option,
+            "vote_counts": votes,
+            "total_votes": total_votes,
+            "confidence": votes.get(winning_option, 0) / total_votes if total_votes > 0 else 0
+        }
+    
+    def _weighted_voting_yes_no_maybe(self, agent_responses, team_weights=None):
+        """Apply weighted voting to yes/no/maybe tasks."""
+        votes = {"yes": 0, "no": 0, "maybe": 0}
+        weighted_votes = {"yes": 0.0, "no": 0.0, "maybe": 0.0}
+        total_weight = 0
+        agent_weights_used = {}
+        
+        for agent_role, response_data in agent_responses.items():
+            answer = None
+            confidence = 1.0
+            
+            # Extract answer and confidence
+            if isinstance(response_data, dict):
+                if "final_decision" in response_data:
+                    answer = self.extract_yes_no_maybe_answer(response_data["final_decision"])
+                elif "extract" in response_data and isinstance(response_data["extract"], dict):
+                    if "answer" in response_data["extract"]:
+                        answer = response_data["extract"]["answer"]
+                        if answer and answer.lower() in ["yes", "no", "maybe"]:
+                            answer = answer.lower()
+                    if "confidence" in response_data["extract"]:
+                        confidence = response_data["extract"]["confidence"]
+            
+            if answer and answer in votes:
+                # Get agent weight
+                weight = response_data.get("weight", 0.2)
+                
+                # Apply hierarchy multiplier
+                hierarchy_factor = 1.0
+                if "leader" in agent_role.lower() or "chief" in agent_role.lower():
+                    hierarchy_factor = 1.5
+                elif any(x in agent_role for x in ["3_", "Final", "FRDT"]):
+                    hierarchy_factor = 1.3
+                elif any(x in agent_role for x in ["2_", "Expert", "DET"]):
+                    hierarchy_factor = 1.1
+                
+                # Calculate final weight
+                final_weight = weight * confidence * hierarchy_factor
+                agent_weights_used[agent_role] = final_weight
+                
+                # Record vote
+                votes[answer] += 1
+                weighted_votes[answer] += final_weight
+                total_weight += final_weight
+                
+                logging.info(f"Recorded weighted vote from {agent_role}: {answer} (weight: {final_weight})")
+        
+        # Find winner
+        winning_option = max(weighted_votes, key=weighted_votes.get) if total_weight > 0 else None
+        confidence = weighted_votes.get(winning_option, 0) / total_weight if total_weight > 0 else 0
+        
+        logging.info(f"Yes/No/Maybe weighted voting results: {weighted_votes}, winner: {winning_option}")
+        
+        return {
+            "method": "weighted_voting",
+            "winning_option": winning_option,
+            "vote_counts": votes,
+            "weighted_votes": weighted_votes,
+            "agent_weights": agent_weights_used,
+            "total_weight": total_weight,
+            "confidence": confidence
+        }
 
     def extract_yes_no_maybe_answer(self, content):
         """Extract yes/no/maybe answer with improved parsing."""
@@ -132,185 +350,46 @@ class DecisionMethods:
         
         return None
 
-    def multi_choice_voting(self, agent_responses):
-        """Apply voting to multi-choice MCQ tasks."""
-        # Count votes for each option
-        option_votes = {"A": 0, "B": 0, "C": 0, "D": 0}
-        
-        for agent_role, response in agent_responses.items():
-            selected_options = []
-            
-            # Handle dictionary responses
-            if isinstance(response, dict):
-                if "final_decision" in response:
-                    selected_options = self.extract_multi_choice_answers(response["final_decision"])
-                elif "extract" in response and isinstance(response["extract"], dict):
-                    if "answers" in response["extract"]:
-                        selected_options = response["extract"]["answers"]
-                    elif "answer" in response["extract"]:
-                        # Single answer, convert to list
-                        answer = response["extract"]["answer"]
-                        if answer:
-                            selected_options = [answer.upper()]
-            # Handle string responses
-            elif isinstance(response, str):
-                selected_options = self.extract_multi_choice_answers(response)
-            
-            # Register votes for each selected option
-            for option in selected_options:
-                if option in option_votes:
-                    option_votes[option] += 1
-        
-        # Determine winning options (those with more than 50% votes)
-        total_voters = len(agent_responses)
-        threshold = total_voters / 2
-        winning_options = [opt for opt, votes in option_votes.items() if votes > threshold]
-        
-        # If no option has majority, take the top voted options
-        if not winning_options and option_votes:
-            max_votes = max(option_votes.values())
-            winning_options = [opt for opt, votes in option_votes.items() if votes == max_votes]
-        
-        # Sort for consistent output
-        winning_options = sorted(winning_options)
-        
-        # Calculate confidence based on vote distribution
-        confidence = 0.0
-        if winning_options and total_voters > 0:
-            avg_votes = sum(option_votes[opt] for opt in winning_options) / len(winning_options)
-            confidence = avg_votes / total_voters
-        
-        return {
-            "method": "multi_choice_voting",
-            "winning_options": winning_options,
-            "vote_counts": option_votes,
-            "total_voters": total_voters,
-            "confidence": confidence
-        }
 
-    def majority_voting(self, agent_responses):
-        """Apply majority voting to select the most common option."""
-        task_type = config.TASK.get("type", "mcq")
+    def _get_option_letters(self, task_config):
+        """Get valid option letters based on task configuration."""
+        if task_config and "num_options" in task_config:
+            num_options = task_config["num_options"]
+            return [chr(65 + i) for i in range(min(num_options, 10))]  # A-J max
+        elif task_config and "options" in task_config:
+            num_options = len(task_config["options"])
+            return [chr(65 + i) for i in range(min(num_options, 10))]  # A-J max
+        else:
+            return ["A", "B", "C", "D"]  # Default fallback
         
-        if task_type == "yes_no_maybe":
-            return self._majority_voting_yes_no_maybe(agent_responses)
-        
-        votes = {}
-        max_votes = 0
-        
-        for agent_role, response in agent_responses.items():
-            preference = None
-            
-            # Handle dictionary responses
-            if isinstance(response, dict):
-                if "final_decision" in response:
-                    preference = self.extract_answer_option(response["final_decision"])
-                elif "extract" in response and isinstance(response["extract"], dict):
-                    if "answer" in response["extract"]:
-                        preference = response["extract"]["answer"]
-                        if preference:  # Ensure it's not None
-                            preference = preference.upper()  # Convert to uppercase
-            # Handle string responses
-            elif isinstance(response, str):
-                preference = self.extract_answer_option(response)
-            
-            # Register the vote if preference was found
-            if preference:
-                # Ensure uppercase
-                preference = preference.upper()
-                
-                if preference not in votes:
-                    votes[preference] = 0
-                votes[preference] += 1
-                max_votes = max(max_votes, votes[preference])
-        
-        # Find winning option
-        winning_option = None if not votes else max(votes, key=votes.get)
-        total_votes = sum(votes.values())
-        
-        return {
-            "method": "majority_voting",
-            "winning_option": winning_option,
-            "vote_counts": votes,
-            "total_votes": total_votes,
-            "confidence": max_votes / total_votes if total_votes > 0 else 0
-        }
 
-    def weighted_voting(self, agent_responses, team_weights=None):
-        """Apply weighted voting based on agent confidence and hierarchy."""
-        task_type = config.TASK.get("type", "mcq")
+    def extract_answer_option(self, content):
+        """Extract answer option supporting A-J options."""
+        if not isinstance(content, str):
+            return None
         
-        if task_type == "yes_no_maybe":
-            return self._weighted_voting_yes_no_maybe(agent_responses, team_weights)
-        elif task_type == "multi_choice_mcq":
-            return self._weighted_voting_multi_choice(agent_responses, team_weights)
+        # Updated patterns for A-J
+        patterns = [
+            r"ANSWER:\s*([A-Ja-j])",           # ANSWER: A through J
+            r"FINAL ANSWER:\s*([A-Ja-j])",     # FINAL ANSWER: A through J
+            r"^ANSWER:\s*([A-Ja-j])",          # Start of line
+            r"answer is:?\s*([A-Ja-j])",       # answer is: A
+            r"my answer:?\s*([A-Ja-j])",       # my answer: A
+            r"the answer:?\s*([A-Ja-j])",      # the answer: A
+            r"option\s+([A-Ja-j])",            # option A
+            r"choose\s+([A-Ja-j])",            # choose A
+            r"select\s+([A-Ja-j])",            # select A
+            r"\*\*([A-Ja-j])\.\*\*",          # **A.**
+            r"^([A-Ja-j])\.",                  # A. at start of line
+        ]
         
-        votes = {}
-        weighted_votes = {}
-        total_weight = 0
-        agent_weights_used = {}
+        for pattern in patterns:
+            match = re.search(pattern, content, re.IGNORECASE | re.MULTILINE)
+            if match:
+                return match.group(1).upper()
         
-        for agent_role, response_data in agent_responses.items():
-            preference = None
-            confidence = 1.0
-            
-            # Extract answer and confidence
-            if isinstance(response_data, dict):
-                if "final_decision" in response_data:
-                    preference = self.extract_answer_option(response_data["final_decision"])
-                elif "extract" in response_data and isinstance(response_data["extract"], dict):
-                    if "answer" in response_data["extract"]:
-                        preference = response_data["extract"]["answer"]
-                        if preference:  # Ensure it's not None
-                            preference = preference.upper()  # Convert to uppercase
-                    if "confidence" in response_data["extract"]:
-                        confidence = response_data["extract"]["confidence"]
-            
-            if preference:
-                # Ensure uppercase
-                preference = preference.upper()
-                
-                # Get agent weight from response data or use default
-                weight = response_data.get("weight", 0.2)
-                
-                # Apply hierarchy multiplier
-                hierarchy_factor = 1.0
-                if "leader" in agent_role.lower() or "chief" in agent_role.lower():
-                    hierarchy_factor = 1.5
-                elif any(x in agent_role for x in ["3_", "Final", "FRDT"]):
-                    hierarchy_factor = 1.3
-                elif any(x in agent_role for x in ["2_", "Expert", "DET"]):
-                    hierarchy_factor = 1.1
-                
-                # Calculate final weight
-                final_weight = weight * confidence * hierarchy_factor
-                agent_weights_used[agent_role] = final_weight
-                
-                # Record vote
-                if preference not in votes:
-                    votes[preference] = 0
-                    weighted_votes[preference] = 0
-                
-                votes[preference] += 1
-                weighted_votes[preference] += final_weight
-                total_weight += final_weight
-        
-        # Log weights used
-        logging.info(f"Agent weights used in voting: {agent_weights_used}")
-        
-        # Find winner
-        winning_option = None if not weighted_votes else max(weighted_votes.items(), key=lambda x: x[1])[0]
-        confidence = weighted_votes.get(winning_option, 0) / total_weight if total_weight > 0 else 0
-        
-        return {
-            "method": "weighted_voting",
-            "winning_option": winning_option,
-            "vote_counts": votes,
-            "weighted_votes": weighted_votes,
-            "agent_weights": agent_weights_used,
-            "total_weight": total_weight,
-            "confidence": confidence
-        }
+        return None
+    
 
     def _weighted_voting_multi_choice(self, agent_responses, team_weights=None):
         """Apply weighted voting to multi-choice MCQ tasks."""
@@ -385,73 +464,6 @@ class DecisionMethods:
             "confidence": confidence
         }
 
-    def borda_count(self, agent_responses):
-        """Apply Borda count to MCQ tasks."""
-        task_type = config.TASK.get("type", "mcq")
-        
-        if task_type == "yes_no_maybe":
-            # Borda count doesn't apply well to yes/no/maybe, so use majority voting
-            return self._majority_voting_yes_no_maybe(agent_responses)
-        elif task_type == "multi_choice_mcq":
-            # For multi-choice, use a modified approach
-            return self._borda_count_multi_choice(agent_responses)
-        
-        import re
-        
-        # Initialize scores with uppercase letters
-        borda_scores = {"A": 0, "B": 0, "C": 0, "D": 0}
-        num_rankings = 0
-        
-        for agent_role, response_data in agent_responses.items():
-            if "final_decision" in response_data:
-                # Look for ranking pattern with improved regex
-                # Handle bold markdown, optional spaces, and variations
-                ranking_pattern = r"[Mm]y\s+ranking:?\s*\*?([A-Da-d])\*?,\s*\*?([A-Da-d])\*?,\s*\*?([A-Da-d])\*?,\s*\*?([A-Da-d])\*?"
-                match = re.search(ranking_pattern, response_data["final_decision"], re.IGNORECASE)
-                
-                if match:
-                    # Extract ranking, and convert all to uppercase
-                    ranking = [option.upper() for option in match.groups()]
-                    num_rankings += 1
-                    
-                    # Assign Borda points (3 for 1st place, 2 for 2nd, etc.)
-                    for i, option in enumerate(ranking):
-                        borda_scores[option] += 3 - i  # 3, 2, 1, 0 points
-                    
-                    logging.info(f"Borda count: {agent_role} ranking extracted: {ranking}")
-                else:
-                    # Fallback: look for ranking mentioned in a different format
-                    alt_pattern = r"ranking.*?([A-Da-d]).*?([A-Da-d]).*?([A-Da-d]).*?([A-Da-d])"
-                    alt_match = re.search(alt_pattern, response_data["final_decision"], re.IGNORECASE)
-                    
-                    if alt_match:
-                        ranking = [option.upper() for option in alt_match.groups()]
-                        num_rankings += 1
-                        for i, option in enumerate(ranking):
-                            borda_scores[option] += 3 - i
-                        logging.info(f"Borda count: {agent_role} alt ranking extracted: {ranking}")
-                    else:
-                        # Second fallback: just extract the answer
-                        answer = self.extract_answer_option(response_data["final_decision"])
-                        if answer:
-                            # Make sure answer is uppercase
-                            answer = answer.upper()
-                            borda_scores[answer] += 3
-                            num_rankings += 1
-                            logging.info(f"Borda count: {agent_role} only answer found: {answer}")
-        
-        # Find winner and calculate confidence
-        winning_option = max(borda_scores.items(), key=lambda x: x[1])[0] if borda_scores else None
-        total_possible_score = num_rankings * 3.0
-        confidence = borda_scores[winning_option] / total_possible_score if winning_option and total_possible_score > 0 else 0
-        
-        return {
-            "method": "borda_count",
-            "winning_option": winning_option,
-            "borda_scores": borda_scores,
-            "total_possible_score": total_possible_score,
-            "confidence": confidence
-        }
 
     def _borda_count_multi_choice(self, agent_responses):
         """Apply modified Borda count to multi-choice MCQ tasks."""
@@ -495,41 +507,45 @@ class DecisionMethods:
             "confidence": confidence
         }
 
-    # Yes/No/Maybe specific methods
-    def _majority_voting_yes_no_maybe(self, agent_responses):
-        """Apply majority voting to yes/no/maybe tasks."""
-        votes = {"yes": 0, "no": 0, "maybe": 0}
+        # Yes/No/Maybe specific methods
+
+
+    # Fix 3: Update simulator.py _evaluate_yes_no_maybe_performance method
+    def _evaluate_yes_no_maybe_performance(self) -> Dict[str, Any]:
+        """Evaluate performance on yes/no/maybe tasks."""
+        ground_truth = self.evaluation_data.get("ground_truth")
+        if ground_truth:
+            ground_truth = ground_truth.lower()
         
-        for agent_role, response_data in agent_responses.items():
-            answer = None
-            
-            if isinstance(response_data, dict):
-                if "final_decision" in response_data:
-                    answer = self.extract_yes_no_maybe_answer(response_data["final_decision"])
-                elif "extract" in response_data and isinstance(response_data["extract"], dict):
-                    if "answer" in response_data["extract"]:
-                        answer = response_data["extract"]["answer"]
-                        if answer and answer.lower() in ["yes", "no", "maybe"]:
-                            answer = answer.lower()
-            elif isinstance(response_data, str):
-                answer = self.extract_yes_no_maybe_answer(response_data)
-            
-            if answer and answer in votes:
-                votes[answer] += 1
+        if not ground_truth or ground_truth not in ["yes", "no", "maybe"]:
+            return {"metric": "no_ground_truth", "note": "No ground truth provided for evaluation"}
         
-        # Find winning option
-        total_votes = sum(votes.values())
-        winning_option = max(votes, key=votes.get) if total_votes > 0 else None
+        metrics = {}
         
-        return {
-            "method": "majority_voting",
-            "winning_option": winning_option,
-            "vote_counts": votes,
-            "total_votes": total_votes,
-            "confidence": votes.get(winning_option, 0) / total_votes if total_votes > 0 else 0
-        }
-    
-    def _weighted_voting_yes_no_maybe(self, agent_responses, team_weights=None):
+        for method, result in self.results["decision_results"].items():
+            if result and "winning_option" in result:
+                selected = result["winning_option"]
+                if selected:
+                    selected = selected.lower()
+                correct = selected == ground_truth if selected else False
+                
+                metrics[method] = {
+                    "correct": correct,
+                    "confidence": result.get("confidence", 0),
+                    "selected": selected,
+                    "ground_truth": ground_truth
+                }
+            else:
+                metrics[method] = {
+                    "correct": False,
+                    "confidence": 0,
+                    "selected": None,
+                    "ground_truth": ground_truth
+                }
+        
+        return metrics
+   
+
         """Apply weighted voting to yes/no/maybe tasks."""
         votes = {"yes": 0, "no": 0, "maybe": 0}
         weighted_votes = {"yes": 0.0, "no": 0.0, "maybe": 0.0}

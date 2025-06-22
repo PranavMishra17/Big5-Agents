@@ -24,7 +24,7 @@ from components.team_orientation import TeamOrientation
 from components.mutual_trust import MutualTrust
 
 from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS, get_adaptive_prompt
-
+from components.medrag_integration import MedRAGIntegration, create_medrag_integration
 
 class AgentSystemSimulator:
     """
@@ -32,23 +32,24 @@ class AgentSystemSimulator:
     """
     
     def __init__(self, 
-             simulation_id: str = None,
-             use_team_leadership: bool = None,
-             use_closed_loop_comm: bool = None,
-             use_mutual_monitoring: bool = None,
-             use_shared_mental_model: bool = None,
-             use_team_orientation: bool = None,
-             use_mutual_trust: bool = None,
-             mutual_trust_factor: float = None,
-             random_leader: bool = False,
-             use_recruitment: bool = None,
-             recruitment_method: str = None,
-             recruitment_pool: str = None,
-             n_max: int = 5,
-             deployment_config: Dict[str, str] = None,
-             question_specific_context=False,
-             task_config: Dict[str, Any] = None,
-             eval_data: Dict[str, Any] = None):
+         simulation_id: str = None,
+         use_team_leadership: bool = None,
+         use_closed_loop_comm: bool = None,
+         use_mutual_monitoring: bool = None,
+         use_shared_mental_model: bool = None,
+         use_team_orientation: bool = None,
+         use_mutual_trust: bool = None,
+         mutual_trust_factor: float = None,
+         random_leader: bool = False,
+         use_recruitment: bool = None,
+         recruitment_method: str = None,
+         recruitment_pool: str = None,
+         n_max: int = 5,
+         deployment_config: Dict[str, str] = None,
+         question_specific_context=False,
+         task_config: Dict[str, Any] = None,
+         eval_data: Dict[str, Any] = None,
+         use_medrag: bool = False):
         """Initialize the simulator with isolated task configuration."""
         
         # Set simulation ID and configuration
@@ -77,7 +78,11 @@ class AgentSystemSimulator:
         self.evaluation_data = eval_data or {}
         
         self.metadata = {}
-        
+
+        self.use_medrag = use_medrag
+        self.medrag_prompt_addition = ""  # Store prompt addition from MedRAG
+    
+
         # Setup configuration
         self.config = {
             "use_team_leadership": self.use_team_leadership,
@@ -93,7 +98,8 @@ class AgentSystemSimulator:
             "random_leader": self.random_leader,
             "n_max": self.n_max,
             "task": self.task_config.get("name", "Unknown"),
-            "deployment": self.deployment_config['name'] if self.deployment_config else "default"
+            "deployment": self.deployment_config['name'] if self.deployment_config else "default",
+            "use_medrag": self.use_medrag,
         }
         
         # Setup logging
@@ -117,8 +123,8 @@ class AgentSystemSimulator:
         if self.mutual_trust:
             self.mutual_trust.initialize_trust_network(list(self.agents.keys()))
         
-        # Initialize decision methods
-        self.decision_methods = DecisionMethods()
+        # Initialize decision methods with isolated task config
+        self.decision_methods = DecisionMethods(task_config=self.task_config)
         
         # Initialize shared knowledge with isolated task config
         if self.mental_model:
@@ -144,6 +150,16 @@ class AgentSystemSimulator:
                 complexity = determine_complexity(self.task_config["description"], self.recruitment_method)
                 self.metadata["complexity"] = complexity
                 
+                # Create teamwork config to pass to recruitment
+                teamwork_config = {
+                    "use_team_leadership": self.use_team_leadership,
+                    "use_closed_loop_comm": self.use_closed_loop_comm,
+                    "use_mutual_monitoring": self.use_mutual_monitoring,
+                    "use_shared_mental_model": self.use_shared_mental_model,
+                    "use_team_orientation": self.use_team_orientation,
+                    "use_mutual_trust": self.use_mutual_trust
+                }
+                
                 # Use isolated recruitment that doesn't read from global config
                 agents, leader = recruit_agents_isolated(
                     self.task_config["description"],
@@ -152,7 +168,8 @@ class AgentSystemSimulator:
                     self.n_max,
                     self.recruitment_method,
                     self.deployment_config,
-                    self.task_config
+                    self.task_config,
+                    teamwork_config  # Pass teamwork config
                 )
                 self.agents = agents
                 self.leader = leader
@@ -211,6 +228,120 @@ class AgentSystemSimulator:
             
         return agents, leader
 
+    def _enhance_agents_with_medrag(self, use_medrag: bool = False) -> Optional[Dict[str, Any]]:
+        """
+        Enhance agents with MedRAG retrieved knowledge if enabled.
+        
+        Args:
+            use_medrag: Whether to use MedRAG knowledge enhancement
+            
+        Returns:
+            Retrieved knowledge dictionary or None if not used/failed
+        """
+        if not use_medrag:
+            self.logger.logger.debug("MedRAG enhancement disabled")
+            return None
+        
+        try:
+            # Create MedRAG integration
+            medrag_integration = create_medrag_integration(
+                deployment_config=self.deployment_config,
+                retriever_name="MedCPT",
+                corpus_name="Textbooks"
+            )
+            
+            if not medrag_integration:
+                self.logger.logger.warning("MedRAG integration not available")
+                return None
+            
+            # Extract question and options from task config
+            question = self.task_config.get("description", "")
+            options = self.task_config.get("options", [])
+            
+            if not question:
+                self.logger.logger.warning("No question available for MedRAG retrieval")
+                return None
+            
+            # Retrieve medical knowledge
+            self.logger.logger.info("Retrieving medical knowledge using MedRAG...")
+            retrieved_knowledge = medrag_integration.retrieve_knowledge(
+                question=question,
+                options=options,
+                question_id=self.simulation_id
+            )
+            
+            if not retrieved_knowledge.get("available", False):
+                self.logger.logger.warning(f"MedRAG retrieval failed: {retrieved_knowledge.get('error', 'Unknown error')}")
+                return retrieved_knowledge
+            
+            # Enhance agents with retrieved knowledge
+            enhanced_agents = 0
+            
+            # Method 1: Enhance shared mental model if available
+            if self.use_shared_mental_model and self.mental_model:
+                success = medrag_integration.enhance_shared_mental_model(
+                    self.mental_model, 
+                    retrieved_knowledge
+                )
+                if success:
+                    self.logger.logger.info("Enhanced shared mental model with MedRAG knowledge")
+                else:
+                    self.logger.logger.warning("Failed to enhance shared mental model with MedRAG")
+            
+            # Method 2: Enhance individual agents (works even without shared mental model)
+            for role, agent in self.agents.items():
+                success = medrag_integration.enhance_agent_knowledge(agent, retrieved_knowledge)
+                if success:
+                    enhanced_agents += 1
+                    self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
+                else:
+                    self.logger.logger.warning(f"Failed to enhance {role} with MedRAG knowledge")
+            
+            # Method 3: Add knowledge to agent prompts
+            knowledge_prompt_addition = medrag_integration.get_enhancement_prompt_addition(retrieved_knowledge)
+            if knowledge_prompt_addition:
+                # Store for use in agent interactions
+                self.medrag_prompt_addition = knowledge_prompt_addition
+                self.logger.logger.debug("Prepared MedRAG prompt addition for agents")
+            
+            # Log retrieval summary
+            num_snippets = len(retrieved_knowledge.get("knowledge_snippets", []))
+            retrieval_time = retrieved_knowledge.get("retrieval_time", 0)
+            
+            self.logger.logger.info(
+                f"MedRAG enhancement completed: {enhanced_agents}/{len(self.agents)} agents enhanced, "
+                f"{num_snippets} knowledge snippets retrieved in {retrieval_time:.2f}s"
+            )
+            
+            # Store for results
+            self.results["medrag_enhancement"] = {
+                "enabled": True,
+                "success": True,
+                "agents_enhanced": enhanced_agents,
+                "total_agents": len(self.agents),
+                "snippets_retrieved": num_snippets,
+                "retrieval_time": retrieval_time,
+                "summary": retrieved_knowledge.get("summary", "")
+            }
+            
+            return retrieved_knowledge
+            
+        except Exception as e:
+            error_msg = f"MedRAG enhancement failed: {str(e)}"
+            self.logger.logger.error(error_msg)
+            self.logger.logger.error(traceback.format_exc())
+            
+            # Store error info
+            self.results["medrag_enhancement"] = {
+                "enabled": True,
+                "success": False,
+                "error": error_msg,
+                "agents_enhanced": 0,
+                "total_agents": len(self.agents)
+            }
+            
+            return None
+
     def run_simulation(self):
         """
         Run the enhanced 3-round simulation process with sequential agent processing.
@@ -218,6 +349,15 @@ class AgentSystemSimulator:
         Returns:
             Dictionary with simulation results
         """
+        # ENHANCEMENT PHASE: Add MedRAG knowledge if enabled
+        if self.use_medrag:
+            self.logger.logger.info("ENHANCEMENT PHASE: Retrieving medical knowledge with MedRAG")
+            medrag_knowledge = self._enhance_agents_with_medrag(use_medrag=True)
+        else:
+            medrag_knowledge = None
+            self.results["medrag_enhancement"] = {"enabled": False}
+
+
         # ROUND 1: Independent Analysis (Sequential)
         self.logger.logger.info("ROUND 1: Independent task analysis (sequential execution)")
         round1_analyses = self._run_round1_independent_analysis()
@@ -286,6 +426,36 @@ class AgentSystemSimulator:
                 
                 # Use the isolated task config instead of global config
                 analysis = agent.analyze_task_isolated(self.task_config)
+
+                # If MedRAG knowledge is available, enhance the analysis
+                if hasattr(self, 'medrag_prompt_addition') and self.medrag_prompt_addition:
+                    # Add MedRAG knowledge to the agent's analysis context
+                    enhanced_prompt = f"""
+                    {analysis}
+                    
+                    {self.medrag_prompt_addition}
+                    
+                    Now, considering the retrieved medical knowledge above, provide any additional insights or refinements to your analysis.
+                    If the retrieved knowledge supports, contradicts, or adds important context to your analysis, please note this.
+                    """
+                    
+                    try:
+                        enhanced_analysis = agent.chat(enhanced_prompt)
+                        
+                        # Log the MedRAG enhancement
+                        self.logger.log_main_discussion(
+                            "round1_medrag_enhancement",
+                            role,
+                            enhanced_analysis
+                        )
+                        
+                        # Use enhanced analysis as the final analysis
+                        analysis = f"{analysis}\n\n=== MEDRAG ENHANCED ANALYSIS ===\n{enhanced_analysis}"
+                        
+                    except Exception as e:
+                        self.logger.logger.warning(f"Failed to enhance {role} analysis with MedRAG: {str(e)}")
+                        # Continue with original analysis
+
                 extract = agent.extract_response_isolated(analysis, self.task_config)
                 
                 # Log to main discussion channel
@@ -583,11 +753,12 @@ class AgentSystemSimulator:
             self.logger.logger.error(f"Error in leadership definition: {str(e)}")
             return f"Error in leadership definition: {str(e)}"
 
+
     def _apply_decision_methods(self, agent_decisions):
-        """Apply decision methods to agent decisions."""
+        """Apply decision methods to agent decisions using isolated task config."""
         # Determine if this is an MDT (advanced) task
         is_mdt_task = any(any(prefix in agent_role for prefix in ["1_", "2_", "3_"]) 
-                         for agent_role in agent_decisions.keys())
+                        for agent_role in agent_decisions.keys())
         
         if is_mdt_task:
             logging.info("Using MDT decision process for advanced query")
@@ -596,12 +767,13 @@ class AgentSystemSimulator:
             return self._apply_standard_decision_methods(agent_decisions)
 
     def _apply_standard_decision_methods(self, agent_decisions):
-        """Apply standard decision methods."""
+        """Apply standard decision methods using isolated task config."""
         logging.info(f"Applying standard decision methods to {len(agent_decisions)} agent responses")
         
-        majority_result = self.decision_methods.majority_voting(agent_decisions)
-        weighted_result = self.decision_methods.weighted_voting(agent_decisions)
-        borda_result = self.decision_methods.borda_count(agent_decisions)
+        # Pass the isolated task config to decision methods
+        majority_result = self.decision_methods.majority_voting(agent_decisions, task_config=self.task_config)
+        weighted_result = self.decision_methods.weighted_voting(agent_decisions, task_config=self.task_config)
+        borda_result = self.decision_methods.borda_count(agent_decisions, task_config=self.task_config)
         
         return {
             "majority_voting": majority_result,
@@ -610,7 +782,7 @@ class AgentSystemSimulator:
         }
 
     def _apply_mdt_decision_methods(self, agent_decisions):
-        """Apply decision methods for MDT (advanced) tasks."""
+        """Apply decision methods for MDT (advanced) tasks using isolated task config."""
         # Group agents by team
         team_decisions = {}
         for agent_role, response in agent_decisions.items():
@@ -621,10 +793,10 @@ class AgentSystemSimulator:
                     team_decisions[team_name] = {}
                 team_decisions[team_name][agent_role] = response
         
-        # Make team-level decisions
+        # Make team-level decisions using isolated task config
         team_results = {}
         for team_name, team_responses in team_decisions.items():
-            team_results[team_name] = self.decision_methods.majority_voting(team_responses)
+            team_results[team_name] = self.decision_methods.majority_voting(team_responses, task_config=self.task_config)
         
         # Use final team's decisions
         final_team_name = None
@@ -635,9 +807,10 @@ class AgentSystemSimulator:
         
         final_agent_responses = team_decisions.get(final_team_name, agent_decisions)
         
-        majority_result = self.decision_methods.majority_voting(final_agent_responses)
-        weighted_result = self.decision_methods.weighted_voting(final_agent_responses)
-        borda_result = self.decision_methods.borda_count(final_agent_responses)
+        # Apply decision methods to final team using isolated task config
+        majority_result = self.decision_methods.majority_voting(final_agent_responses, task_config=self.task_config)
+        weighted_result = self.decision_methods.weighted_voting(final_agent_responses, task_config=self.task_config)
+        borda_result = self.decision_methods.borda_count(final_agent_responses, task_config=self.task_config)
         
         return {
             "majority_voting": majority_result,
@@ -648,6 +821,7 @@ class AgentSystemSimulator:
                 "decision_team": final_team_name
             }
         }
+
 
     def _collect_teamwork_metrics(self):
         """Collect teamwork metrics from enabled components."""

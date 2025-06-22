@@ -118,7 +118,7 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
     """
     return recruit_agents_isolated(question, complexity, recruitment_pool, n_max, recruitment_method, None, config.TASK)
 
-def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: str = "general", n_max=5, recruitment_method: str = "adaptive", deployment_config=None, task_config=None):
+def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: str = "general", n_max=5, recruitment_method: str = "adaptive", deployment_config=None, task_config=None,  teamwork_config=None):
     """
     Recruit appropriate agents based on question complexity using isolated task configuration.
 
@@ -155,7 +155,7 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
         return recruit_intermediate_team_isolated(question, recruitment_pool, n_max, deployment_config, task_config, instance_id=instance_id)
     elif complexity == "advanced" or recruitment_method == "advanced":
         logging.info("Using advanced recruitment (MDT structure)")
-        return recruit_advanced_team_isolated(question, recruitment_pool, deployment_config, task_config, instance_id=instance_id)
+        return recruit_advanced_team_isolated(question, recruitment_pool, deployment_config, task_config, teamwork_config, instance_id=instance_id)
     else:
         logging.info(f"Unrecognized complexity/method: {complexity}/{recruitment_method}, falling back to intermediate")
         return recruit_intermediate_team_isolated(question, recruitment_pool, n_max, deployment_config, task_config, instance_id=instance_id)
@@ -385,21 +385,41 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
     
     return agents, leader
 
-def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deployment_config=None, task_config=None, instance_id=None):
+def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deployment_config=None, task_config=None, teamwork_config=None, instance_id=None):
     """
     Recruit multiple specialized teams for advanced questions, following MDAgents approach using isolated config.
+    NOW WITH PROPER TEAMWORK COMPONENTS SUPPORT.
     
     Args:
         question: The question or task
         recruitment_pool: The pool of agent types
         deployment_config: Specific deployment configuration to use for all agents
         task_config: Isolated task configuration
+        teamwork_config: Teamwork configuration from simulator
         instance_id: Instance identifier for this question
         
     Returns:
         Tuple of (agents dictionary, leader agent)
     """
     from components.modular_agent import ModularAgent  # Local import
+    
+    # Extract teamwork settings from config or use defaults
+    if teamwork_config:
+        use_team_leadership = teamwork_config.get("use_team_leadership", False)
+        use_closed_loop_comm = teamwork_config.get("use_closed_loop_comm", False)
+        use_mutual_monitoring = teamwork_config.get("use_mutual_monitoring", False)
+        use_shared_mental_model = teamwork_config.get("use_shared_mental_model", False)
+        use_team_orientation = teamwork_config.get("use_team_orientation", False)
+        use_mutual_trust = teamwork_config.get("use_mutual_trust", False)
+    else:
+        # Fallback to global config
+        import config
+        use_team_leadership = config.USE_TEAM_LEADERSHIP
+        use_closed_loop_comm = config.USE_CLOSED_LOOP_COMM
+        use_mutual_monitoring = config.USE_MUTUAL_MONITORING
+        use_shared_mental_model = config.USE_SHARED_MENTAL_MODEL
+        use_team_orientation = config.USE_TEAM_ORIENTATION
+        use_mutual_trust = config.USE_MUTUAL_TRUST
     
     # Create a strategic team designer
     recruiter = Agent(
@@ -414,7 +434,7 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
 
     response = recruiter.chat(design_prompt)
     
-    # Parse multi-team structure
+    # Parse multi-team structure (same as before)
     teams = []
     current_team = None
     chief_coordinator = None
@@ -497,7 +517,7 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
         ]
         chief_coordinator = 'Senior Consultant'
     
-    # Create all agents with deployment distribution
+    # Create all agents with deployment distribution AND PROPER TEAMWORK COMPONENTS
     agents = {}
     leader = None
     agent_index = 0
@@ -506,7 +526,6 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
     for team_idx, team in enumerate(teams):
         team_prefix = f"{team_idx+1}_{team['name'].split('(')[0].strip()}_"
         
-        # Update in recruit_advanced_team function - modify when creating agents
         for member in team['members']:
             role = member['role']
             expertise = member['expertise']
@@ -521,15 +540,15 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
             else:
                 agent_deployment_config = config.get_deployment_for_agent(agent_index)
             
-            # Create agent
+            # CRITICAL FIX: Use the simulator's teamwork settings, not global config
             agent = ModularAgent(
                 role_type=unique_role,  # Use unique identifier as role type
-                use_team_leadership=is_leader,  # Enable leadership for team leaders
-                use_closed_loop_comm=config.USE_CLOSED_LOOP_COMM,
-                use_mutual_monitoring=config.USE_MUTUAL_MONITORING,
-                use_shared_mental_model=config.USE_SHARED_MENTAL_MODEL,
-                use_team_orientation=config.USE_TEAM_ORIENTATION,
-                use_mutual_trust=config.USE_MUTUAL_TRUST,
+                use_team_leadership=is_leader and use_team_leadership,  # Enable leadership for team leaders AND if teamwork is enabled
+                use_closed_loop_comm=use_closed_loop_comm,  # Use simulator's setting
+                use_mutual_monitoring=use_mutual_monitoring,  # Use simulator's setting
+                use_shared_mental_model=use_shared_mental_model,  # Use simulator's setting
+                use_team_orientation=use_team_orientation,  # Use simulator's setting
+                use_mutual_trust=use_mutual_trust,  # Use simulator's setting
                 deployment_config=agent_deployment_config,
                 agent_index=agent_index,
                 task_config=task_config  # Pass isolated task config
@@ -558,13 +577,25 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
                 leader = agent
                 break
     
-    # Log recruitment
+    # Log recruitment with teamwork info
     deployment_info = [f"{role}:{agent.deployment_config['name']}" for role, agent in agents.items()]
+    teamwork_enabled = [name for name, enabled in [
+        ("leadership", use_team_leadership),
+        ("closed_loop", use_closed_loop_comm),
+        ("monitoring", use_mutual_monitoring),
+        ("mental_model", use_shared_mental_model),
+        ("orientation", use_team_orientation),
+        ("trust", use_mutual_trust)
+    ] if enabled]
+    
     logging.info(f"Advanced complexity: Recruited {len(agents)} experts in {len(teams)} teams")
     logging.info(f"Chief Coordinator: {chief_coordinator if chief_coordinator else 'Not specified'}")
+    logging.info(f"Teamwork components enabled: {teamwork_enabled}")
     logging.info(f"Deployment distribution: {deployment_info}")
     
     return agents, leader
+
+
 
 # Legacy functions for backward compatibility
 def recruit_basic_team(question: str, recruitment_pool: str, instance_id=None):

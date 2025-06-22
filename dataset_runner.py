@@ -22,6 +22,7 @@ from simulator import AgentSystemSimulator
 import config
 from utils.logger import SimulationLogger
 from components.agent_recruitment import determine_complexity, recruit_agents
+from components.medrag_integration import create_medrag_integration
 
 # Thread-local storage for progress tracking
 thread_local = threading.local()
@@ -152,7 +153,7 @@ def validate_medmcqa_parsing(sample_questions: List[Dict[str, Any]]) -> None:
 
 def load_mmlupro_med_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
     """
-    Load medical questions from the MMLU-Pro dataset.
+    Load Health questions from the MMLU-Pro dataset.
     
     Args:
         num_questions: Number of questions to load
@@ -161,105 +162,53 @@ def load_mmlupro_med_dataset(num_questions: int = 50, random_seed: int = 42) -> 
     Returns:
         List of question dictionaries
     """
-    logging.info(f"Loading MMLU-Pro-Med dataset with {num_questions} random medical questions")
+    logging.info(f"Loading MMLU-Pro Health dataset with {num_questions} random questions")
     
     try:
-        # Try multiple approaches to load medical questions
-        medical_questions = []
+        # Load the MMLU-Pro dataset
+        ds = load_dataset("TIGER-Lab/MMLU-Pro")
+        logging.info(f"Loaded TIGER-Lab/MMLU-Pro dataset")
         
-        # Approach 1: Try the specific medical dataset first
-        try:
-            ds = load_dataset("TIGER-Lab/MMLU-Pro")
-            logging.info(f"Loaded TIGER-Lab/MMLU-Pro dataset")
-            
-            # Get all available splits
-            available_splits = list(ds.keys())
-            logging.info(f"Available splits: {available_splits}")
-            
-            # Medical-related categories in MMLU-Pro - comprehensive list
-            medical_categories = [
-                "anatomy", "clinical_knowledge", "medical_genetics", 
-                "professional_medicine", "college_medicine", "college_biology",
-                "high_school_biology", "nutrition", "virology", "health",
-                "medicine", "biology", "psychology", "neuroscience",
-                # Add more general categories that might contain medical questions
-                "biochemistry", "pharmacology", "physiology", "pathology",
-                "immunology", "microbiology", "epidemiology"
-            ]
-            
-            # Filter for medical questions from all splits
-            for split in available_splits:
-                logging.info(f"Processing split: {split} with {len(ds[split])} questions")
-                
-                for item in ds[split]:
-                    category = item.get("category", "").lower()
-                    
-                    # Check if any medical keyword is in the category
-                    if any(cat in category for cat in medical_categories):
-                        medical_questions.append(item)
-                        if len(medical_questions) % 100 == 0:  # Log progress
-                            logging.info(f"Found {len(medical_questions)} medical questions so far...")
-                    
-                    # Also check question content for medical terms if category doesn't match
-                    elif category and len(medical_questions) < num_questions * 3:  # Don't over-process
-                        question_text = item.get("question", "").lower()
-                        medical_terms = [
-                            "patient", "diagnosis", "treatment", "symptom", "disease",
-                            "medication", "therapy", "clinical", "medical", "hospital",
-                            "doctor", "physician", "nurse", "surgery", "cancer",
-                            "infection", "virus", "bacteria", "immune", "blood",
-                            "heart", "lung", "brain", "liver", "kidney"
-                        ]
-                        
-                        if any(term in question_text for term in medical_terms):
-                            medical_questions.append(item)
-            
-            logging.info(f"Found {len(medical_questions)} medical questions total")
-            
-        except Exception as e:
-            logging.error(f"Failed to load TIGER-Lab dataset: {str(e)}")
-            
-            # Approach 2: Try alternative medical datasets
-            try:
-                logging.info("Trying alternative medical dataset...")
-                ds = load_dataset("cais/mmlu", "anatomy")
-                anatomy_questions = list(ds["test"]) + list(ds.get("validation", []))
-                
-                ds2 = load_dataset("cais/mmlu", "clinical_knowledge") 
-                clinical_questions = list(ds2["test"]) + list(ds2.get("validation", []))
-                
-                ds3 = load_dataset("cais/mmlu", "medical_genetics")
-                genetics_questions = list(ds3["test"]) + list(ds3.get("validation", []))
-                
-                ds4 = load_dataset("cais/mmlu", "professional_medicine")
-                medicine_questions = list(ds4["test"]) + list(ds4.get("validation", []))
-                
-                medical_questions = anatomy_questions + clinical_questions + genetics_questions + medicine_questions
-                logging.info(f"Loaded {len(medical_questions)} questions from MMLU medical subjects")
-                
-            except Exception as e2:
-                logging.error(f"Failed to load alternative datasets: {str(e2)}")
-                return []
+        # Get all available splits
+        available_splits = list(ds.keys())
+        logging.info(f"Available splits: {available_splits}")
         
-        if not medical_questions:
-            logging.error("No medical questions found in any MMLU dataset")
+        # Filter for Health category only
+        health_questions = []
+        
+        for split in available_splits:
+            logging.info(f"Processing split: {split} with {len(ds[split])} questions")
+            
+            for item in ds[split]:
+                category = item.get("category", "").lower()
+                
+                # Filter specifically for health category
+                if "health" in category:
+                    health_questions.append(item)
+                    if len(health_questions) % 50 == 0:  # Log progress
+                        logging.info(f"Found {len(health_questions)} health questions so far...")
+        
+        logging.info(f"Found {len(health_questions)} health questions total")
+        
+        if not health_questions:
+            logging.error("No health questions found in MMLU-Pro dataset")
             return []
         
         # Set random seed for reproducibility
         random.seed(random_seed)
         
         # Randomly select questions
-        if num_questions < len(medical_questions):
-            selected_questions = random.sample(medical_questions, num_questions)
+        if num_questions < len(health_questions):
+            selected_questions = random.sample(health_questions, num_questions)
         else:
-            selected_questions = medical_questions
-            logging.warning(f"Requested {num_questions} questions but found only {len(medical_questions)} medical questions. Using all available.")
+            selected_questions = health_questions
+            logging.warning(f"Requested {num_questions} questions but found only {len(health_questions)} health questions. Using all available.")
         
-        logging.info(f"Successfully loaded {len(selected_questions)} medical questions from MMLU-Pro dataset")
+        logging.info(f"Successfully loaded {len(selected_questions)} health questions from MMLU-Pro dataset")
         return selected_questions
     
     except Exception as e:
-        logging.error(f"Error loading MMLU-Pro-Med dataset: {str(e)}")
+        logging.error(f"Error loading MMLU-Pro Health dataset: {str(e)}")
         import traceback
         logging.error(traceback.format_exc())
         return []
@@ -356,7 +305,7 @@ def format_medqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any]
 def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Format MedMCQA question into agent task and evaluation data.
-    Handles dataset inconsistency by treating all as single-choice MCQ.
+    Enhanced to provide better context for agent recruitment.
 
     Args:
         question_data: Question data from the MedMCQA dataset.
@@ -374,6 +323,14 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
     options = [f"{letter}. {value}" for letter, value in zip(option_letters, option_values) if value.strip()]
     original_choice_type = question_data.get("choice_type", "single")
     
+    # Enhanced description for recruitment context
+    enhanced_description = question_text
+    
+    # If question is very short/vague, add options context for better recruitment
+    if len(question_text.split()) < 10:  # Short questions likely need context
+        options_text = " | ".join([f"{letter}: {value}" for letter, value in zip(option_letters, option_values) if value.strip()])
+        enhanced_description = f"{question_text}\n\nAnswer options provide context: {options_text}"
+    
     if original_choice_type == "multi":
         logging.debug(f"Question ID {question_data.get('id', 'unknown')} labeled as 'multi', treating as single choice.")
     
@@ -386,10 +343,12 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
 
     agent_task = {
         "name": "MedMCQA Question",
-        "description": question_text,
+        "description": enhanced_description,  # Use enhanced description
         "type": "mcq",
         "options": options,
-        "expected_output_format": "Single letter selection with rationale"
+        "expected_output_format": "Single letter selection with rationale",
+        "subject_context": subject_name,  # Add for recruitment
+        "topic_context": topic_name       # Add for recruitment
     }
 
     eval_data = {
@@ -401,11 +360,13 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
             "question_id": question_data.get("id", ""),
             "original_choice_type": original_choice_type,
             "cop_original": question_data.get("cop", ""),
-            "dataset_issue_note": "Treated as single-choice due to known MedMCQA dataset labeling issue"
+            "original_question": question_text,  # Keep original for reference
+            "enhanced_for_recruitment": len(question_text.split()) < 10
         }
     }
 
     return agent_task, eval_data
+
 
 def parse_cop_field(cop) -> str:
     """
@@ -465,9 +426,11 @@ def parse_cop_field(cop) -> str:
         except:
             return "A"  # Final fallback
 
+
 def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """
     Format MMLU-Pro medical question into agent task and evaluation data.
+    Supports up to 10 options (A-J).
 
     Args:
         question_data: Question data from the MMLU-Pro dataset.
@@ -478,28 +441,46 @@ def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str
         - eval_data: Ground truth, rationale, and metadata.
     """
     question_text = question_data.get("question", "")
-    options_data = question_data.get("options", {})
+    options_data = question_data.get("options", [])
     options = []
 
-    if isinstance(options_data, dict):
+    # Handle list format with up to 10 options
+    if isinstance(options_data, list):
+        for i, option in enumerate(options_data):
+            if i < 10:  # Support up to 10 options (A-J)
+                letter = chr(65 + i)  # A=65, B=66, ..., J=74
+                options.append(f"{letter}. {option}")
+            else:
+                break  # Don't exceed 10 options
+    elif isinstance(options_data, dict):
+        # Handle dict format
         for key in sorted(options_data.keys()):
             options.append(f"{key}. {options_data[key]}")
-    elif isinstance(options_data, list):
-        for i, option in enumerate(options_data):
-            options.append(f"{chr(65+i)}. {option}")
 
+    # Get ground truth
     ground_truth = question_data.get("answer", "")
     if not ground_truth and "answer_idx" in question_data:
         idx = question_data["answer_idx"]
-        if isinstance(idx, int) and 0 <= idx < len(options):
-            ground_truth = chr(65 + idx)
+        if isinstance(idx, int) and 0 <= idx < len(options_data):
+            ground_truth = chr(65 + idx)  # Convert index to letter
+
+    # Create expected output format based on number of options
+    num_options = len(options)
+    if num_options <= 4:
+        expected_format = "Single letter selection (A-D) with rationale"
+    elif num_options <= 10:
+        last_letter = chr(64 + num_options)  # 64 + 10 = J
+        expected_format = f"Single letter selection (A-{last_letter}) with rationale"
+    else:
+        expected_format = "Single letter selection with rationale"
 
     agent_task = {
-        "name": "MMLU-Pro Medical Question",
+        "name": "MMLU-Pro Health Question",
         "description": question_text,
         "type": "mcq",
         "options": options,
-        "expected_output_format": "Single letter selection with rationale"
+        "expected_output_format": expected_format,
+        "num_options": num_options  # Add this for agents to know
     }
 
     eval_data = {
@@ -507,7 +488,8 @@ def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str
         "rationale": {},  # MMLU-Pro provides no rationale
         "metadata": {
             "category": question_data.get("category", ""),
-            "answer_idx": question_data.get("answer_idx", "")
+            "answer_idx": question_data.get("answer_idx", ""),
+            "num_options": num_options
         }
     }
 
@@ -610,6 +592,25 @@ def extract_answer_option(content):
             return match.group(1).upper()
     return None
 
+
+def extract_yes_no_maybe_from_text(content):
+    """Extract yes/no/maybe from text content."""
+    if not isinstance(content, str):
+        return None
+    
+    import re
+    patterns = [
+        r"ANSWER:\s*(yes|no|maybe)",
+        r"answer is:?\s*(yes|no|maybe)",
+    ]
+    
+    for pattern in patterns:
+        match = re.search(pattern, content.lower())
+        if match:
+            return match.group(1).lower()
+    return None
+
+
 def extract_agent_responses_info(simulation_results):
     """Extract detailed agent response information"""
     agent_responses_info = {}
@@ -626,7 +627,10 @@ def extract_agent_responses_info(simulation_results):
         if isinstance(response_data, dict):
             # Extract answer
             if "final_decision" in response_data:
+                # Try MCQ first, then yes/no/maybe
                 info["final_answer"] = extract_answer_option(response_data["final_decision"])
+                if not info["final_answer"]:
+                    info["final_answer"] = extract_yes_no_maybe_from_text(response_data["final_decision"])
                 info["reasoning"] = response_data["final_decision"][:500] + "..." if len(response_data["final_decision"]) > 500 else response_data["final_decision"]
             elif "extract" in response_data and isinstance(response_data["extract"], dict):
                 if "final_decision" in response_data:
@@ -651,7 +655,8 @@ def process_single_question(question_index: int,
                             configuration: Dict[str, Any],
                             deployment_config: Dict[str, str],
                             run_output_dir: str,
-                            max_retries: int = 3) -> Dict[str, Any]:
+                            max_retries: int = 3,
+                            use_medrag: bool = False) -> Dict[str, Any]:
     """
     Process a single question with the given configuration and deployment.
     Creates isolated simulation context for the question.
@@ -673,6 +678,8 @@ def process_single_question(question_index: int,
 
     # Create unique simulation ID for this question
     sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_q{question_index}_{deployment_config['name']}"
+    if use_medrag:
+        sim_id += "_medrag"
     
     # Format question based on dataset type
     if dataset_type == "medqa":
@@ -698,7 +705,8 @@ def process_single_question(question_index: int,
         "recruitment_info": {},
         "agent_responses": {},
         "disagreement_analysis": {},
-        "disagreement_flag": False
+        "disagreement_flag": False,
+        "medrag_info": {}  # Store MedRAG information
     }
 
     try:
@@ -720,14 +728,21 @@ def process_single_question(question_index: int,
                     deployment_config=deployment_config,
                     question_specific_context=True,
                     task_config=agent_task,  # Pass task directly to simulator
-                    eval_data=eval_data      # Pass evaluation data directly
+                    eval_data=eval_data  ,    # Pass evaluation data directly
+                    use_medrag=use_medrag  # Pass MedRAG parameter
                 )
 
                 # Log that we're starting processing for this question
-                logging.info(f"Processing question {question_index} with deployment {deployment_config['name']}, sim_id: {sim_id}")
+                medrag_status = "with MedRAG" if use_medrag else "without MedRAG"
+                logging.info(f"Processing question {question_index} {medrag_status}, deployment {deployment_config['name']}, sim_id: {sim_id}")
 
                 simulation_results = simulator.run_simulation()
                 performance = simulator.evaluate_performance()
+
+
+                # Extract MedRAG information if used
+                if use_medrag and "medrag_enhancement" in simulation_results.get("simulation_metadata", {}):
+                    question_result["medrag_info"] = simulation_results["simulation_metadata"]["medrag_enhancement"]
 
                 question_result.update({
                     "agent_responses": extract_agent_responses_info(simulation_results),
@@ -802,7 +817,8 @@ def run_questions_with_configuration(
     configuration: Dict[str, bool],
     output_dir: Optional[str] = None,
     max_retries: int = 3,
-    n_max: int = 5
+    n_max: int = 5,
+    use_medrag: bool = False  # NEW PARAMETER
 ) -> Dict[str, Any]:
     """
     Run questions with specific configuration using parallel processing at question level.
@@ -820,6 +836,9 @@ def run_questions_with_configuration(
         Dictionary with aggregated results
     """
     config_name = configuration.get("name", "unknown")
+    if use_medrag:
+        config_name += "_medrag"
+    
     logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
     
     # Get all available deployments
@@ -851,6 +870,7 @@ def run_questions_with_configuration(
     # Initialize results structure
     results = {
         "configuration": config_name,
+        "use_medrag": use_medrag,
         "dataset": dataset_type,
         "num_questions": len(questions),
         "timestamp": datetime.now().isoformat(),
@@ -871,6 +891,13 @@ def run_questions_with_configuration(
             "total_disagreements": 0,
             "disagreement_rate": 0.0,
             "disagreement_patterns": {}
+        },
+        "medrag_summary": {
+            "enabled": use_medrag,
+            "successful_retrievals": 0,
+            "failed_retrievals": 0,
+            "total_snippets_retrieved": 0,
+            "average_retrieval_time": 0.0
         },
         "complexity_distribution": {"basic": 0, "intermediate": 0, "advanced": 0},
         "deployment_usage": {d['name']: 0 for d in deployments}
@@ -912,7 +939,8 @@ def run_questions_with_configuration(
                         configuration,
                         deployment_config,
                         run_output_dir,
-                        max_retries
+                        max_retries,
+                        use_medrag  
                     )
                     
                     future_to_info[future] = {
@@ -927,6 +955,24 @@ def run_questions_with_configuration(
                         question_result = future.result()
                         results["question_results"].append(question_result)
                         
+
+                        # Track MedRAG usage
+                        if use_medrag and "medrag_info" in question_result:
+                            medrag_info = question_result["medrag_info"]
+                            if medrag_info.get("success", False):
+                                results["medrag_summary"]["successful_retrievals"] += 1
+                                results["medrag_summary"]["total_snippets_retrieved"] += medrag_info.get("snippets_retrieved", 0)
+                                
+                                # Track retrieval time
+                                retrieval_time = medrag_info.get("retrieval_time", 0)
+                                current_avg = results["medrag_summary"]["average_retrieval_time"]
+                                current_count = results["medrag_summary"]["successful_retrievals"]
+                                results["medrag_summary"]["average_retrieval_time"] = (
+                                    (current_avg * (current_count - 1) + retrieval_time) / current_count
+                                )
+                            else:
+                                results["medrag_summary"]["failed_retrievals"] += 1
+
                         # Update progress
                         pbar.update(1)
                         pbar.set_postfix({
@@ -941,6 +987,7 @@ def run_questions_with_configuration(
                             
                             # Handle different task types properly
                             if dataset_type == "pubmedqa":
+                                # For PubMedQA, all methods should work with yes/no/maybe
                                 for method in ["majority_voting", "weighted_voting", "borda_count"]:
                                     if method in task_performance:
                                         method_perf = task_performance[method]
@@ -949,12 +996,6 @@ def run_questions_with_configuration(
                                             if method_perf["correct"]:
                                                 results["summary"][method]["correct"] += 1
                                 
-                                if "yes_no_maybe_voting" in task_performance:
-                                    yes_no_perf = task_performance["yes_no_maybe_voting"]
-                                    if "correct" in yes_no_perf:
-                                        results["summary"]["yes_no_maybe_voting"]["total"] += 1
-                                        if yes_no_perf["correct"]:
-                                            results["summary"]["yes_no_maybe_voting"]["correct"] += 1
                             else:
                                 methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
                                 for method in methods_to_check:
@@ -1057,6 +1098,16 @@ def run_questions_with_configuration(
     for method, stats in results["summary"].items():
         if "accuracy" in stats:
             print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
+
+    if use_medrag:
+        medrag_summary = results["medrag_summary"]
+        total_attempts = medrag_summary["successful_retrievals"] + medrag_summary["failed_retrievals"]
+        success_rate = medrag_summary["successful_retrievals"] / total_attempts if total_attempts > 0 else 0
+        
+        print(f"  MedRAG Enhancement:")
+        print(f"    Success Rate: {medrag_summary['successful_retrievals']}/{total_attempts} ({success_rate:.2%})")
+        print(f"    Total Snippets Retrieved: {medrag_summary['total_snippets_retrieved']}")
+        print(f"    Average Retrieval Time: {medrag_summary['average_retrieval_time']:.2f}s")
     
     if results["errors"]:
         print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
@@ -1219,7 +1270,8 @@ def run_dataset(
     recruitment: bool = False,
     recruitment_method: str = "adaptive",
     recruitment_pool: str = "general",
-    n_max: int = 5
+    n_max: int = 5,
+    use_medrag: bool = False
 ) -> Dict[str, Any]:
     """
     Run a dataset through the agent system with question-level parallel processing.
@@ -1249,8 +1301,9 @@ def run_dataset(
     if n_max is None:
         n_max = 5
     
-    # Log parameters
-    logging.info(f"Running dataset: {dataset_type}, n_max={n_max}, recruitment_method={recruitment_method}")
+    # Log parameters including MedRAG
+    medrag_status = "with MedRAG" if use_medrag else "without MedRAG"
+    logging.info(f"Running dataset: {dataset_type} {medrag_status}, n_max={n_max}, recruitment_method={recruitment_method}")
 
     # Load the dataset
     if dataset_type == "medqa":
@@ -1267,6 +1320,18 @@ def run_dataset(
     
     if not questions:
         return {"error": "No questions loaded"}
+    
+    # Log MedRAG configuration
+    if use_medrag:
+        # Test MedRAG availability before processing
+        test_integration = create_medrag_integration()
+        if test_integration and test_integration.is_available():
+            logging.info("MedRAG integration is available and will be used")
+        else:
+            error_msg = test_integration.get_initialization_error() if test_integration else "Failed to create integration"
+            logging.warning(f"MedRAG integration not available: {error_msg}")
+            logging.warning("Continuing without MedRAG enhancement")
+            use_medrag = False
     
     # Setup output directory
     if output_dir:
@@ -1296,7 +1361,8 @@ def run_dataset(
                 "mutual_trust": False,
                 "recruitment": True,  # Set to True but will be handled specially
                 "recruitment_method": "basic",  # Force basic recruitment for Baseline
-                "n_max": 1  # Always use just 1 agent for Baseline
+                "n_max": 1,  # Always use just 1 agent for Baseline
+                "medrag": use_medrag  # Pass MedRAG usage
             },
 
             # Standard Team - uses specified n_max agents (using intermediate recruitment)
@@ -1312,7 +1378,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",  # Use intermediate recruitment method
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max  # Use specified n_max value
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
 
             # Single features with intermediate recruitment
@@ -1328,7 +1395,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
             {
                 "name": "Closed-loop", 
@@ -1342,7 +1410,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
             {
                 "name": "Mutual Monitoring", 
@@ -1356,7 +1425,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
             {
                 "name": "Shared Mental Model", 
@@ -1370,7 +1440,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
             {
                 "name": "Team Orientation", 
@@ -1384,7 +1455,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
             {
                 "name": "Mutual Trust", 
@@ -1398,7 +1470,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             },
             # All features with recruitment
             {
@@ -1413,23 +1486,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max
-            },
-
-            # Custom features with proven improvement
-            {
-                "name": "Special set with Recruitment", 
-                "description": f"Team of {n_max} agents with positive teamwork components only",
-                "leadership": True, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": True,
-                "team_orientation": False,
-                "mutual_trust": True,
-                "recruitment": True,
-                "recruitment_method": "intermediate",
-                "recruitment_pool": recruitment_pool,
-                "n_max": n_max
+                "n_max": n_max,  # Use specified n_max value
+                "medrag": use_medrag  # Pass MedRAG usage
             }
         ]
     else:
@@ -1445,7 +1503,8 @@ def run_dataset(
             "recruitment": recruitment,            
             "recruitment_method": recruitment_method,
             "recruitment_pool": recruitment_pool,
-            "n_max": n_max
+            "n_max": n_max,  # Use specified n_max value
+            "medrag": use_medrag  # Pass MedRAG usage
         }]
     
     # Run each configuration
@@ -1454,6 +1513,9 @@ def run_dataset(
         # Ensure each config has proper n_max value
         if "n_max" not in config_dict:
             config_dict["n_max"] = n_max
+
+        # Get MedRAG setting for this configuration
+        config_use_medrag = config_dict.get("use_medrag", False)
         
         # Special handling for Baseline - always use basic recruitment with 1 agent
         if config_dict["name"] == "Baseline":
@@ -1466,9 +1528,10 @@ def run_dataset(
             config_dict["recruitment_method"] = config_dict.get("recruitment_method", recruitment_method)
             config_dict["recruitment_pool"] = config_dict.get("recruitment_pool", recruitment_pool)
         
-        # Log current configuration with description if available
+        # Log current configuration with MedRAG status
         description = config_dict.get("description", "")
-        desc_str = f" - {description}" if description else ""
+        medrag_note = " with MedRAG" if config_use_medrag else ""
+        desc_str = f" - {description}{medrag_note}" if description else medrag_note
         logging.info(f"Running configuration: {config_dict['name']}{desc_str}, recruitment={config_dict['recruitment']}, method={config_dict['recruitment_method']}, n_max={config_dict['n_max']}")
         
         result = run_questions_with_configuration(
@@ -1476,7 +1539,8 @@ def run_dataset(
             dataset_type,
             config_dict,
             run_output_dir,
-            n_max=config_dict.get("n_max", n_max)
+            n_max=config_dict.get("n_max", n_max),
+             use_medrag=config_use_medrag 
         )
         all_results.append(result)
     
@@ -1489,7 +1553,8 @@ def run_dataset(
         "parallel_processing": "question_level",
         "deployments_used": [d['name'] for d in available_deployments],
         "configurations": [r["configuration"] for r in all_results],
-        "summaries": {r["configuration"]: r["summary"] for r in all_results}
+        "summaries": {r["configuration"]: r["summary"] for r in all_results},
+        "medrag_summaries": {r["configuration"]: r.get("medrag_summary", {}) for r in all_results if r.get("use_medrag", False)}
     }
     
     # Save combined results
@@ -1547,10 +1612,41 @@ def main():
     parser.add_argument('--n-max', type=int, default=None, 
                       help='Maximum number of agents for intermediate team')
     
+    # Add MedRAG argument
+    parser.add_argument('--medrag', action='store_true', 
+                      help='Enable MedRAG knowledge enhancement')
+    parser.add_argument('--medrag-retriever', type=str, default='MedCPT',
+                      help='MedRAG retriever to use (default: MedCPT)')
+    parser.add_argument('--medrag-corpus', type=str, default='Textbooks',
+                      help='MedRAG corpus to use (default: Textbooks)')
+    
     args = parser.parse_args()
     
     # Set up logging
     setup_logging()
+    
+    # Log MedRAG configuration if enabled
+    if args.medrag:
+        logging.info(f"MedRAG enhancement enabled with {args.medrag_retriever}/{args.medrag_corpus}")
+        
+        # Test MedRAG availability
+        test_integration = create_medrag_integration(
+            retriever_name=args.medrag_retriever,
+            corpus_name=args.medrag_corpus
+        )
+        
+        if test_integration and test_integration.is_available():
+            logging.info("MedRAG integration test successful")
+        else:
+            error_msg = test_integration.get_initialization_error() if test_integration else "Failed to create integration"
+            logging.error(f"MedRAG integration test failed: {error_msg}")
+            logging.error("Consider disabling MedRAG or fixing the configuration")
+            
+            # Option to continue without MedRAG
+            response = input("Continue without MedRAG? (y/n): ")
+            if response.lower() != 'y':
+                return
+            args.medrag = False
 
     # Log deployment configuration
     deployments = config.get_all_deployments()
@@ -1579,7 +1675,8 @@ def main():
         recruitment=args.recruitment,
         recruitment_method=args.recruitment_method,
         recruitment_pool=args.recruitment_pool,
-        n_max=args.n_max
+        n_max=args.n_max,
+        use_medrag=args.medrag  
     )
     
     # Print overall summary
@@ -1589,6 +1686,18 @@ def main():
         for method, stats in summary.items():
             if "accuracy" in stats:
                 print(f"  {method.replace('_', ' ').title()}: {stats['accuracy']:.2%} accuracy")
+
+    # Print MedRAG summary if used
+    if args.medrag and "medrag_summaries" in results:
+        print(f"\nMedRAG Enhancement Summary:")
+        for config_name, medrag_summary in results["medrag_summaries"].items():
+            if medrag_summary:
+                total_attempts = medrag_summary.get("successful_retrievals", 0) + medrag_summary.get("failed_retrievals", 0)
+                success_rate = medrag_summary.get("successful_retrievals", 0) / total_attempts if total_attempts > 0 else 0
+                print(f"  {config_name}:")
+                print(f"    Retrieval Success Rate: {success_rate:.2%}")
+                print(f"    Average Retrieval Time: {medrag_summary.get('average_retrieval_time', 0):.2f}s")
+                print(f"    Total Snippets: {medrag_summary.get('total_snippets_retrieved', 0)}")
 
     # Print deployment information
     deployments = config.get_all_deployments()

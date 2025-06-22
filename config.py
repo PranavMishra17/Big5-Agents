@@ -271,6 +271,105 @@ RECRUITMENT_POOLS = {
     ]
 }
 
+
+# Enhanced recruitment prompt for MedMCQA
+RECRUITMENT_PROMPTS_MEDMCQA = {
+    "complexity_evaluation_medmcqa": """
+    Analyze the following medical question and its options to determine complexity level:
+    
+    Question: {question}
+    
+    Answer Options:
+    {options}
+    
+    Subject: {subject}
+    Topic: {topic}
+    
+    Consider these factors:
+    - Subject area complexity (basic sciences vs. specialized clinical)
+    - Topic specificity and depth required
+    - Whether options indicate multi-system involvement
+    - Diagnostic vs. therapeutic vs. mechanism-based question
+    - Whether options suggest rare conditions or common presentations
+    
+    Based on analysis, classify as:
+    1) basic - Single domain knowledge, common conditions/concepts
+    2) intermediate - Multi-domain or specialized knowledge required  
+    3) advanced - Complex differential diagnosis, rare conditions, or multi-system integration
+    
+    **Complexity Classification:** [number]) [complexity level]
+    """,
+    
+    "team_selection_medmcqa": """You are recruiting medical experts to answer this question collaboratively.
+        
+    Question: {question}
+
+    Answer Options:
+    {options}
+    
+    Subject Area: {subject}
+    Clinical Topic: {topic}
+
+    Based on the question content, answer options, and subject area, recruit {num_agents} experts with DISTINCT specialties that are directly relevant.
+
+    Consider the options carefully - they often reveal the specific medical domains needed:
+    - Anatomical structures mentioned → relevant specialists
+    - Disease processes → corresponding subspecialists  
+    - Diagnostic findings → interpreting specialists
+    - Treatment modalities → managing specialists
+    - Physiological mechanisms → basic science experts
+
+    For each expert, assign weight (0.0-1.0) reflecting importance to this specific question. Total weights should sum to 1.0.
+
+    Specify communication structure or mark as Independent.
+
+    Example format:
+    1. [Specialist] - [Expertise description] - Hierarchy: [Structure] - Weight: [0.0-1.0]
+    2. [Specialist] - [Expertise description] - Hierarchy: [Structure] - Weight: [0.0-1.0]
+    ...
+
+    Do not include reasoning, just the recruitment list.
+    """,
+    
+    "mdt_design_medmcqa": """You are organizing Multidisciplinary Teams (MDTs) for this complex medical question.
+
+Question: {question}
+
+Answer Options:
+{options}
+
+Subject: {subject}
+Topic: {topic}
+
+The answer options suggest multiple domains of expertise are needed. Organize 3 MDTs with 3 clinicians each.
+
+Consider how the options inform team composition:
+- Options mentioning specific organ systems → relevant specialists
+- Diagnostic options → imaging/lab specialists  
+- Treatment options → therapeutic specialists
+- Mechanism options → basic science experts
+
+Include Initial Assessment Team (IAT) and Final Review and Decision Team (FRDT).
+
+Format:
+Group 1 - Initial Assessment Team (IAT)
+Member 1: [Specialist] (Lead) - [Expertise and relevance to options]
+Member 2: [Specialist] - [Expertise and relevance to options]  
+Member 3: [Specialist] - [Expertise and relevance to options]
+
+Group 2 - [Domain-specific Team Name]
+Member 1: [Specialist] (Lead) - [Expertise and relevance to options]
+Member 2: [Specialist] - [Expertise and relevance to options]
+Member 3: [Specialist] - [Expertise and relevance to options]
+
+Group 3 - Final Review and Decision Team (FRDT)
+Member 1: [Specialist] (Lead) - [Expertise and relevance to options]
+Member 2: [Specialist] - [Expertise and relevance to options]
+Member 3: [Specialist] - [Expertise and relevance to options]
+"""
+}
+
+
 # Configure which teamwork components to use
 USE_TEAM_LEADERSHIP = False
 USE_CLOSED_LOOP_COMM = False
