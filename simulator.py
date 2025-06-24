@@ -1,5 +1,5 @@
 """
-Enhanced simulator.py with isolated task configuration for parallel question processing.
+Fixed simulator.py with proper MedRAG integration and knowledge enhancement.
 """
 
 import os
@@ -28,7 +28,7 @@ from components.medrag_integration import MedRAGIntegration, create_medrag_integ
 
 class AgentSystemSimulator:
     """
-    Enhanced simulator with isolated task configuration for parallel question handling.
+    Enhanced simulator with proper MedRAG integration for parallel question handling.
     """
     
     def __init__(self, 
@@ -79,9 +79,11 @@ class AgentSystemSimulator:
         
         self.metadata = {}
 
+        # MedRAG Integration - FIXED
         self.use_medrag = use_medrag
-        self.medrag_prompt_addition = ""  # Store prompt addition from MedRAG
-    
+        self.medrag_integration = None
+        self.retrieved_knowledge = None
+        
 
         # Setup configuration
         self.config = {
@@ -108,6 +110,10 @@ class AgentSystemSimulator:
             log_dir=config.LOG_DIR,
             config=self.config
         )
+
+        # Initialize MedRAG FIRST (before creating agents)
+        if self.use_medrag:
+            self._initialize_medrag()
 
         # Create agent team with isolated context
         self._create_agent_team(isolated_context=question_specific_context)
@@ -141,6 +147,45 @@ class AgentSystemSimulator:
         
         deployment_name = self.deployment_config['name'] if self.deployment_config else "default"
         self.logger.logger.info(f"Initialized simulation {self.simulation_id} with deployment: {deployment_name}")
+
+    def _initialize_medrag(self):
+        """Initialize MedRAG integration."""
+        try:
+            self.medrag_integration = create_medrag_integration(
+                deployment_config=self.deployment_config,
+                retriever_name="MedCPT",
+                corpus_name="Textbooks"
+            )
+            
+            if not self.medrag_integration:
+                self.logger.logger.warning("MedRAG integration not available")
+                self.use_medrag = False
+                return
+            
+            # Retrieve knowledge for the current question
+            question = self.task_config.get("description", "")
+            options = self.task_config.get("options", [])
+            
+            if question:
+                self.logger.logger.info("Retrieving medical knowledge with MedRAG...")
+                self.retrieved_knowledge = self.medrag_integration.retrieve_knowledge(
+                    question=question,
+                    options=options,
+                    question_id=self.simulation_id
+                )
+                
+                if self.retrieved_knowledge.get("available", False):
+                    num_snippets = len(self.retrieved_knowledge.get("knowledge_snippets", []))
+                    self.logger.logger.info(f"MedRAG retrieved {num_snippets} knowledge snippets successfully")
+                else:
+                    self.logger.logger.warning(f"MedRAG retrieval failed: {self.retrieved_knowledge.get('error', 'Unknown error')}")
+            else:
+                self.logger.logger.warning("No question available for MedRAG retrieval")
+                
+        except Exception as e:
+            self.logger.logger.error(f"MedRAG initialization failed: {str(e)}")
+            self.use_medrag = False
+            self.retrieved_knowledge = None
 
     def _create_agent_team(self, isolated_context: bool = False):
         """Create agent team with proper recruitment handling and deployment assignment."""
@@ -228,139 +273,19 @@ class AgentSystemSimulator:
             
         return agents, leader
 
-
-    def _enhance_agents_with_medrag(self, use_medrag: bool = False) -> Optional[Dict[str, Any]]:
-        """
-        Enhanced MedRAG integration with proper Azure OpenAI configuration.
-        """
-        if not use_medrag:
-            self.logger.logger.debug("MedRAG enhancement disabled")
-            return None
-        
-        try:
-            # Create MedRAG integration with the SAME deployment config as agents
-            medrag_integration = create_medrag_integration(
-                deployment_config=self.deployment_config,  # Use same deployment as agents
-                retriever_name="MedCPT",
-                corpus_name="Textbooks"
-            )
-            
-            if not medrag_integration:
-                self.logger.logger.warning("MedRAG integration not available")
-                return None
-            
-            # Extract question and options from task config
-            question = self.task_config.get("description", "")
-            options = self.task_config.get("options", [])
-            
-            if not question:
-                self.logger.logger.warning("No question available for MedRAG retrieval")
-                return None
-            
-            # Retrieve medical knowledge
-            self.logger.logger.info("Retrieving medical knowledge using MedRAG...")
-            retrieved_knowledge = medrag_integration.retrieve_knowledge(
-                question=question,
-                options=options,
-                question_id=self.simulation_id
-            )
-            
-            if not retrieved_knowledge.get("available", False):
-                self.logger.logger.warning(f"MedRAG retrieval failed: {retrieved_knowledge.get('error', 'Unknown error')}")
-                # Still store the attempt for metrics
-                self.results["medrag_enhancement"] = {
-                    "enabled": True,
-                    "success": False,
-                    "error": retrieved_knowledge.get('error', 'Unknown error'),
-                    "agents_enhanced": 0,
-                    "total_agents": len(self.agents),
-                    "snippets_retrieved": 0,
-                    "retrieval_time": retrieved_knowledge.get('retrieval_time', 0)
-                }
-                return retrieved_knowledge
-            
-            # Enhance agents with retrieved knowledge
-            enhanced_agents = 0
-            
-            # Method 1: Enhance shared mental model if available
-            if self.use_shared_mental_model and self.mental_model:
-                success = medrag_integration.enhance_shared_mental_model(
-                    self.mental_model, 
-                    retrieved_knowledge
-                )
-                if success:
-                    self.logger.logger.info("Enhanced shared mental model with MedRAG knowledge")
-            
-            # Method 2: Enhance individual agents
-            for role, agent in self.agents.items():
-                success = medrag_integration.enhance_agent_knowledge(agent, retrieved_knowledge)
-                if success:
-                    enhanced_agents += 1
-                    self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
-            
-            # Method 3: Add knowledge to agent prompts
-            knowledge_prompt_addition = medrag_integration.get_enhancement_prompt_addition(retrieved_knowledge)
-            if knowledge_prompt_addition:
-                # Store for use in agent interactions
-                self.medrag_prompt_addition = knowledge_prompt_addition
-                self.logger.logger.debug("Prepared MedRAG prompt addition for agents")
-            
-            # Log retrieval summary
-            num_snippets = len(retrieved_knowledge.get("knowledge_snippets", []))
-            retrieval_time = retrieved_knowledge.get("retrieval_time", 0)
-            
-            self.logger.logger.info(
-                f"MedRAG enhancement completed: {enhanced_agents}/{len(self.agents)} agents enhanced, "
-                f"{num_snippets} knowledge snippets retrieved in {retrieval_time:.2f}s"
-            )
-            
-            # Store for results - CRITICAL: Proper metrics storage
-            self.results["medrag_enhancement"] = {
-                "enabled": True,
-                "success": True,
-                "agents_enhanced": enhanced_agents,
-                "total_agents": len(self.agents),
-                "snippets_retrieved": num_snippets,
-                "retrieval_time": retrieval_time,
-                "summary": retrieved_knowledge.get("summary", "")
-            }
-            
-            return retrieved_knowledge
-            
-        except Exception as e:
-            error_msg = f"MedRAG enhancement failed: {str(e)}"
-            self.logger.logger.error(error_msg)
-            self.logger.logger.error(traceback.format_exc())
-            
-            # Store error info
-            self.results["medrag_enhancement"] = {
-                "enabled": True,
-                "success": False,
-                "error": error_msg,
-                "agents_enhanced": 0,
-                "total_agents": len(self.agents),
-                "snippets_retrieved": 0,
-                "retrieval_time": 0
-            }
-            
-            return None
-    
-
     def run_simulation(self):
         """
-        Run the enhanced 3-round simulation process with sequential agent processing.
+        Run the enhanced 3-round simulation process with MedRAG integration.
         
         Returns:
             Dictionary with simulation results
         """
-        # ENHANCEMENT PHASE: Add MedRAG knowledge if enabled
-        if self.use_medrag:
-            self.logger.logger.info("ENHANCEMENT PHASE: Retrieving medical knowledge with MedRAG")
-            medrag_knowledge = self._enhance_agents_with_medrag(use_medrag=True)
+        # ENHANCEMENT PHASE: Apply MedRAG knowledge if available
+        if self.use_medrag and self.retrieved_knowledge:
+            self.logger.logger.info("ENHANCEMENT PHASE: Applying retrieved medical knowledge to agents")
+            self._enhance_agents_with_retrieved_knowledge()
         else:
-            medrag_knowledge = None
             self.results["medrag_enhancement"] = {"enabled": False}
-
 
         # ROUND 1: Independent Analysis (Sequential)
         self.logger.logger.info("ROUND 1: Independent task analysis (sequential execution)")
@@ -401,6 +326,7 @@ class AgentSystemSimulator:
                 "simulation_id": self.simulation_id,
                 "timestamp": datetime.now().isoformat(),
                 "deployment": self.deployment_config['name'] if self.deployment_config else "default",
+                "medrag_enhancement": self.results.get("medrag_enhancement", {}),
                 "task_info": {
                     "name": self.task_config.get("name", ""),
                     "type": self.task_config.get("type", ""),
@@ -414,9 +340,89 @@ class AgentSystemSimulator:
             "decision_results": decision_results
         }
 
+    def _enhance_agents_with_retrieved_knowledge(self):
+        """
+        Apply retrieved MedRAG knowledge to agents.
+        THIS IS THE KEY METHOD THAT WAS MISSING!
+        """
+        if not self.retrieved_knowledge or not self.retrieved_knowledge.get("available", False):
+            self.logger.logger.warning("No valid retrieved knowledge to apply to agents")
+            self.results["medrag_enhancement"] = {
+                "enabled": True,
+                "success": False,
+                "error": "No valid knowledge retrieved",
+                "agents_enhanced": 0,
+                "total_agents": len(self.agents),
+                "snippets_retrieved": 0
+            }
+            return
+
+        enhanced_agents = 0
+        
+        try:
+            # Enhance shared mental model if available
+            if self.use_shared_mental_model and self.mental_model:
+                success = self.medrag_integration.enhance_shared_mental_model(
+                    self.mental_model, 
+                    self.retrieved_knowledge
+                )
+                if success:
+                    self.logger.logger.info("Enhanced shared mental model with MedRAG knowledge")
+            
+            # Enhance individual agents
+            for role, agent in self.agents.items():
+                success = self.medrag_integration.enhance_agent_knowledge(agent, self.retrieved_knowledge)
+                if success:
+                    enhanced_agents += 1
+                    self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
+            
+            # Get knowledge prompt addition for use in agent interactions
+            knowledge_prompt_addition = self.medrag_integration.get_enhancement_prompt_addition(self.retrieved_knowledge)
+            
+            # Store the prompt addition for use in Round 1 analysis
+            if knowledge_prompt_addition:
+                for role, agent in self.agents.items():
+                    agent.add_to_knowledge_base("medrag_prompt_addition", knowledge_prompt_addition)
+                self.logger.logger.info("Added MedRAG knowledge prompt enhancement to all agents")
+            
+            # Log enhancement summary
+            num_snippets = len(self.retrieved_knowledge.get("knowledge_snippets", []))
+            retrieval_time = self.retrieved_knowledge.get("retrieval_time", 0)
+            
+            self.logger.logger.info(
+                f"MedRAG enhancement completed: {enhanced_agents}/{len(self.agents)} agents enhanced, "
+                f"{num_snippets} knowledge snippets applied in {retrieval_time:.2f}s"
+            )
+            
+            # Store for results
+            self.results["medrag_enhancement"] = {
+                "enabled": True,
+                "success": True,
+                "agents_enhanced": enhanced_agents,
+                "total_agents": len(self.agents),
+                "snippets_retrieved": num_snippets,
+                "retrieval_time": retrieval_time,
+                "summary": self.retrieved_knowledge.get("summary", "")
+            }
+            
+        except Exception as e:
+            error_msg = f"Failed to enhance agents with MedRAG knowledge: {str(e)}"
+            self.logger.logger.error(error_msg)
+            self.logger.logger.error(traceback.format_exc())
+            
+            self.results["medrag_enhancement"] = {
+                "enabled": True,
+                "success": False,
+                "error": error_msg,
+                "agents_enhanced": enhanced_agents,
+                "total_agents": len(self.agents),
+                "snippets_retrieved": 0,
+                "retrieval_time": 0
+            }
+
     def _run_round1_independent_analysis(self) -> Dict[str, Dict[str, Any]]:
         """
-        ROUND 1: Each agent analyzes the task independently (SEQUENTIAL EXECUTION).
+        ROUND 1: Each agent analyzes the task independently with MedRAG enhancement.
         
         Returns:
             Dictionary mapping agent roles to their independent analyses
@@ -428,19 +434,25 @@ class AgentSystemSimulator:
             try:
                 self.logger.logger.info(f"Round 1: Getting analysis from {role}")
                 
-                # Use the isolated task config instead of global config
+                # Get base analysis using isolated task config
                 analysis = agent.analyze_task_isolated(self.task_config)
 
-                # If MedRAG knowledge is available, enhance the analysis
-                if hasattr(self, 'medrag_prompt_addition') and self.medrag_prompt_addition:
-                    # Add MedRAG knowledge to the agent's analysis context
+                # Apply MedRAG enhancement if available
+                medrag_prompt_addition = agent.get_from_knowledge_base("medrag_prompt_addition")
+                if medrag_prompt_addition:
+                    self.logger.logger.info(f"Applying MedRAG enhancement to {role}'s analysis")
+                    
+                    # Create enhanced prompt with retrieved knowledge
                     enhanced_prompt = f"""
+                    You have completed your initial analysis of this medical question:
+                    
                     {analysis}
                     
-                    {self.medrag_prompt_addition}
+                    {medrag_prompt_addition}
                     
                     Now, considering the retrieved medical knowledge above, provide any additional insights or refinements to your analysis.
                     If the retrieved knowledge supports, contradicts, or adds important context to your analysis, please note this.
+                    Consider how this medical literature affects your reasoning and conclusion.
                     """
                     
                     try:
@@ -453,13 +465,14 @@ class AgentSystemSimulator:
                             enhanced_analysis
                         )
                         
-                        # Use enhanced analysis as the final analysis
+                        # Combine original and enhanced analysis
                         analysis = f"{analysis}\n\n=== MEDRAG ENHANCED ANALYSIS ===\n{enhanced_analysis}"
                         
                     except Exception as e:
                         self.logger.logger.warning(f"Failed to enhance {role} analysis with MedRAG: {str(e)}")
                         # Continue with original analysis
 
+                # Extract response using isolated task config
                 extract = agent.extract_response_isolated(analysis, self.task_config)
                 
                 # Log to main discussion channel
@@ -475,7 +488,7 @@ class AgentSystemSimulator:
                     "extract": extract
                 }
                 
-                # Update shared mental model if enabled (but don't share between agents yet)
+                # Update shared mental model if enabled
                 if self.use_shared_mental_model and self.mental_model:
                     understanding = self.mental_model.extract_understanding_from_message(analysis)
                     self.mental_model.update_shared_understanding(role, understanding)
@@ -757,7 +770,6 @@ class AgentSystemSimulator:
             self.logger.logger.error(f"Error in leadership definition: {str(e)}")
             return f"Error in leadership definition: {str(e)}"
 
-
     def _apply_decision_methods(self, agent_decisions):
         """Apply decision methods to agent decisions using isolated task config."""
         # Determine if this is an MDT (advanced) task
@@ -825,7 +837,6 @@ class AgentSystemSimulator:
                 "decision_team": final_team_name
             }
         }
-
 
     def _collect_teamwork_metrics(self):
         """Collect teamwork metrics from enabled components."""

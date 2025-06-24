@@ -649,6 +649,7 @@ def extract_agent_responses_info(simulation_results):
     
     return agent_responses_info
 
+
 def process_single_question(question_index: int, 
                             question: Dict[str, Any],
                             dataset_type: str,
@@ -659,19 +660,7 @@ def process_single_question(question_index: int,
                             use_medrag: bool = False) -> Dict[str, Any]:
     """
     Process a single question with the given configuration and deployment.
-    Creates isolated simulation context for the question.
-
-    Args:
-        question_index: Index of the question in the dataset
-        question: Question data
-        dataset_type: Type of dataset (medqa, medmcqa, etc.)
-        configuration: Configuration dictionary with teamwork settings
-        deployment_config: Specific deployment configuration to use
-        run_output_dir: Output directory for results
-        max_retries: Maximum number of retries for failed questions
-
-    Returns:
-        Dictionary with question results
+    FIXED VERSION with proper MedRAG integration.
     """
     import gc
     import traceback
@@ -706,7 +695,7 @@ def process_single_question(question_index: int,
         "agent_responses": {},
         "disagreement_analysis": {},
         "disagreement_flag": False,
-        "medrag_info": {}  # Store MedRAG information
+        "medrag_info": {}  # FIXED: Initialize properly
     }
 
     try:
@@ -728,8 +717,8 @@ def process_single_question(question_index: int,
                     deployment_config=deployment_config,
                     question_specific_context=True,
                     task_config=agent_task,  # Pass task directly to simulator
-                    eval_data=eval_data  ,    # Pass evaluation data directly
-                    use_medrag=use_medrag  # Pass MedRAG parameter
+                    eval_data=eval_data,     # Pass evaluation data directly
+                    use_medrag=use_medrag    # FIXED: Pass MedRAG parameter
                 )
 
                 # Log that we're starting processing for this question
@@ -739,10 +728,18 @@ def process_single_question(question_index: int,
                 simulation_results = simulator.run_simulation()
                 performance = simulator.evaluate_performance()
 
-
-                # Extract MedRAG information if used
-                if use_medrag and "medrag_enhancement" in simulation_results.get("simulation_metadata", {}):
-                    question_result["medrag_info"] = simulation_results["simulation_metadata"]["medrag_enhancement"]
+                # FIXED: Extract MedRAG information properly
+                if use_medrag:
+                    # Extract from simulation metadata
+                    medrag_enhancement = simulation_results.get("simulation_metadata", {}).get("medrag_enhancement", {})
+                    if medrag_enhancement:
+                        question_result["medrag_info"] = medrag_enhancement
+                        logging.info(f"Question {question_index}: MedRAG success={medrag_enhancement.get('success', False)}, snippets={medrag_enhancement.get('snippets_retrieved', 0)}")
+                    else:
+                        question_result["medrag_info"] = {"enabled": True, "success": False, "error": "No enhancement data found"}
+                        logging.warning(f"Question {question_index}: MedRAG enabled but no enhancement data found")
+                else:
+                    question_result["medrag_info"] = {"enabled": False}
 
                 question_result.update({
                     "agent_responses": extract_agent_responses_info(simulation_results),
@@ -786,6 +783,7 @@ def process_single_question(question_index: int,
 
     return question_result
 
+
 def track_agent_mind_changes(agent_analyses, agent_decisions):
     """Track if agents changed their answers after seeing teammates"""
     mind_changes = {}
@@ -811,6 +809,7 @@ def track_agent_mind_changes(agent_analyses, agent_decisions):
     
     return mind_changes
 
+
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],
     dataset_type: str,
@@ -818,22 +817,11 @@ def run_questions_with_configuration(
     output_dir: Optional[str] = None,
     max_retries: int = 3,
     n_max: int = 5,
-    use_medrag: bool = False  # NEW PARAMETER
+    use_medrag: bool = False  # FIXED: Parameter properly passed
 ) -> Dict[str, Any]:
     """
     Run questions with specific configuration using parallel processing at question level.
-    Each question is assigned to a deployment in round-robin fashion.
-    
-    Args:
-        questions: List of questions to process
-        dataset_type: Type of dataset
-        configuration: Configuration dictionary
-        output_dir: Output directory
-        max_retries: Maximum retries per question
-        n_max: Maximum number of agents for intermediate teams
-        
-    Returns:
-        Dictionary with aggregated results
+    FIXED VERSION with proper MedRAG metrics collection.
     """
     config_name = configuration.get("name", "unknown")
     if use_medrag:
@@ -867,7 +855,7 @@ def run_questions_with_configuration(
     if run_output_dir:
         os.makedirs(run_output_dir, exist_ok=True)
     
-    # Initialize results structure
+    # Initialize results structure with FIXED MedRAG metrics
     results = {
         "configuration": config_name,
         "use_medrag": use_medrag,
@@ -897,7 +885,8 @@ def run_questions_with_configuration(
             "successful_retrievals": 0,
             "failed_retrievals": 0,
             "total_snippets_retrieved": 0,
-            "average_retrieval_time": 0.0
+            "average_retrieval_time": 0.0,
+            "enhancement_success_rate": 0.0
         },
         "complexity_distribution": {"basic": 0, "intermediate": 0, "advanced": 0},
         "deployment_usage": {d['name']: 0 for d in deployments}
@@ -940,7 +929,7 @@ def run_questions_with_configuration(
                         deployment_config,
                         run_output_dir,
                         max_retries,
-                        use_medrag  
+                        use_medrag  # FIXED: Pass MedRAG parameter
                     )
                     
                     future_to_info[future] = {
@@ -955,30 +944,32 @@ def run_questions_with_configuration(
                         question_result = future.result()
                         results["question_results"].append(question_result)
                         
-
-                        # Track MedRAG usage
+                        # FIXED: Track MedRAG usage properly
                         if use_medrag and "medrag_info" in question_result:
                             medrag_info = question_result["medrag_info"]
-                            if medrag_info.get("success", False):
-                                results["medrag_summary"]["successful_retrievals"] += 1
-                                results["medrag_summary"]["total_snippets_retrieved"] += medrag_info.get("snippets_retrieved", 0)
-                                
-                                # Track retrieval time
-                                retrieval_time = medrag_info.get("retrieval_time", 0)
-                                current_avg = results["medrag_summary"]["average_retrieval_time"]
-                                current_count = results["medrag_summary"]["successful_retrievals"]
-                                results["medrag_summary"]["average_retrieval_time"] = (
-                                    (current_avg * (current_count - 1) + retrieval_time) / current_count
-                                )
-                            else:
-                                results["medrag_summary"]["failed_retrievals"] += 1
+                            if medrag_info.get("enabled", False):
+                                if medrag_info.get("success", False):
+                                    results["medrag_summary"]["successful_retrievals"] += 1
+                                    results["medrag_summary"]["total_snippets_retrieved"] += medrag_info.get("snippets_retrieved", 0)
+                                    
+                                    # Track retrieval time
+                                    retrieval_time = medrag_info.get("retrieval_time", 0)
+                                    if retrieval_time > 0:
+                                        current_avg = results["medrag_summary"]["average_retrieval_time"]
+                                        current_count = results["medrag_summary"]["successful_retrievals"]
+                                        results["medrag_summary"]["average_retrieval_time"] = (
+                                            (current_avg * (current_count - 1) + retrieval_time) / current_count
+                                        )
+                                else:
+                                    results["medrag_summary"]["failed_retrievals"] += 1
 
                         # Update progress
                         pbar.update(1)
                         pbar.set_postfix({
                             'deployment': info['deployment'],
                             'processed': len(results["question_results"]),
-                            'errors': len(results["errors"])
+                            'errors': len(results["errors"]),
+                            'medrag_success': results["medrag_summary"]["successful_retrievals"] if use_medrag else 0
                         })
                         
                         # Update summary statistics if no error
@@ -1033,12 +1024,20 @@ def run_questions_with_configuration(
                         })
                         pbar.update(1)
     
-    # Calculate final statistics
+    # FIXED: Calculate final MedRAG statistics
     total_processed = len([q for q in results["question_results"] if "error" not in q])
     results["disagreement_summary"]["disagreement_rate"] = (
         results["disagreement_summary"]["total_disagreements"] / total_processed 
         if total_processed > 0 else 0
     )
+    
+    # Calculate MedRAG enhancement success rate
+    if use_medrag:
+        total_medrag_attempts = results["medrag_summary"]["successful_retrievals"] + results["medrag_summary"]["failed_retrievals"]
+        if total_medrag_attempts > 0:
+            results["medrag_summary"]["enhancement_success_rate"] = (
+                results["medrag_summary"]["successful_retrievals"] / total_medrag_attempts
+            )
     
     # Calculate accuracy for each method
     for method in results["summary"].keys():
@@ -1087,13 +1086,18 @@ def run_questions_with_configuration(
             with open(os.path.join(run_output_dir, "deployment_usage.json"), 'w') as f:
                 json.dump(results["deployment_usage"], f, indent=2)
                 
+            # FIXED: Save MedRAG metrics
+            if use_medrag:
+                with open(os.path.join(run_output_dir, "medrag_metrics.json"), 'w') as f:
+                    json.dump(results["medrag_summary"], f, indent=2)
+                
             # Save comprehensive detailed results
             with open(os.path.join(run_output_dir, "detailed_results_enhanced.json"), 'w') as f:
                 json.dump(results, f, indent=2)
         except Exception as e:
             logging.error(f"Failed to save enhanced summary results: {str(e)}")
     
-    # Enhanced summary print
+    # FIXED: Enhanced summary print with MedRAG info
     print(f"\nSummary for {config_name} on {dataset_type}:")
     for method, stats in results["summary"].items():
         if "accuracy" in stats:
@@ -1108,6 +1112,7 @@ def run_questions_with_configuration(
         print(f"    Success Rate: {medrag_summary['successful_retrievals']}/{total_attempts} ({success_rate:.2%})")
         print(f"    Total Snippets Retrieved: {medrag_summary['total_snippets_retrieved']}")
         print(f"    Average Retrieval Time: {medrag_summary['average_retrieval_time']:.2f}s")
+        print(f"    Enhancement Success Rate: {medrag_summary['enhancement_success_rate']:.2%}")
     
     if results["errors"]:
         print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
@@ -1122,6 +1127,7 @@ def run_questions_with_configuration(
     print(f"  Deployment Usage: {dict(results['deployment_usage'])}")
         
     return results
+
 
 def create_comprehensive_combined_results(all_results, dataset_type, output_dir):
     """Create comprehensive combined results with all enhanced data"""
