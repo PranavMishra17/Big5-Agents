@@ -4,6 +4,7 @@ Fixed MedRAG integration component that properly works with Azure OpenAI.
 
 import logging
 import json
+import re
 import traceback
 from typing import Dict, List, Any, Optional, Tuple
 import threading
@@ -99,12 +100,15 @@ class MedRAGIntegration:
         """Get initialization error if any."""
         return self._initialization_error
     
+
+
     def retrieve_knowledge(self, 
-                          question: str, 
-                          options: List[str] = None,
-                          question_id: str = None) -> Dict[str, Any]:
+                        question: str, 
+                        options: List[str] = None,
+                        question_id: str = None) -> Dict[str, Any]:
         """
         Retrieve relevant medical knowledge for a question using MedRAG.
+        IMPROVED VERSION with better medical question handling.
         """
         if not self.is_available():
             self.logger.warning(f"MedRAG not available: {self._initialization_error}")
@@ -129,23 +133,31 @@ class MedRAGIntegration:
         try:
             self.logger.info(f"Retrieving knowledge for question: {question[:100]}...")
             
+            # IMPROVEMENT: Better query preprocessing for medical questions
+            enhanced_query = self._enhance_medical_query(question, options)
+            
             # Format options for MedRAG
             formatted_options = self._format_options(options) if options else None
             
-            # Call MedRAG with timeout
+            # Call MedRAG with enhanced query
             answer, snippets, scores = self._call_medrag_with_timeout(
-                question=question,
+                question=enhanced_query,
                 options=formatted_options,
-                k=self.k_retrieval,
-                timeout=30  # 30 second timeout
+                k=min(self.k_retrieval, 10),  # Reduce to 10 for better quality
+                timeout=45  # Increase timeout for better results
+            )
+            
+            # IMPROVEMENT: Filter and rank snippets by relevance
+            filtered_snippets, filtered_scores = self._filter_medical_snippets(
+                snippets, scores, question, options
             )
             
             # Process and structure the retrieved knowledge
             knowledge_result = self._process_retrieved_knowledge(
                 question=question,
                 answer=answer,
-                snippets=snippets,
-                scores=scores
+                snippets=filtered_snippets,
+                scores=filtered_scores
             )
             
             # Cache the result
@@ -156,7 +168,7 @@ class MedRAGIntegration:
             knowledge_result["retrieval_time"] = retrieval_time
             knowledge_result["cached"] = False
             
-            self.logger.info(f"Successfully retrieved {len(snippets)} knowledge snippets in {retrieval_time:.2f}s")
+            self.logger.info(f"Successfully retrieved {len(filtered_snippets)} knowledge snippets in {retrieval_time:.2f}s")
             
             return knowledge_result
             
@@ -172,7 +184,111 @@ class MedRAGIntegration:
                 "summary": f"Knowledge retrieval failed: {str(e)}",
                 "retrieval_time": time.time() - start_time
             }
-    
+
+
+    def _enhance_medical_query(self, question: str, options: List[str] = None) -> str:
+        """Enhance the query for better medical knowledge retrieval."""
+        enhanced_query = question
+        
+        # Extract key medical terms
+        medical_terms = self._extract_medical_terms(question)
+        
+        # Add option context if available
+        if options:
+            option_terms = []
+            for option in options:
+                # Extract medical terms from options
+                opt_terms = self._extract_medical_terms(option)
+                option_terms.extend(opt_terms)
+            
+            if option_terms:
+                unique_terms = list(set(option_terms))
+                enhanced_query += f" {' '.join(unique_terms[:5])}"  # Add top 5 terms
+        
+        return enhanced_query
+
+    def _extract_medical_terms(self, text: str) -> List[str]:
+        """Extract key medical terms from text."""
+        # Common medical term patterns
+        medical_patterns = [
+            r'\b\w*itis\b',      # inflammation terms
+            r'\b\w*osis\b',      # condition terms  
+            r'\b\w*emia\b',      # blood terms
+            r'\b\w*pathy\b',     # disease terms
+            r'\b\w*therapy\b',   # treatment terms
+            r'\b\w*gram\b',      # imaging terms
+            r'\b\w*scopy\b',     # procedure terms
+        ]
+        
+        terms = []
+        for pattern in medical_patterns:
+            matches = re.findall(pattern, text, re.IGNORECASE)
+            terms.extend(matches)
+        
+        # Add specific medical keywords
+        medical_keywords = [
+            'antibodies', 'encephalitis', 'temporal', 'lobe', 'mri', 'csf', 
+            'eeg', 'seizure', 'memory', 'confusion', 'behavioral', 'lymphocytic',
+            'pleocytosis', 'hyperintensities', 'nmda', 'lgi1', 'gaba', 'ampa'
+        ]
+        
+        text_lower = text.lower()
+        for keyword in medical_keywords:
+            if keyword in text_lower:
+                terms.append(keyword)
+        
+        return list(set(terms))
+
+    def _filter_medical_snippets(self, snippets: List[Dict], scores: List[float], 
+                            question: str, options: List[str] = None) -> Tuple[List[Dict], List[float]]:
+        """Filter and improve ranking of medical snippets."""
+        if not snippets:
+            return [], []
+        
+        question_lower = question.lower()
+        filtered_pairs = []
+        
+        for snippet, score in zip(snippets, scores):
+            content = snippet.get("content", "").lower()
+            title = snippet.get("title", "").lower()
+            
+            # Calculate enhanced relevance score
+            enhanced_score = score
+            
+            # Boost for title matches
+            title_boost = sum(1 for term in question_lower.split() 
+                            if len(term) > 3 and term in title) * 0.1
+            enhanced_score += title_boost
+            
+            # Boost for medical term matches
+            medical_terms = self._extract_medical_terms(question)
+            term_boost = sum(1 for term in medical_terms 
+                            if term.lower() in content) * 0.15
+            enhanced_score += term_boost
+            
+            # Boost for option-related content
+            if options:
+                option_boost = 0
+                for option in options:
+                    option_terms = option.lower().split()
+                    option_boost += sum(1 for term in option_terms 
+                                    if len(term) > 3 and term in content) * 0.05
+                enhanced_score += option_boost
+            
+            # Filter out very low relevance snippets
+            if enhanced_score > 0.1:
+                filtered_pairs.append((snippet, enhanced_score))
+        
+        # Sort by enhanced score and return top results
+        filtered_pairs.sort(key=lambda x: x[1], reverse=True)
+        
+        # Return top 5 snippets
+        top_pairs = filtered_pairs[:5]
+        filtered_snippets = [pair[0] for pair in top_pairs]
+        filtered_scores = [pair[1] for pair in top_pairs]
+        
+        return filtered_snippets, filtered_scores
+
     def _format_options(self, options: List[str]) -> Dict[str, str]:
         """Format options for MedRAG input."""
         if not options:

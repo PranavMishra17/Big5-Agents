@@ -340,10 +340,11 @@ class AgentSystemSimulator:
             "decision_results": decision_results
         }
 
+
     def _enhance_agents_with_retrieved_knowledge(self):
         """
         Apply retrieved MedRAG knowledge to agents.
-        THIS IS THE KEY METHOD THAT WAS MISSING!
+        FIXED VERSION - Actually integrates knowledge into agent responses.
         """
         if not self.retrieved_knowledge or not self.retrieved_knowledge.get("available", False):
             self.logger.logger.warning("No valid retrieved knowledge to apply to agents")
@@ -360,6 +361,25 @@ class AgentSystemSimulator:
         enhanced_agents = 0
         
         try:
+            # Create comprehensive knowledge context from retrieved snippets
+            knowledge_context = self._create_medrag_context()
+            
+            # Enhance each agent with the knowledge context
+            for role, agent in self.agents.items():
+                try:
+                    # Store the knowledge context in agent's knowledge base
+                    agent.add_to_knowledge_base("medrag_knowledge", self.retrieved_knowledge)
+                    agent.add_to_knowledge_base("medrag_context", knowledge_context)
+                    
+                    # CRITICAL FIX: Set a flag that the agent has MedRAG enhancement
+                    agent.add_to_knowledge_base("has_medrag_enhancement", True)
+                    
+                    enhanced_agents += 1
+                    self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
+                    
+                except Exception as e:
+                    self.logger.logger.error(f"Failed to enhance {role}: {str(e)}")
+            
             # Enhance shared mental model if available
             if self.use_shared_mental_model and self.mental_model:
                 success = self.medrag_integration.enhance_shared_mental_model(
@@ -368,22 +388,6 @@ class AgentSystemSimulator:
                 )
                 if success:
                     self.logger.logger.info("Enhanced shared mental model with MedRAG knowledge")
-            
-            # Enhance individual agents
-            for role, agent in self.agents.items():
-                success = self.medrag_integration.enhance_agent_knowledge(agent, self.retrieved_knowledge)
-                if success:
-                    enhanced_agents += 1
-                    self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
-            
-            # Get knowledge prompt addition for use in agent interactions
-            knowledge_prompt_addition = self.medrag_integration.get_enhancement_prompt_addition(self.retrieved_knowledge)
-            
-            # Store the prompt addition for use in Round 1 analysis
-            if knowledge_prompt_addition:
-                for role, agent in self.agents.items():
-                    agent.add_to_knowledge_base("medrag_prompt_addition", knowledge_prompt_addition)
-                self.logger.logger.info("Added MedRAG knowledge prompt enhancement to all agents")
             
             # Log enhancement summary
             num_snippets = len(self.retrieved_knowledge.get("knowledge_snippets", []))
@@ -402,7 +406,8 @@ class AgentSystemSimulator:
                 "total_agents": len(self.agents),
                 "snippets_retrieved": num_snippets,
                 "retrieval_time": retrieval_time,
-                "summary": self.retrieved_knowledge.get("summary", "")
+                "summary": self.retrieved_knowledge.get("summary", ""),
+                "knowledge_context": knowledge_context[:500] + "..." if len(knowledge_context) > 500 else knowledge_context
             }
             
         except Exception as e:
@@ -420,9 +425,47 @@ class AgentSystemSimulator:
                 "retrieval_time": 0
             }
 
+    def _create_medrag_context(self) -> str:
+        """Create formatted medical knowledge context from retrieved snippets."""
+        if not self.retrieved_knowledge or not self.retrieved_knowledge.get("knowledge_snippets"):
+            return ""
+        
+        snippets = self.retrieved_knowledge["knowledge_snippets"]
+        context_parts = []
+        
+        context_parts.append("=== RETRIEVED MEDICAL KNOWLEDGE ===")
+        context_parts.append("The following medical literature is relevant to this question:\n")
+        
+        # Use top 3 most relevant snippets
+        top_snippets = sorted(snippets, key=lambda x: x.get("relevance_score", 0), reverse=True)[:3]
+        
+        for i, snippet in enumerate(top_snippets, 1):
+            title = snippet.get("title", f"Medical Reference {i}")
+            content = snippet.get("content", "")
+            score = snippet.get("relevance_score", 0)
+            
+            # Truncate very long content
+            if len(content) > 300:
+                content = content[:300] + "..."
+            
+            context_parts.append(f"[{i}] {title} (relevance: {score:.2f}):")
+            context_parts.append(f"{content}\n")
+        
+        # Add insights if available
+        insights = self.retrieved_knowledge.get("medrag_insights", {})
+        if insights.get("reasoning"):
+            context_parts.append("Additional clinical reasoning from literature:")
+            context_parts.append(f"{insights['reasoning'][:200]}...\n")
+        
+        context_parts.append("=== END RETRIEVED KNOWLEDGE ===")
+        
+        return "\n".join(context_parts)
+
+
     def _run_round1_independent_analysis(self) -> Dict[str, Dict[str, Any]]:
         """
         ROUND 1: Each agent analyzes the task independently with MedRAG enhancement.
+        FIXED VERSION - Properly integrates MedRAG knowledge.
         
         Returns:
             Dictionary mapping agent roles to their independent analyses
@@ -434,43 +477,9 @@ class AgentSystemSimulator:
             try:
                 self.logger.logger.info(f"Round 1: Getting analysis from {role}")
                 
-                # Get base analysis using isolated task config
+                # CRITICAL FIX: MedRAG knowledge is now automatically integrated in agent.chat()
+                # The agent.chat() method will check for MedRAG enhancement and include it
                 analysis = agent.analyze_task_isolated(self.task_config)
-
-                # Apply MedRAG enhancement if available
-                medrag_prompt_addition = agent.get_from_knowledge_base("medrag_prompt_addition")
-                if medrag_prompt_addition:
-                    self.logger.logger.info(f"Applying MedRAG enhancement to {role}'s analysis")
-                    
-                    # Create enhanced prompt with retrieved knowledge
-                    enhanced_prompt = f"""
-                    You have completed your initial analysis of this medical question:
-                    
-                    {analysis}
-                    
-                    {medrag_prompt_addition}
-                    
-                    Now, considering the retrieved medical knowledge above, provide any additional insights or refinements to your analysis.
-                    If the retrieved knowledge supports, contradicts, or adds important context to your analysis, please note this.
-                    Consider how this medical literature affects your reasoning and conclusion.
-                    """
-                    
-                    try:
-                        enhanced_analysis = agent.chat(enhanced_prompt)
-                        
-                        # Log the MedRAG enhancement
-                        self.logger.log_main_discussion(
-                            "round1_medrag_enhancement",
-                            role,
-                            enhanced_analysis
-                        )
-                        
-                        # Combine original and enhanced analysis
-                        analysis = f"{analysis}\n\n=== MEDRAG ENHANCED ANALYSIS ===\n{enhanced_analysis}"
-                        
-                    except Exception as e:
-                        self.logger.logger.warning(f"Failed to enhance {role} analysis with MedRAG: {str(e)}")
-                        # Continue with original analysis
 
                 # Extract response using isolated task config
                 extract = agent.extract_response_isolated(analysis, self.task_config)
@@ -493,6 +502,10 @@ class AgentSystemSimulator:
                     understanding = self.mental_model.extract_understanding_from_message(analysis)
                     self.mental_model.update_shared_understanding(role, understanding)
                     
+                # Log MedRAG usage for this agent
+                if agent.get_from_knowledge_base("has_medrag_enhancement"):
+                    self.logger.logger.info(f"{role} used MedRAG-enhanced analysis")
+                    
             except Exception as e:
                 self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
                 agent_analyses[role] = {
@@ -502,6 +515,8 @@ class AgentSystemSimulator:
         
         self.logger.logger.info(f"Round 1 completed: {len(agent_analyses)} analyses collected")
         return agent_analyses
+
+
 
     def _run_round2_collaborative_discussion(self, round1_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
         """

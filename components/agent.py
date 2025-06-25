@@ -244,9 +244,11 @@ class Agent:
         
         return self._response
 
+
     def chat(self, message: str) -> str:
         """
-        Send a message to the agent and get a response with retry logic.
+        Send a message to the agent and get a response with MedRAG enhancement.
+        FIXED VERSION - Integrates MedRAG knowledge into responses.
         
         Args:
             message: The message to send to the agent
@@ -256,8 +258,21 @@ class Agent:
         """
         self.logger.info(f"Received message: {message[:100]}...")
         
-        # Add the user message to the conversation
-        messages = self.messages + [{"role": "user", "content": message}]
+        # CRITICAL FIX: Check for MedRAG enhancement and integrate knowledge
+        enhanced_message = message
+        if self.get_from_knowledge_base("has_medrag_enhancement"):
+            medrag_context = self.get_from_knowledge_base("medrag_context")
+            if medrag_context:
+                enhanced_message = f"""{message}
+
+    {medrag_context}
+
+    Based on the retrieved medical literature above, provide your analysis considering this evidence alongside your clinical expertise. If the literature supports, contradicts, or adds important context to your reasoning, please integrate this into your response."""
+                
+                self.logger.info("Applied MedRAG knowledge enhancement to agent message")
+        
+        # Add the enhanced message to the conversation
+        messages = self.messages + [{"role": "user", "content": enhanced_message}]
         
         last_exception = None
         
@@ -268,7 +283,7 @@ class Agent:
                 # Try with timeout
                 assistant_message = self._chat_with_timeout(messages, config.INACTIVITY_TIMEOUT)
                 
-                # Success - store the response
+                # Success - store the response (use original message, not enhanced)
                 self.messages.append({"role": "user", "content": message})
                 self.messages.append({"role": "assistant", "content": assistant_message})
                 self.conversation_history.append({"user": message, "assistant": assistant_message})
@@ -281,7 +296,7 @@ class Agent:
                 self.logger.warning(f"Timeout on attempt {attempt + 1}: {str(e)}")
                 
                 if attempt < config.MAX_RETRIES - 1:
-                    wait_time = config.RETRY_DELAY * (2 ** attempt)  # Exponential backoff
+                    wait_time = config.RETRY_DELAY * (2 ** attempt)
                     self.logger.info(f"Waiting {wait_time} seconds before retry...")
                     time.sleep(wait_time)
                     continue
@@ -290,13 +305,12 @@ class Agent:
                 last_exception = e
                 error_str = str(e).lower()
                 
-                # Check for recoverable errors
                 if any(term in error_str for term in ["rate", "limit", "timeout", "capacity", "connection"]):
                     self.logger.warning(f"Recoverable error on attempt {attempt + 1}: {str(e)}")
                     
                     if attempt < config.MAX_RETRIES - 1:
                         if "rate" in error_str or "limit" in error_str:
-                            wait_time = config.RETRY_DELAY * (3 ** attempt)  # Longer wait for rate limits
+                            wait_time = config.RETRY_DELAY * (3 ** attempt)
                         else:
                             wait_time = config.RETRY_DELAY * (2 ** attempt)
                         
@@ -304,13 +318,13 @@ class Agent:
                         time.sleep(wait_time)
                         continue
                 else:
-                    # Non-recoverable error
                     self.logger.error(f"Non-recoverable error: {str(e)}")
                     raise
         
         # All retries failed
         self.logger.error(f"All {config.MAX_RETRIES} attempts failed. Last error: {str(last_exception)}")
         raise Exception(f"Failed after {config.MAX_RETRIES} attempts. Last error: {str(last_exception)}")
+
 
     def get_conversation_history(self) -> List[Dict[str, str]]:
         """Get the conversation history."""
