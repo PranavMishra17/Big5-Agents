@@ -42,6 +42,48 @@ AZURE_DEPLOYMENTS = [
         "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
         "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
         "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_5", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-5"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_6", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-6"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_7", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-7"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_8", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-8"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_9", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-9"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_10", 
+        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-10"),
+        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
+        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "api_version": "2025-01-01-preview"
     }
 ]
 
