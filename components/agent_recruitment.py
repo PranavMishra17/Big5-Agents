@@ -8,6 +8,7 @@ import traceback
 from typing import Dict, List, Any, Tuple
 
 from components.agent import Agent
+from components.modular_agent import MedicalImageAnalyst, ModularAgent, PathologySpecialist
 import config
 
 from utils.prompts import RECRUITMENT_PROMPTS
@@ -117,6 +118,7 @@ def recruit_agents(question: str, complexity: str, recruitment_pool: str = "gene
         Tuple of (agents dictionary, leader agent)
     """
     return recruit_agents_isolated(question, complexity, recruitment_pool, n_max, recruitment_method, None, config.TASK)
+
 
 def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: str = "general", n_max=5, recruitment_method: str = "adaptive", deployment_config=None, task_config=None,  teamwork_config=None):
     """
@@ -595,6 +597,69 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
     
     return agents, leader
 
+
+
+def recruit_vision_capable_agents(question: str, has_image: bool, complexity: str, **kwargs):
+    """
+    Recruit agents with vision capabilities when images are present.
+    
+    Args:
+        question: The question text
+        has_image: Whether the task includes an image
+        complexity: Task complexity level
+        **kwargs: Other recruitment parameters
+        
+    Returns:
+        Tuple of (agents, leader) with vision-capable agents when needed
+    """
+    if not has_image:
+        # Use standard recruitment for text-only tasks
+        return recruit_agents_isolated(question, complexity, **kwargs)
+    
+    # For image tasks, create vision-specialized team
+    agents = {}
+    leader = None
+    agent_index = 0
+    
+    # Determine image type from question content
+    question_lower = question.lower()
+    
+    if any(term in question_lower for term in ['pathology', 'histology', 'microscopic', 'tissue', 'cell']):
+        # Create PathologySpecialist
+        specialist = PathologySpecialist(
+            deployment_config=kwargs.get('deployment_config'),
+            agent_index=agent_index,
+            task_config=kwargs.get('task_config')
+        )
+        agents['Pathology Specialist'] = specialist
+        leader = specialist
+        agent_index += 1
+    
+    else:
+        # Create MedicalImageAnalyst for general medical images
+        specialist = MedicalImageAnalyst(
+            deployment_config=kwargs.get('deployment_config'),
+            agent_index=agent_index,
+            task_config=kwargs.get('task_config')
+        )
+        agents['Medical Image Analyst'] = specialist
+        leader = specialist
+        agent_index += 1
+    
+    # Add supporting agents based on complexity
+    if complexity in ['intermediate', 'advanced']:
+        # Add general medical support
+        generalist = ModularAgent(
+            role_type='Medical Generalist',
+            deployment_config=kwargs.get('deployment_config'),
+            agent_index=agent_index,
+            task_config=kwargs.get('task_config')
+        )
+        agents['Medical Generalist'] = generalist
+        agent_index += 1
+    
+    logging.info(f"Recruited vision-capable team: {list(agents.keys())}")
+    return agents, leader
 
 
 # Legacy functions for backward compatibility

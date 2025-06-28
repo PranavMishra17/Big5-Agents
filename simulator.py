@@ -12,7 +12,7 @@ from typing import Dict, List, Tuple, Optional, Any
 from datetime import datetime
 import copy
 
-from components.modular_agent import ModularAgent, create_agent_team
+from components.modular_agent import MedicalImageAnalyst, ModularAgent, PathologySpecialist, create_agent_team
 from components.agent_recruitment import determine_complexity, recruit_agents
 from components.closed_loop import ClosedLoopCommunication
 from components.mutual_monitoring import MutualMonitoring
@@ -1092,3 +1092,97 @@ class AgentSystemSimulator:
                 }
         
         return metrics
+    
+    ##################### =================================================== Image Vision Enhancements =================================================== #####################
+    
+    # UPDATE: Modify simulator.py _run_round1_independent_analysis method
+    def _run_round1_independent_analysis_with_vision(self) -> Dict[str, Dict[str, Any]]:
+        """
+        VISION-ENABLED: Round 1 analysis with image support.
+        """
+        agent_analyses = {}
+        
+        # Extract image from task config if available
+        task_image = None
+        if "image_data" in self.task_config:
+            task_image = self.task_config["image_data"].get("image")
+        
+        # Process agents sequentially
+        for role, agent in self.agents.items():
+            try:
+                self.logger.logger.info(f"Round 1: Getting analysis from {role}")
+                
+                # Check if this is a vision-capable task
+                if task_image is not None:
+                    # Use vision-capable analysis
+                    analysis = agent.analyze_task_with_image(self.task_config, task_image)
+                else:
+                    # Use standard text-only analysis
+                    analysis = agent.analyze_task_isolated(self.task_config)
+                
+                # Extract response
+                extract = agent.extract_response_isolated(analysis, self.task_config)
+                
+                # Log analysis
+                self.logger.log_main_discussion("round1_independent_analysis", role, analysis)
+                
+                # Store analysis
+                agent_analyses[role] = {
+                    "analysis": analysis,
+                    "extract": extract,
+                    "used_vision": task_image is not None
+                }
+                
+                # Update shared mental model if enabled
+                if self.use_shared_mental_model and self.mental_model:
+                    understanding = self.mental_model.extract_understanding_from_message(analysis)
+                    self.mental_model.update_shared_understanding(role, understanding)
+                        
+            except Exception as e:
+                self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
+                agent_analyses[role] = {
+                    "analysis": f"Error occurred: {str(e)}",
+                    "extract": {"error": str(e)},
+                    "used_vision": False
+                }
+        
+        return agent_analyses
+
+    # UPDATE: Add vision analysis method to ModularAgent
+    def analyze_task_with_image(self, task_config: Dict[str, Any], image) -> str:
+        """
+        Analyze task with image using vision capabilities.
+        
+        Args:
+            task_config: Task configuration with image data
+            image: PIL Image object
+            
+        Returns:
+            Analysis incorporating visual findings
+        """
+        task_type = task_config["type"]
+        question = task_config["description"]
+        
+        # Check if this agent is vision-specialized
+        if isinstance(self, (MedicalImageAnalyst, PathologySpecialist)):
+            if isinstance(self, MedicalImageAnalyst):
+                return self.analyze_medical_image(question, image, task_config)
+            elif isinstance(self, PathologySpecialist):
+                return self.analyze_pathology_slide(question, image, task_config)
+        
+        # For general agents, use enhanced vision prompt
+        vision_prompt = f"""
+    You are analyzing a medical question that includes an image. Please examine the provided image carefully and incorporate your visual findings into your analysis.
+
+    Question: {question}
+
+    Please provide:
+    1. **Visual Analysis**: Describe what you observe in the image
+    2. **Medical Assessment**: Interpret the medical significance of your visual findings  
+    3. **Clinical Reasoning**: Connect the image findings to the question asked
+    4. **Answer Determination**: Use both the question text and image analysis to determine your answer
+
+    Provide your final answer clearly at the end.
+    """
+        
+        return self.chat_with_image(vision_prompt, image)

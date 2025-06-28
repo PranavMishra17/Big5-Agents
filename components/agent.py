@@ -245,6 +245,168 @@ class Agent:
         return self._response
 
 
+    def _encode_image_for_openai(self, image) -> str:
+        """
+        Encode PIL Image to base64 string for OpenAI API.
+        
+        Args:
+            image: PIL Image object
+            
+        Returns:
+            base64 encoded image string
+        """
+        import base64
+        import io
+        from PIL import Image
+        
+        if image is None:
+            return None
+        
+        # Convert to RGB if necessary
+        if image.mode != 'RGB':
+            image = image.convert('RGB')
+        
+        # Resize if too large (GPT-4V has size limits)
+        max_size = (1024, 1024)
+        if image.size[0] > max_size[0] or image.size[1] > max_size[1]:
+            image.thumbnail(max_size, Image.Resampling.LANCZOS)
+        
+        # Convert to base64
+        buffer = io.BytesIO()
+        image.save(buffer, format='JPEG', quality=85)
+        img_str = base64.b64encode(buffer.getvalue()).decode()
+        
+        return img_str
+
+    def chat_with_image(self, message: str, image=None) -> str:
+        """
+        Send a message with optional image to the agent and get a response.
+        
+        Args:
+            message: The text message to send
+            image: Optional PIL Image object
+            
+        Returns:
+            The agent's response
+        """
+        self.logger.info(f"Received message with image: {message[:100]}...")
+        
+        # Check for MedRAG enhancement
+        enhanced_message = message
+        if self.get_from_knowledge_base("has_medrag_enhancement"):
+            medrag_context = self.get_from_knowledge_base("medrag_context")
+            if medrag_context:
+                enhanced_message = f"""{message}
+
+    {medrag_context}
+
+    Based on the retrieved medical literature above and the provided image, provide your analysis integrating both visual findings and evidence-based knowledge."""
+                
+                self.logger.info("Applied MedRAG knowledge enhancement to vision-enabled agent")
+        
+        # Prepare messages for multimodal input
+        if image is not None:
+            # Encode image
+            base64_image = self._encode_image_for_openai(image)
+            if base64_image:
+                # Create multimodal message
+                user_message = {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": enhanced_message
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{base64_image}",
+                                "detail": "high"  # Use high detail for medical images
+                            }
+                        }
+                    ]
+                }
+                messages = self.messages + [user_message]
+                self.logger.info("Created multimodal message with image")
+            else:
+                # Fallback to text-only if image encoding fails
+                messages = self.messages + [{"role": "user", "content": enhanced_message}]
+                self.logger.warning("Image encoding failed, falling back to text-only")
+        else:
+            # Text-only message
+            messages = self.messages + [{"role": "user", "content": enhanced_message}]
+        
+        # Send request with retry logic (same as original chat method)
+        last_exception = None
+        
+        for attempt in range(config.MAX_RETRIES):
+            try:
+                self.logger.info(f"API request attempt {attempt + 1}/{config.MAX_RETRIES} using {self.deployment_config['name']}")
+                
+                assistant_message = self._chat_with_timeout(messages, config.INACTIVITY_TIMEOUT)
+                
+                # Success - store the response (use original message, not enhanced)
+                if image is not None:
+                    self.messages.append({
+                        "role": "user", 
+                        "content": [
+                            {"type": "text", "text": message},
+                            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,<image>"}}
+                        ]
+                    })
+                else:
+                    self.messages.append({"role": "user", "content": message})
+                
+                self.messages.append({"role": "assistant", "content": assistant_message})
+                self.conversation_history.append({
+                    "user": message, 
+                    "assistant": assistant_message,
+                    "has_image": image is not None
+                })
+                
+                self.logger.info(f"Vision-enabled response successful: {assistant_message[:100]}...")
+                return assistant_message
+                
+            except Exception as e:
+                last_exception = e
+                error_str = str(e).lower()
+                
+                if any(term in error_str for term in ["rate", "limit", "timeout", "capacity", "connection"]):
+                    self.logger.warning(f"Recoverable error on attempt {attempt + 1}: {str(e)}")
+                    
+                    if attempt < config.MAX_RETRIES - 1:
+                        wait_time = config.RETRY_DELAY * (2 ** attempt)
+                        self.logger.info(f"Waiting {wait_time} seconds before retry...")
+                        time.sleep(wait_time)
+                        continue
+                else:
+                    self.logger.error(f"Non-recoverable error: {str(e)}")
+                    raise
+        
+        # All retries failed
+        self.logger.error(f"All {config.MAX_RETRIES} attempts failed. Last error: {str(last_exception)}")
+        raise Exception(f"Failed after {config.MAX_RETRIES} attempts. Last error: {str(last_exception)}")
+
+
+    # UPDATE: Override chat method to handle vision automatically
+    def chat(self, message: str, image=None) -> str:
+        """
+        Enhanced chat method that automatically handles images if provided.
+        
+        Args:
+            message: The message to send to the agent
+            image: Optional PIL Image object
+            
+        Returns:
+            The agent's response
+        """
+        if image is not None:
+            return self.chat_with_image(message, image)
+        else:
+            # Use existing text-only chat method
+            return self.chat(message)
+        
+
     def chat(self, message: str) -> str:
         """
         Send a message to the agent and get a response with MedRAG enhancement.
@@ -761,3 +923,5 @@ class Agent:
         
         self.logger.info(f"Agent {self.role} shared knowledge with {other_agent.role}")
         return shared_knowledge
+    
+

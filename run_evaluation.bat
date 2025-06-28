@@ -105,3 +105,68 @@ echo All MEDMCQA EVAL completed at %time% on %date%
 echo _________________________________________________________________________________________
 echo              ##########################################################
 echo _________________________________________________________________________________________
+
+
+
+
+REM =============================================================================
+REM SYMCAT DATASET - Leadership Configuration
+REM =============================================================================
+echo [SymCat] Running Leadership configuration...
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/leadership --leadership --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/leadership --leadership --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/leadership --leadership --seed 333 --n-max 3
+
+REM =============================================================================
+REM SYMCAT DATASET - Closed-loop Configuration
+REM =============================================================================
+echo [SymCat] Running Closed-loop configuration...
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/closedloop --closedloop --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/closedloop --closedloop --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/closedloop --closedloop --seed 333 --n-max 3
+
+REM =============================================================================
+REM SYMCAT DATASET - Mutual Monitoring Configuration
+REM =============================================================================
+echo [SymCat] Running Mutual Monitoring configuration..
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/mutual_monitoring --mutual --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/mutual_monitoring --mutual --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/mutual_monitoring --mutual --seed 333 --n-max 3
+
+REM =============================================================================
+REM SYMCAT DATASET - Shared Mental Model Configuration
+REM =============================================================================
+echo [SymCat] Running Shared Mental Model configuration...
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/shared_mental_model --mental --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/shared_mental_model --mental --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/shared_mental_model --mental --seed 333 --n-max 3
+
+REM =============================================================================
+REM SYMCAT DATASET - Team Orientation Configuration
+REM =============================================================================
+echo [SymCat] Running Team Orientation configuration...
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/team_orientation --orientation --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/team_orientation --orientation --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/team_orientation --orientation --seed 333 --n-max 3
+
+REM =============================================================================
+REM SYMCAT DATASET - Mutual Trust Configuration
+REM =============================================================================
+echo [SymCat] Running Mutual Trust configuration...
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/mutual_trust --trust --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/mutual_trust --trust --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/mutual_trust --trust --seed 333 --n-max 3
+
+REM =============================================================================
+REM SYMCAT DATASET - All Features Configuration
+REM =============================================================================
+echo [SymCat] Running All Features configuration...
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/all_features --leadership --closedloop --mutual --mental --orientation --trust --seed 111 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/all_features --leadership --closedloop --mutual --mental --orientation --trust --seed 222 --n-max 3
+python dataset_runner.py --dataset symcat --num-questions 50 --recruitment --recruitment-method intermediate --output-dir ./results/symcat3/all_features --leadership --closedloop --mutual --mental --orientation --trust --seed 333 --n-max 3
+
+echo.
+echo ===============================================================================
+echo SymCat dataset evaluation completed!
+echo ===============================================================================
+echo.
