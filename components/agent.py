@@ -190,32 +190,36 @@ class Agent:
         """Handle timeout signal."""
         raise TimeoutError("Request timed out")
     
-    def _chat_with_timeout(self, messages: List[Dict[str, str]], timeout: int = None) -> str:
-        """
-        Chat with timeout and retry logic.
-        
-        Args:
-            messages: Messages to send
-            timeout: Timeout in seconds
-            
-        Returns:
-            Assistant's response
-            
-        Raises:
-            TimeoutError: If request times out
-            Exception: If all retries fail
-        """
+    def _chat_with_timeout(self, messages: List[Dict[str, Any]], timeout: int = None) -> str:
+        """Chat with timeout, retry logic, and proper max_tokens for vision."""
         if timeout is None:
             timeout = config.INACTIVITY_TIMEOUT
         
         def target():
             try:
-                response = self.client.invoke(messages)
+                # CRITICAL FIX: Add max_tokens for vision calls
+                invoke_params = {"messages": messages}
+                
+                # Check if this is a vision call (has image_url)
+                has_image = any(
+                    isinstance(msg.get("content"), list) and 
+                    any(item.get("type") == "image_url" for item in msg["content"])
+                    for msg in messages
+                )
+                
+                if has_image:
+                    invoke_params["max_tokens"] = 2000  # Required for vision
+                
+                response = self.client.invoke(**invoke_params)
                 self._response = response.content
+                
             except TypeError as e:
                 if "missing 1 required positional argument: 'input'" in str(e):
-                    # Fall back to old style invocation
-                    response = self.client.invoke(input=messages)
+                    # Fallback for older API
+                    if has_image:
+                        response = self.client.invoke(input=messages, max_tokens=2000)
+                    else:
+                        response = self.client.invoke(input=messages)
                     self._response = response.content
                 else:
                     raise
@@ -232,7 +236,6 @@ class Agent:
         thread.join(timeout)
         
         if thread.is_alive():
-            # Timeout occurred
             self.logger.warning(f"Request timed out after {timeout} seconds")
             raise TimeoutError(f"Request timed out after {timeout} seconds")
         
@@ -246,15 +249,7 @@ class Agent:
 
 
     def _encode_image_for_openai(self, image) -> str:
-        """
-        Encode PIL Image to base64 string for OpenAI API.
-        
-        Args:
-            image: PIL Image object
-            
-        Returns:
-            base64 encoded image string
-        """
+        """FIXED: Encode exactly like Azure docs example."""
         import base64
         import io
         from PIL import Image
@@ -262,32 +257,64 @@ class Agent:
         if image is None:
             return None
         
-        # Convert to RGB if necessary
-        if image.mode != 'RGB':
-            image = image.convert('RGB')
-        
-        # Resize if too large (GPT-4V has size limits)
-        max_size = (1024, 1024)
-        if image.size[0] > max_size[0] or image.size[1] > max_size[1]:
-            image.thumbnail(max_size, Image.Resampling.LANCZOS)
-        
-        # Convert to base64
-        buffer = io.BytesIO()
-        image.save(buffer, format='JPEG', quality=85)
-        img_str = base64.b64encode(buffer.getvalue()).decode()
-        
-        return img_str
+        try:
+            # Create copy and ensure RGB
+            img_copy = image.copy()
+            if img_copy.mode != 'RGB':
+                if img_copy.mode == 'RGBA':
+                    # White background for transparency
+                    background = Image.new('RGB', img_copy.size, (255, 255, 255))
+                    background.paste(img_copy, mask=img_copy.split()[-1])
+                    img_copy = background
+                else:
+                    img_copy = img_copy.convert('RGB')
+            
+            # Resize if needed
+            max_size = (1024, 1024)
+            if img_copy.size[0] > max_size[0] or img_copy.size[1] > max_size[1]:
+                img_copy.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            # Save to bytes - EXACTLY like Azure docs
+            buffer = io.BytesIO()
+            img_copy.save(buffer, format='JPEG', quality=90, optimize=True)
+            
+            # Get bytes like docs example
+            buffer.seek(0)
+            image_bytes = buffer.read()
+            buffer.close()
+            
+            if len(image_bytes) == 0:
+                self.logger.error("Empty image bytes")
+                return None
+            
+            # Encode like docs
+            base64_encoded_data = base64.b64encode(image_bytes).decode('utf-8')
+            
+            # Validate
+            if len(base64_encoded_data) < 100:
+                self.logger.error(f"Base64 too short: {len(base64_encoded_data)}")
+                return None
+            
+            # Test decode
+            try:
+                base64.b64decode(base64_encoded_data)
+            except Exception as e:
+                self.logger.error(f"Base64 validation failed: {e}")
+                return None
+            
+            self.logger.debug(f"Image encoded: {len(image_bytes)} bytes -> {len(base64_encoded_data)} b64 chars")
+            return base64_encoded_data
+            
+        except Exception as e:
+            self.logger.error(f"Image encoding failed: {str(e)}")
+            import traceback
+            self.logger.error(traceback.format_exc())
+            return None
+
 
     def chat_with_image(self, message: str, image=None) -> str:
         """
-        Send a message with optional image to the agent and get a response.
-        
-        Args:
-            message: The text message to send
-            image: Optional PIL Image object
-            
-        Returns:
-            The agent's response
+        FIXED: Send message with image, avoiding corruption between rounds.
         """
         self.logger.info(f"Received message with image: {message[:100]}...")
         
@@ -301,57 +328,46 @@ class Agent:
     {medrag_context}
 
     Based on the retrieved medical literature above and the provided image, provide your analysis integrating both visual findings and evidence-based knowledge."""
-                
-                self.logger.info("Applied MedRAG knowledge enhancement to vision-enabled agent")
         
         # Prepare messages for multimodal input
         if image is not None:
-            # Encode image
+            # FIXED: Only encode once and validate
             base64_image = self._encode_image_for_openai(image)
             if base64_image:
-                # Create multimodal message
                 user_message = {
                     "role": "user",
                     "content": [
-                        {
-                            "type": "text",
-                            "text": enhanced_message
-                        },
+                        {"type": "text", "text": enhanced_message},
                         {
                             "type": "image_url",
                             "image_url": {
                                 "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "high"  # Use high detail for medical images
+                                "detail": "high"
                             }
                         }
                     ]
                 }
                 messages = self.messages + [user_message]
-                self.logger.info("Created multimodal message with image")
+                self.logger.info("Created valid multimodal message")
             else:
-                # Fallback to text-only if image encoding fails
+                # Fallback to text-only if encoding fails
                 messages = self.messages + [{"role": "user", "content": enhanced_message}]
-                self.logger.warning("Image encoding failed, falling back to text-only")
+                self.logger.warning("Image encoding failed, using text-only")
         else:
-            # Text-only message
             messages = self.messages + [{"role": "user", "content": enhanced_message}]
         
-        # Send request with retry logic (same as original chat method)
-        last_exception = None
-        
+        # Send request with retry logic
         for attempt in range(config.MAX_RETRIES):
             try:
-                self.logger.info(f"API request attempt {attempt + 1}/{config.MAX_RETRIES} using {self.deployment_config['name']}")
-                
                 assistant_message = self._chat_with_timeout(messages, config.INACTIVITY_TIMEOUT)
                 
-                # Success - store the response (use original message, not enhanced)
+                # FIXED: Store simplified conversation history without corrupted image data
                 if image is not None:
                     self.messages.append({
                         "role": "user", 
                         "content": [
                             {"type": "text", "text": message},
-                            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,<image>"}}
+                            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,<IMAGE_DATA>"}}
                         ]
                     })
                 else:
@@ -364,29 +380,15 @@ class Agent:
                     "has_image": image is not None
                 })
                 
-                self.logger.info(f"Vision-enabled response successful: {assistant_message[:100]}...")
                 return assistant_message
                 
             except Exception as e:
-                last_exception = e
-                error_str = str(e).lower()
-                
-                if any(term in error_str for term in ["rate", "limit", "timeout", "capacity", "connection"]):
-                    self.logger.warning(f"Recoverable error on attempt {attempt + 1}: {str(e)}")
-                    
-                    if attempt < config.MAX_RETRIES - 1:
-                        wait_time = config.RETRY_DELAY * (2 ** attempt)
-                        self.logger.info(f"Waiting {wait_time} seconds before retry...")
-                        time.sleep(wait_time)
-                        continue
+                if attempt < config.MAX_RETRIES - 1:
+                    wait_time = config.RETRY_DELAY * (2 ** attempt)
+                    time.sleep(wait_time)
+                    continue
                 else:
-                    self.logger.error(f"Non-recoverable error: {str(e)}")
                     raise
-        
-        # All retries failed
-        self.logger.error(f"All {config.MAX_RETRIES} attempts failed. Last error: {str(last_exception)}")
-        raise Exception(f"Failed after {config.MAX_RETRIES} attempts. Last error: {str(last_exception)}")
-
 
     # UPDATE: Override chat method to handle vision automatically
     def chat(self, message: str, image=None) -> str:

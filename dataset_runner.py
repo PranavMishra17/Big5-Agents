@@ -1385,158 +1385,503 @@ def _create_medbullets_usmle_analysis(question_text, explanation, num_choices):
 
 # ====================  SYMCAT DATASET IMPLEMENTATION ====================
 
-# COMPLETE FIX - Replace these functions in dataset_runner.py
+
+# PROPER SYMCAT IMPLEMENTATION - Replace in dataset_runner.py
 
 def load_symcat_dataset(num_questions: int = 50, random_seed: int = 42, 
                        symcat_variant: str = "200") -> List[Dict[str, Any]]:
-    """Load SymCat dataset with NumPy array handling."""
-    logging.info(f"Loading SymCat-{symcat_variant} dataset with {num_questions} random questions")
+    """Load SymCat with comprehensive logging."""
+    logging.info(f"=== LOADING SYMCAT-{symcat_variant} DATASET ===")
     
     try:
         dataset_dir = Path("dataset/symcat")
         if not dataset_dir.exists():
-            logging.error(f"SymCat dataset directory not found: {dataset_dir}")
+            logging.error(f"Directory not found: {dataset_dir}")
             return []
         
-        # Find PKL file
-        possible_files = [
-            f"symcat_{symcat_variant}_val_df.pkl",
-            f"symcat_{symcat_variant}_test_df.pkl", 
-            f"symcat_{symcat_variant}_train_df.pkl",
-            f"symcat_{symcat_variant}.pkl",
-            f"symcat_val_df.pkl",
-            f"symcat_test_df.pkl",
-            f"symcat_train_df.pkl"
-        ]
+        # List all files for debugging
+        all_files = list(dataset_dir.iterdir())
+        logging.info(f"Available files: {[f.name for f in all_files]}")
         
-        val_path = None
-        for filename in possible_files:
+        # Find main data file
+        data_files = [f"symcat_{symcat_variant}_val_df.pkl", f"symcat_val_df.pkl"]
+        data_file = None
+        
+        for filename in data_files:
             potential_path = dataset_dir / filename
             if potential_path.exists():
-                val_path = potential_path
-                logging.info(f"Found SymCat file: {filename}")
+                data_file = potential_path
+                logging.info(f"Found data file: {filename}")
                 break
         
-        if val_path is None:
-            available_files = [f.name for f in dataset_dir.iterdir() if f.suffix == '.pkl']
-            logging.error(f"No SymCat PKL files found. Available: {available_files}")
+        if not data_file:
+            logging.error(f"No data file found. Searched: {data_files}")
             return []
         
-        # Load data
-        try:
-            import pandas as pd
-            val_data = pd.read_pickle(val_path)
-            logging.info(f"Loaded SymCat data - Shape: {val_data.shape}")
-        except Exception as e:
-            logging.error(f"Failed to load PKL file: {str(e)}")
-            return []
+        # Load main data
+        import pandas as pd
+        val_data = pd.read_pickle(data_file)
+        logging.info(f"Loaded data shape: {val_data.shape}")
+        logging.info(f"Columns: {list(val_data.columns)}")
         
-        if val_data is None or val_data.empty:
-            logging.error("Data is empty")
-            return []
+        # Log sample of data structure
+        if len(val_data) > 0:
+            sample_row = val_data.iloc[0]
+            logging.info(f"Sample row structure:")
+            for col, val in sample_row.items():
+                logging.info(f"  {col}: {type(val)} - {str(val)[:100]}")
         
-        # Check required columns
-        required_cols = ['disease_tag', 'explicit_symptoms', 'implicit_symptoms']
-        missing_cols = [col for col in required_cols if col not in val_data.columns]
-        if missing_cols:
-            logging.error(f"Missing columns: {missing_cols}")
-            return []
+        # Load disease mappings with logging
+        disease_names = _load_disease_mappings_with_logging(dataset_dir, symcat_variant)
+        symptom_names = _load_symptom_mappings_with_logging(dataset_dir, symcat_variant)
         
-        # FIXED: Simple filtering without complex boolean operations
+        logging.info(f"Disease mappings: {len(disease_names)} loaded")
+        logging.info(f"Symptom mappings: {len(symptom_names)} loaded")
+        
+        if len(disease_names) > 0:
+            sample_diseases = dict(list(disease_names.items())[:5])
+            logging.info(f"Sample diseases: {sample_diseases}")
+            
+        if len(symptom_names) > 0:
+            sample_symptoms = dict(list(symptom_names.items())[:5])
+            logging.info(f"Sample symptoms: {sample_symptoms}")
+        
+        # Filter and convert
         valid_data = val_data.dropna(subset=['disease_tag'])
-        logging.info(f"Valid records after filtering: {len(valid_data)}")
+        logging.info(f"Valid records: {len(valid_data)}")
         
-        if len(valid_data) == 0:
-            logging.error("No valid records")
-            return []
-        
-        # Convert to records
-        records = valid_data.to_dict('records')
-        
-        # Random selection
+        # Sample records
         random.seed(random_seed)
-        if num_questions < len(records):
-            selected_records = random.sample(records, num_questions)
-        else:
-            selected_records = records
+        records = valid_data.to_dict('records')
+        selected_records = random.sample(records, min(num_questions, len(records)))
+        logging.info(f"Selected {len(selected_records)} records for conversion")
         
-        # Convert to questions
+        # Convert with detailed logging
         questions = []
         for i, record in enumerate(selected_records):
             try:
-                question_data = _convert_symcat_record_to_question(record, i, symcat_variant)
+                logging.info(f"--- Converting record {i} ---")
+                question_data = _convert_symcat_record_with_logging(
+                    record, i, symcat_variant, disease_names, symptom_names
+                )
                 if question_data:
                     questions.append(question_data)
+                    logging.info(f"✓ Record {i} converted successfully")
+                    
+                    # Log first question for verification
+                    if i == 0:
+                        logging.info(f"FIRST QUESTION PREVIEW:")
+                        logging.info(f"  Question: {question_data['question'][:200]}...")
+                        logging.info(f"  Choices: {question_data['choices']}")
+                        logging.info(f"  Correct: {question_data['correct_answer']}")
                 else:
-                    logging.warning(f"Failed to convert record {i}")
+                    logging.warning(f"✗ Record {i} conversion failed")
+                    
             except Exception as e:
-                logging.error(f"Error converting record {i}: {str(e)}")
+                logging.error(f"✗ Record {i} error: {str(e)}")
                 continue
         
-        logging.info(f"Successfully converted {len(questions)} SymCat records")
+        logging.info(f"=== SYMCAT LOADING COMPLETE: {len(questions)} questions ===")
         return questions
     
     except Exception as e:
-        logging.error(f"Error loading SymCat dataset: {str(e)}")
+        logging.error(f"Critical error loading SymCat: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
         return []
 
 
-def _convert_symcat_record_to_question(record: Dict[str, Any], record_id: int, 
-                                     symcat_variant: str) -> Optional[Dict[str, Any]]:
-    """Convert SymCat record to question. FIXED: Complete NumPy handling."""
+def _load_disease_mappings_with_logging(dataset_dir: Path, variant: str) -> Dict[int, str]:
+    """Load disease mappings with detailed logging."""
+    logging.info(f"--- Loading disease mappings for variant {variant} ---")
+    
+    # Check for mapping files
+    mapping_files = [
+        f"symcat_{variant}_disease_names.pkl",
+        f"disease_names.pkl", 
+        f"diseases_{variant}.pkl",
+        f"symcat_diseases.pkl"
+    ]
+    
+    logging.info(f"Searching for disease mapping files: {mapping_files}")
+    
+    for filename in mapping_files:
+        file_path = dataset_dir / filename
+        if file_path.exists():
+            logging.info(f"✓ Found disease mapping file: {filename}")
+            try:
+                import pandas as pd
+                mappings = pd.read_pickle(file_path)
+                logging.info(f"✓ Loaded disease mappings: {type(mappings)}")
+                
+                if isinstance(mappings, dict):
+                    logging.info(f"✓ Dict format: {len(mappings)} entries")
+                    return mappings
+                elif isinstance(mappings, (list, pd.Series)):
+                    logging.info(f"✓ List/Series format: {len(mappings)} entries")
+                    return {i: name for i, name in enumerate(mappings)}
+                elif hasattr(mappings, 'to_dict'):
+                    logging.info(f"✓ Converting to dict: {len(mappings)} entries")
+                    return mappings.to_dict()
+                else:
+                    logging.warning(f"Unknown mapping format: {type(mappings)}")
+                    
+            except Exception as e:
+                logging.error(f"Error loading {filename}: {str(e)}")
+                continue
+    
+    # Fallback mapping
+    logging.warning(f"No disease mapping files found, using fallback for {variant}")
+    max_diseases = 200 if variant == "200" else 300 if variant == "300" else 400
+    
+    # Create realistic medical condition names
+    fallback_diseases = {
+        0: "Upper respiratory tract infection",
+        1: "Acute gastroenteritis", 
+        2: "Tension-type headache",
+        3: "Essential hypertension",
+        4: "Type 2 diabetes mellitus",
+        5: "Generalized anxiety disorder",
+        6: "Mechanical low back pain",
+        7: "Bronchial asthma",
+        8: "Community-acquired pneumonia",
+        9: "Urinary tract infection",
+        10: "Viral syndrome",
+        11: "Allergic rhinitis",
+        12: "Acute bronchitis",
+        13: "Migraine without aura",
+        14: "Osteoarthritis",
+        15: "Major depressive disorder",
+        **{i: f"Medical_condition_{i}" for i in range(16, max_diseases)}
+    }
+    
+    logging.info(f"✓ Created fallback mappings: {len(fallback_diseases)} diseases")
+    return fallback_diseases
+
+
+def _load_symptom_mappings_with_logging(dataset_dir: Path, variant: str) -> Dict[int, str]:
+    """Load symptom mappings with detailed logging."""
+    logging.info(f"--- Loading symptom mappings for variant {variant} ---")
+    
+    mapping_files = [
+        f"symcat_{variant}_symptom_names.pkl",
+        f"symptom_names.pkl",
+        f"symptoms_{variant}.pkl", 
+        f"symcat_symptoms.pkl"
+    ]
+    
+    logging.info(f"Searching for symptom mapping files: {mapping_files}")
+    
+    for filename in mapping_files:
+        file_path = dataset_dir / filename
+        if file_path.exists():
+            logging.info(f"✓ Found symptom mapping file: {filename}")
+            try:
+                import pandas as pd
+                mappings = pd.read_pickle(file_path)
+                logging.info(f"✓ Loaded symptom mappings: {type(mappings)}")
+                
+                if isinstance(mappings, dict):
+                    return mappings
+                elif isinstance(mappings, (list, pd.Series)):
+                    return {i: name for i, name in enumerate(mappings)}
+                elif hasattr(mappings, 'to_dict'):
+                    return mappings.to_dict()
+                    
+            except Exception as e:
+                logging.error(f"Error loading {filename}: {str(e)}")
+                continue
+    
+    # Fallback symptom mapping
+    logging.warning("No symptom mapping files found, using fallback")
+    
+    fallback_symptoms = {
+        0: "Fever", 1: "Fatigue", 2: "Headache", 3: "Cough", 4: "Nausea",
+        5: "Abdominal pain", 6: "Back pain", 7: "Joint pain", 8: "Dizziness",
+        9: "Shortness of breath", 10: "Chest pain", 11: "Rash", 12: "Diarrhea",
+        13: "Constipation", 14: "Weight loss", 15: "Sleep problems",
+        **{i: f"Symptom_{i}" for i in range(16, 376)}
+    }
+    
+    logging.info(f"✓ Created fallback symptom mappings: {len(fallback_symptoms)} symptoms")
+    return fallback_symptoms
+
+
+def _convert_symcat_record_with_logging(record: Dict[str, Any], record_id: int, 
+                                      variant: str, disease_names: Dict[int, str], 
+                                      symptom_names: Dict[int, str]) -> Optional[Dict[str, Any]]:
+    """Convert SymCat record with detailed logging."""
+    logging.info(f"Converting record {record_id}:")
+    
     try:
+        import numpy as np
+        
+        # Extract basic fields with logging
         disease_tag = record.get("disease_tag", "")
         explicit_symptoms = record.get("explicit_symptoms", {})
         implicit_symptoms = record.get("implicit_symptoms", {})
         
-        # FIXED: Safe extraction
-        explicit_list = _safe_extract_symptoms(explicit_symptoms)
-        implicit_list = _safe_extract_symptoms(implicit_symptoms)
+        logging.info(f"  Disease tag: {disease_tag} (type: {type(disease_tag)})")
+        logging.info(f"  Explicit symptoms: {type(explicit_symptoms)}")
+        logging.info(f"  Implicit symptoms: {type(implicit_symptoms)}")
         
-        # Skip if no symptoms
-        if len(explicit_list) == 0 and len(implicit_list) == 0:
+        # Extract symptom indices with logging
+        explicit_indices = _safe_extract_symptom_indices_with_logging(explicit_symptoms, "explicit")
+        implicit_indices = _safe_extract_symptom_indices_with_logging(implicit_symptoms, "implicit")
+        
+        logging.info(f"  Extracted explicit indices: {explicit_indices[:5]}...")
+        logging.info(f"  Extracted implicit indices: {implicit_indices[:3]}...")
+        
+        if not explicit_indices and not implicit_indices:
+            logging.warning(f"  No symptoms found, skipping record")
             return None
         
-        # Create symptoms list
-        all_symptoms = []
-        
-        # Map symptom codes to descriptions
-        for i, symptom in enumerate(explicit_list[:5]):
-            all_symptoms.append(f"Primary symptom {symptom}")
+        # Map to symptom names
+        explicit_names = []
+        for idx in explicit_indices[:5]:
+            name = symptom_names.get(idx, f"Unknown_symptom_{idx}")
+            explicit_names.append(name)
             
-        for i, symptom in enumerate(implicit_list[:3]):
-            all_symptoms.append(f"Associated finding {symptom}")
+        implicit_names = []
+        for idx in implicit_indices[:3]:
+            name = symptom_names.get(idx, f"Unknown_symptom_{idx}")
+            implicit_names.append(name)
+            
+        logging.info(f"  Explicit symptoms: {explicit_names}")
+        logging.info(f"  Implicit symptoms: {implicit_names}")
         
-        # Create question
-        if all_symptoms:
-            symptoms_text = "\n".join([f"- {s}" for s in all_symptoms])
-            question_text = f"""Patient presents with:
+        # Create symptom list for question
+        symptom_descriptions = []
+        for name in explicit_names:
+            symptom_descriptions.append(f"Patient reports: {name}")
+        for name in implicit_names:
+            symptom_descriptions.append(f"Associated finding: {name}")
+        
+        # Create question text
+        if symptom_descriptions:
+            symptoms_text = "\n".join([f"- {s}" for s in symptom_descriptions])
+            question_text = f"""A patient presents with the following:
 
 {symptoms_text}
 
 What is the most likely diagnosis?"""
         else:
-            question_text = "Based on clinical presentation, what is the most likely diagnosis?"
+            question_text = "Based on the clinical presentation, what is the most likely diagnosis?"
         
-        # Create choices
-        disease_mapping = _get_symcat_disease_mapping(symcat_variant)
-        correct_answer = disease_mapping.get(str(disease_tag), f"Condition {disease_tag}")
+        # Get disease name
+        disease_id = int(disease_tag) if str(disease_tag).isdigit() else 0
+        correct_answer = disease_names.get(disease_id, f"Unknown_disease_{disease_tag}")
         
-        # Simple distractors
-        all_diseases = list(disease_mapping.values())
+        logging.info(f"  Disease ID: {disease_id} -> {correct_answer}")
+        
+        # Create distractors
+        all_diseases = list(disease_names.values())
         distractors = [d for d in all_diseases if d != correct_answer]
         
         import random
         random.seed(42 + record_id)
+        chosen_distractors = random.sample(distractors, min(3, len(distractors)))
         
-        if len(distractors) >= 3:
-            chosen_distractors = random.sample(distractors, 3)
+        choices = [correct_answer] + chosen_distractors
+        random.shuffle(choices)
+        
+        correct_idx = choices.index(correct_answer)
+        correct_letter = chr(65 + correct_idx)
+        
+        logging.info(f"  Final choices: {choices}")
+        logging.info(f"  Correct answer: {correct_letter} ({correct_answer})")
+        
+        return {
+            "id": f"symcat_{variant}_{record_id}",
+            "question": question_text,
+            "choices": choices,
+            "correct_answer": correct_answer,
+            "correct_letter": correct_letter,
+            "disease_tag": disease_tag,
+            "metadata": {
+                "dataset": f"symcat_{variant}",
+                "record_id": record_id,
+                "disease_id": disease_id,
+                "explicit_symptoms": explicit_names,
+                "implicit_symptoms": implicit_names,
+                "num_explicit": len(explicit_indices),
+                "num_implicit": len(implicit_indices)
+            }
+        }
+        
+    except Exception as e:
+        logging.error(f"  Conversion error: {str(e)}")
+        import traceback
+        logging.error(traceback.format_exc())
+        return None
+
+def _load_disease_mappings(dataset_dir: Path, variant: str) -> Dict[int, str]:
+    """Load actual disease name mappings from SymCat files."""
+    try:
+        # Try different possible mapping file names
+        mapping_files = [
+            f"symcat_{variant}_disease_names.pkl",
+            f"symcat_disease_names.pkl", 
+            f"disease_names_{variant}.pkl",
+            f"diseases.pkl",
+            f"symcat_{variant}_diseases.pkl"
+        ]
+        
+        for filename in mapping_files:
+            file_path = dataset_dir / filename
+            if file_path.exists():
+                logging.info(f"Loading disease mappings from {filename}")
+                import pandas as pd
+                mappings = pd.read_pickle(file_path)
+                
+                # Handle different formats
+                if isinstance(mappings, dict):
+                    return mappings
+                elif isinstance(mappings, (list, pd.Series)):
+                    return {i: name for i, name in enumerate(mappings)}
+                elif hasattr(mappings, 'to_dict'):
+                    return mappings.to_dict()
+        
+        # If no mapping file found, try to extract from data
+        logging.warning("No disease mapping file found, attempting to extract from data")
+        return _extract_disease_mappings_from_data(dataset_dir, variant)
+        
+    except Exception as e:
+        logging.error(f"Error loading disease mappings: {str(e)}")
+        return {}
+
+
+def _load_symptom_mappings(dataset_dir: Path, variant: str) -> Dict[int, str]:
+    """Load actual symptom name mappings from SymCat files."""
+    try:
+        # Try different possible mapping file names
+        mapping_files = [
+            f"symcat_{variant}_symptom_names.pkl",
+            f"symcat_symptom_names.pkl",
+            f"symptom_names_{variant}.pkl", 
+            f"symptoms.pkl",
+            f"symcat_{variant}_symptoms.pkl"
+        ]
+        
+        for filename in mapping_files:
+            file_path = dataset_dir / filename
+            if file_path.exists():
+                logging.info(f"Loading symptom mappings from {filename}")
+                import pandas as pd
+                mappings = pd.read_pickle(file_path)
+                
+                # Handle different formats
+                if isinstance(mappings, dict):
+                    return mappings
+                elif isinstance(mappings, (list, pd.Series)):
+                    return {i: name for i, name in enumerate(mappings)}
+                elif hasattr(mappings, 'to_dict'):
+                    return mappings.to_dict()
+        
+        # If no mapping file found, try to extract from data
+        logging.warning("No symptom mapping file found, attempting to extract from data")
+        return _extract_symptom_mappings_from_data(dataset_dir, variant)
+        
+    except Exception as e:
+        logging.error(f"Error loading symptom mappings: {str(e)}")
+        return {}
+
+
+def _extract_disease_mappings_from_data(dataset_dir: Path, variant: str) -> Dict[int, str]:
+    """Extract disease mappings from the dataset structure if mapping files not found."""
+    try:
+        # Check if there are other pkl files that might contain mappings
+        all_pkl_files = list(dataset_dir.glob("*.pkl"))
+        logging.info(f"Available pkl files: {[f.name for f in all_pkl_files]}")
+        
+        # For now, return a basic mapping based on variant
+        if variant == "200":
+            max_diseases = 200
+        elif variant == "300":
+            max_diseases = 300
+        elif variant == "400":
+            max_diseases = 400
         else:
-            chosen_distractors = [
-                "Upper respiratory infection",
-                "Gastroenteritis", 
-                "Musculoskeletal strain"
-            ]
+            max_diseases = 200
+        
+        # Create generic mappings as fallback
+        logging.warning(f"Using fallback disease mappings for {max_diseases} diseases")
+        return {i: f"Disease_{i}" for i in range(max_diseases)}
+        
+    except Exception as e:
+        logging.error(f"Error extracting disease mappings: {str(e)}")
+        return {}
+
+
+def _extract_symptom_mappings_from_data(dataset_dir: Path, variant: str) -> Dict[int, str]:
+    """Extract symptom mappings from the dataset structure if mapping files not found."""
+    try:
+        # SymCat typically has 376 symptoms
+        max_symptoms = 376
+        
+        # Create generic mappings as fallback
+        logging.warning(f"Using fallback symptom mappings for {max_symptoms} symptoms")
+        return {i: f"Symptom_{i}" for i in range(max_symptoms)}
+        
+    except Exception as e:
+        logging.error(f"Error extracting symptom mappings: {str(e)}")
+        return {}
+
+
+def _convert_symcat_record_with_mappings(record: Dict[str, Any], record_id: int, 
+                                       variant: str, disease_names: Dict[int, str], 
+                                       symptom_names: Dict[int, str]) -> Optional[Dict[str, Any]]:
+    """Convert SymCat record using actual disease/symptom mappings."""
+    try:
+        import numpy as np
+        
+        disease_tag = record.get("disease_tag", "")
+        explicit_symptoms = record.get("explicit_symptoms", {})
+        implicit_symptoms = record.get("implicit_symptoms", {})
+        
+        # Extract symptom indices safely
+        explicit_indices = _safe_extract_symptom_indices(explicit_symptoms)
+        implicit_indices = _safe_extract_symptom_indices(implicit_symptoms)
+        
+        # Skip if no symptoms
+        if not explicit_indices and not implicit_indices:
+            return None
+        
+        # Map to actual symptom names
+        explicit_names = [symptom_names.get(idx, f"Unknown_Symptom_{idx}") 
+                         for idx in explicit_indices[:5]]
+        implicit_names = [symptom_names.get(idx, f"Unknown_Symptom_{idx}") 
+                         for idx in implicit_indices[:3]]
+        
+        # Create symptom list
+        all_symptoms = []
+        for name in explicit_names:
+            all_symptoms.append(f"Patient reports: {name}")
+        for name in implicit_names:
+            all_symptoms.append(f"Clinical finding: {name}")
+        
+        # Create question
+        if all_symptoms:
+            symptoms_text = "\n".join([f"- {s}" for s in all_symptoms])
+            question_text = f"""Clinical presentation:
+
+{symptoms_text}
+
+What is the most likely diagnosis?"""
+        else:
+            question_text = "Based on the clinical presentation, what is the most likely diagnosis?"
+        
+        # Get actual disease name
+        disease_id = int(disease_tag) if str(disease_tag).isdigit() else 0
+        correct_answer = disease_names.get(disease_id, f"Unknown_Disease_{disease_tag}")
+        
+        # Create distractors from other diseases
+        all_diseases = list(disease_names.values())
+        distractors = [d for d in all_diseases if d != correct_answer]
+        
+        import random
+        random.seed(42 + record_id)
+        chosen_distractors = random.sample(distractors, min(3, len(distractors)))
         
         choices = [correct_answer] + chosen_distractors
         random.shuffle(choices)
@@ -1545,26 +1890,148 @@ What is the most likely diagnosis?"""
         correct_letter = chr(65 + correct_idx)
         
         return {
-            "id": f"symcat_{record_id}",
+            "id": f"symcat_{variant}_{record_id}",
             "question": question_text,
             "choices": choices,
             "correct_answer": correct_answer,
             "correct_letter": correct_letter,
             "disease_tag": disease_tag,
-            "explicit_symptoms": explicit_symptoms,
-            "implicit_symptoms": implicit_symptoms,
             "metadata": {
-                "dataset": f"symcat_{symcat_variant}",
+                "dataset": f"symcat_{variant}",
                 "record_id": record_id,
-                "num_explicit_symptoms": len(explicit_list),
-                "num_implicit_symptoms": len(implicit_list)
+                "disease_id": disease_id,
+                "explicit_symptoms": explicit_names,
+                "implicit_symptoms": implicit_names,
+                "num_explicit": len(explicit_indices),
+                "num_implicit": len(implicit_indices)
             }
         }
         
     except Exception as e:
-        logging.error(f"Record conversion error {record_id}: {str(e)}")
+        logging.error(f"Error converting record {record_id}: {str(e)}")
         return None
 
+
+def _safe_extract_symptom_indices(symptom_data) -> List[int]:
+    """Safely extract symptom indices from SymCat format."""
+    try:
+        import numpy as np
+        
+        if symptom_data is None:
+            return []
+        
+        # Handle NumPy arrays
+        if isinstance(symptom_data, np.ndarray):
+            if symptom_data.dtype == bool:
+                # Boolean mask - get indices where True
+                return np.where(symptom_data)[0].tolist()
+            else:
+                # Array of indices
+                return symptom_data.flatten().tolist()
+        
+        # Handle dict format
+        if isinstance(symptom_data, dict) and True in symptom_data:
+            true_data = symptom_data[True]
+            if isinstance(true_data, np.ndarray):
+                return true_data.flatten().tolist() if true_data.size > 0 else []
+            elif hasattr(true_data, '__iter__') and not isinstance(true_data, str):
+                return list(true_data)
+        
+        # Handle direct list
+        if isinstance(symptom_data, (list, tuple)):
+            return [int(x) for x in symptom_data if str(x).isdigit()]
+        
+        return []
+        
+    except Exception as e:
+        logging.warning(f"Error extracting symptom indices: {str(e)}")
+        return []
+
+def _safe_extract_symptom_indices_with_logging(symptom_data, symptom_type: str) -> List[int]:
+    """Extract symptom indices with detailed logging."""
+    try:
+        import numpy as np
+        
+        logging.info(f"    Extracting {symptom_type} symptoms:")
+        logging.info(f"      Data type: {type(symptom_data)}")
+        
+        if symptom_data is None:
+            logging.info(f"      Result: Empty (None)")
+            return []
+        
+        # Handle NumPy arrays
+        if isinstance(symptom_data, np.ndarray):
+            logging.info(f"      NumPy array shape: {symptom_data.shape}, dtype: {symptom_data.dtype}")
+            if symptom_data.dtype == bool:
+                indices = np.where(symptom_data)[0].tolist()
+                logging.info(f"      Boolean mask -> indices: {indices[:10]}...")
+                return indices
+            else:
+                result = symptom_data.flatten().tolist()
+                logging.info(f"      Array flatten -> {len(result)} items")
+                return result
+        
+        # Handle dict format
+        if isinstance(symptom_data, dict):
+            logging.info(f"      Dict keys: {list(symptom_data.keys())}")
+            if True in symptom_data:
+                true_data = symptom_data[True]
+                logging.info(f"      True data: {type(true_data)}")
+                if isinstance(true_data, np.ndarray):
+                    result = true_data.flatten().tolist() if true_data.size > 0 else []
+                    logging.info(f"      Dict[True] NumPy -> {len(result)} items")
+                    return result
+                elif hasattr(true_data, '__iter__') and not isinstance(true_data, str):
+                    result = list(true_data)
+                    logging.info(f"      Dict[True] iterable -> {len(result)} items")
+                    return result
+        
+        # Handle list/tuple
+        if isinstance(symptom_data, (list, tuple)):
+            result = [int(x) for x in symptom_data if str(x).isdigit()]
+            logging.info(f"      List/tuple -> {len(result)} valid indices")
+            return result
+        
+        logging.info(f"      No valid extraction method found")
+        return []
+        
+    except Exception as e:
+        logging.error(f"      Extraction error: {str(e)}")
+        return []
+
+
+def format_symcat_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Format SymCat question with logging."""
+    logging.info(f"Formatting SymCat question: {question_data.get('id', 'unknown')}")
+    
+    question_text = question_data.get("question", "")
+    choices = question_data.get("choices", [])
+    correct_letter = question_data.get("correct_letter", "A")
+    
+    logging.info(f"  Question length: {len(question_text)} chars")
+    logging.info(f"  Choices: {len(choices)} options")
+    logging.info(f"  Correct: {correct_letter}")
+    
+    # Format options
+    options = [f"{chr(65+i)}. {choice}" for i, choice in enumerate(choices)]
+    
+    # Minimal agent task
+    agent_task = {
+        "name": "Medical Diagnosis",
+        "description": question_text,
+        "type": "mcq",
+        "options": options,
+        "expected_output_format": "Single letter selection with medical reasoning"
+    }
+    
+    # Evaluation data
+    eval_data = {
+        "ground_truth": correct_letter,
+        "rationale": {"correct_diagnosis": question_data.get("correct_answer", "")},
+        "metadata": question_data.get("metadata", {})
+    }
+    
+    return agent_task, eval_data
 
 def _safe_extract_symptoms(symptom_data) -> List:
     """Safely extract symptoms from any format."""
@@ -1611,677 +2078,8 @@ def _safe_extract_symptoms(symptom_data) -> List:
         return []
 
 
-def format_symcat_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Format SymCat for agents - minimal context only."""
-    question_text = question_data.get("question", "")
-    choices = question_data.get("choices", [])
-    correct_letter = question_data.get("correct_letter", "A")
-    
-    # Format options
-    options = [f"{chr(65+i)}. {choice}" for i, choice in enumerate(choices)]
-    
-    # Minimal agent task - NO extra medical context
-    agent_task = {
-        "name": "SymCat Diagnosis",
-        "description": question_text,
-        "type": "mcq", 
-        "options": options,
-        "expected_output_format": "Single letter selection with reasoning"
-    }
-    
-    # Evaluation data
-    eval_data = {
-        "ground_truth": correct_letter,
-        "rationale": {"correct_diagnosis": question_data.get("correct_answer", "")},
-        "metadata": {
-            "dataset": "symcat",
-            "question_id": question_data.get("id", ""),
-            "disease_tag": question_data.get("disease_tag", "")
-        }
-    }
-    
-    return agent_task, eval_data
-
-
-def _get_symcat_disease_mapping(variant: str) -> Dict[str, str]:
-    """Simple disease mapping."""
-    return {
-        "0": "Upper respiratory infection",
-        "1": "Gastroenteritis", 
-        "2": "Migraine",
-        "3": "Hypertension",
-        "4": "Type 2 diabetes",
-        "5": "Anxiety disorder",
-        "6": "Lower back pain",
-        "7": "Asthma",
-        "8": "Pneumonia",
-        "9": "Urinary tract infection",
-        **{str(i): f"Medical condition {i}" for i in range(10, 801)}
-    }
-
-
-def _extract_symptom_list_safe(symptom_data) -> List:
-    """
-    Safely extract symptom list from various data formats.
-    FIXED: Handles NumPy arrays and prevents truth value ambiguity.
-    """
-    try:
-        import numpy as np
-        
-        # Handle None or empty
-        if symptom_data is None:
-            return []
-            
-        # Handle NumPy arrays directly
-        if isinstance(symptom_data, np.ndarray):
-            # If it's a boolean array, get indices where True
-            if symptom_data.dtype == bool:
-                return np.where(symptom_data)[0].tolist()
-            else:
-                # If it's a regular array, convert to list
-                return symptom_data.tolist()
-        
-        # Handle pandas Series
-        if hasattr(symptom_data, 'values'):
-            return _extract_symptom_list_safe(symptom_data.values)
-        
-        # Handle dictionary format
-        if isinstance(symptom_data, dict):
-            # Handle boolean dict format: {True: [symptoms], False: [symptoms]}
-            if True in symptom_data:
-                true_symptoms = symptom_data[True]
-                # Check if the value is a NumPy array
-                if isinstance(true_symptoms, np.ndarray):
-                    if true_symptoms.size > 0:  # Use .size instead of truth evaluation
-                        return true_symptoms.tolist()
-                    else:
-                        return []
-                elif true_symptoms:  # Regular list/other
-                    return list(true_symptoms) if hasattr(true_symptoms, '__iter__') else [true_symptoms]
-                else:
-                    return []
-            elif 'true' in symptom_data:
-                true_symptoms = symptom_data['true']
-                if isinstance(true_symptoms, np.ndarray):
-                    if true_symptoms.size > 0:
-                        return true_symptoms.tolist()
-                    else:
-                        return []
-                elif true_symptoms:
-                    return list(true_symptoms) if hasattr(true_symptoms, '__iter__') else [true_symptoms]
-                else:
-                    return []
-            else:
-                return []
-        
-        # Handle list/tuple
-        elif isinstance(symptom_data, (list, tuple)):
-            return list(symptom_data)
-        
-        # Handle string
-        elif isinstance(symptom_data, str):
-            try:
-                import ast
-                parsed = ast.literal_eval(symptom_data)
-                if isinstance(parsed, (list, tuple)):
-                    return list(parsed)
-                else:
-                    return []
-            except:
-                return []
-        
-        # Default case
-        else:
-            return []
-            
-    except Exception as e:
-        logging.warning(f"Error extracting symptom list: {str(e)}")
-        return []
-    
-
-
-def _create_readable_symptoms_fixed(explicit_list: List, implicit_list: List) -> List[str]:
-    """
-    Convert symptom codes to readable descriptions.
-    FIXED: Better symptom interpretation and medical terminology.
-    """
-    readable_symptoms = []
-    
-    # Enhanced symptom code mapping
-    symptom_mappings = {
-        # Common symptom patterns
-        'fever': 'Fever (elevated body temperature)',
-        'cough': 'Persistent cough',
-        'fatigue': 'Fatigue and weakness', 
-        'headache': 'Headache',
-        'nausea': 'Nausea and vomiting',
-        'pain': 'Pain',
-        'shortness_breath': 'Shortness of breath',
-        'chest_pain': 'Chest pain',
-        'abdominal_pain': 'Abdominal pain',
-        'back_pain': 'Back pain',
-        'joint_pain': 'Joint pain',
-        'muscle_pain': 'Muscle pain',
-        'dizziness': 'Dizziness',
-        'confusion': 'Confusion or altered mental state',
-        'rash': 'Skin rash',
-        'swelling': 'Swelling (edema)',
-        'weight_loss': 'Unexplained weight loss',
-        'weight_gain': 'Weight gain',
-        'appetite_loss': 'Loss of appetite',
-        'sleep_problems': 'Sleep disturbances',
-        'constipation': 'Constipation',
-        'diarrhea': 'Diarrhea',
-        'urinary_problems': 'Urinary symptoms',
-        'vision_problems': 'Vision changes',
-        'hearing_problems': 'Hearing difficulties'
-    }
-    
-    # Process explicit symptoms
-    for symptom in explicit_list:
-        readable = _convert_symptom_code_to_text(symptom, symptom_mappings, "reported")
-        if readable:
-            readable_symptoms.append(readable)
-    
-    # Process implicit symptoms
-    for symptom in implicit_list:
-        readable = _convert_symptom_code_to_text(symptom, symptom_mappings, "associated")
-        if readable:
-            readable_symptoms.append(readable)
-    
-    return readable_symptoms
-
-
-def _convert_symptom_code_to_text(symptom_code, mappings: Dict[str, str], symptom_type: str) -> str:
-    """Convert individual symptom code to readable text."""
-    if not symptom_code:
-        return ""
-    
-    # Convert to string and clean
-    symptom_str = str(symptom_code).lower().strip()
-    
-    # Direct mapping lookup
-    if symptom_str in mappings:
-        return mappings[symptom_str]
-    
-    # Pattern matching for common terms
-    for key, description in mappings.items():
-        if key in symptom_str or symptom_str in key:
-            return description
-    
-    # Try to create meaningful description from code
-    if symptom_str.isdigit():
-        return f"Clinical finding {symptom_str}"
-    else:
-        # Clean up the symptom name
-        cleaned = symptom_str.replace('_', ' ').replace('-', ' ').title()
-        return f"{cleaned} ({symptom_type})"
-
-
-def _generate_clinical_distractors(correct_answer: str, all_diseases: List[str], seed: int) -> List[str]:
-    """Generate clinically relevant distractors."""
-    import random
-    random.seed(42 + seed)
-    
-    # Remove correct answer from choices
-    available_diseases = [d for d in all_diseases if d != correct_answer]
-    
-    if len(available_diseases) >= 3:
-        return random.sample(available_diseases, 3)
-    else:
-        # Fallback distractors based on medical categories
-        fallback_distractors = [
-            "Viral upper respiratory infection",
-            "Bacterial pneumonia",
-            "Gastroenteritis",
-            "Musculoskeletal strain",
-            "Allergic reaction",
-            "Anxiety disorder",
-            "Migraine headache",
-            "Urinary tract infection"
-        ]
-        
-        # Mix available diseases with fallback
-        distractors = available_diseases.copy()
-        for fallback in fallback_distractors:
-            if len(distractors) >= 3:
-                break
-            if fallback not in distractors and fallback != correct_answer:
-                distractors.append(fallback)
-        
-        return distractors[:3]
-
-
-def _get_enhanced_symcat_disease_mapping() -> Dict[str, str]:
-    """
-    Enhanced disease mapping with more realistic medical conditions.
-    FIXED: More comprehensive and medically accurate disease names.
-    """
-    return {
-        # Respiratory conditions
-        "0": "Upper respiratory tract infection",
-        "1": "Acute bronchitis", 
-        "2": "Pneumonia",
-        "3": "Asthma exacerbation",
-        "4": "Chronic obstructive pulmonary disease",
-        "5": "Viral pneumonia",
-        "6": "Bacterial pneumonia",
-        "7": "Sinusitis",
-        "8": "Allergic rhinitis",
-        "9": "Pharyngitis",
-        
-        # Gastrointestinal conditions
-        "10": "Gastroenteritis",
-        "11": "Irritable bowel syndrome",
-        "12": "Gastroesophageal reflux disease",
-        "13": "Peptic ulcer disease",
-        "14": "Inflammatory bowel disease",
-        "15": "Appendicitis",
-        "16": "Cholecystitis",
-        "17": "Hepatitis",
-        "18": "Pancreatitis",
-        "19": "Diverticulitis",
-        
-        # Cardiovascular conditions
-        "20": "Hypertension",
-        "21": "Coronary artery disease",
-        "22": "Heart failure",
-        "23": "Atrial fibrillation",
-        "24": "Myocardial infarction",
-        "25": "Angina pectoris",
-        "26": "Peripheral artery disease",
-        "27": "Deep vein thrombosis",
-        "28": "Pulmonary embolism",
-        "29": "Pericarditis",
-        
-        # Neurological conditions
-        "30": "Migraine",
-        "31": "Tension headache",
-        "32": "Stroke",
-        "33": "Seizure disorder",
-        "34": "Multiple sclerosis",
-        "35": "Parkinson's disease",
-        "36": "Peripheral neuropathy",
-        "37": "Meningitis",
-        "38": "Encephalitis",
-        "39": "Trigeminal neuralgia",
-        
-        # Musculoskeletal conditions
-        "40": "Osteoarthritis",
-        "41": "Rheumatoid arthritis",
-        "42": "Fibromyalgia",
-        "43": "Lower back pain",
-        "44": "Cervical radiculopathy", 
-        "45": "Lumbar radiculopathy",
-        "46": "Osteoporosis",
-        "47": "Muscle strain",
-        "48": "Tendinitis",
-        "49": "Bursitis",
-        
-        # Endocrine conditions
-        "50": "Type 2 diabetes mellitus",
-        "51": "Type 1 diabetes mellitus",
-        "52": "Hypothyroidism",
-        "53": "Hyperthyroidism",
-        "54": "Adrenal insufficiency",
-        "55": "Cushing's syndrome",
-        "56": "Diabetes insipidus",
-        "57": "Hyperparathyroidism",
-        "58": "Hypoparathyroidism",
-        "59": "Metabolic syndrome",
-        
-        # Infectious diseases
-        "60": "Influenza",
-        "61": "Common cold",
-        "62": "Urinary tract infection",
-        "63": "Skin and soft tissue infection",
-        "64": "Sepsis",
-        "65": "Tuberculosis",
-        "66": "HIV infection",
-        "67": "Hepatitis B",
-        "68": "Hepatitis C",
-        "69": "Mononucleosis",
-        
-        # Mental health conditions
-        "70": "Major depressive disorder",
-        "71": "Generalized anxiety disorder",
-        "72": "Panic disorder",
-        "73": "Bipolar disorder",
-        "74": "Schizophrenia",
-        "75": "Post-traumatic stress disorder",
-        "76": "Obsessive-compulsive disorder",
-        "77": "Attention deficit hyperactivity disorder",
-        "78": "Substance use disorder",
-        "79": "Eating disorder",
-        
-        # Dermatological conditions
-        "80": "Eczema",
-        "81": "Psoriasis",
-        "82": "Acne vulgaris",
-        "83": "Contact dermatitis",
-        "84": "Seborrheic dermatitis",
-        "85": "Rosacea",
-        "86": "Skin cancer",
-        "87": "Cellulitis",
-        "88": "Impetigo",
-        "89": "Fungal skin infection",
-        
-        # Genitourinary conditions
-        "90": "Chronic kidney disease",
-        "91": "Acute kidney injury",
-        "92": "Nephrotic syndrome",
-        "93": "Glomerulonephritis",
-        "94": "Kidney stones",
-        "95": "Benign prostatic hyperplasia",
-        "96": "Prostatitis",
-        "97": "Cystitis",
-        "98": "Pyelonephritis",
-        "99": "Urethritis",
-        
-        # Additional conditions (continue pattern for more disease codes)
-        **{str(i): f"Medical condition {i}" for i in range(100, 801)}
-    }
-
-
-def format_symcat_for_task_fixed(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    Format SymCat question for agent task and evaluation.
-    FIXED: Enhanced medical context with NO ground truth leakage.
-    """
-    question_text = question_data.get("question", "")
-    choices = question_data.get("choices", [])
-    
-    # Format choices as options
-    options = []
-    for i, choice in enumerate(choices):
-        options.append(f"{chr(65+i)}. {choice}")
-    
-    correct_letter = question_data.get("correct_letter", "A")
-    correct_answer = question_data.get("correct_answer", "")
-    
-    # Extract symptom information (NO disease tag!)
-    symptom_details = question_data.get("symptom_details", {})
-    explicit_list = symptom_details.get("explicit_list", [])
-    implicit_list = symptom_details.get("implicit_list", [])
-    readable_symptoms = symptom_details.get("readable_symptoms", [])
-    
-    # Create enhanced medical context WITHOUT revealing answer
-    medical_context = _create_enhanced_symcat_medical_context_fixed(
-        explicit_list, implicit_list, readable_symptoms
-    )
-    
-    # Enhanced description with comprehensive medical context
-    enhanced_description = f"""{question_text}
-
-COMPREHENSIVE CLINICAL ASSESSMENT:
-
-Symptom Profile Analysis:
-{medical_context['symptom_profile']}
-
-Clinical Presentation Pattern:
-{medical_context['presentation_pattern']}
-
-Symptom Characteristics:
-{medical_context['symptom_characteristics']}
-
-Diagnostic Considerations:
-{medical_context['diagnostic_approach']}
-
-Clinical Complexity Assessment:
-- Case Complexity: {medical_context['complexity_level']}
-- Symptom Count: Explicit: {len(explicit_list)}, Implicit: {len(implicit_list)}
-- Pattern Type: {medical_context['pattern_type']}
-- Diagnostic Confidence: {medical_context['diagnostic_confidence']}
-"""
-
-    # Agent task with enhanced medical context (NO GROUND TRUTH)
-    agent_task = {
-        "name": "SymCat Clinical Diagnosis Case",
-        "description": enhanced_description,
-        "type": "mcq",
-        "options": options,
-        "expected_output_format": "Single letter selection with comprehensive clinical reasoning including symptom analysis and differential diagnosis",
-        
-        # Enhanced clinical context for better recruitment
-        "clinical_context": {
-            "case_characteristics": {
-                "complexity_level": medical_context['complexity_level'],
-                "symptom_pattern": medical_context['pattern_type'],
-                "diagnostic_confidence": medical_context['diagnostic_confidence'],
-                "clinical_reasoning_required": medical_context['reasoning_types']
-            },
-            "symptom_analysis": {
-                "explicit_symptoms_count": len(explicit_list),
-                "implicit_symptoms_count": len(implicit_list), 
-                "total_symptom_burden": len(explicit_list) + len(implicit_list),
-                "symptom_categories": medical_context['symptom_categories'],
-                "presentation_style": medical_context['presentation_style']
-            },
-            "medical_specialties_needed": medical_context['specialties_needed'],
-            "diagnostic_approach_required": medical_context['diagnostic_methods'],
-            "clinical_skills_needed": [
-                "symptom_interpretation",
-                "pattern_recognition", 
-                "differential_diagnosis",
-                "clinical_correlation",
-                "medical_decision_making"
-            ]
-        },
-        
-        # Safe symptom data (NO disease tag or answer)
-        "symptom_data": {
-            "readable_symptoms": readable_symptoms,
-            "symptom_counts": {
-                "explicit": len(explicit_list),
-                "implicit": len(implicit_list),
-                "total": len(explicit_list) + len(implicit_list)
-            },
-            "symptom_confidence": medical_context['symptom_confidence']
-        }
-    }
-    
-    # Evaluation data (with ground truth for scoring)
-    eval_data = {
-        "ground_truth": correct_letter,
-        "rationale": {
-            "correct_diagnosis": correct_answer,
-            "disease_tag": question_data.get("disease_tag", ""),  # Keep for evaluation only
-            "supporting_explicit_symptoms": explicit_list,
-            "supporting_implicit_symptoms": implicit_list,
-            "clinical_reasoning": medical_context['clinical_reasoning']
-        },
-        "metadata": {
-            "dataset": question_data.get("metadata", {}).get("dataset", "symcat"),
-            "question_id": question_data.get("id", ""),
-            "disease_tag": question_data.get("disease_tag", ""),  # Keep for evaluation only
-            "symptom_analysis": {
-                "explicit_count": len(explicit_list),
-                "implicit_count": len(implicit_list),
-                "complexity": medical_context['complexity_level'],
-                "pattern_type": medical_context['pattern_type']
-            },
-            "medical_context": {
-                "specialties_involved": medical_context['specialties_needed'],
-                "diagnostic_approach": medical_context['diagnostic_approach'],
-                "complexity_factors": medical_context['complexity_factors']
-            }
-        }
-    }
-    
-    return agent_task, eval_data
-
-
-def _create_enhanced_symcat_medical_context_fixed(explicit_list: List, implicit_list: List, 
-                                                 readable_symptoms: List[str]) -> Dict[str, Any]:
-    """
-    Create comprehensive medical context WITHOUT revealing diagnosis.
-    FIXED: Enhanced medical analysis with no ground truth leakage.
-    """
-    explicit_count = len(explicit_list)
-    implicit_count = len(implicit_list)
-    total_symptoms = explicit_count + implicit_count
-    
-    # Analyze symptom categories
-    symptom_categories = _analyze_symptom_categories_fixed(readable_symptoms)
-    
-    # Determine complexity level
-    if total_symptoms < 3:
-        complexity_level = "basic"
-        complexity_factors = ["limited symptom information", "straightforward presentation"]
-    elif total_symptoms < 8:
-        complexity_level = "intermediate" 
-        complexity_factors = ["moderate symptom complexity", "pattern analysis required"]
-    else:
-        complexity_level = "advanced"
-        complexity_factors = ["high symptom burden", "complex differential", "multiple systems involved"]
-    
-    # Determine pattern type
-    if explicit_count > implicit_count * 2:
-        pattern_type = "explicit_dominant"
-        presentation_style = "clear symptomatic presentation"
-    elif implicit_count > explicit_count * 2:
-        pattern_type = "implicit_dominant"
-        presentation_style = "subtle clinical findings"
-    else:
-        pattern_type = "balanced"
-        presentation_style = "mixed clinical presentation"
-    
-    # Determine required specialties
-    specialties_needed = ["general_medicine", "internal_medicine"]
-    if "respiratory" in str(symptom_categories).lower():
-        specialties_needed.append("pulmonology")
-    if "cardiac" in str(symptom_categories).lower():
-        specialties_needed.append("cardiology")
-    if "neurological" in str(symptom_categories).lower():
-        specialties_needed.append("neurology")
-    if "gastrointestinal" in str(symptom_categories).lower():
-        specialties_needed.append("gastroenterology")
-    
-    # Diagnostic confidence assessment
-    if total_symptoms >= 5 and explicit_count >= 3:
-        diagnostic_confidence = "high"
-    elif total_symptoms >= 3:
-        diagnostic_confidence = "moderate"
-    else:
-        diagnostic_confidence = "low"
-    
-    # Symptom confidence mapping
-    symptom_confidence = {
-        "explicit_symptoms": "high" if explicit_count > 2 else "moderate" if explicit_count > 0 else "none",
-        "implicit_symptoms": "moderate" if implicit_count > 2 else "low" if implicit_count > 0 else "none",
-        "overall_assessment": diagnostic_confidence
-    }
-    
-    # Clinical reasoning types needed
-    reasoning_types = ["symptom_analysis", "pattern_recognition"]
-    if total_symptoms > 5:
-        reasoning_types.extend(["differential_diagnosis", "systems_review"])
-    if implicit_count > 0:
-        reasoning_types.append("clinical_correlation")
-    
-    # Diagnostic methods
-    diagnostic_methods = ["clinical_assessment", "symptom_pattern_analysis"]
-    if complexity_level in ["intermediate", "advanced"]:
-        diagnostic_methods.extend(["differential_diagnosis", "systematic_evaluation"])
-    
-    return {
-        "symptom_profile": f"Patient presents with {explicit_count} explicit symptoms and {implicit_count} associated clinical findings",
-        "presentation_pattern": f"{pattern_type.replace('_', ' ').title()} presentation with {presentation_style}",
-        "symptom_characteristics": f"Symptom categories: {', '.join(symptom_categories)}\nOverall symptom burden: {total_symptoms} findings",
-        "diagnostic_approach": f"Requires {complexity_level} clinical assessment with focus on {', '.join(reasoning_types)}",
-        "complexity_level": complexity_level,
-        "pattern_type": pattern_type,
-        "presentation_style": presentation_style,
-        "diagnostic_confidence": diagnostic_confidence,
-        "reasoning_types": reasoning_types,
-        "symptom_categories": symptom_categories,
-        "specialties_needed": specialties_needed,
-        "diagnostic_methods": diagnostic_methods,
-        "symptom_confidence": symptom_confidence,
-        "complexity_factors": complexity_factors,
-        "clinical_reasoning": f"Case requires {complexity_level} diagnostic reasoning with {pattern_type} symptom pattern analysis"
-    }
-
-
-def _analyze_symptom_categories_fixed(readable_symptoms: List[str]) -> List[str]:
-    """Analyze symptom categories for medical context."""
-    categories = set()
-    
-    symptom_text = " ".join(readable_symptoms).lower()
-    
-    # Medical system categories
-    if any(term in symptom_text for term in ['cough', 'breath', 'lung', 'respiratory', 'chest']):
-        categories.add("respiratory")
-    if any(term in symptom_text for term in ['heart', 'cardiac', 'chest pain', 'palpitation']):
-        categories.add("cardiovascular")
-    if any(term in symptom_text for term in ['nausea', 'vomiting', 'abdominal', 'gastro', 'bowel']):
-        categories.add("gastrointestinal")
-    if any(term in symptom_text for term in ['headache', 'dizziness', 'confusion', 'neurological']):
-        categories.add("neurological")
-    if any(term in symptom_text for term in ['joint', 'muscle', 'back', 'pain']):
-        categories.add("musculoskeletal")
-    if any(term in symptom_text for term in ['fever', 'fatigue', 'weight']):
-        categories.add("constitutional")
-    if any(term in symptom_text for term in ['rash', 'skin', 'dermatological']):
-        categories.add("dermatological")
-    
-    if not categories:
-        categories.add("general_medicine")
-    
-    return list(categories)
-
-
-
 # ==================== VERIFICATION FUNCTION ====================
 
-
-def verify_symcat_no_leakage_fixed(question_data: Dict[str, Any]) -> bool:
-    """
-    Verify that SymCat question has no data leakage.
-    FIXED: More comprehensive leakage detection.
-    """
-    agent_task, eval_data = format_symcat_for_task_fixed(question_data)
-    
-    # Convert agent task to string for checking
-    agent_task_str = str(agent_task).lower()
-    
-    # Check for ground truth leakage
-    disease_tag = str(question_data.get("disease_tag", "")).lower()
-    correct_answer = question_data.get("correct_answer", "").lower()
-    correct_letter = question_data.get("correct_letter", "").lower()
-    
-    leakage_found = False
-    
-    # Check for disease tag leakage
-    if disease_tag and disease_tag in agent_task_str:
-        print(f"❌ LEAKAGE DETECTED: disease_tag '{disease_tag}' found in agent_task")
-        leakage_found = True
-    
-    # Check for correct answer leakage  
-    if correct_answer and correct_answer in agent_task_str:
-        print(f"❌ LEAKAGE DETECTED: correct_answer '{correct_answer}' found in agent_task")
-        leakage_found = True
-    
-    # Check for correct letter leakage (should not appear explicitly)
-    if correct_letter and f"answer: {correct_letter}" in agent_task_str:
-        print(f"❌ LEAKAGE DETECTED: correct_letter '{correct_letter}' found in agent_task")
-        leakage_found = True
-    
-    # Check that choices are present (they should be)
-    choices = question_data.get("choices", [])
-    for i, choice in enumerate(choices):
-        choice_letter = chr(65 + i)
-        expected_option = f"{choice_letter}. {choice.lower()}"
-        if expected_option not in agent_task_str:
-            print(f"⚠️  WARNING: Choice '{choice}' not properly formatted in agent_task")
-    
-    if not leakage_found:
-        print(f"✅ NO LEAKAGE: SymCat question appears safe")
-        print(f"   - Disease tag '{disease_tag}' not in agent task")
-        print(f"   - Correct answer '{correct_answer}' not in agent task")
-        print(f"   - Symptom count: {len(question_data.get('symptom_details', {}).get('readable_symptoms', []))}")
-    
-    return not leakage_found
 
 
 def convert_symcat_pkl_to_csv(symcat_dir: str = "dataset/symcat"):
@@ -2474,7 +2272,11 @@ def process_single_question(question_index: int,
     elif dataset_type == "medbullets":
         agent_task, eval_data = format_medbullets_for_task(question)
     elif dataset_type == "symcat":
-        agent_task, eval_data = format_symcat_for_task_fixed(question)
+        agent_task, eval_data = format_symcat_for_task(question)
+    elif dataset_type == "pmc_vqa":
+        agent_task, eval_data = format_pmc_vqa_for_task(question)  # Now vision-enabled
+    elif dataset_type == "path_vqa":
+        agent_task, eval_data = format_path_vqa_for_task(question)  # Now vision-enabled
     else:
         raise ValueError(f"Unknown dataset type: {dataset_type}")
 
@@ -3239,7 +3041,7 @@ def test_new_datasets():
         sc_questions = load_symcat_dataset(num_questions=2, random_seed=42)
         logging.info(f"SymCat test: Loaded {len(sc_questions)} questions")
         if sc_questions:
-            task, eval_data = format_symcat_for_task_fixed(sc_questions[0])
+            task, eval_data = format_symcat_for_task(sc_questions[0])
             logging.info(f"SymCat formatting test: Success")
     except Exception as e:
         logging.error(f"SymCat test failed: {str(e)}")
@@ -3247,370 +3049,147 @@ def test_new_datasets():
 
 # ==================== IMAGE DATASET  ====================
 
-# UPDATE: Modify format_pmc_vqa_for_task to include actual image
-def format_pmc_vqa_for_task_with_vision(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    VISION-ENABLED: Format PMC-VQA-1 question with actual image data for vision-capable agents.
-    """
+# Replace the existing format functions with these:
+
+def format_pmc_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Format PMC-VQA with image data."""
     question_text = question_data.get("Question", "")
     answer = question_data.get("Answer", "")
     answer_label = question_data.get("Answer_label", "")
-    figure_path = question_data.get("Figure_path", "")
-    image = question_data.get("image")  # PIL Image object
+    image = question_data.get("image")
     
     # Extract choices
     choices = []
-    choice_keys = ["Choice A", "Choice B", "Choice C", "Choice D"]
-    
-    for i, key in enumerate(choice_keys):
+    for i, key in enumerate(["Choice A", "Choice B", "Choice C", "Choice D"]):
         choice_text = question_data.get(key, "")
         if choice_text and choice_text.strip():
             choices.append(f"{chr(65+i)}. {choice_text}")
     
-    # Validate answer label
-    if answer_label and answer_label.upper() in "ABCD":
-        correct_letter = answer_label.upper()
-    else:
-        # Try to infer from answer
-        for i, key in enumerate(choice_keys):
-            if question_data.get(key, "") == answer:
-                correct_letter = chr(65+i)
-                break
-        else:
-            correct_letter = "A"
+    # Determine correct letter
+    correct_letter = answer_label.upper() if answer_label and answer_label.upper() in "ABCD" else "A"
     
-    # Enhanced description for vision-capable agents
-    enhanced_description = f"""MEDICAL IMAGE QUESTION: {question_text}
-
-This is a medical image-based multiple choice question. You will be provided with:
-1. The question text above
-2. A medical image containing diagnostic information
-3. Multiple choice options below
-
-Please analyze the medical image carefully and use your visual findings to answer the question.
-
-The image shows medical/clinical content that is directly relevant to answering this question.
-"""
-
-    # ENHANCED: Agent task with ACTUAL image data
     agent_task = {
         "name": "PMC-VQA Medical Image Question",
-        "description": enhanced_description,
+        "description": f"MEDICAL IMAGE QUESTION: {question_text}\n\nAnalyze the provided medical image to answer this question.",
         "type": "mcq",
         "options": choices,
-        "expected_output_format": f"Single letter selection (A-{chr(64+len(choices))}) with detailed medical image analysis",
-        
-        # CRITICAL: Include actual image for vision-capable agents
+        "expected_output_format": f"Single letter (A-{chr(64+len(choices))}) with image analysis",
         "image_data": {
-            "image": image,  # Actual PIL Image object
+            "image": image,
             "image_available": image is not None,
-            "figure_path": figure_path,
             "requires_visual_analysis": True
-        },
-        
-        # Medical context
-        "medical_image_context": {
-            "dataset": "pmc_vqa",
-            "is_medical_image": True,
-            "analysis_required": True
         }
     }
     
-    # Evaluation data
     eval_data = {
         "ground_truth": correct_letter,
-        "rationale": {
-            correct_letter: answer,
-            "image_context": f"Medical image analysis required for {figure_path}"
-        },
-        "metadata": {
-            "dataset": "pmc_vqa",
-            "figure_path": figure_path,
-            "has_image": image is not None,
-            "requires_vision": True
-        }
+        "rationale": {correct_letter: answer},
+        "metadata": {"dataset": "pmc_vqa", "has_image": image is not None}
     }
     
     return agent_task, eval_data
 
-# UPDATE: Modify format_path_vqa_for_task to include actual image
-def format_path_vqa_for_task_with_vision(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    VISION-ENABLED: Format Path-VQA question with actual image data for vision-capable agents.
-    """
+def format_path_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+    """Format Path-VQA as binary MCQ with image data."""
     question_text = question_data.get("question", "")
     answer = question_data.get("answer", "").lower().strip()
-    image = question_data.get("image")  # PIL Image object
+    image = question_data.get("image")
     
-    # Convert to binary MCQ format
     choices = ["A. Yes", "B. No"]
-    
-    # Determine correct answer
     correct_letter = "A" if answer == "yes" else "B"
     
-    # Enhanced description for vision-capable agents
-    enhanced_description = f"""PATHOLOGY IMAGE QUESTION: {question_text}
-
-This is a pathology image-based yes/no question. You will be provided with:
-1. The question text above
-2. A histopathological image for analysis
-3. Two options: Yes or No
-
-Please examine the pathology image carefully and determine whether the answer is "Yes" or "No" based on your visual findings.
-
-The image contains histopathological content that must be analyzed to answer correctly.
-"""
-
-    # ENHANCED: Agent task with ACTUAL image data
     agent_task = {
-        "name": "Path-VQA Pathology Image Question",
-        "description": enhanced_description,
-        "type": "mcq",  # Binary MCQ (Yes/No)
+        "name": "Path-VQA Pathology Question",
+        "description": f"PATHOLOGY IMAGE QUESTION: {question_text}\n\nExamine the pathology image to determine: Yes or No?",
+        "type": "mcq",
         "options": choices,
-        "expected_output_format": "Single letter selection (A for Yes, B for No) with detailed pathological image analysis",
-        
-        # CRITICAL: Include actual image for vision-capable agents
+        "expected_output_format": "A for Yes, B for No with pathological analysis",
         "image_data": {
-            "image": image,  # Actual PIL Image object
+            "image": image,
             "image_available": image is not None,
             "is_pathology_image": True,
             "requires_visual_analysis": True
-        },
-        
-        # Pathology context
-        "pathology_image_context": {
-            "dataset": "path_vqa", 
-            "is_binary_question": True,
-            "original_format": "yes_no",
-            "pathology_analysis_required": True
         }
     }
     
-    # Evaluation data
     eval_data = {
         "ground_truth": correct_letter,
-        "rationale": {
-            correct_letter: f"Pathology analysis indicates: {answer.title()}",
-            "binary_answer": answer
-        },
-        "metadata": {
-            "dataset": "path_vqa",
-            "original_answer": answer,
-            "has_image": image is not None,
-            "requires_vision": True
-        }
+        "rationale": {correct_letter: f"Pathology analysis: {answer.title()}"},
+        "metadata": {"dataset": "path_vqa", "original_answer": answer, "has_image": image is not None}
     }
     
     return agent_task, eval_data
-
 
 # ==================== PMC-VQA DATASET ====================
 
 def load_pmc_vqa_dataset(num_questions: int = 50, random_seed: int = 42, 
                         dataset_split: str = "test") -> List[Dict[str, Any]]:
     """
-    Load questions from the PMC-VQA-1 dataset.
-    
-    Args:
-        num_questions: Number of questions to load
-        random_seed: Random seed for reproducibility
-        dataset_split: Which split to use ("train", "test", "validation")
-        
-    Returns:
-        List of question dictionaries with images
+    Load PMC-VQA dataset using streaming to avoid large downloads.
     """
-    logging.info(f"Loading PMC-VQA-1 dataset with {num_questions} random questions from {dataset_split} split")
+    logging.info(f"Loading PMC-VQA-1 dataset with {num_questions} questions from {dataset_split} split (streaming)")
     
     try:
         from datasets import load_dataset
-        from PIL import Image
         
-        # Load the dataset
-        ds = load_dataset("hamzamooraj99/PMC-VQA-1")
+        # Use streaming to avoid downloading entire dataset
+        ds = load_dataset("hamzamooraj99/PMC-VQA-1", streaming=True)
         
-        # Check available splits
         available_splits = list(ds.keys())
         logging.info(f"PMC-VQA-1 available splits: {available_splits}")
         
         if dataset_split not in available_splits:
-            logging.warning(f"Split '{dataset_split}' not found. Available splits: {available_splits}")
             dataset_split = available_splits[0] if available_splits else "train"
-            logging.info(f"Using split: {dataset_split}")
-        
-        questions = list(ds[dataset_split])
-        logging.info(f"Total questions in {dataset_split} split: {len(questions)}")
-        
-        # Set random seed for reproducibility
+            
+        # Stream and collect only needed questions
+        questions = []
         random.seed(random_seed)
         
-        # Randomly select questions
-        if num_questions < len(questions):
-            selected_questions = random.sample(questions, num_questions)
-        else:
-            selected_questions = questions
-            logging.warning(f"Requested {num_questions} questions but split only has {len(questions)}. Using all available.")
-        
-        # Validate image loading for a sample
-        sample_count = min(3, len(selected_questions))
-        for i in range(sample_count):
-            try:
-                img = selected_questions[i].get('image')
-                if img and hasattr(img, 'size'):
-                    logging.info(f"Sample {i+1}: Image size {img.size}, Question: {selected_questions[i].get('Question', '')[:50]}...")
-                else:
-                    logging.warning(f"Sample {i+1}: No valid image found")
-            except Exception as e:
-                logging.warning(f"Sample {i+1}: Image validation failed: {str(e)}")
-        
-        logging.info(f"Successfully loaded {len(selected_questions)} questions from PMC-VQA-1 dataset")
-        return selected_questions
-    
-    except Exception as e:
-        logging.error(f"Error loading PMC-VQA-1 dataset: {str(e)}")
-        import traceback
-        logging.error(traceback.format_exc())
-        return []
-
-
-def format_pmc_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    Format PMC-VQA-1 question into agent task and evaluation data.
-    ENHANCED: Includes comprehensive medical image context and choice analysis.
-    
-    Args:
-        question_data: Question data from PMC-VQA-1 dataset
-        
-    Returns:
-        Tuple of:
-        - agent_task: Task dictionary for agent system input (comprehensive medical image context)
-        - eval_data: Ground truth, rationale, metadata for evaluation
-    """
-    question_text = question_data.get("Question", "")
-    answer = question_data.get("Answer", "")
-    answer_label = question_data.get("Answer_label", "")
-    figure_path = question_data.get("Figure_path", "")
-    image = question_data.get("image")
-    
-    # Extract choices
-    choices = []
-    choice_keys = ["Choice A", "Choice B", "Choice C", "Choice D"]
-    
-    for i, key in enumerate(choice_keys):
-        choice_text = question_data.get(key, "")
-        if choice_text and choice_text.strip():
-            choices.append(f"{chr(65+i)}. {choice_text}")
-    
-    # Validate answer label
-    if answer_label and answer_label.upper() in "ABCD":
-        correct_letter = answer_label.upper()
-    else:
-        # Try to infer from answer
-        for i, key in enumerate(choice_keys):
-            if question_data.get(key, "") == answer:
-                correct_letter = chr(65+i)
+        # Use reservoir sampling to get random sample from stream
+        for i, question in enumerate(ds[dataset_split]):
+            if len(questions) < num_questions:
+                questions.append(question)
+            else:
+                # Reservoir sampling: replace random element
+                j = random.randint(0, i)
+                if j < num_questions:
+                    questions[j] = question
+            
+            # Stop after reasonable number of samples
+            if i > num_questions * 20:  # Sample from 20x more questions
                 break
-        else:
-            correct_letter = "A"  # Default fallback
-    
-    # Create image analysis context
-    image_analysis = _create_pmc_vqa_image_analysis(image, figure_path, question_text)
-    
-    # Enhanced description with medical image context
-    enhanced_description = f"""{question_text}
-
-MEDICAL IMAGE ANALYSIS CONTEXT:
-
-Image Information:
-- Figure Path: {figure_path}
-- Image Dimensions: {image_analysis['dimensions']}
-- Image Format: {image_analysis['format']}
-- Image Mode: {image_analysis['mode']}
-
-Medical Image Assessment:
-{image_analysis['medical_context']}
-
-Question Characteristics:
-- Question Type: {image_analysis['question_type']}
-- Medical Domain: {image_analysis['medical_domain']}
-- Complexity Level: {image_analysis['complexity_level']}
-
-Clinical Reasoning Requirements:
-{image_analysis['reasoning_requirements']}
-
-Visual Analysis Focus Areas:
-{image_analysis['focus_areas']}
-
-NOTE: This is a medical image-based question. The image contains important diagnostic information that should be considered alongside the question text and answer choices.
-"""
-
-    # ENHANCED: Create agent task with comprehensive medical image context
-    agent_task = {
-        "name": "PMC-VQA Medical Image Question",
-        "description": enhanced_description,
-        "type": "mcq",
-        "options": choices,
-        "expected_output_format": f"Single letter selection (A-{chr(64+len(choices))}) with detailed medical image analysis and clinical reasoning",
         
-        # ENHANCED: Comprehensive medical image context
-        "medical_image_context": {
-            "image_characteristics": {
-                "figure_path": figure_path,
-                "dimensions": image_analysis['dimensions'],
-                "format": image_analysis['format'],
-                "has_valid_image": image_analysis['has_valid_image']
-            },
-            "clinical_context": {
-                "question_type": image_analysis['question_type'],
-                "medical_domain": image_analysis['medical_domain'],
-                "complexity_level": image_analysis['complexity_level'],
-                "requires_image_analysis": True
-            },
-            "visual_analysis_requirements": {
-                "focus_areas": image_analysis['focus_areas_list'],
-                "reasoning_type": image_analysis['reasoning_type'],
-                "medical_specialties_needed": image_analysis['specialties_needed']
-            },
-            "diagnostic_considerations": image_analysis['diagnostic_considerations']
-        },
+        # Validate images
+        valid_questions = []
+        for q in questions:
+            try:
+                img = q.get('image')
+                if img and hasattr(img, 'size'):
+                    valid_questions.append(q)
+                if len(valid_questions) >= num_questions:
+                    break
+            except:
+                continue
         
-        # Image data (Note: Current agents can't process images)
-        "image_data": {
-            "image_available": image is not None,
-            "figure_path": figure_path,
-            # "pil_image": image,  # Commented out - agents can't process
-            "image_description": image_analysis['description']
-        }
-    }
-    
-    # ENHANCED: Create comprehensive evaluation data
-    eval_data = {
-        "ground_truth": correct_letter,
-        "rationale": {
-            correct_letter: answer,
-            "correct_answer_text": answer,
-            "image_context": f"Image: {figure_path}"
-        },
-        "metadata": {
-            "dataset": "pmc_vqa",
-            "figure_path": figure_path,
-            "original_answer": answer,
-            "answer_label": answer_label,
-            "image_analysis": {
-                "has_image": image is not None,
-                "dimensions": image_analysis['dimensions'],
-                "medical_domain": image_analysis['medical_domain'],
-                "complexity": image_analysis['complexity_level']
-            },
-            "question_characteristics": {
-                "num_choices": len(choices),
-                "question_type": image_analysis['question_type'],
-                "requires_visual_analysis": True
-            },
-            "specialties_involved": image_analysis['specialties_needed']
-        }
-    }
-    
-    return agent_task, eval_data
+        logging.info(f"Successfully loaded {len(valid_questions)} PMC-VQA questions (streaming)")
+
+        # Validate images before returning
+        valid_questions = []
+        for q in questions:
+            img = q.get('image')
+            if validate_image_for_openai(img):
+                valid_questions.append(q)
+            else:
+                logging.warning(f"Skipping question with invalid image")
+            
+            if len(valid_questions) >= num_questions:
+                break
+        
+        return valid_questions[:num_questions]
+        
+    except Exception as e:
+        logging.error(f"Error loading PMC-VQA dataset: {str(e)}")
+        return []
 
 
 def _create_pmc_vqa_image_analysis(image, figure_path: str, question_text: str) -> Dict[str, Any]:
@@ -3707,228 +3286,59 @@ def _create_pmc_vqa_image_analysis(image, figure_path: str, question_text: str) 
 
 # ==================== PATH-VQA DATASET ====================
 
+
 def load_path_vqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
     """
-    Load yes/no questions from the Path-VQA dataset.
-    Following MDAgents approach: only use binary yes/no questions for standardized evaluation.
-    
-    Args:
-        num_questions: Number of questions to load
-        random_seed: Random seed for reproducibility
-        
-    Returns:
-        List of question dictionaries with images (yes/no only)
+    Load Path-VQA dataset using streaming for yes/no questions only.
     """
-    logging.info(f"Loading Path-VQA dataset with {num_questions} random yes/no questions")
+    logging.info(f"Loading Path-VQA dataset with {num_questions} yes/no questions (streaming)")
     
     try:
         from datasets import load_dataset
-        from PIL import Image
         
-        # Load the dataset
-        ds = load_dataset("flaviagiammarino/path-vqa")
+        # Use streaming
+        ds = load_dataset("flaviagiammarino/path-vqa", streaming=True)
+        split_name = list(ds.keys())[0]
         
-        # Check available splits
-        available_splits = list(ds.keys())
-        logging.info(f"Path-VQA available splits: {available_splits}")
-        
-        # Use available split
-        split_name = available_splits[0] if available_splits else "train"
-        questions = list(ds[split_name])
-        logging.info(f"Total questions in {split_name} split: {len(questions)}")
-        
-        # Filter for yes/no questions only
-        yes_no_questions = []
-        for question in questions:
-            answer = question.get('answer', '').lower().strip()
-            if answer in ['yes', 'no']:
-                yes_no_questions.append(question)
-        
-        logging.info(f"Filtered to {len(yes_no_questions)} yes/no questions from {len(questions)} total")
-        
-        if not yes_no_questions:
-            logging.error("No yes/no questions found in Path-VQA dataset")
-            return []
-        
-        # Set random seed for reproducibility
+        # Collect yes/no questions only
+        questions = []
         random.seed(random_seed)
         
-        # Randomly select questions
-        if num_questions < len(yes_no_questions):
-            selected_questions = random.sample(yes_no_questions, num_questions)
-        else:
-            selected_questions = yes_no_questions
-            logging.warning(f"Requested {num_questions} questions but found only {len(yes_no_questions)} yes/no questions. Using all available.")
-        
-        # Validate image loading for a sample
-        sample_count = min(3, len(selected_questions))
-        for i in range(sample_count):
-            try:
-                img = selected_questions[i].get('image')
-                if img and hasattr(img, 'size'):
-                    logging.info(f"Sample {i+1}: Image size {img.size}, Question: {selected_questions[i].get('question', '')[:50]}...")
+        for i, question in enumerate(ds[split_name]):
+            answer = question.get('answer', '').lower().strip()
+            if answer in ['yes', 'no']:
+                if len(questions) < num_questions:
+                    questions.append(question)
                 else:
-                    logging.warning(f"Sample {i+1}: No valid image found")
-            except Exception as e:
-                logging.warning(f"Sample {i+1}: Image validation failed: {str(e)}")
+                    # Reservoir sampling
+                    j = random.randint(0, i)
+                    if j < num_questions:
+                        questions[j] = question
+            
+            # Stop after sampling enough
+            if len([q for q in questions if q.get('answer', '').lower() in ['yes', 'no']]) >= num_questions:
+                break
+            if i > num_questions * 50:  # Safety limit
+                break
         
-        # Analyze answer distribution
-        answer_dist = {'yes': 0, 'no': 0}
-        for q in selected_questions:
-            answer = q.get('answer', '').lower().strip()
-            if answer in answer_dist:
-                answer_dist[answer] += 1
+        # Validate images and filter yes/no
+        valid_questions = []
+        for q in questions:
+            try:
+                img = q.get('image')
+                answer = q.get('answer', '').lower().strip()
+                if img and hasattr(img, 'size') and answer in ['yes', 'no']:
+                    valid_questions.append(q)
+            except:
+                continue
         
-        logging.info(f"Answer distribution: {answer_dist}")
-        logging.info(f"Successfully loaded {len(selected_questions)} yes/no questions from Path-VQA dataset")
-        return selected_questions
-    
+        logging.info(f"Successfully loaded {len(valid_questions)} Path-VQA yes/no questions")
+        return valid_questions[:num_questions]
+        
     except Exception as e:
         logging.error(f"Error loading Path-VQA dataset: {str(e)}")
-        import traceback
-        logging.error(traceback.format_exc())
         return []
-
-def format_path_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """
-    Format Path-VQA question into agent task and evaluation data.
-    Converts yes/no questions to binary MCQ format (A: Yes, B: No).
-    ENHANCED: Includes comprehensive pathology image context.
     
-    Args:
-        question_data: Question data from Path-VQA dataset
-        
-    Returns:
-        Tuple of:
-        - agent_task: Task dictionary for agent system input (comprehensive pathology image context)
-        - eval_data: Ground truth, rationale, metadata for evaluation
-    """
-    question_text = question_data.get("question", "")
-    answer = question_data.get("answer", "").lower().strip()
-    image = question_data.get("image")
-    
-    # Convert to binary MCQ format
-    choices = ["A. Yes", "B. No"]
-    
-    # Determine correct answer
-    if answer == "yes":
-        correct_letter = "A"
-    elif answer == "no":
-        correct_letter = "B"
-    else:
-        logging.warning(f"Unexpected answer format: {answer}, defaulting to A")
-        correct_letter = "A"
-    
-    # Create pathology image analysis context
-    image_analysis = _create_path_vqa_image_analysis(image, question_text)
-    
-    # Enhanced description with pathology image context
-    enhanced_description = f"""{question_text}
-
-PATHOLOGY IMAGE ANALYSIS CONTEXT:
-
-Image Information:
-- Image Dimensions: {image_analysis['dimensions']}
-- Image Format: {image_analysis['format']}
-- Image Mode: {image_analysis['mode']}
-
-Pathology Assessment:
-{image_analysis['pathology_context']}
-
-Question Characteristics:
-- Question Type: Binary Yes/No
-- Pathology Domain: {image_analysis['pathology_domain']}
-- Analysis Type: {image_analysis['analysis_type']}
-- Complexity Level: {image_analysis['complexity_level']}
-
-Clinical Reasoning Requirements:
-{image_analysis['reasoning_requirements']}
-
-Microscopic Analysis Focus:
-{image_analysis['microscopic_focus']}
-
-NOTE: This is a pathology image-based yes/no question. The histopathological image contains crucial diagnostic information that must be carefully analyzed to answer the question correctly.
-"""
-
-    # ENHANCED: Create agent task with comprehensive pathology context
-    agent_task = {
-        "name": "Path-VQA Pathology Image Question",
-        "description": enhanced_description,
-        "type": "mcq",  # Format as MCQ with Yes/No options
-        "options": choices,
-        "expected_output_format": "Single letter selection (A for Yes, B for No) with detailed pathological image analysis and clinical reasoning",
-        
-        # ENHANCED: Comprehensive pathology image context
-        "pathology_image_context": {
-            "image_characteristics": {
-                "dimensions": image_analysis['dimensions'],
-                "format": image_analysis['format'],
-                "has_valid_image": image_analysis['has_valid_image'],
-                "is_microscopic": image_analysis['is_microscopic']
-            },
-            "pathology_context": {
-                "pathology_domain": image_analysis['pathology_domain'],
-                "analysis_type": image_analysis['analysis_type'],
-                "complexity_level": image_analysis['complexity_level'],
-                "requires_histopathology_expertise": True
-            },
-            "diagnostic_requirements": {
-                "microscopic_analysis": image_analysis['microscopic_focus_list'],
-                "pathology_patterns": image_analysis['pathology_patterns'],
-                "differential_considerations": image_analysis['differential_considerations']
-            },
-            "clinical_context": {
-                "medical_specialties_needed": image_analysis['specialties_needed'],
-                "diagnostic_approach": image_analysis['diagnostic_approach']
-            }
-        },
-        
-        # Question format specifics
-        "binary_question_format": {
-            "original_format": "yes_no",
-            "converted_to_mcq": True,
-            "yes_option": "A",
-            "no_option": "B"
-        },
-        
-        # Image data (Note: Current agents can't process images)
-        "image_data": {
-            "image_available": image is not None,
-            "is_pathology_image": True,
-            # "pil_image": image,  # Commented out - agents can't process
-            "image_description": image_analysis['description']
-        }
-    }
-    
-    # ENHANCED: Create comprehensive evaluation data
-    eval_data = {
-        "ground_truth": correct_letter,
-        "rationale": {
-            correct_letter: f"Correct answer: {answer.title()}",
-            "binary_answer": answer,
-            "pathology_context": "Pathology image analysis required"
-        },
-        "metadata": {
-            "dataset": "path_vqa",
-            "original_answer": answer,
-            "binary_format": "yes_no",
-            "converted_to_mcq": True,
-            "image_analysis": {
-                "has_image": image is not None,
-                "dimensions": image_analysis['dimensions'],
-                "pathology_domain": image_analysis['pathology_domain'],
-                "complexity": image_analysis['complexity_level']
-            },
-            "question_characteristics": {
-                "is_binary": True,
-                "requires_pathology_expertise": True,
-                "analysis_type": image_analysis['analysis_type']
-            },
-            "specialties_involved": image_analysis['specialties_needed']
-        }
-    }
-    
-    return agent_task, eval_data
 
 def _create_path_vqa_image_analysis(image, question_text: str) -> Dict[str, Any]:
     """Create comprehensive pathology image analysis context for Path-VQA questions."""
@@ -4039,6 +3449,29 @@ def _create_path_vqa_image_analysis(image, question_text: str) -> Dict[str, Any]
 
 
 
+def validate_image_for_openai(image):
+    """Validate image can be processed for OpenAI."""
+    if image is None:
+        return False
+    
+    try:
+        # Check if it's a valid PIL image
+        if not hasattr(image, 'size') or not hasattr(image, 'mode'):
+            return False
+        
+        # Check reasonable size
+        width, height = image.size
+        if width < 10 or height < 10 or width > 4096 or height > 4096:
+            return False
+        
+        # Test conversion to RGB (what we'll need for JPEG)
+        if image.mode not in ('RGB', 'L'):
+            test_img = image.convert('RGB')
+        
+        return True
+    except:
+        return False
+
 ######################### ===================================== MAIN RUNNER FUNCTION ===================================== #########################
 def run_dataset(
     dataset_type: str,
@@ -4106,6 +3539,10 @@ def run_dataset(
         questions = load_medbullets_dataset(num_questions, random_seed)
     elif dataset_type == "symcat":
         questions = load_symcat_dataset(num_questions, random_seed)
+    elif dataset_type == "pmc_vqa":
+        questions = load_pmc_vqa_dataset(num_questions, random_seed)
+    elif dataset_type == "path_vqa":
+        questions = load_path_vqa_dataset(num_questions, random_seed)
     else:
         logging.error(f"Unknown dataset type: {dataset_type}")
         return {"error": f"Unknown dataset type: {dataset_type}"}
@@ -4141,38 +3578,6 @@ def run_dataset(
     # Define configurations to test
     if run_all_configs:
         configurations = [
-            # Baseline - a single Medical Generalist agent (using basic recruitment)
-            {
-                "name": "Baseline", 
-                "description": "Single Medical Generalist agent, no teamwork components",
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": False,
-                "team_orientation": False,
-                "mutual_trust": False,
-                "recruitment": True,  # Set to True but will be handled specially
-                "recruitment_method": "basic",  # Force basic recruitment for Baseline
-                "n_max": 1,  # Always use just 1 agent for Baseline
-                "medrag": use_medrag  # Pass MedRAG usage
-            },
-
-            # Standard Team - uses specified n_max agents (using intermediate recruitment)
-            {
-                "name": "Standard Team", 
-                "description": f"Team of {n_max} agents with no teamwork components, using intermediate recruitment",
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": False,
-                "team_orientation": False,
-                "mutual_trust": False,
-                "recruitment": True,
-                "recruitment_method": "intermediate",  # Use intermediate recruitment method
-                "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
-            },
 
             # Single features with intermediate recruitment
             {
@@ -4363,7 +3768,7 @@ def main():
     """Main entry point."""
     parser = argparse.ArgumentParser(description='Run datasets through the agent system')
     parser.add_argument('--dataset', type=str, default="medqa", 
-                      choices=["medqa", "medmcqa", "pubmedqa", "mmlupro-med", "ddxplus", "medbullets", "symcat"], 
+                      choices=["medqa", "medmcqa", "pubmedqa", "mmlupro-med", "ddxplus", "medbullets", "symcat", "pmc_vqa", "path_vqa"], 
                       help='Dataset to run (medqa, medmcqa, pubmedqa, or mmlupro-med)')
     parser.add_argument('--num-questions', type=int, default=50, 
                       help='Number of questions to process')

@@ -149,6 +149,22 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
 
     logging.info(f"Recruiting agents using method: {recruitment_method}, complexity: {complexity}, n_max: {n_max}")
 
+    # VISION DETECTION: Check if this is an image-based task
+    has_image = False
+    if task_config and "image_data" in task_config:
+        has_image = task_config["image_data"].get("image_available", False)
+    
+    # If image task, use vision-capable recruitment
+    if has_image:
+        return recruit_vision_capable_agents(
+            question=question,
+            has_image=has_image,
+            complexity=complexity,
+            deployment_config=deployment_config,
+            task_config=task_config,
+            teamwork_config=teamwork_config
+        )
+
     if complexity == "basic" or recruitment_method == "basic":
         logging.info("Using basic recruitment (single agent)")
         return recruit_basic_team_isolated(question, recruitment_pool, deployment_config, task_config, instance_id=instance_id)
@@ -598,69 +614,52 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
     return agents, leader
 
 
-
-def recruit_vision_capable_agents(question: str, has_image: bool, complexity: str, **kwargs):
-    """
-    Recruit agents with vision capabilities when images are present.
+def recruit_vision_capable_agents(question: str, has_image: bool, complexity: str, 
+                                deployment_config=None, task_config=None, teamwork_config=None):
+    """Recruit vision-capable agents."""
+    from components.modular_agent import MedicalImageAnalyst, PathologySpecialist, ModularAgent
     
-    Args:
-        question: The question text
-        has_image: Whether the task includes an image
-        complexity: Task complexity level
-        **kwargs: Other recruitment parameters
-        
-    Returns:
-        Tuple of (agents, leader) with vision-capable agents when needed
-    """
-    if not has_image:
-        # Use standard recruitment for text-only tasks
-        return recruit_agents_isolated(question, complexity, **kwargs)
-    
-    # For image tasks, create vision-specialized team
     agents = {}
     leader = None
     agent_index = 0
     
-    # Determine image type from question content
+    # Determine if pathology or general medical imaging
     question_lower = question.lower()
+    is_pathology = any(term in question_lower for term in 
+                      ['pathology', 'histology', 'microscopic', 'tissue', 'cell', 'biopsy'])
     
-    if any(term in question_lower for term in ['pathology', 'histology', 'microscopic', 'tissue', 'cell']):
-        # Create PathologySpecialist
+    # Create vision specialist
+    if is_pathology:
         specialist = PathologySpecialist(
-            deployment_config=kwargs.get('deployment_config'),
+            deployment_config=deployment_config,
             agent_index=agent_index,
-            task_config=kwargs.get('task_config')
+            task_config=task_config
         )
-        agents['Pathology Specialist'] = specialist
-        leader = specialist
-        agent_index += 1
-    
+        role_name = "Pathology Specialist"
     else:
-        # Create MedicalImageAnalyst for general medical images
         specialist = MedicalImageAnalyst(
-            deployment_config=kwargs.get('deployment_config'),
+            deployment_config=deployment_config,
             agent_index=agent_index,
-            task_config=kwargs.get('task_config')
+            task_config=task_config
         )
-        agents['Medical Image Analyst'] = specialist
-        leader = specialist
-        agent_index += 1
+        role_name = "Medical Image Analyst"
     
-    # Add supporting agents based on complexity
+    agents[role_name] = specialist
+    leader = specialist
+    agent_index += 1
+    
+    # Add supporting agents for complex cases
     if complexity in ['intermediate', 'advanced']:
-        # Add general medical support
         generalist = ModularAgent(
             role_type='Medical Generalist',
-            deployment_config=kwargs.get('deployment_config'),
+            deployment_config=deployment_config,
             agent_index=agent_index,
-            task_config=kwargs.get('task_config')
+            task_config=task_config
         )
         agents['Medical Generalist'] = generalist
-        agent_index += 1
     
-    logging.info(f"Recruited vision-capable team: {list(agents.keys())}")
+    logging.info(f"Vision recruitment: {list(agents.keys())} for {'pathology' if is_pathology else 'medical imaging'}")
     return agents, leader
-
 
 # Legacy functions for backward compatibility
 def recruit_basic_team(question: str, recruitment_pool: str, instance_id=None):

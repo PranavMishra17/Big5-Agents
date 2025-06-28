@@ -269,6 +269,45 @@ class ModularAgent(Agent):
             The agent's analysis
         """
         return self.analyze_task_isolated(config.TASK)
+
+
+    def analyze_task_with_image(self, task_config: Dict[str, Any], image) -> str:
+        """
+        Analyze task with image using vision capabilities.
+        
+        Args:
+            task_config: Task configuration with image data
+            image: PIL Image object
+            
+        Returns:
+            Analysis incorporating visual findings
+        """
+        task_type = task_config["type"]
+        question = task_config["description"]
+        
+        # Check if this agent is vision-specialized
+        if isinstance(self, (MedicalImageAnalyst, PathologySpecialist)):
+            if isinstance(self, MedicalImageAnalyst):
+                return self.analyze_medical_image(question, image, task_config)
+            elif isinstance(self, PathologySpecialist):
+                return self.analyze_pathology_slide(question, image, task_config)
+        
+        # For general agents, use enhanced vision prompt
+        vision_prompt = f"""
+You are analyzing a medical question that includes an image. Please examine the provided image carefully and incorporate your visual findings into your analysis.
+
+Question: {question}
+
+Please provide:
+1. **Visual Analysis**: Describe what you observe in the image
+2. **Medical Assessment**: Interpret the medical significance of your visual findings  
+3. **Clinical Reasoning**: Connect the image findings to the question asked
+4. **Answer Determination**: Use both the question text and image analysis to determine your answer
+
+Provide your final answer clearly at the end.
+"""
+        
+        return self.chat_with_image(vision_prompt, image)
     
     def analyze_task_isolated(self, task_config: Dict[str, Any]) -> str:
         """

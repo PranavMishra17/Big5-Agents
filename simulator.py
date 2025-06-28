@@ -463,72 +463,82 @@ class AgentSystemSimulator:
 
 
     def _run_round1_independent_analysis(self) -> Dict[str, Dict[str, Any]]:
-        """
-        ROUND 1: Each agent analyzes the task independently with MedRAG enhancement.
-        FIXED VERSION - Properly integrates MedRAG knowledge.
-        
-        Returns:
-            Dictionary mapping agent roles to their independent analyses
-        """
-        agent_analyses = {}
-        
-        # Process agents sequentially
-        for role, agent in self.agents.items():
-            try:
-                self.logger.logger.info(f"Round 1: Getting analysis from {role}")
-                
-                # CRITICAL FIX: MedRAG knowledge is now automatically integrated in agent.chat()
-                # The agent.chat() method will check for MedRAG enhancement and include it
-                analysis = agent.analyze_task_isolated(self.task_config)
-
-                # Extract response using isolated task config
-                extract = agent.extract_response_isolated(analysis, self.task_config)
-                
-                # Log to main discussion channel
-                self.logger.log_main_discussion(
-                    "round1_independent_analysis",
-                    role,
-                    analysis
-                )
-                
-                # Store analysis
-                agent_analyses[role] = {
-                    "analysis": analysis,
-                    "extract": extract
-                }
-                
-                # Update shared mental model if enabled
-                if self.use_shared_mental_model and self.mental_model:
-                    understanding = self.mental_model.extract_understanding_from_message(analysis)
-                    self.mental_model.update_shared_understanding(role, understanding)
+            """
+            ROUND 1: Each agent analyzes the task independently with optional image support.
+            
+            Returns:
+                Dictionary mapping agent roles to their independent analyses
+            """
+            agent_analyses = {}
+            
+            # Extract image from task config if available
+            task_image = None
+            if "image_data" in self.task_config:
+                task_image = self.task_config["image_data"].get("image")
+            
+            # Process agents sequentially
+            for role, agent in self.agents.items():
+                try:
+                    self.logger.logger.info(f"Round 1: Getting analysis from {role}")
                     
-                # Log MedRAG usage for this agent
-                if agent.get_from_knowledge_base("has_medrag_enhancement"):
-                    self.logger.logger.info(f"{role} used MedRAG-enhanced analysis")
+                    # Check if this is a vision-capable task
+                    if task_image is not None:
+                        # Use vision-capable analysis
+                        analysis = agent.analyze_task_with_image(self.task_config, task_image)
+                    else:
+                        # Use standard text-only analysis
+                        analysis = agent.analyze_task_isolated(self.task_config)
+
+                    # Extract response using isolated task config
+                    extract = agent.extract_response_isolated(analysis, self.task_config)
                     
-            except Exception as e:
-                self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
-                agent_analyses[role] = {
-                    "analysis": f"Error occurred: {str(e)}",
-                    "extract": {"error": str(e)}
-                }
-        
-        self.logger.logger.info(f"Round 1 completed: {len(agent_analyses)} analyses collected")
-        return agent_analyses
+                    # Log to main discussion channel
+                    self.logger.log_main_discussion(
+                        "round1_independent_analysis",
+                        role,
+                        analysis
+                    )
+                    
+                    # Store analysis
+                    agent_analyses[role] = {
+                        "analysis": analysis,
+                        "extract": extract,
+                        "used_vision": task_image is not None
+                    }
+                    
+                    # Update shared mental model if enabled
+                    if self.use_shared_mental_model and self.mental_model:
+                        understanding = self.mental_model.extract_understanding_from_message(analysis)
+                        self.mental_model.update_shared_understanding(role, understanding)
+                        
+                    # Log MedRAG usage for this agent
+                    if agent.get_from_knowledge_base("has_medrag_enhancement"):
+                        self.logger.logger.info(f"{role} used MedRAG-enhanced analysis")
+                        
+                except Exception as e:
+                    self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
+                    agent_analyses[role] = {
+                        "analysis": f"Error occurred: {str(e)}",
+                        "extract": {"error": str(e)},
+                        "used_vision": False
+                    }
+            
+            self.logger.logger.info(f"Round 1 completed: {len(agent_analyses)} analyses collected")
+            return agent_analyses
 
-
+    def _get_fresh_image(self):
+        """Get fresh image from task config to avoid corruption."""
+        if "image_data" in self.task_config:
+            return self.task_config["image_data"].get("image")
+        return None
 
     def _run_round2_collaborative_discussion(self, round1_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
         """
         ROUND 2: Agents discuss based on sanitized peer analyses (SEQUENTIAL).
-        
-        Args:
-            round1_analyses: Results from Round 1
-            
-        Returns:
-            Dictionary mapping agent roles to their discussion contributions
+        Supports both text-only and image-based tasks.
         """
         round2_discussions = {}
+        fresh_image = self._get_fresh_image()  # Get fresh image if available
         
         # Sequential execution to maintain discussion flow
         for role, agent in self.agents.items():
@@ -547,23 +557,23 @@ class AgentSystemSimulator:
                                                     for other_role, analysis in other_analyses.items()])
                     
                     discussion_prompt = f"""
-                    You have completed your initial analysis of the task. Now you can see the reasoning and analysis from your teammates (their final answers have been removed to avoid bias).
-                    
-                    Your initial analysis:
-                    {round1_analyses[role]['analysis']}
-                    
-                    Your teammates' reasoning:
-                    {other_analyses_text}
-                    
-                    Based on these different perspectives:
-                    1. Identify points where you agree or disagree with your teammates
-                    2. Question any reasoning that seems unclear or potentially flawed
-                    3. Share additional insights that might help the team
-                    4. Discuss any concerns or alternative approaches you see
-                    
-                    DO NOT provide a final answer in this round. Focus on discussion and analysis only.
-                    This is a collaborative discussion to better understand the problem before making your final decision.
-                    """
+    You have completed your initial analysis of the task. Now you can see the reasoning and analysis from your teammates (their final answers have been removed to avoid bias).
+
+    Your initial analysis:
+    {round1_analyses[role]['analysis']}
+
+    Your teammates' reasoning:
+    {other_analyses_text}
+
+    Based on these different perspectives:
+    1. Identify points where you agree or disagree with your teammates
+    2. Question any reasoning that seems unclear or potentially flawed
+    3. Share additional insights that might help the team
+    4. Discuss any concerns or alternative approaches you see
+
+    DO NOT provide a final answer in this round. Focus on discussion and analysis only.
+    This is a collaborative discussion to better understand the problem before making your final decision.
+    """
                     
                     # Apply teamwork components to the discussion
                     if self.use_mutual_monitoring and self.mutual_monitor:
@@ -581,15 +591,18 @@ class AgentSystemSimulator:
                                     monitoring_result, role
                                 )
                                 discussion_prompt += f"""
-                                
-                                Based on your monitoring of {other_role}'s analysis, you've identified these issues:
-                                {feedback}
-                                
-                                Consider these points in your discussion.
-                                """
+
+    Based on your monitoring of {other_role}'s analysis, you've identified these issues:
+    {feedback}
+
+    Consider these points in your discussion.
+    """
                     
-                    # Get discussion response
-                    discussion_response = agent.chat(discussion_prompt)
+                    # FIXED: Use fresh image if available, otherwise text-only
+                    if fresh_image is not None:
+                        discussion_response = agent.chat_with_image(discussion_prompt, fresh_image)
+                    else:
+                        discussion_response = agent.chat(discussion_prompt)
                     
                     # Log to main discussion channel
                     self.logger.log_main_discussion(
@@ -619,18 +632,13 @@ class AgentSystemSimulator:
         return round2_discussions
 
     def _run_round3_final_decisions(self, round1_analyses: Dict[str, Dict[str, Any]], 
-                                   round2_discussions: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
+                                round2_discussions: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
         """
         ROUND 3: Each agent makes final independent decision (SEQUENTIAL EXECUTION).
-        
-        Args:
-            round1_analyses: Results from Round 1
-            round2_discussions: Results from Round 2
-            
-        Returns:
-            Dictionary mapping agent roles to their final decisions
+        Supports both text-only and image-based tasks.
         """
         round3_decisions = {}
+        fresh_image = self._get_fresh_image()  # Get fresh image if available
         
         # Process agents sequentially
         for role, agent in self.agents.items():
@@ -648,49 +656,52 @@ class AgentSystemSimulator:
                     # Fallback final decision prompt
                     if task_type == "multi_choice_mcq":
                         final_prompt = f"""
-                        Based on your initial analysis and the team discussion, provide your final answer to this multi-choice question.
-                        
-                        Your initial analysis:
-                        {round1_analyses[role]['analysis']}
-                        
-                        Team discussion insights:
-                        {round2_discussions.get(role, "No discussion occurred.")}
-                        
-                        Now provide your final answer. Remember: This is a multi-choice question where multiple answers may be correct.
-                        Begin with "ANSWERS: X,Y,Z" (replace with ALL correct option letters).
-                        Then provide your final reasoning.
-                        """
+    Based on your initial analysis and the team discussion, provide your final answer to this multi-choice question.
+
+    Your initial analysis:
+    {round1_analyses[role]['analysis']}
+
+    Team discussion insights:
+    {round2_discussions.get(role, "No discussion occurred.")}
+
+    Now provide your final answer. Remember: This is a multi-choice question where multiple answers may be correct.
+    Begin with "ANSWERS: X,Y,Z" (replace with ALL correct option letters).
+    Then provide your final reasoning.
+    """
                     elif task_type == "yes_no_maybe":
                         final_prompt = f"""
-                        Based on your initial analysis and the team discussion, provide your final answer to this research question.
-                        
-                        Your initial analysis:
-                        {round1_analyses[role]['analysis']}
-                        
-                        Team discussion insights:
-                        {round2_discussions.get(role, "No discussion occurred.")}
-                        
-                        Now provide your final answer.
-                        Begin with "ANSWER: X" (replace X with yes, no, or maybe).
-                        Then provide your final scientific reasoning.
-                        """
+    Based on your initial analysis and the team discussion, provide your final answer to this research question.
+
+    Your initial analysis:
+    {round1_analyses[role]['analysis']}
+
+    Team discussion insights:
+    {round2_discussions.get(role, "No discussion occurred.")}
+
+    Now provide your final answer.
+    Begin with "ANSWER: X" (replace X with yes, no, or maybe).
+    Then provide your final scientific reasoning.
+    """
                     else:
                         final_prompt = f"""
-                        Based on your initial analysis and the team discussion, provide your final answer.
-                        
-                        Your initial analysis:
-                        {round1_analyses[role]['analysis']}
-                        
-                        Team discussion insights:
-                        {round2_discussions.get(role, "No discussion occurred.")}
-                        
-                        Now provide your final answer.
-                        Begin with "ANSWER: X" (replace X with your chosen option A, B, C, or D).
-                        Then provide your final reasoning.
-                        """
+    Based on your initial analysis and the team discussion, provide your final answer.
+
+    Your initial analysis:
+    {round1_analyses[role]['analysis']}
+
+    Team discussion insights:
+    {round2_discussions.get(role, "No discussion occurred.")}
+
+    Now provide your final answer.
+    Begin with "ANSWER: X" (replace X with your chosen option A, B, C, or D).
+    Then provide your final reasoning.
+    """
                 
-                # Get final decision
-                final_decision = agent.chat(final_prompt)
+                # FIXED: Use fresh image if available, otherwise text-only
+                if fresh_image is not None:
+                    final_decision = agent.chat_with_image(final_prompt, fresh_image)
+                else:
+                    final_decision = agent.chat(final_prompt)
                 
                 # Log to main discussion channel
                 self.logger.log_main_discussion(
@@ -735,7 +746,14 @@ class AgentSystemSimulator:
                                     for role, decision in round3_decisions.items() 
                                     if role != self.leader.role])
                 
-                leader_synthesis = self.leader.leadership_action_isolated("synthesize", context, self.task_config)
+                # FIXED: Leader synthesis also supports images
+                if fresh_image is not None:
+                    leader_synthesis = self.leader.chat_with_image(
+                        f"As team leader, synthesize the team's responses and provide final guidance:\n\n{context}", 
+                        fresh_image
+                    )
+                else:
+                    leader_synthesis = self.leader.leadership_action_isolated("synthesize", context, self.task_config)
                 
                 self.logger.log_leadership_action("synthesis", leader_synthesis)
                 self.logger.log_main_discussion("leadership_synthesis", self.leader.role, leader_synthesis)
@@ -760,6 +778,7 @@ class AgentSystemSimulator:
         
         self.logger.logger.info(f"Round 3 completed: {len(round3_decisions)} decisions collected")
         return round3_decisions
+
 
     def _run_leadership_definition(self) -> str:
         """Have the leader define the team's approach (between Round 1 and 2)."""
@@ -1094,7 +1113,7 @@ class AgentSystemSimulator:
         return metrics
     
     ##################### =================================================== Image Vision Enhancements =================================================== #####################
-    
+
     # UPDATE: Modify simulator.py _run_round1_independent_analysis method
     def _run_round1_independent_analysis_with_vision(self) -> Dict[str, Dict[str, Any]]:
         """
