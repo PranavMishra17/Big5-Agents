@@ -1501,7 +1501,6 @@ def extract_agent_responses_info(simulation_results):
     
     return agent_responses_info
 
-
 def process_single_question(question_index: int, 
                             question: Dict[str, Any],
                             dataset_type: str,
@@ -1511,137 +1510,268 @@ def process_single_question(question_index: int,
                             max_retries: int = 3,
                             use_medrag: bool = False) -> Dict[str, Any]:
     """
-    Process a single question with the given configuration and deployment.
-    FIXED VERSION with proper MedRAG integration.
+    Enhanced question processing with robust vision support and error recovery.
     """
     import gc
     import traceback
+    import time
 
-    # Create unique simulation ID for this question
+    # Create unique simulation ID
     sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_q{question_index}_{deployment_config['name']}"
     if use_medrag:
         sim_id += "_medrag"
     
-    # Format question based on dataset type
-    if dataset_type == "medqa":
-        agent_task, eval_data = format_medqa_for_task(question)
-    elif dataset_type == "medmcqa":
-        agent_task, eval_data = format_medmcqa_for_task(question)
-    elif dataset_type == "mmlupro-med":
-        agent_task, eval_data = format_mmlupro_med_for_task(question)
-    elif dataset_type == "pubmedqa":
-        agent_task, eval_data = format_pubmedqa_for_task(question)
-    elif dataset_type == "ddxplus":
-        agent_task, eval_data = format_ddxplus_for_task(question)
-    elif dataset_type == "medbullets":
-        agent_task, eval_data = format_medbullets_for_task(question)
-    elif dataset_type == "pmc_vqa":
-        agent_task, eval_data = format_pmc_vqa_for_task(question)  # Now vision-enabled
-    elif dataset_type == "path_vqa":
-        agent_task, eval_data = format_path_vqa_for_task(question)  # Now vision-enabled
-    else:
-        raise ValueError(f"Unknown dataset type: {dataset_type}")
+    # Format question based on dataset type with enhanced error handling
+    try:
+        if dataset_type == "medqa":
+            agent_task, eval_data = format_medqa_for_task(question)
+        elif dataset_type == "medmcqa":
+            agent_task, eval_data = format_medmcqa_for_task(question)
+        elif dataset_type == "mmlupro-med":
+            agent_task, eval_data = format_mmlupro_med_for_task(question)
+        elif dataset_type == "pubmedqa":
+            agent_task, eval_data = format_pubmedqa_for_task(question)
+        elif dataset_type == "ddxplus":
+            agent_task, eval_data = format_ddxplus_for_task(question)
+        elif dataset_type == "medbullets":
+            agent_task, eval_data = format_medbullets_for_task(question)
+        elif dataset_type == "pmc_vqa":
+            agent_task, eval_data = format_pmc_vqa_for_task(question)
+        elif dataset_type == "path_vqa":
+            agent_task, eval_data = format_path_vqa_for_task(question)
+        else:
+            raise ValueError(f"Unknown dataset type: {dataset_type}")
+    except Exception as e:
+        logging.error(f"Failed to format question {question_index}: {str(e)}")
+        return {
+            "question_index": question_index,
+            "deployment_used": deployment_config['name'],
+            "simulation_id": sim_id,
+            "error": f"Question formatting error: {str(e)}",
+            "format_error": True
+        }
 
     # Set thread-local data for this question
     thread_local.question_index = question_index
     thread_local.question_task = agent_task
     thread_local.question_eval = eval_data
 
+    # Initialize result structure with enhanced vision metadata
     question_result = {
         "question_index": question_index,
         "deployment_used": deployment_config['name'],
         "simulation_id": sim_id,
+        "dataset_type": dataset_type,
+        "has_image": agent_task.get("image_data", {}).get("image_available", False),
+        "image_type": agent_task.get("image_data", {}).get("image_type", "none"),
+        "requires_vision": agent_task.get("image_data", {}).get("requires_visual_analysis", False),
         "recruitment_info": {},
         "agent_responses": {},
         "disagreement_analysis": {},
         "disagreement_flag": False,
-        "medrag_info": {}  # FIXED: Initialize properly
+        "medrag_info": {},
+        "vision_performance": {}
     }
 
-    try:
-        for attempt in range(max_retries):
-            try:
-                # Create simulator with isolated task configuration
-                simulator = AgentSystemSimulator(
-                    simulation_id=sim_id,
-                    use_team_leadership=configuration.get("leadership", False),
-                    use_closed_loop_comm=configuration.get("closed_loop", False),
-                    use_mutual_monitoring=configuration.get("mutual_monitoring", False),
-                    use_shared_mental_model=configuration.get("shared_mental_model", False),
-                    use_team_orientation=configuration.get("team_orientation", False),
-                    use_mutual_trust=configuration.get("mutual_trust", False),
-                    use_recruitment=configuration.get("recruitment", False),
-                    recruitment_method=configuration.get("recruitment_method", "adaptive"),
-                    recruitment_pool=configuration.get("recruitment_pool", "general"),
-                    n_max=configuration.get("n_max", 5),
-                    deployment_config=deployment_config,
-                    question_specific_context=True,
-                    task_config=agent_task,  # Pass task directly to simulator
-                    eval_data=eval_data,     # Pass evaluation data directly
-                    use_medrag=use_medrag    # FIXED: Pass MedRAG parameter
-                )
+    # Enhanced retry logic with vision-specific error handling
+    for attempt in range(max_retries):
+        try:
+            # Log attempt with vision status
+            vision_status = "with vision" if question_result["has_image"] else "text-only"
+            medrag_status = "with MedRAG" if use_medrag else "without MedRAG"
+            logging.info(f"Processing Q{question_index} attempt {attempt+1}/{max_retries} "
+                        f"({vision_status}, {medrag_status}) on {deployment_config['name']}")
 
-                # Log that we're starting processing for this question
-                medrag_status = "with MedRAG" if use_medrag else "without MedRAG"
-                logging.info(f"Processing question {question_index} {medrag_status}, deployment {deployment_config['name']}, sim_id: {sim_id}")
+            # Create simulator with enhanced configuration
+            simulator = AgentSystemSimulator(
+                simulation_id=sim_id,
+                use_team_leadership=configuration.get("leadership", False),
+                use_closed_loop_comm=configuration.get("closed_loop", False),
+                use_mutual_monitoring=configuration.get("mutual_monitoring", False),
+                use_shared_mental_model=configuration.get("shared_mental_model", False),
+                use_team_orientation=configuration.get("team_orientation", False),
+                use_mutual_trust=configuration.get("mutual_trust", False),
+                use_recruitment=configuration.get("recruitment", False),
+                recruitment_method=configuration.get("recruitment_method", "adaptive"),
+                recruitment_pool=configuration.get("recruitment_pool", "general"),
+                n_max=configuration.get("n_max", 5),
+                deployment_config=deployment_config,
+                question_specific_context=True,
+                task_config=agent_task,
+                eval_data=eval_data,
+                use_medrag=use_medrag
+            )
 
-                simulation_results = simulator.run_simulation()
-                performance = simulator.evaluate_performance()
+            # Run simulation with enhanced error capture
+            simulation_results = simulator.run_simulation()
+            performance = simulator.evaluate_performance()
 
-                # FIXED: Extract MedRAG information properly
-                if use_medrag:
-                    # Extract from simulation metadata
-                    medrag_enhancement = simulation_results.get("simulation_metadata", {}).get("medrag_enhancement", {})
-                    if medrag_enhancement:
-                        question_result["medrag_info"] = medrag_enhancement
-                        logging.info(f"Question {question_index}: MedRAG success={medrag_enhancement.get('success', False)}, snippets={medrag_enhancement.get('snippets_retrieved', 0)}")
-                    else:
-                        question_result["medrag_info"] = {"enabled": True, "success": False, "error": "No enhancement data found"}
-                        logging.warning(f"Question {question_index}: MedRAG enabled but no enhancement data found")
+            # Extract comprehensive results
+            question_result.update({
+                "agent_responses": extract_agent_responses_info(simulation_results),
+                "disagreement_analysis": detect_agent_disagreement(simulation_results.get("agent_responses", {})),
+                "decisions": simulation_results.get("decision_results", {}),
+                "performance": performance.get("task_performance", {}),
+                "agent_conversations": simulation_results.get("exchanges", []),
+                "simulation_metadata": simulation_results.get("simulation_metadata", {})
+            })
+
+            # Extract MedRAG information
+            if use_medrag:
+                medrag_enhancement = simulation_results.get("simulation_metadata", {}).get("medrag_enhancement", {})
+                if medrag_enhancement:
+                    question_result["medrag_info"] = medrag_enhancement
+                    logging.info(f"Q{question_index}: MedRAG success={medrag_enhancement.get('success', False)}, "
+                               f"snippets={medrag_enhancement.get('snippets_retrieved', 0)}")
                 else:
-                    question_result["medrag_info"] = {"enabled": False}
+                    question_result["medrag_info"] = {"enabled": True, "success": False, "error": "No enhancement data"}
+            else:
+                question_result["medrag_info"] = {"enabled": False}
 
-                question_result.update({
-                    "agent_responses": extract_agent_responses_info(simulation_results),
-                    "disagreement_analysis": detect_agent_disagreement(simulation_results.get("agent_responses", {})),
-                    "decisions": simulation_results.get("decision_results", {}),
-                    "performance": performance.get("task_performance", {}),
-                    "agent_conversations": simulation_results.get("exchanges", [])
-                })
+            # Extract vision performance metrics
+            if question_result["has_image"]:
+                vision_stats = extract_vision_performance_metrics(simulation_results)
+                question_result["vision_performance"] = vision_stats
+                logging.info(f"Q{question_index}: Vision usage - {vision_stats}")
 
-                if question_result["disagreement_analysis"].get("has_disagreement", False):
-                    question_result["disagreement_flag"] = True
+            # Check for disagreements
+            if question_result["disagreement_analysis"].get("has_disagreement", False):
+                question_result["disagreement_flag"] = True
 
-                # Save individual question result to file
-                if run_output_dir:
-                    question_result_file = os.path.join(run_output_dir, f"question_{question_index}_result.json")
-                    with open(question_result_file, 'w') as f:
-                        json.dump(question_result, f, indent=2)
-                    logging.info(f"Saved question {question_index} result to {question_result_file}")
+            # Save individual result
+            if run_output_dir:
+                question_result_file = os.path.join(run_output_dir, f"question_{question_index}_result.json")
+                with open(question_result_file, 'w') as f:
+                    json.dump(question_result, f, indent=2, default=str)  # default=str for PIL images
+                logging.info(f"Saved Q{question_index} result to {question_result_file}")
 
-                break  # Success, break retry loop
+            # Success - break retry loop
+            break
 
-            except Exception as e:
-                logging.error(f"Question {question_index} attempt {attempt+1} failed: {str(e)}")
-                logging.error(traceback.format_exc())
-                time.sleep(min(2 ** attempt, 15))
-        
-    except Exception as e:
-        logging.error(f"Final error processing question {question_index}: {str(e)}")
-        question_result["error"] = f"Processing error: {str(e)}"
+        except Exception as e:
+            error_msg = str(e)
+            logging.error(f"Q{question_index} attempt {attempt+1} failed: {error_msg}")
+            
+            # Enhanced error categorization
+            if "invalid image" in error_msg.lower() or "base64" in error_msg.lower():
+                # Image-related error
+                logging.error(f"Q{question_index}: Image processing error - {error_msg}")
+                if question_result["has_image"]:
+                    question_result["vision_performance"]["image_error"] = error_msg
+                    # For final attempt, try without image
+                    if attempt == max_retries - 1:
+                        logging.warning(f"Q{question_index}: Final attempt - disabling image for fallback")
+                        agent_task["image_data"]["image"] = None
+                        agent_task["image_data"]["image_available"] = False
+                        question_result["has_image"] = False
+                        question_result["vision_fallback_used"] = True
+            
+            elif "medrag" in error_msg.lower():
+                # MedRAG-related error
+                logging.error(f"Q{question_index}: MedRAG error - {error_msg}")
+                question_result["medrag_info"] = {"enabled": use_medrag, "success": False, "error": error_msg}
+            
+            elif "timeout" in error_msg.lower():
+                # Timeout error
+                logging.error(f"Q{question_index}: Timeout error - {error_msg}")
+                question_result["timeout_error"] = error_msg
+            
+            # Exponential backoff for retries
+            if attempt < max_retries - 1:
+                wait_time = min(2 ** attempt * 2, 30)  # Cap at 30 seconds
+                logging.info(f"Q{question_index}: Waiting {wait_time}s before retry...")
+                time.sleep(wait_time)
+            else:
+                # Final failure
+                question_result["error"] = f"All attempts failed. Last error: {error_msg}"
+                question_result["final_error_type"] = categorize_error(error_msg)
+                logging.error(f"Q{question_index}: Final failure after {max_retries} attempts")
 
-    finally:
-        # Clean up thread-local data and force garbage collection
+    # Cleanup
+    try:
         if hasattr(thread_local, 'question_task'):
             delattr(thread_local, 'question_task')
         if hasattr(thread_local, 'question_eval'):
             delattr(thread_local, 'question_eval')
-        
         if 'simulator' in locals():
             del simulator
         gc.collect()
+    except Exception as cleanup_error:
+        logging.warning(f"Cleanup warning for Q{question_index}: {cleanup_error}")
 
     return question_result
+
+
+def extract_vision_performance_metrics(simulation_results: Dict[str, Any]) -> Dict[str, Any]:
+    """Fixed vision metrics extraction."""
+    vision_stats = {
+        "agents_used_vision_round1": 0,
+        "agents_used_vision_round3": 0,
+        "vision_errors": 0,
+        "vision_fallbacks": 0,
+        "total_agents": 0,
+        "vision_success_rate": 0.0
+    }
+    
+    try:
+        # Get agent responses for Round 3 (final decisions)
+        agent_responses = simulation_results.get("agent_responses", {})
+        
+        for agent_role, response_data in agent_responses.items():
+            vision_stats["total_agents"] += 1
+            
+            if isinstance(response_data, dict):
+                # Check Round 1 vision usage
+                if response_data.get("used_vision_round1", False):
+                    vision_stats["agents_used_vision_round1"] += 1
+                
+                # Check Round 3 vision usage  
+                if response_data.get("used_vision_round3", False):
+                    vision_stats["agents_used_vision_round3"] += 1
+                
+                # Check for vision errors
+                if "vision_error" in response_data or (
+                    "error" in response_data and 
+                    "image" in str(response_data.get("error", "")).lower()
+                ):
+                    vision_stats["vision_errors"] += 1
+                
+                # Check for fallback usage
+                if response_data.get("vision_fallback_used", False):
+                    vision_stats["vision_fallbacks"] += 1
+        
+        # Calculate success rate based on agents that successfully used vision
+        successful_vision = max(
+            vision_stats["agents_used_vision_round1"], 
+            vision_stats["agents_used_vision_round3"]
+        ) - vision_stats["vision_errors"]
+        
+        if vision_stats["total_agents"] > 0:
+            vision_stats["vision_success_rate"] = successful_vision / vision_stats["total_agents"]
+        
+    except Exception as e:
+        logging.warning(f"Error extracting vision metrics: {e}")
+        vision_stats["extraction_error"] = str(e)
+    
+    return vision_stats
+
+
+def categorize_error(error_msg: str) -> str:
+    """Categorize error for better debugging."""
+    error_lower = error_msg.lower()
+    
+    if "image" in error_lower or "base64" in error_lower or "vision" in error_lower:
+        return "vision_error"
+    elif "medrag" in error_lower:
+        return "medrag_error"
+    elif "timeout" in error_lower:
+        return "timeout_error"
+    elif "deployment" in error_lower or "api" in error_lower:
+        return "api_error"
+    elif "recruitment" in error_lower:
+        return "recruitment_error"
+    else:
+        return "unknown_error"
 
 
 def track_agent_mind_changes(agent_analyses, agent_decisions):
@@ -2122,15 +2252,177 @@ def perform_meta_analysis(all_results):
 
 
 # ==================== IMAGE DATASET  ====================
+# ==================== PATH-VQA DATASET ====================
+# ==================== PMC-VQA DATASET ====================
 
-# Replace the existing format functions with these:
+def validate_image_for_vision_api(image) -> bool:
+    """Validate image compatibility with vision API."""
+    if image is None:
+        return False
+    
+    try:
+        # Check if it's a valid PIL image
+        if not hasattr(image, 'size') or not hasattr(image, 'mode'):
+            return False
+        
+        # Check dimensions
+        width, height = image.size
+        if width < 10 or height < 10:
+            return False
+        
+        # Check if dimensions are reasonable (not too large)
+        if width > 4096 or height > 4096:
+            return False
+        
+        # Test conversion to RGB
+        if image.mode not in ('RGB', 'L', 'RGBA'):
+            try:
+                test_img = image.convert('RGB')
+            except:
+                return False
+        
+        return True
+    except Exception:
+        return False
+
+def load_pmc_vqa_dataset(num_questions: int = 50, random_seed: int = 42, 
+                        dataset_split: str = "test") -> List[Dict[str, Any]]:
+    """
+    Load PMC-VQA dataset with proper image validation.
+    """
+    logging.info(f"Loading PMC-VQA dataset with {num_questions} questions from {dataset_split} split")
+    
+    try:
+        from datasets import load_dataset
+        
+        # Use streaming to avoid memory issues
+        ds = load_dataset("hamzamooraj99/PMC-VQA-1", streaming=True)
+        
+        available_splits = list(ds.keys())
+        logging.info(f"PMC-VQA available splits: {available_splits}")
+        
+        if dataset_split not in available_splits:
+            dataset_split = available_splits[0] if available_splits else "train"
+            logging.warning(f"Requested split not found, using {dataset_split}")
+        
+        # Collect valid questions with images
+        questions = []
+        random.seed(random_seed)
+        
+        attempted = 0
+        max_attempts = num_questions * 10  # Try more samples to find valid ones
+        
+        for question in ds[dataset_split]:
+            attempted += 1
+            
+            try:
+                # Validate image first
+                img = question.get('image')
+                if not validate_image_for_vision_api(img):
+                    continue
+                
+                # Check required fields
+                question_text = question.get("Question", "").strip()
+                if not question_text:
+                    continue
+                
+                # Check if we have choices
+                has_choices = any(question.get(f"Choice {chr(65+i)}", "").strip() 
+                                for i in range(4))
+                if not has_choices:
+                    continue
+                
+                questions.append(question)
+                
+                if len(questions) >= num_questions:
+                    break
+                    
+            except Exception as e:
+                logging.debug(f"Skipped PMC-VQA question due to error: {e}")
+                continue
+            
+            if attempted >= max_attempts:
+                logging.warning(f"Reached max attempts ({max_attempts}), stopping with {len(questions)} questions")
+                break
+        
+        logging.info(f"Successfully loaded {len(questions)} PMC-VQA questions with valid images")
+        return questions[:num_questions]
+        
+    except Exception as e:
+        logging.error(f"Error loading PMC-VQA dataset: {str(e)}")
+        return []
+
+def load_path_vqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
+    """
+    Load Path-VQA dataset with proper image validation for yes/no questions.
+    """
+    logging.info(f"Loading Path-VQA dataset with {num_questions} yes/no questions")
+    
+    try:
+        from datasets import load_dataset
+        
+        # Use streaming
+        ds = load_dataset("flaviagiammarino/path-vqa", streaming=True)
+        split_name = list(ds.keys())[0]
+        
+        # Collect valid yes/no questions with images
+        questions = []
+        random.seed(random_seed)
+        
+        attempted = 0
+        max_attempts = num_questions * 20  # Path-VQA might have fewer yes/no questions
+        
+        for question in ds[split_name]:
+            attempted += 1
+            
+            try:
+                # Check answer is yes/no
+                answer = question.get('answer', '').lower().strip()
+                if answer not in ['yes', 'no']:
+                    continue
+                
+                # Validate image
+                img = question.get('image')
+                if not validate_image_for_vision_api(img):
+                    continue
+                
+                # Check question text
+                question_text = question.get('question', '').strip()
+                if not question_text:
+                    continue
+                
+                questions.append(question)
+                
+                if len(questions) >= num_questions:
+                    break
+                    
+            except Exception as e:
+                logging.debug(f"Skipped Path-VQA question due to error: {e}")
+                continue
+            
+            if attempted >= max_attempts:
+                logging.warning(f"Reached max attempts ({max_attempts}), stopping with {len(questions)} questions")
+                break
+        
+        logging.info(f"Successfully loaded {len(questions)} Path-VQA yes/no questions with valid images")
+        return questions[:num_questions]
+        
+    except Exception as e:
+        logging.error(f"Error loading Path-VQA dataset: {str(e)}")
+        return []
 
 def format_pmc_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Format PMC-VQA with image data."""
+    """Format PMC-VQA with enhanced image data validation."""
     question_text = question_data.get("Question", "")
     answer = question_data.get("Answer", "")
     answer_label = question_data.get("Answer_label", "")
     image = question_data.get("image")
+    
+    # Validate image one more time
+    image_valid = validate_image_for_vision_api(image)
+    if not image_valid:
+        logging.warning("PMC-VQA question has invalid image, setting image to None")
+        image = None
     
     # Extract choices
     choices = []
@@ -2142,409 +2434,102 @@ def format_pmc_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
     # Determine correct letter
     correct_letter = answer_label.upper() if answer_label and answer_label.upper() in "ABCD" else "A"
     
+    # Create enhanced medical context for the question
+    enhanced_description = f"""MEDICAL IMAGE ANALYSIS QUESTION
+
+Question: {question_text}
+
+Instructions: Carefully examine the provided medical image and use your visual analysis to answer this question. Consider:
+- Anatomical structures visible in the image
+- Any pathological changes or abnormalities
+- Relevant clinical features
+- Integration of visual findings with medical knowledge
+
+Provide your analysis and select the most appropriate answer."""
+    
     agent_task = {
         "name": "PMC-VQA Medical Image Question",
-        "description": f"MEDICAL IMAGE QUESTION: {question_text}\n\nAnalyze the provided medical image to answer this question.",
+        "description": enhanced_description,
         "type": "mcq",
         "options": choices,
-        "expected_output_format": f"Single letter (A-{chr(64+len(choices))}) with image analysis",
+        "expected_output_format": f"Single letter (A-{chr(64+len(choices))}) with detailed image analysis and medical reasoning",
         "image_data": {
             "image": image,
             "image_available": image is not None,
-            "requires_visual_analysis": True
+            "requires_visual_analysis": True,
+            "image_type": "medical_image"
         }
     }
     
     eval_data = {
         "ground_truth": correct_letter,
         "rationale": {correct_letter: answer},
-        "metadata": {"dataset": "pmc_vqa", "has_image": image is not None}
+        "metadata": {
+            "dataset": "pmc_vqa", 
+            "has_image": image is not None,
+            "original_answer": answer,
+            "image_validated": image_valid
+        }
     }
     
     return agent_task, eval_data
 
 def format_path_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Format Path-VQA as binary MCQ with image data."""
+    """Format Path-VQA as binary MCQ with enhanced pathology context."""
     question_text = question_data.get("question", "")
     answer = question_data.get("answer", "").lower().strip()
     image = question_data.get("image")
     
+    # Validate image
+    image_valid = validate_image_for_vision_api(image)
+    if not image_valid:
+        logging.warning("Path-VQA question has invalid image, setting image to None")
+        image = None
+    
     choices = ["A. Yes", "B. No"]
     correct_letter = "A" if answer == "yes" else "B"
     
+    # Create enhanced pathology context
+    enhanced_description = f"""PATHOLOGY IMAGE ANALYSIS QUESTION
+
+Question: {question_text}
+
+Instructions: Examine the provided pathology/histology image carefully. This is a microscopic image that requires detailed visual analysis. Consider:
+- Cellular morphology and architecture
+- Tissue patterns and organization
+- Pathological changes or features
+- Staining patterns and characteristics
+- Integration with pathological knowledge
+
+Based on your visual examination, answer: You must respond with option A or B, not yes/no."""
+    
     agent_task = {
         "name": "Path-VQA Pathology Question",
-        "description": f"PATHOLOGY IMAGE QUESTION: {question_text}\n\nExamine the pathology image to determine: Yes or No?",
+        "description": enhanced_description,
         "type": "mcq",
         "options": choices,
-        "expected_output_format": "A for Yes, B for No with pathological analysis",
+        "expected_output_format": "A for Yes, B for No with detailed pathological analysis and reasoning",
         "image_data": {
             "image": image,
             "image_available": image is not None,
             "is_pathology_image": True,
-            "requires_visual_analysis": True
+            "requires_visual_analysis": True,
+            "image_type": "pathology_slide"
         }
     }
     
     eval_data = {
         "ground_truth": correct_letter,
         "rationale": {correct_letter: f"Pathology analysis: {answer.title()}"},
-        "metadata": {"dataset": "path_vqa", "original_answer": answer, "has_image": image is not None}
+        "metadata": {
+            "dataset": "path_vqa", 
+            "original_answer": answer, 
+            "has_image": image is not None,
+            "image_validated": image_valid
+        }
     }
     
-    return agent_task, eval_data
-
-# ==================== PMC-VQA DATASET ====================
-
-def load_pmc_vqa_dataset(num_questions: int = 50, random_seed: int = 42, 
-                        dataset_split: str = "test") -> List[Dict[str, Any]]:
-    """
-    Load PMC-VQA dataset using streaming to avoid large downloads.
-    """
-    logging.info(f"Loading PMC-VQA-1 dataset with {num_questions} questions from {dataset_split} split (streaming)")
-    
-    try:
-        from datasets import load_dataset
-        
-        # Use streaming to avoid downloading entire dataset
-        ds = load_dataset("hamzamooraj99/PMC-VQA-1", streaming=True)
-        
-        available_splits = list(ds.keys())
-        logging.info(f"PMC-VQA-1 available splits: {available_splits}")
-        
-        if dataset_split not in available_splits:
-            dataset_split = available_splits[0] if available_splits else "train"
-            
-        # Stream and collect only needed questions
-        questions = []
-        random.seed(random_seed)
-        
-        # Use reservoir sampling to get random sample from stream
-        for i, question in enumerate(ds[dataset_split]):
-            if len(questions) < num_questions:
-                questions.append(question)
-            else:
-                # Reservoir sampling: replace random element
-                j = random.randint(0, i)
-                if j < num_questions:
-                    questions[j] = question
-            
-            # Stop after reasonable number of samples
-            if i > num_questions * 20:  # Sample from 20x more questions
-                break
-        
-        # Validate images
-        valid_questions = []
-        for q in questions:
-            try:
-                img = q.get('image')
-                if img and hasattr(img, 'size'):
-                    valid_questions.append(q)
-                if len(valid_questions) >= num_questions:
-                    break
-            except:
-                continue
-        
-        logging.info(f"Successfully loaded {len(valid_questions)} PMC-VQA questions (streaming)")
-
-        # Validate images before returning
-        valid_questions = []
-        for q in questions:
-            img = q.get('image')
-            if validate_image_for_openai(img):
-                valid_questions.append(q)
-            else:
-                logging.warning(f"Skipping question with invalid image")
-            
-            if len(valid_questions) >= num_questions:
-                break
-        
-        return valid_questions[:num_questions]
-        
-    except Exception as e:
-        logging.error(f"Error loading PMC-VQA dataset: {str(e)}")
-        return []
-
-
-def _create_pmc_vqa_image_analysis(image, figure_path: str, question_text: str) -> Dict[str, Any]:
-    """Create comprehensive image analysis context for PMC-VQA questions."""
-    
-    # Basic image information
-    has_valid_image = image is not None
-    dimensions = "Unknown"
-    format_info = "Unknown"
-    mode = "Unknown"
-    
-    if has_valid_image:
-        try:
-            dimensions = f"{image.size[0]}x{image.size[1]}" if hasattr(image, 'size') else "Unknown"
-            format_info = getattr(image, 'format', 'Unknown')
-            mode = getattr(image, 'mode', 'Unknown')
-        except:
-            pass
-    
-    # Analyze question for medical context
-    question_lower = question_text.lower()
-    
-    # Determine medical domain
-    medical_domains = {
-        'radiology': ['x-ray', 'ct', 'mri', 'scan', 'imaging', 'radiograph'],
-        'pathology': ['tissue', 'cell', 'specimen', 'biopsy', 'histology', 'microscopy'],
-        'dermatology': ['skin', 'rash', 'lesion', 'dermatitis', 'mole'],
-        'ophthalmology': ['eye', 'retina', 'optic', 'vision', 'fundus'],
-        'cardiology': ['heart', 'cardiac', 'ecg', 'ekg', 'coronary'],
-        'general_medicine': []  # default
-    }
-    
-    detected_domain = 'general_medicine'
-    for domain, keywords in medical_domains.items():
-        if any(keyword in question_lower for keyword in keywords):
-            detected_domain = domain
-            break
-    
-    # Determine question type
-    if any(word in question_lower for word in ['what', 'which', 'identify']):
-        question_type = 'identification'
-    elif any(word in question_lower for word in ['diagnose', 'diagnosis', 'condition']):
-        question_type = 'diagnosis'
-    elif any(word in question_lower for word in ['count', 'how many', 'number']):
-        question_type = 'quantitative'
-    elif any(word in question_lower for word in ['location', 'where', 'anatomical']):
-        question_type = 'anatomical_localization'
-    else:
-        question_type = 'general_medical'
-    
-    # Determine complexity
-    word_count = len(question_text.split())
-    if word_count < 10:
-        complexity_level = 'basic'
-    elif word_count < 20:
-        complexity_level = 'intermediate'  
-    else:
-        complexity_level = 'advanced'
-    
-    # Specialties needed
-    specialties_needed = [detected_domain]
-    if detected_domain != 'general_medicine':
-        specialties_needed.append('general_medicine')
-    
-    # Focus areas for visual analysis
-    focus_areas_list = []
-    if 'abnormal' in question_lower or 'lesion' in question_lower:
-        focus_areas_list.append('abnormality_detection')
-    if 'anatomy' in question_lower or 'structure' in question_lower:
-        focus_areas_list.append('anatomical_identification')
-    if 'size' in question_lower or 'measurement' in question_lower:
-        focus_areas_list.append('measurement_analysis')
-    if not focus_areas_list:
-        focus_areas_list.append('general_visual_analysis')
-    
-    return {
-        'has_valid_image': has_valid_image,
-        'dimensions': dimensions,
-        'format': format_info,
-        'mode': mode,
-        'medical_domain': detected_domain,
-        'question_type': question_type,
-        'complexity_level': complexity_level,
-        'specialties_needed': specialties_needed,
-        'focus_areas_list': focus_areas_list,
-        'reasoning_type': f"{question_type}_with_visual_analysis",
-        'medical_context': f"Medical domain: {detected_domain}\nQuestion type: {question_type}\nComplexity: {complexity_level}",
-        'reasoning_requirements': f"Visual analysis required for {question_type} in {detected_domain}",
-        'focus_areas': f"Key areas: {', '.join(focus_areas_list)}",
-        'diagnostic_considerations': f"Image-based {question_type} requiring {detected_domain} expertise",
-        'description': f"Medical image ({dimensions}) for {question_type} analysis in {detected_domain}"
-    }
-
-
-# ==================== PATH-VQA DATASET ====================
-
-
-def load_path_vqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
-    """
-    Load Path-VQA dataset using streaming for yes/no questions only.
-    """
-    logging.info(f"Loading Path-VQA dataset with {num_questions} yes/no questions (streaming)")
-    
-    try:
-        from datasets import load_dataset
-        
-        # Use streaming
-        ds = load_dataset("flaviagiammarino/path-vqa", streaming=True)
-        split_name = list(ds.keys())[0]
-        
-        # Collect yes/no questions only
-        questions = []
-        random.seed(random_seed)
-        
-        for i, question in enumerate(ds[split_name]):
-            answer = question.get('answer', '').lower().strip()
-            if answer in ['yes', 'no']:
-                if len(questions) < num_questions:
-                    questions.append(question)
-                else:
-                    # Reservoir sampling
-                    j = random.randint(0, i)
-                    if j < num_questions:
-                        questions[j] = question
-            
-            # Stop after sampling enough
-            if len([q for q in questions if q.get('answer', '').lower() in ['yes', 'no']]) >= num_questions:
-                break
-            if i > num_questions * 50:  # Safety limit
-                break
-        
-        # Validate images and filter yes/no
-        valid_questions = []
-        for q in questions:
-            try:
-                img = q.get('image')
-                answer = q.get('answer', '').lower().strip()
-                if img and hasattr(img, 'size') and answer in ['yes', 'no']:
-                    valid_questions.append(q)
-            except:
-                continue
-        
-        logging.info(f"Successfully loaded {len(valid_questions)} Path-VQA yes/no questions")
-        return valid_questions[:num_questions]
-        
-    except Exception as e:
-        logging.error(f"Error loading Path-VQA dataset: {str(e)}")
-        return []
-    
-
-def _create_path_vqa_image_analysis(image, question_text: str) -> Dict[str, Any]:
-    """Create comprehensive pathology image analysis context for Path-VQA questions."""
-    
-    # Basic image information
-    has_valid_image = image is not None
-    dimensions = "Unknown"
-    format_info = "Unknown"
-    mode = "Unknown"
-    
-    if has_valid_image:
-        try:
-            dimensions = f"{image.size[0]}x{image.size[1]}" if hasattr(image, 'size') else "Unknown"
-            format_info = getattr(image, 'format', 'Unknown')
-            mode = getattr(image, 'mode', 'Unknown')
-        except:
-            pass
-    
-    # Analyze question for pathology context
-    question_lower = question_text.lower()
-    
-    # Determine pathology domain
-    pathology_domains = {
-        'cellular_pathology': ['cell', 'cellular', 'cytoplasm', 'nucleus', 'mitosis'],
-        'tissue_pathology': ['tissue', 'epithelial', 'connective', 'muscle', 'nerve'],
-        'organ_pathology': ['liver', 'lung', 'heart', 'kidney', 'brain', 'organ'],
-        'cancer_pathology': ['cancer', 'tumor', 'malignant', 'metastasis', 'carcinoma'],
-        'inflammatory_pathology': ['inflammation', 'inflammatory', 'immune', 'infection'],
-        'general_pathology': []  # default
-    }
-    
-    detected_domain = 'general_pathology'
-    for domain, keywords in pathology_domains.items():
-        if any(keyword in question_lower for keyword in keywords):
-            detected_domain = domain
-            break
-    
-    # Determine analysis type
-    if any(word in question_lower for word in ['present', 'visible', 'shown', 'seen']):
-        analysis_type = 'presence_detection'
-    elif any(word in question_lower for word in ['normal', 'abnormal', 'pathological']):
-        analysis_type = 'normality_assessment'
-    elif any(word in question_lower for word in ['type', 'kind', 'classification']):
-        analysis_type = 'classification'
-    elif any(word in question_lower for word in ['feature', 'characteristic', 'pattern']):
-        analysis_type = 'feature_identification'
-    else:
-        analysis_type = 'general_assessment'
-    
-    # Determine if microscopic
-    is_microscopic = any(word in question_lower for word in ['microscopic', 'histology', 'cells', 'tissue'])
-    
-    # Determine complexity
-    word_count = len(question_text.split())
-    if word_count < 8:
-        complexity_level = 'basic'
-    elif word_count < 15:
-        complexity_level = 'intermediate'
-    else:
-        complexity_level = 'advanced'
-    
-    # Specialties needed
-    specialties_needed = ['pathology', detected_domain.replace('_pathology', '')]
-    if 'cancer' in detected_domain:
-        specialties_needed.append('oncology')
-    
-    # Microscopic focus areas
-    microscopic_focus_list = []
-    if 'cell' in question_lower:
-        microscopic_focus_list.append('cellular_morphology')
-    if 'tissue' in question_lower:
-        microscopic_focus_list.append('tissue_architecture')
-    if 'structure' in question_lower:
-        microscopic_focus_list.append('structural_analysis')
-    if not microscopic_focus_list:
-        microscopic_focus_list.append('general_microscopic_analysis')
-    
-    # Pathology patterns
-    pathology_patterns = []
-    if 'abnormal' in question_lower:
-        pathology_patterns.append('abnormality_detection')
-    if 'inflammation' in question_lower:
-        pathology_patterns.append('inflammatory_patterns')
-    if 'tumor' in question_lower or 'cancer' in question_lower:
-        pathology_patterns.append('neoplastic_patterns')
-    if not pathology_patterns:
-        pathology_patterns.append('general_pathology_patterns')
-    
-    return {
-        'has_valid_image': has_valid_image,
-        'dimensions': dimensions,
-        'format': format_info,
-        'mode': mode,
-        'is_microscopic': is_microscopic,
-        'pathology_domain': detected_domain,
-        'analysis_type': analysis_type,
-        'complexity_level': complexity_level,
-        'specialties_needed': specialties_needed,
-        'microscopic_focus_list': microscopic_focus_list,
-        'pathology_patterns': pathology_patterns,
-        'pathology_context': f"Pathology domain: {detected_domain}\nAnalysis type: {analysis_type}\nComplexity: {complexity_level}",
-        'reasoning_requirements': f"Pathological image analysis for {analysis_type} in {detected_domain}",
-        'microscopic_focus': f"Focus areas: {', '.join(microscopic_focus_list)}",
-        'differential_considerations': f"Binary assessment requiring {detected_domain} expertise",
-        'diagnostic_approach': f"Yes/No determination through {analysis_type}",
-        'description': f"Pathology image ({dimensions}) for {analysis_type} in {detected_domain}"
-    }
-
-
-
-def validate_image_for_openai(image):
-    """Validate image can be processed for OpenAI."""
-    if image is None:
-        return False
-    
-    try:
-        # Check if it's a valid PIL image
-        if not hasattr(image, 'size') or not hasattr(image, 'mode'):
-            return False
-        
-        # Check reasonable size
-        width, height = image.size
-        if width < 10 or height < 10 or width > 4096 or height > 4096:
-            return False
-        
-        # Test conversion to RGB (what we'll need for JPEG)
-        if image.mode not in ('RGB', 'L'):
-            test_img = image.convert('RGB')
-        
-        return True
-    except:
-        return False
+    return agent_task, eval_data 
 
 ######################### ===================================== MAIN RUNNER FUNCTION ===================================== #########################
 def run_dataset(

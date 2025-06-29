@@ -461,84 +461,159 @@ class AgentSystemSimulator:
         
         return "\n".join(context_parts)
 
-
     def _run_round1_independent_analysis(self) -> Dict[str, Dict[str, Any]]:
-            """
-            ROUND 1: Each agent analyzes the task independently with optional image support.
+        """
+        ROUND 1: Each agent analyzes the task independently with enhanced image support.
+        """
+        agent_analyses = {}
+        
+        # Extract image from task config if available
+        task_image = None
+        image_type = "text_only"
+        
+        if "image_data" in self.task_config:
+            image_data = self.task_config["image_data"]
+            task_image = image_data.get("image")
             
-            Returns:
-                Dictionary mapping agent roles to their independent analyses
-            """
-            agent_analyses = {}
-            
-            # Extract image from task config if available
-            task_image = None
-            if "image_data" in self.task_config:
-                task_image = self.task_config["image_data"].get("image")
-            
-            # Process agents sequentially
-            for role, agent in self.agents.items():
-                try:
-                    self.logger.logger.info(f"Round 1: Getting analysis from {role}")
-                    
-                    # Check if this is a vision-capable task
-                    if task_image is not None:
-                        # Use vision-capable analysis
-                        analysis = agent.analyze_task_with_image(self.task_config, task_image)
+            # Determine image type for specialized handling
+            if image_data.get("is_pathology_image", False):
+                image_type = "pathology"
+            elif image_data.get("image_type") == "pathology_slide":
+                image_type = "pathology"
+            elif image_data.get("image_type") == "medical_image":
+                image_type = "medical"
+            else:
+                image_type = "medical"  # Default for any medical image
+        
+        # Log image analysis mode
+        if task_image is not None:
+            self.logger.logger.info(f"Round 1: Vision-enabled analysis mode - {image_type} image detected")
+        else:
+            self.logger.logger.info("Round 1: Text-only analysis mode")
+        
+        # Process agents sequentially with enhanced error handling
+        for role, agent in self.agents.items():
+            try:
+                self.logger.logger.info(f"Round 1: Getting analysis from {role}")
+                
+                # Enhanced image analysis with agent type matching
+                if task_image is not None:
+                    # Check if we have specialized vision agents
+                    if isinstance(agent, PathologySpecialist) and image_type == "pathology":
+                        self.logger.logger.info(f"{role}: Using specialized pathology analysis")
+                        analysis = agent.analyze_pathology_slide(
+                            self.task_config["description"], 
+                            task_image, 
+                            self.task_config
+                        )
+                    elif isinstance(agent, MedicalImageAnalyst):
+                        self.logger.logger.info(f"{role}: Using specialized medical imaging analysis")
+                        analysis = agent.analyze_medical_image(
+                            self.task_config["description"], 
+                            task_image, 
+                            self.task_config
+                        )
                     else:
-                        # Use standard text-only analysis
-                        analysis = agent.analyze_task_isolated(self.task_config)
-
-                    # Extract response using isolated task config
-                    extract = agent.extract_response_isolated(analysis, self.task_config)
+                        # General agent with image
+                        self.logger.logger.info(f"{role}: Using general vision analysis")
+                        analysis = agent.analyze_task_with_image(self.task_config, task_image)
+                else:
+                    # Text-only analysis
+                    analysis = agent.analyze_task_isolated(self.task_config)
+                
+                # Extract response using isolated task config
+                extract = agent.extract_response_isolated(analysis, self.task_config)
+                
+                # Log to main discussion channel
+                self.logger.log_main_discussion(
+                    "round1_independent_analysis",
+                    role,
+                    analysis
+                )
+                
+                # Store analysis with metadata
+                agent_analyses[role] = {
+                    "analysis": analysis,
+                    "extract": extract,
+                    "used_vision": task_image is not None,
+                    "image_type": image_type,
+                    "agent_type": type(agent).__name__
+                }
+                
+                # Update shared mental model if enabled
+                if self.use_shared_mental_model and self.mental_model:
+                    understanding = self.mental_model.extract_understanding_from_message(analysis)
+                    self.mental_model.update_shared_understanding(role, understanding)
+                
+                # Log MedRAG and vision usage
+                medrag_used = agent.get_from_knowledge_base("has_medrag_enhancement")
+                if medrag_used and task_image is not None:
+                    self.logger.logger.info(f"{role}: Used both MedRAG enhancement and vision analysis")
+                elif medrag_used:
+                    self.logger.logger.info(f"{role}: Used MedRAG enhancement")
+                elif task_image is not None:
+                    self.logger.logger.info(f"{role}: Used vision analysis")
                     
-                    # Log to main discussion channel
-                    self.logger.log_main_discussion(
-                        "round1_independent_analysis",
-                        role,
-                        analysis
-                    )
-                    
-                    # Store analysis
-                    agent_analyses[role] = {
-                        "analysis": analysis,
-                        "extract": extract,
-                        "used_vision": task_image is not None
-                    }
-                    
-                    # Update shared mental model if enabled
-                    if self.use_shared_mental_model and self.mental_model:
-                        understanding = self.mental_model.extract_understanding_from_message(analysis)
-                        self.mental_model.update_shared_understanding(role, understanding)
+            except Exception as e:
+                self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
+                
+                # Enhanced error logging for vision issues
+                if task_image is not None and "image" in str(e).lower():
+                    self.logger.logger.error(f"Vision-related error for {role}, falling back to text-only")
+                    try:
+                        # Fallback to text-only analysis
+                        fallback_analysis = agent.analyze_task_isolated(self.task_config)
+                        fallback_extract = agent.extract_response_isolated(fallback_analysis, self.task_config)
                         
-                    # Log MedRAG usage for this agent
-                    if agent.get_from_knowledge_base("has_medrag_enhancement"):
-                        self.logger.logger.info(f"{role} used MedRAG-enhanced analysis")
-                        
-                except Exception as e:
-                    self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
+                        agent_analyses[role] = {
+                            "analysis": f"[Vision analysis failed, using text-only] {fallback_analysis}",
+                            "extract": fallback_extract,
+                            "used_vision": False,
+                            "vision_error": str(e),
+                            "fallback_used": True
+                        }
+                    except Exception as fallback_e:
+                        self.logger.logger.error(f"Fallback also failed for {role}: {str(fallback_e)}")
+                        agent_analyses[role] = {
+                            "analysis": f"Error occurred: {str(e)}",
+                            "extract": {"error": str(e)},
+                            "used_vision": False,
+                            "vision_error": str(e)
+                        }
+                else:
                     agent_analyses[role] = {
                         "analysis": f"Error occurred: {str(e)}",
                         "extract": {"error": str(e)},
                         "used_vision": False
                     }
-            
-            self.logger.logger.info(f"Round 1 completed: {len(agent_analyses)} analyses collected")
-            return agent_analyses
-
-    def _get_fresh_image(self):
-        """Get fresh image from task config to avoid corruption."""
-        if "image_data" in self.task_config:
-            return self.task_config["image_data"].get("image")
-        return None
+        
+        # Log round completion with vision statistics
+        vision_count = sum(1 for a in agent_analyses.values() if a.get("used_vision", False))
+        error_count = sum(1 for a in agent_analyses.values() if "error" in a.get("extract", {}))
+        
+        self.logger.logger.info(
+            f"Round 1 completed: {len(agent_analyses)} analyses collected, "
+            f"{vision_count} used vision, {error_count} errors"
+        )
+        
+        return agent_analyses
 
     def _run_round2_collaborative_discussion(self, round1_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
         """
-        ROUND 2: Agents discuss based on sanitized peer analyses (SEQUENTIAL).
-        Supports both text-only and image-based tasks.
+        ROUND 2: Enhanced collaborative discussion with vision-aware prompting.
         """
         round2_discussions = {}
-        fresh_image = self._get_fresh_image()  # Get fresh image if available
+        
+        # Check if this is a vision task
+        has_vision_task = any(analysis.get("used_vision", False) for analysis in round1_analyses.values())
+        
+        if has_vision_task:
+            self.logger.logger.info("Round 2: Vision-enabled collaborative discussion")
+            # Get fresh image for discussion
+            task_image = self._get_fresh_image()
+        else:
+            self.logger.logger.info("Round 2: Text-only collaborative discussion")
+            task_image = None
         
         # Sequential execution to maintain discussion flow
         for role, agent in self.agents.items():
@@ -547,37 +622,61 @@ class AgentSystemSimulator:
                 
                 # Collect sanitized analyses from other agents
                 other_analyses = {}
+                vision_insights = []
+                
                 for other_role, analysis_data in round1_analyses.items():
                     if other_role != role:
-                        other_analyses[other_role] = analysis_data["analysis"]
+                        # Include analysis but remove final answers
+                        analysis_text = analysis_data["analysis"]
+                        
+                        # Extract vision insights if available
+                        if analysis_data.get("used_vision", False):
+                            vision_insights.append(f"{other_role} (with image analysis): {analysis_text}")
+                        else:
+                            other_analyses[other_role] = analysis_text
                 
-                if len(other_analyses) > 0:
-                    # Create discussion prompt with peer analyses
-                    other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
-                                                    for other_role, analysis in other_analyses.items()])
-                    
-                    discussion_prompt = f"""
-    You have completed your initial analysis of the task. Now you can see the reasoning and analysis from your teammates (their final answers have been removed to avoid bias).
+                if len(other_analyses) > 0 or len(vision_insights) > 0:
+                    # Create enhanced discussion prompt
+                    discussion_parts = [
+                        f"""You have completed your initial analysis. Now review your teammates' reasoning to enhance your understanding.
 
     Your initial analysis:
-    {round1_analyses[role]['analysis']}
-
-    Your teammates' reasoning:
-    {other_analyses_text}
-
-    Based on these different perspectives:
-    1. Identify points where you agree or disagree with your teammates
-    2. Question any reasoning that seems unclear or potentially flawed
-    3. Share additional insights that might help the team
-    4. Discuss any concerns or alternative approaches you see
-
-    DO NOT provide a final answer in this round. Focus on discussion and analysis only.
-    This is a collaborative discussion to better understand the problem before making your final decision.
-    """
+    {round1_analyses[role]['analysis']}"""
+                    ]
                     
-                    # Apply teamwork components to the discussion
+                    # Add text-only teammate analyses
+                    if other_analyses:
+                        other_analyses_text = "\n\n".join([f"{other_role}:\n{analysis}" 
+                                                        for other_role, analysis in other_analyses.items()])
+                        discussion_parts.append(f"Teammates' reasoning:\n{other_analyses_text}")
+                    
+                    # Add vision-enhanced insights
+                    if vision_insights:
+                        vision_text = "\n\n".join(vision_insights)
+                        discussion_parts.append(f"Vision-based insights from teammates:\n{vision_text}")
+                    
+                    # Add discussion instructions
+                    discussion_parts.append("""
+    Based on these different perspectives:
+    1. Identify where you agree or disagree with your teammates
+    2. Question any reasoning that seems unclear or potentially flawed
+    3. Share additional insights that might help the team""")
+                    
+                    # Add vision-specific instructions if applicable
+                    if has_vision_task:
+                        discussion_parts.append("""
+    4. If you can see the image, compare your visual observations with teammates' findings
+    5. Discuss any visual details that might have been missed or interpreted differently
+    6. Consider how image findings support or contradict different reasoning approaches""")
+                    
+                    discussion_parts.append("""
+    DO NOT provide a final answer in this round. Focus on collaborative analysis and discussion.
+    This is about improving understanding before making your final decision.""")
+                    
+                    discussion_prompt = "\n\n".join(discussion_parts)
+                    
+                    # Apply teamwork components
                     if self.use_mutual_monitoring and self.mutual_monitor:
-                        # Monitor peer analyses for issues
                         for other_role, analysis in other_analyses.items():
                             other_agent = self.agents[other_role]
                             extract = other_agent.extract_response_isolated(analysis, self.task_config)
@@ -592,16 +691,17 @@ class AgentSystemSimulator:
                                 )
                                 discussion_prompt += f"""
 
-    Based on your monitoring of {other_role}'s analysis, you've identified these issues:
+    Based on monitoring {other_role}'s analysis, you've identified:
     {feedback}
 
-    Consider these points in your discussion.
-    """
+    Consider these points in your discussion."""
                     
-                    # FIXED: Use fresh image if available, otherwise text-only
-                    if fresh_image is not None:
-                        discussion_response = agent.chat_with_image(discussion_prompt, fresh_image)
+                    # Execute discussion with or without image
+                    if task_image is not None and round1_analyses[role].get("used_vision", False):
+                        # Agent used vision in Round 1, so include image in discussion
+                        discussion_response = agent.chat_with_image(discussion_prompt, task_image)
                     else:
+                        # Text-only discussion
                         discussion_response = agent.chat(discussion_prompt)
                     
                     # Log to main discussion channel
@@ -616,11 +716,12 @@ class AgentSystemSimulator:
                         "type": "round2_collaborative_discussion",
                         "communication": "standard",
                         "sender": role,
-                        "message": discussion_response
+                        "message": discussion_response,
+                        "used_vision": task_image is not None and round1_analyses[role].get("used_vision", False)
                     })
                     
                     round2_discussions[role] = discussion_response
-                        
+                    
                 else:
                     # Single agent case
                     round2_discussions[role] = "No teammates to discuss with."
@@ -634,17 +735,26 @@ class AgentSystemSimulator:
     def _run_round3_final_decisions(self, round1_analyses: Dict[str, Dict[str, Any]], 
                                 round2_discussions: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
         """
-        ROUND 3: Each agent makes final independent decision (SEQUENTIAL EXECUTION).
-        Supports both text-only and image-based tasks.
+        ROUND 3: Enhanced final decisions with vision support and error recovery.
         """
         round3_decisions = {}
-        fresh_image = self._get_fresh_image()  # Get fresh image if available
+        
+        # Check if this is a vision task
+        has_vision_task = any(analysis.get("used_vision", False) for analysis in round1_analyses.values())
+        
+        if has_vision_task:
+            self.logger.logger.info("Round 3: Vision-enabled final decisions")
+            task_image = self._get_fresh_image()
+        else:
+            self.logger.logger.info("Round 3: Text-only final decisions")
+            task_image = None
         
         # Process agents sequentially
         for role, agent in self.agents.items():
             try:
                 task_type = self.task_config.get("type", "mcq")
                 
+                # Create enhanced final decision prompt
                 try:
                     final_prompt = get_adaptive_prompt(
                         "final_decision",
@@ -653,38 +763,33 @@ class AgentSystemSimulator:
                         discussion_summary=round2_discussions.get(role, "No discussion occurred.")
                     )
                 except Exception as e:
-                    # Fallback final decision prompt
-                    if task_type == "multi_choice_mcq":
-                        final_prompt = f"""
-    Based on your initial analysis and the team discussion, provide your final answer to this multi-choice question.
+                    # Enhanced fallback prompts for vision tasks
+                    if has_vision_task:
+                        if task_type == "yes_no_maybe":
+                            final_prompt = f"""Based on your initial image analysis and team discussion, provide your final answer.
 
-    Your initial analysis:
+    Your initial analysis (with image):
     {round1_analyses[role]['analysis']}
 
     Team discussion insights:
     {round2_discussions.get(role, "No discussion occurred.")}
 
-    Now provide your final answer. Remember: This is a multi-choice question where multiple answers may be correct.
-    Begin with "ANSWERS: X,Y,Z" (replace with ALL correct option letters).
-    Then provide your final reasoning.
-    """
-                    elif task_type == "yes_no_maybe":
-                        final_prompt = f"""
-    Based on your initial analysis and the team discussion, provide your final answer to this research question.
+    Now examine the image once more and provide your final answer.
+    Begin with "ANSWER: X" (yes, no, or maybe) followed by your integrated reasoning."""
+                        else:
+                            final_prompt = f"""Based on your initial image analysis and team discussion, provide your final answer.
 
-    Your initial analysis:
+    Your initial analysis (with image):
     {round1_analyses[role]['analysis']}
 
     Team discussion insights:
     {round2_discussions.get(role, "No discussion occurred.")}
 
-    Now provide your final answer.
-    Begin with "ANSWER: X" (replace X with yes, no, or maybe).
-    Then provide your final scientific reasoning.
-    """
+    Now examine the image once more and provide your final answer.
+    Begin with "ANSWER: X" (your chosen option) followed by your integrated visual and clinical reasoning."""
                     else:
-                        final_prompt = f"""
-    Based on your initial analysis and the team discussion, provide your final answer.
+                        # Standard fallback for text-only
+                        final_prompt = f"""Based on your initial analysis and team discussion, provide your final answer.
 
     Your initial analysis:
     {round1_analyses[role]['analysis']}
@@ -692,16 +797,24 @@ class AgentSystemSimulator:
     Team discussion insights:
     {round2_discussions.get(role, "No discussion occurred.")}
 
-    Now provide your final answer.
-    Begin with "ANSWER: X" (replace X with your chosen option A, B, C, or D).
-    Then provide your final reasoning.
-    """
+    Now provide your final answer with "ANSWER: X" followed by your reasoning."""
                 
-                # FIXED: Use fresh image if available, otherwise text-only
-                if fresh_image is not None:
-                    final_decision = agent.chat_with_image(final_prompt, fresh_image)
-                else:
-                    final_decision = agent.chat(final_prompt)
+                # Execute final decision with vision support and error recovery
+                try:
+                    if task_image is not None and round1_analyses[role].get("used_vision", False):
+                        # Agent used vision successfully in Round 1
+                        final_decision = agent.chat_with_image(final_prompt, task_image)
+                    else:
+                        # Text-only final decision
+                        final_decision = agent.chat(final_prompt)
+                except Exception as vision_error:
+                    # Vision error recovery
+                    if task_image is not None:
+                        self.logger.logger.warning(f"Vision error in Round 3 for {role}, falling back to text: {vision_error}")
+                        fallback_prompt = f"{final_prompt}\n\n[Note: Image analysis requested but failed. Providing text-based reasoning.]"
+                        final_decision = agent.chat(fallback_prompt)
+                    else:
+                        raise vision_error
                 
                 # Log to main discussion channel
                 self.logger.log_main_discussion(
@@ -710,25 +823,29 @@ class AgentSystemSimulator:
                     final_decision
                 )
                 
-                # Store in results
+                # Store in results with enhanced metadata
                 self.results["exchanges"].append({
                     "type": "round3_final_decision",
                     "communication": "standard",
                     "sender": role,
-                    "message": final_decision
+                    "message": final_decision,
+                    "used_vision": task_image is not None and round1_analyses[role].get("used_vision", False)
                 })
                 
-                # Extract the response structure using isolated task config
+                # Extract the response structure
                 extracted = agent.extract_response_isolated(final_decision, self.task_config)
                 
                 # Get agent weight
                 weight = agent.get_from_knowledge_base("weight") or 0.2
                 
-                # Store the agent's final decision
+                # Store enhanced decision data
                 round3_decisions[role] = {
                     "final_decision": final_decision,
                     "extract": extracted,
-                    "weight": weight
+                    "weight": weight,
+                    "used_vision_round1": round1_analyses[role].get("used_vision", False),
+                    "used_vision_round3": task_image is not None and round1_analyses[role].get("used_vision", False),
+                    "agent_type": type(agent).__name__
                 }
                 
             except Exception as e:
@@ -736,22 +853,27 @@ class AgentSystemSimulator:
                 round3_decisions[role] = {
                     "final_decision": f"Error occurred: {str(e)}",
                     "extract": {"error": str(e)},
-                    "weight": 0.2
+                    "weight": 0.2,
+                    "error": str(e)
                 }
         
-        # Leadership synthesis if enabled (based on Round 3 decisions)
+        # Enhanced leadership synthesis with vision support
         if self.use_team_leadership and self.leader:
             try:
                 context = "\n\n".join([f"{role}:\n{decision['final_decision']}" 
                                     for role, decision in round3_decisions.items() 
                                     if role != self.leader.role])
                 
-                # FIXED: Leader synthesis also supports images
-                if fresh_image is not None:
-                    leader_synthesis = self.leader.chat_with_image(
-                        f"As team leader, synthesize the team's responses and provide final guidance:\n\n{context}", 
-                        fresh_image
-                    )
+                # Leader synthesis with vision if available
+                if task_image is not None:
+                    synthesis_prompt = f"""As team leader, synthesize the team's responses considering both textual reasoning and visual analysis.
+
+    Team responses:
+    {context}
+
+    Provide final guidance integrating all perspectives and visual findings."""
+                    
+                    leader_synthesis = self.leader.chat_with_image(synthesis_prompt, task_image)
                 else:
                     leader_synthesis = self.leader.leadership_action_isolated("synthesize", context, self.task_config)
                 
@@ -762,7 +884,8 @@ class AgentSystemSimulator:
                     "type": "leadership_synthesis",
                     "communication": "standard",
                     "sender": self.leader.role,
-                    "message": leader_synthesis
+                    "message": leader_synthesis,
+                    "used_vision": task_image is not None
                 })
                 
                 # Update leader's decision
@@ -770,14 +893,29 @@ class AgentSystemSimulator:
                 round3_decisions[self.leader.role] = {
                     "final_decision": leader_synthesis,
                     "extract": leader_extract,
-                    "weight": round3_decisions[self.leader.role].get("weight", 0.2)
+                    "weight": round3_decisions[self.leader.role].get("weight", 0.2),
+                    "is_leader_synthesis": True
                 }
                 
             except Exception as e:
                 self.logger.logger.error(f"Error in leadership synthesis: {str(e)}")
         
-        self.logger.logger.info(f"Round 3 completed: {len(round3_decisions)} decisions collected")
+        # Log completion statistics
+        vision_count = sum(1 for d in round3_decisions.values() if d.get("used_vision_round3", False))
+        error_count = sum(1 for d in round3_decisions.values() if "error" in d)
+        
+        self.logger.logger.info(
+            f"Round 3 completed: {len(round3_decisions)} decisions collected, "
+            f"{vision_count} used vision, {error_count} errors"
+        )
+        
         return round3_decisions
+
+    def _get_fresh_image(self):
+        """Get fresh image from task config to avoid corruption between rounds."""
+        if "image_data" in self.task_config:
+            return self.task_config["image_data"].get("image")
+        return None
 
 
     def _run_leadership_definition(self) -> str:
@@ -1114,58 +1252,6 @@ class AgentSystemSimulator:
     
     ##################### =================================================== Image Vision Enhancements =================================================== #####################
 
-    # UPDATE: Modify simulator.py _run_round1_independent_analysis method
-    def _run_round1_independent_analysis_with_vision(self) -> Dict[str, Dict[str, Any]]:
-        """
-        VISION-ENABLED: Round 1 analysis with image support.
-        """
-        agent_analyses = {}
-        
-        # Extract image from task config if available
-        task_image = None
-        if "image_data" in self.task_config:
-            task_image = self.task_config["image_data"].get("image")
-        
-        # Process agents sequentially
-        for role, agent in self.agents.items():
-            try:
-                self.logger.logger.info(f"Round 1: Getting analysis from {role}")
-                
-                # Check if this is a vision-capable task
-                if task_image is not None:
-                    # Use vision-capable analysis
-                    analysis = agent.analyze_task_with_image(self.task_config, task_image)
-                else:
-                    # Use standard text-only analysis
-                    analysis = agent.analyze_task_isolated(self.task_config)
-                
-                # Extract response
-                extract = agent.extract_response_isolated(analysis, self.task_config)
-                
-                # Log analysis
-                self.logger.log_main_discussion("round1_independent_analysis", role, analysis)
-                
-                # Store analysis
-                agent_analyses[role] = {
-                    "analysis": analysis,
-                    "extract": extract,
-                    "used_vision": task_image is not None
-                }
-                
-                # Update shared mental model if enabled
-                if self.use_shared_mental_model and self.mental_model:
-                    understanding = self.mental_model.extract_understanding_from_message(analysis)
-                    self.mental_model.update_shared_understanding(role, understanding)
-                        
-            except Exception as e:
-                self.logger.logger.error(f"Failed to get analysis from {role}: {str(e)}")
-                agent_analyses[role] = {
-                    "analysis": f"Error occurred: {str(e)}",
-                    "extract": {"error": str(e)},
-                    "used_vision": False
-                }
-        
-        return agent_analyses
 
     # UPDATE: Add vision analysis method to ModularAgent
     def analyze_task_with_image(self, task_config: Dict[str, Any], image) -> str:

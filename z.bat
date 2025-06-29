@@ -1,8 +1,8 @@
 ::python dataset_runner.py --dataset symcat --num-questions 10 --recruitment --recruitment-method intermediate --n-max 5 --seed 111 --output-dir ./results/symcat
 
-::python dataset_runner.py --dataset pmc_vqa --num-questions 5 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PMC_TEST
+::python dataset_runner.py --dataset pmc_vqa --num-questions 10 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PMC_TEST
 
-::python dataset_runner.py --dataset path_vqa --num-questions 5 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PATH_TEST
+::python dataset_runner.py --dataset path_vqa --num-questions 10 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PATH_TEST
 
 ::# DDXPlus dataset
 

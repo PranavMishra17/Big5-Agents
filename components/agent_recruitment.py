@@ -149,13 +149,19 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
 
     logging.info(f"Recruiting agents using method: {recruitment_method}, complexity: {complexity}, n_max: {n_max}")
 
-    # VISION DETECTION: Check if this is an image-based task
+    # Enhanced vision detection
     has_image = False
     if task_config and "image_data" in task_config:
-        has_image = task_config["image_data"].get("image_available", False)
+        image_data = task_config["image_data"]
+        has_image = (
+            image_data.get("image_available", False) and 
+            image_data.get("image") is not None and
+            image_data.get("requires_visual_analysis", False)
+        )
     
-    # If image task, use vision-capable recruitment
+    # If this is a vision task, use specialized recruitment
     if has_image:
+        logging.info(f"Vision task detected - using specialized vision-capable recruitment")
         return recruit_vision_capable_agents(
             question=question,
             has_image=has_image,
@@ -616,31 +622,52 @@ def recruit_advanced_team_isolated(question: str, recruitment_pool: str, deploym
 
 def recruit_vision_capable_agents(question: str, has_image: bool, complexity: str, 
                                 deployment_config=None, task_config=None, teamwork_config=None):
-    """Recruit vision-capable agents."""
-    from components.modular_agent import MedicalImageAnalyst, PathologySpecialist, ModularAgent
+    """Recruit vision-capable agents with proper task config passing."""
     
     agents = {}
     leader = None
     agent_index = 0
     
-    # Determine if pathology or general medical imaging
+    # Determine image type
     question_lower = question.lower()
-    is_pathology = any(term in question_lower for term in 
-                      ['pathology', 'histology', 'microscopic', 'tissue', 'cell', 'biopsy'])
+    image_data = task_config.get("image_data", {}) if task_config else {}
     
-    # Create vision specialist
+    is_pathology = (
+        image_data.get("is_pathology_image", False) or
+        image_data.get("image_type") == "pathology_slide" or
+        any(term in question_lower for term in [
+            'pathology', 'histology', 'microscopic', 'tissue', 'cell', 'biopsy'
+        ])
+    )
+    
+    # Extract teamwork settings
+    if teamwork_config:
+        teamwork_settings = teamwork_config
+    else:
+        teamwork_settings = {
+            "use_team_leadership": config.USE_TEAM_LEADERSHIP,
+            "use_closed_loop_comm": config.USE_CLOSED_LOOP_COMM,
+            "use_mutual_monitoring": config.USE_MUTUAL_MONITORING,
+            "use_shared_mental_model": config.USE_SHARED_MENTAL_MODEL,
+            "use_team_orientation": config.USE_TEAM_ORIENTATION,
+            "use_mutual_trust": config.USE_MUTUAL_TRUST
+        }
+    
+    # Create primary vision specialist
     if is_pathology:
         specialist = PathologySpecialist(
             deployment_config=deployment_config,
             agent_index=agent_index,
-            task_config=task_config
+            task_config=task_config,  # CRITICAL: Pass task config
+            **teamwork_settings
         )
         role_name = "Pathology Specialist"
     else:
         specialist = MedicalImageAnalyst(
             deployment_config=deployment_config,
             agent_index=agent_index,
-            task_config=task_config
+            task_config=task_config,  # CRITICAL: Pass task config
+            **teamwork_settings
         )
         role_name = "Medical Image Analyst"
     
@@ -654,12 +681,15 @@ def recruit_vision_capable_agents(question: str, has_image: bool, complexity: st
             role_type='Medical Generalist',
             deployment_config=deployment_config,
             agent_index=agent_index,
-            task_config=task_config
+            task_config=task_config,  # CRITICAL: Pass task config
+            use_team_leadership=False,
+            **{k: v for k, v in teamwork_settings.items() if k != 'use_team_leadership'}
         )
         agents['Medical Generalist'] = generalist
     
-    logging.info(f"Vision recruitment: {list(agents.keys())} for {'pathology' if is_pathology else 'medical imaging'}")
+    logging.info(f"Vision team recruited: {list(agents.keys())} for {'pathology' if is_pathology else 'medical imaging'}")
     return agents, leader
+
 
 # Legacy functions for backward compatibility
 def recruit_basic_team(question: str, recruitment_pool: str, instance_id=None):

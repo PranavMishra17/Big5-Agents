@@ -10,6 +10,9 @@ import signal
 import threading
 from typing import List, Dict, Any, Optional, Tuple
 import copy
+from PIL import Image
+import io
+import base64
 
 from langchain_openai import AzureChatOpenAI
 import config
@@ -45,7 +48,8 @@ class Agent:
                  n_max: int = 5,
                  examples: Optional[List[Dict[str, str]]] = None,
                  deployment_config: Optional[Dict[str, str]] = None,
-                 agent_index: int = 0):
+                 agent_index: int = 0,
+                 task_config: Optional[Dict[str, Any]] = None):
         """
         Initialize an LLM-based agent with a specific role.
         
@@ -86,15 +90,32 @@ class Agent:
         else:
             self.deployment_config = config.get_deployment_for_agent(agent_index)
         
-        # Initialize LLM with specific deployment
-        self.client = AzureChatOpenAI(
-            azure_deployment=self.deployment_config["deployment"],
-            api_key=self.deployment_config["api_key"],
-            api_version=self.deployment_config["api_version"],
-            azure_endpoint=self.deployment_config["endpoint"],
-            temperature=config.TEMPERATURE,
-            timeout=config.REQUEST_TIMEOUT
-        )
+        # Check if this is a vision task
+        self.is_vision_task = False
+        if task_config and "image_data" in task_config:
+            image_data = task_config["image_data"]
+            self.is_vision_task = (
+                image_data.get("requires_visual_analysis", False) and 
+                image_data.get("image_available", False)
+            )
+            
+        # Initialize LLM with vision support if needed
+        from langchain_openai import AzureChatOpenAI
+        
+        init_params = {
+            "azure_deployment": self.deployment_config["deployment"],
+            "api_key": self.deployment_config["api_key"],
+            "api_version": self.deployment_config["api_version"],
+            "azure_endpoint": self.deployment_config["endpoint"],
+            "temperature": config.TEMPERATURE,
+            "timeout": config.REQUEST_TIMEOUT
+        }
+        
+        # Add max_tokens for vision tasks
+        if self.is_vision_task:
+            init_params["max_tokens"] = 2000
+        
+        self.client = AzureChatOpenAI(**init_params)
         
         # Build initial system message using global config (for backward compatibility)
         self.messages = [
@@ -191,39 +212,40 @@ class Agent:
         raise TimeoutError("Request timed out")
     
     def _chat_with_timeout(self, messages: List[Dict[str, Any]], timeout: int = None) -> str:
-        """Chat with timeout, retry logic, and proper max_tokens for vision."""
+        """Chat with timeout, retry logic, and proper vision API support."""
         if timeout is None:
             timeout = config.INACTIVITY_TIMEOUT
         
         def target():
             try:
-                # CRITICAL FIX: Add max_tokens for vision calls
-                invoke_params = {"messages": messages}
-                
-                # Check if this is a vision call (has image_url)
+                # Check if this is a vision call
                 has_image = any(
                     isinstance(msg.get("content"), list) and 
                     any(item.get("type") == "image_url" for item in msg["content"])
                     for msg in messages
                 )
                 
+                # Prepare invoke parameters
+                invoke_params = {"messages": messages}
+                
+                # CRITICAL: Add max_tokens for vision calls (required)
                 if has_image:
-                    invoke_params["max_tokens"] = 2000  # Required for vision
-                
-                response = self.client.invoke(**invoke_params)
-                self._response = response.content
-                
-            except TypeError as e:
-                if "missing 1 required positional argument: 'input'" in str(e):
-                    # Fallback for older API
-                    if has_image:
-                        response = self.client.invoke(input=messages, max_tokens=2000)
-                    else:
-                        response = self.client.invoke(input=messages)
-                    self._response = response.content
+                    invoke_params["max_tokens"] = 4000  # Increased for detailed image analysis
+                    self._response = self.client.invoke(**invoke_params)
                 else:
-                    raise
+                    # For text-only, use default behavior
+                    self._response = self.client.invoke(**invoke_params)
+                
+                # Extract content from response
+                if hasattr(self._response, 'content'):
+                    self._response = self._response.content
+                elif isinstance(self._response, dict) and 'content' in self._response:
+                    self._response = self._response['content']
+                else:
+                    self._response = str(self._response)
+                    
             except Exception as e:
+                self.logger.error(f"API call error: {str(e)}")
                 self._exception = e
         
         # Reset response and exception
@@ -248,166 +270,130 @@ class Agent:
         return self._response
 
 
-    def _encode_image_for_openai(self, image) -> str:
-        """FIXED: Encode exactly like Azure docs example."""
-        import base64
-        import io
-        from PIL import Image
-        
+    def _encode_image_for_langchain(self, image) -> Dict[str, Any]:
+        """Encode image following Azure OpenAI docs exactly."""
         if image is None:
             return None
         
         try:
-            # Create copy and ensure RGB
+            # Process image
             img_copy = image.copy()
             if img_copy.mode != 'RGB':
                 if img_copy.mode == 'RGBA':
-                    # White background for transparency
                     background = Image.new('RGB', img_copy.size, (255, 255, 255))
                     background.paste(img_copy, mask=img_copy.split()[-1])
                     img_copy = background
                 else:
                     img_copy = img_copy.convert('RGB')
             
-            # Resize if needed
-            max_size = (1024, 1024)
-            if img_copy.size[0] > max_size[0] or img_copy.size[1] > max_size[1]:
-                img_copy.thumbnail(max_size, Image.Resampling.LANCZOS)
+            # Resize if needed  
+            max_size = 1024
+            if max(img_copy.size) > max_size:
+                ratio = max_size / max(img_copy.size)
+                new_size = tuple(int(dim * ratio) for dim in img_copy.size)
+                img_copy = img_copy.resize(new_size, Image.Resampling.LANCZOS)
             
-            # Save to bytes - EXACTLY like Azure docs
+            # Encode exactly like Azure docs
             buffer = io.BytesIO()
-            img_copy.save(buffer, format='JPEG', quality=90, optimize=True)
-            
-            # Get bytes like docs example
+            img_copy.save(buffer, format='JPEG', quality=85, optimize=True)
             buffer.seek(0)
             image_bytes = buffer.read()
             buffer.close()
             
+            # Validate we have data
             if len(image_bytes) == 0:
                 self.logger.error("Empty image bytes")
                 return None
             
-            # Encode like docs
+            # Base64 encode like docs
             base64_encoded_data = base64.b64encode(image_bytes).decode('utf-8')
             
-            # Validate
+            # Validate base64
             if len(base64_encoded_data) < 100:
                 self.logger.error(f"Base64 too short: {len(base64_encoded_data)}")
                 return None
             
-            # Test decode
-            try:
-                base64.b64decode(base64_encoded_data)
-            except Exception as e:
-                self.logger.error(f"Base64 validation failed: {e}")
-                return None
+            # Construct data URL exactly like Azure docs
+            data_url = f"data:image/jpeg;base64,{base64_encoded_data}"
             
-            self.logger.debug(f"Image encoded: {len(image_bytes)} bytes -> {len(base64_encoded_data)} b64 chars")
-            return base64_encoded_data
+            # Return Azure format
+            return {
+                "type": "image_url",
+                "image_url": {
+                    "url": data_url
+                }
+            }
             
         except Exception as e:
             self.logger.error(f"Image encoding failed: {str(e)}")
-            import traceback
-            self.logger.error(traceback.format_exc())
             return None
 
-
+    # ALSO FIX: Update the message storage to avoid corruption
     def chat_with_image(self, message: str, image=None) -> str:
-        """
-        FIXED: Send message with image, avoiding corruption between rounds.
-        """
-        self.logger.info(f"Received message with image: {message[:100]}...")
+        """Fixed vision chat with proper error handling."""
+        if not getattr(self, 'is_vision_task', False):
+            return self.chat(message)
         
-        # Check for MedRAG enhancement
+        if image is None:
+            return self.chat(message)
+        
+        # Apply MedRAG if available
         enhanced_message = message
         if self.get_from_knowledge_base("has_medrag_enhancement"):
             medrag_context = self.get_from_knowledge_base("medrag_context")
             if medrag_context:
-                enhanced_message = f"""{message}
-
-    {medrag_context}
-
-    Based on the retrieved medical literature above and the provided image, provide your analysis integrating both visual findings and evidence-based knowledge."""
+                enhanced_message = f"{message}\n\n{medrag_context}\n\nIntegrate visual and literature findings."
         
-        # Prepare messages for multimodal input
-        if image is not None:
-            # FIXED: Only encode once and validate
-            base64_image = self._encode_image_for_openai(image)
-            if base64_image:
-                user_message = {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": enhanced_message},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{base64_image}",
-                                "detail": "high"
-                            }
-                        }
-                    ]
-                }
-                messages = self.messages + [user_message]
-                self.logger.info("Created valid multimodal message")
-            else:
-                # Fallback to text-only if encoding fails
-                messages = self.messages + [{"role": "user", "content": enhanced_message}]
-                self.logger.warning("Image encoding failed, using text-only")
-        else:
-            messages = self.messages + [{"role": "user", "content": enhanced_message}]
+        # Encode image
+        image_content = self._encode_image_for_langchain(image)
+        if not image_content:
+            self.logger.error("Image encoding failed")
+            return self.chat(f"{enhanced_message}\n\n[Image processing failed]")
         
-        # Send request with retry logic
+        # Create message
+        langchain_message = {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": enhanced_message},
+                image_content
+            ]
+        }
+        
+        messages = self.messages + [langchain_message]
+        
+        # API call with retries
         for attempt in range(config.MAX_RETRIES):
             try:
-                assistant_message = self._chat_with_timeout(messages, config.INACTIVITY_TIMEOUT)
+                response = self.client.invoke(messages)
+                assistant_message = response.content
                 
-                # FIXED: Store simplified conversation history without corrupted image data
-                if image is not None:
-                    self.messages.append({
-                        "role": "user", 
-                        "content": [
-                            {"type": "text", "text": message},
-                            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,<IMAGE_DATA>"}}
-                        ]
-                    })
-                else:
-                    self.messages.append({"role": "user", "content": message})
-                
+                # Store in conversation (avoid corrupted image data)
+                self.messages.append({
+                    "role": "user", 
+                    "content": message  # Store as simple text to avoid corruption
+                })
                 self.messages.append({"role": "assistant", "content": assistant_message})
+                
                 self.conversation_history.append({
-                    "user": message, 
+                    "user": message,
                     "assistant": assistant_message,
-                    "has_image": image is not None
+                    "has_image": True
                 })
                 
                 return assistant_message
                 
             except Exception as e:
+                self.logger.warning(f"Vision attempt {attempt + 1} failed: {str(e)}")
+                
+                if "image" in str(e).lower() or "url" in str(e).lower():
+                    self.logger.error("Image/URL error, falling back to text")
+                    return self.chat(f"{enhanced_message}\n\n[Image processing failed]")
+                
                 if attempt < config.MAX_RETRIES - 1:
-                    wait_time = config.RETRY_DELAY * (2 ** attempt)
-                    time.sleep(wait_time)
-                    continue
+                    time.sleep(config.RETRY_DELAY * (2 ** attempt))
                 else:
-                    raise
-
-    # UPDATE: Override chat method to handle vision automatically
-    def chat(self, message: str, image=None) -> str:
-        """
-        Enhanced chat method that automatically handles images if provided.
-        
-        Args:
-            message: The message to send to the agent
-            image: Optional PIL Image object
+                    return self.chat(f"{enhanced_message}\n\n[Vision failed after retries]")
             
-        Returns:
-            The agent's response
-        """
-        if image is not None:
-            return self.chat_with_image(message, image)
-        else:
-            # Use existing text-only chat method
-            return self.chat(message)
-        
 
     def chat(self, message: str) -> str:
         """
@@ -435,59 +421,27 @@ class Agent:
                 
                 self.logger.info("Applied MedRAG knowledge enhancement to agent message")
         
-        # Add the enhanced message to the conversation
-        messages = self.messages + [{"role": "user", "content": enhanced_message}]
-        
-        last_exception = None
+        # Create standard message
+        langchain_message = {"role": "user", "content": enhanced_message}
+        messages = self.messages + [langchain_message]
         
         for attempt in range(config.MAX_RETRIES):
             try:
-                self.logger.info(f"API request attempt {attempt + 1}/{config.MAX_RETRIES} using {self.deployment_config['name']}")
+                response = self.client.invoke(messages)
+                assistant_message = response.content
                 
-                # Try with timeout
-                assistant_message = self._chat_with_timeout(messages, config.INACTIVITY_TIMEOUT)
-                
-                # Success - store the response (use original message, not enhanced)
+                # Store response (use original message)
                 self.messages.append({"role": "user", "content": message})
                 self.messages.append({"role": "assistant", "content": assistant_message})
                 self.conversation_history.append({"user": message, "assistant": assistant_message})
                 
-                self.logger.info(f"Responded successfully: {assistant_message[:100]}...")
                 return assistant_message
                 
-            except TimeoutError as e:
-                last_exception = e
-                self.logger.warning(f"Timeout on attempt {attempt + 1}: {str(e)}")
-                
-                if attempt < config.MAX_RETRIES - 1:
-                    wait_time = config.RETRY_DELAY * (2 ** attempt)
-                    self.logger.info(f"Waiting {wait_time} seconds before retry...")
-                    time.sleep(wait_time)
-                    continue
-                    
             except Exception as e:
-                last_exception = e
-                error_str = str(e).lower()
-                
-                if any(term in error_str for term in ["rate", "limit", "timeout", "capacity", "connection"]):
-                    self.logger.warning(f"Recoverable error on attempt {attempt + 1}: {str(e)}")
-                    
-                    if attempt < config.MAX_RETRIES - 1:
-                        if "rate" in error_str or "limit" in error_str:
-                            wait_time = config.RETRY_DELAY * (3 ** attempt)
-                        else:
-                            wait_time = config.RETRY_DELAY * (2 ** attempt)
-                        
-                        self.logger.info(f"Waiting {wait_time} seconds before retry...")
-                        time.sleep(wait_time)
-                        continue
+                if attempt < config.MAX_RETRIES - 1:
+                    time.sleep(config.RETRY_DELAY * (2 ** attempt))
                 else:
-                    self.logger.error(f"Non-recoverable error: {str(e)}")
-                    raise
-        
-        # All retries failed
-        self.logger.error(f"All {config.MAX_RETRIES} attempts failed. Last error: {str(last_exception)}")
-        raise Exception(f"Failed after {config.MAX_RETRIES} attempts. Last error: {str(last_exception)}")
+                    raise Exception(f"All attempts failed: {str(e)}")
 
 
     def get_conversation_history(self) -> List[Dict[str, str]]:

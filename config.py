@@ -432,6 +432,37 @@ MAX_PARALLEL_QUESTIONS = len(AZURE_DEPLOYMENTS)  # Maximum questions to process 
 ENABLE_PARALLEL_PROCESSING = False  # Agent-level parallelism is now disabled
 MAX_PARALLEL_WORKERS = 1  # Always use sequential agent processing
 
+# Add these to your config.py file
+
+# Vision API settings
+VISION_MAX_TOKENS = 4000  # Required for vision API calls
+VISION_MAX_IMAGE_SIZE = 2000  # Maximum dimension for images
+VISION_RETRY_DELAY = 3  # Extra delay for vision API retries
+
+# Enhanced agent roles for vision tasks
+VISION_AGENT_ROLES = {
+    "Medical Image Analyst": "Specialized in medical image interpretation including X-rays, CT, MRI, ultrasound, and other medical imaging modalities. Expert in systematic visual analysis, pattern recognition, and clinical correlation.",
+    "Pathology Specialist": "Expert in microscopic analysis of tissues and cells. Specialized in histopathology, cytology, and pathological diagnosis from microscopic images. Skilled in tissue architecture assessment and cellular morphology.",
+    "Radiologist": "Medical doctor specialized in interpreting medical images. Expert in diagnostic imaging across all modalities with clinical correlation and differential diagnosis capabilities.",
+    "Clinical Pathologist": "Medical doctor specialized in laboratory medicine and pathological diagnosis. Expert in integrating pathology findings with clinical presentation."
+}
+
+# Update existing AGENT_ROLES to include vision capabilities
+AGENT_ROLES.update(VISION_AGENT_ROLES)
+
+# Vision task detection keywords
+VISION_KEYWORDS = {
+    "pathology": ['pathology', 'histology', 'microscopic', 'tissue', 'cell', 'biopsy', 
+                  'histopathological', 'cytology', 'specimen', 'slide'],
+    "radiology": ['x-ray', 'ct', 'mri', 'ultrasound', 'scan', 'radiograph', 'imaging',
+                  'contrast', 'tomography', 'mammography', 'angiography']
+}
+
+# Error handling configuration
+VISION_ERROR_RETRY_ATTEMPTS = 2  # Extra retries for vision-specific errors
+FALLBACK_TO_TEXT_ON_VISION_FAILURE = True  # Allow fallback to text-only analysis
+
+
 def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
     """
     Get deployment configuration for agent based on round-robin distribution.

@@ -73,7 +73,8 @@ class ModularAgent(Agent):
             use_mutual_trust=use_mutual_trust,
             n_max=n_max,
             deployment_config=deployment_config,
-            agent_index=agent_index
+            agent_index=agent_index,
+            task_config=task_config
         )
         
         # Track whether this agent has leadership capabilities
@@ -827,127 +828,107 @@ def create_agent_team(use_team_leadership=True,
     )
 
 
-
 class MedicalImageAnalyst(ModularAgent):
-    """
-    Specialized agent for medical image analysis.
-    """
+    """Specialized medical imaging agent with LangChain vision support."""
     
     def __init__(self, **kwargs):
-        # Set specific role for medical imaging
         kwargs['role_type'] = 'Medical Image Analyst'
         super().__init__(**kwargs)
-        
-        # Add vision-specific knowledge
         self._initialize_vision_knowledge()
     
-    def _initialize_vision_knowledge(self):
-        """Initialize knowledge specific to medical image analysis."""
-        self.add_to_knowledge_base("medical_imaging_expertise", {
-            "image_modalities": "X-ray, CT, MRI, ultrasound, microscopy, fundoscopy",
-            "analysis_approach": "Systematic visual inspection, pattern recognition, abnormality detection",
-            "visual_features": "Shape, size, density, texture, enhancement patterns, spatial relationships",
-            "common_findings": "Anatomical variants, pathological changes, artifacts, technical quality",
-            "reporting_standards": "Structured reporting, differential diagnosis, clinical correlation"
-        })
-        
-        self.add_to_knowledge_base("pathology_imaging", {
-            "tissue_architecture": "Cellular organization, tissue patterns, structural integrity",
-            "cellular_morphology": "Cell size, shape, nuclear features, cytoplasmic characteristics",
-            "staining_patterns": "H&E, special stains, immunohistochemistry interpretation",
-            "pathological_processes": "Inflammation, neoplasia, degenerative changes, infectious agents"
-        })
-    
     def analyze_medical_image(self, question: str, image, task_config: Dict[str, Any]) -> str:
-        """
-        Analyze a medical image in context of the given question.
+        """Fixed to require A/B format responses."""
         
-        Args:
-            question: The medical question about the image
-            image: PIL Image object
-            task_config: Task configuration
-            
-        Returns:
-            Detailed medical image analysis
-        """
-        analysis_prompt = f"""
-As a Medical Image Analyst, please analyze the provided medical image in the context of this question:
-
-{question}
-
-Please provide a systematic analysis including:
-
-1. **Image Quality Assessment**: Comment on technical quality, artifacts, and adequacy for diagnosis
-
-2. **Anatomical Identification**: Identify the anatomical region, organ system, and imaging modality
-
-3. **Visual Findings**: Describe key visual features, patterns, and any abnormalities observed
-
-4. **Pathological Assessment**: Evaluate for signs of disease, inflammation, structural changes
-
-5. **Clinical Correlation**: Relate findings to the specific question asked
-
-6. **Diagnostic Considerations**: Provide differential diagnosis based on imaging findings
-
-7. **Answer Determination**: Based on your visual analysis, determine the most appropriate answer
-
-Provide your final answer clearly at the end.
-"""
+        options = task_config.get("options", ["A. Yes", "B. No"])
+        options_text = "\n".join(options)
         
+        analysis_prompt = f"""You are analyzing a medical image to answer this question:
+
+    {question}
+
+    Available options:
+    {options_text}
+
+    Please provide systematic analysis:
+
+    1. IMAGE ASSESSMENT: Describe modality, quality, and anatomy visible
+    2. VISUAL FINDINGS: Examine structures and identify key features
+    3. PATHOLOGICAL ANALYSIS: Note any abnormalities or changes
+    4. CLINICAL CORRELATION: Relate findings to the specific question
+
+    IMPORTANT: You must end with "ANSWER: X" where X is A or B (not yes/no).
+
+    Examine the image carefully and provide your clinical analysis."""
+
         return self.chat_with_image(analysis_prompt, image)
 
+
 class PathologySpecialist(ModularAgent):
-    """
-    Specialized agent for pathology image analysis.
-    """
+    """Fixed PathologySpecialist class."""
     
     def __init__(self, **kwargs):
         kwargs['role_type'] = 'Pathology Specialist'
         super().__init__(**kwargs)
-        self._initialize_pathology_vision_knowledge()
+        self._initialize_pathology_vision_knowledge()  # Call after super().__init__
     
     def _initialize_pathology_vision_knowledge(self):
-        """Initialize pathology-specific vision knowledge."""
+        """Initialize pathology-specific knowledge."""
         self.add_to_knowledge_base("microscopic_analysis", {
-            "magnification_levels": "Low power (overview), high power (cellular detail)",
-            "tissue_staining": "H&E patterns, special stains, immunohistochemistry",
+            "magnification_levels": "Low power (orientation), medium power (architecture), high power (cellular detail)",
+            "tissue_staining": "H&E patterns, special stains, immunohistochemistry interpretation",
             "cellular_features": "Nuclear morphology, mitotic activity, cellular pleomorphism",
-            "tissue_patterns": "Architecture preservation, inflammatory infiltrates, fibrosis",
-            "diagnostic_criteria": "Morphological criteria for specific diseases"
+            "tissue_patterns": "Architecture preservation, inflammatory infiltrates, fibrosis"
         })
     
     def analyze_pathology_slide(self, question: str, image, task_config: Dict[str, Any]) -> str:
-        """
-        Analyze a pathology slide image.
+        """Fixed to require A/B format responses."""
         
-        Args:
-            question: The pathology question
-            image: PIL Image of pathology slide
-            task_config: Task configuration
-            
-        Returns:
-            Pathological analysis
-        """
-        pathology_prompt = f"""
-As a Pathology Specialist, analyze this histopathological image to answer:
+        options = task_config.get("options", ["A. Yes", "B. No"])
+        options_text = "\n".join(options)
+        
+        pathology_prompt = f"""You are analyzing a pathology slide to answer this question:
+
+    {question}
+
+    Available options:
+    {options_text}
+
+    Please provide systematic microscopic examination:
+
+    1. SLIDE OVERVIEW: Describe the tissue type and staining quality
+    2. TISSUE ARCHITECTURE: Analyze overall organization and structure  
+    3. CELLULAR FEATURES: Examine cell morphology and arrangement
+    4. PATHOLOGICAL ASSESSMENT: Identify any disease processes
+    5. CLINICAL INTERPRETATION: Relate findings to the question
+
+    IMPORTANT: You must end with "ANSWER: X" where X is A or B (not yes/no).
+
+    Examine the slide systematically and give your analysis."""
+
+        return self.chat_with_image(pathology_prompt, image)
+    
+
+def analyze_task_with_image(self, task_config: Dict[str, Any], image) -> str:
+    """Fixed for MCQ format."""
+    
+    question = task_config["description"]
+    options = task_config.get("options", [])
+    options_text = "\n".join(options) if options else ""
+    
+    vision_prompt = f"""You are analyzing a medical image to answer this question:
 
 {question}
 
-Provide a systematic pathological evaluation:
+{f"Available options:\n{options_text}" if options_text else ""}
 
-1. **Specimen Type & Staining**: Identify tissue type and staining method
+Please provide:
 
-2. **Architectural Assessment**: Evaluate tissue organization and structural patterns
+1. VISUAL EXAMINATION: Describe what you observe in the image
+2. MEDICAL ANALYSIS: Interpret the clinical significance  
+3. CLINICAL REASONING: Connect image findings to medical knowledge
 
-3. **Cellular Morphology**: Examine cell types, nuclear features, and cytoplasmic details
+IMPORTANT: End with "ANSWER: X" where X is the option letter (A, B, C, etc.).
 
-4. **Pathological Processes**: Identify inflammation, neoplasia, or other pathological changes
-
-5. **Diagnostic Features**: Highlight key microscopic features relevant to the question
-
-6. **Pathological Diagnosis**: Provide specific pathological interpretation
-
-Answer the question based on your microscopic findings.
-"""
-        
-        return self.chat_with_image(pathology_prompt, image)
+Examine the image and provide your medical assessment."""
+    
+    return self.chat_with_image(vision_prompt, image)
