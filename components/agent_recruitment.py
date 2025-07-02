@@ -158,6 +158,11 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
             image_data.get("image") is not None and
             image_data.get("requires_visual_analysis", False)
         )
+        # Additional check for PMC-VQA dataset
+        metadata = task_config.get("metadata", {})
+        if metadata.get("dataset") == "pmc_vqa":
+            has_image = True
+            logging.info("PMC-VQA dataset detected - enabling vision recruitment")
     
     # If this is a vision task, use specialized recruitment
     if has_image:
@@ -170,6 +175,7 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
             task_config=task_config,
             teamwork_config=teamwork_config
         )
+
 
     if complexity == "basic" or recruitment_method == "basic":
         logging.info("Using basic recruitment (single agent)")

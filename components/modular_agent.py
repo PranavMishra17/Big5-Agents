@@ -835,6 +835,24 @@ class MedicalImageAnalyst(ModularAgent):
         kwargs['role_type'] = 'Medical Image Analyst'
         super().__init__(**kwargs)
         self._initialize_vision_knowledge()
+
+    def _initialize_vision_knowledge(self):
+        """Initialize medical imaging-specific knowledge."""
+        self.add_to_knowledge_base("medical_imaging_analysis", {
+            "image_modalities": "X-ray, CT, MRI, ultrasound, nuclear medicine imaging analysis",
+            "anatomical_assessment": "Systematic evaluation of anatomical structures and organ systems",
+            "pathology_detection": "Identification of abnormalities, lesions, and pathological changes",
+            "image_quality": "Assessment of image acquisition, contrast, and diagnostic quality",
+            "clinical_correlation": "Integration of imaging findings with clinical presentation"
+        })
+        
+        self.add_to_knowledge_base("systematic_approach", {
+            "initial_survey": "Overall image quality, patient positioning, anatomical coverage",
+            "systematic_review": "Organ-specific evaluation following standardized protocols", 
+            "abnormality_detection": "Identification and characterization of pathological findings",
+            "differential_diagnosis": "Consider multiple diagnostic possibilities based on imaging patterns",
+            "clinical_significance": "Assess relevance of findings to clinical question"
+        })
     
     def analyze_medical_image(self, question: str, image, task_config: Dict[str, Any]) -> str:
         """Fixed to require A/B format responses."""

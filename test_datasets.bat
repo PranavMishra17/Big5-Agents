@@ -66,23 +66,6 @@ echo Seeds: 111, 222, 333 for reproducibility
 echo.
 
 
-
-REM =============================================================================
-REM SYMCAT DATASET - All Features Configuration
-REM =============================================================================
-
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 2 --seed 111 --output-dir ./results/symcat_n2
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 2 --seed 222 --output-dir ./results/symcat_n2
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 2 --seed 333 --output-dir ./results/symcat_n2
-
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 3 --seed 111 --output-dir ./results/symcat_n3
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 3 --seed 222 --output-dir ./results/symcat_n3
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 3 --seed 333 --output-dir ./results/symcat_n3
-
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 4 --seed 111 --output-dir ./results/symcat_n4
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 4 --seed 222 --output-dir ./results/symcat_n4
-python dataset_runner.py --dataset symcat --num-questions 50 --all --recruitment --recruitment-method intermediate --n-max 4 --seed 333 --output-dir ./results/symcat_n4
-
 REM =============================================================================
 REM EVALUATION SUMMARY
 REM =============================================================================
@@ -119,6 +102,35 @@ pause
 ::
 ::python dataset_runner.py --dataset pmc_vqa --num-questions 5 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PMC_TEST
 ::python dataset_runner.py --dataset path_vqa --num-questions 5 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PATH_TEST
+
+::python dataset_runner.py --dataset symcat --num-questions 10 --recruitment --recruitment-method intermediate --n-max 5 --seed 111 --output-dir ./results/symcat
+
+::python dataset_runner.py --dataset pmc_vqa --num-questions 10 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PMC_TEST
+
+::python dataset_runner.py --dataset path_vqa --num-questions 10 --recruitment --recruitment-method intermediate --n-max 4 --output-dir ./results/PATH_TEST
+
+::# DDXPlus dataset
+
+python dataset_runner.py --dataset ddxplus --num-questions 50 --recruitment --recruitment-method intermediate --n-max 4 --seed 111 --output-dir ./results/ddxplus_sp --mutual --mental --trust 
+python dataset_runner.py --dataset ddxplus --num-questions 50 --recruitment --recruitment-method intermediate --n-max 4 --seed 222 --output-dir ./results/ddxplus_sp --mutual --mental --trust 
+python dataset_runner.py --dataset ddxplus --num-questions 50 --recruitment --recruitment-method intermediate --n-max 4 --seed 333 --output-dir ./results/ddxplus_sp --mutual --mental --trust 
+
+::# MedBullets dataset
+
+python dataset_runner.py --dataset medbullets --num-questions 50 --recruitment --recruitment-method intermediate --n-max 4 --seed 111 --output-dir ./results/medbullets_sp --leadership --closedloop --mutual
+python dataset_runner.py --dataset medbullets --num-questions 50 --recruitment --recruitment-method intermediate --n-max 4 --seed 222 --output-dir ./results/medbullets_sp --leadership --closedloop --mutual
+python dataset_runner.py --dataset medbullets --num-questions 50 --recruitment --recruitment-method intermediate --n-max 4 --seed 333 --output-dir ./results/medbullets_sp --leadership --closedloop --mutual
+
+
+python dataset_runner.py --dataset ddxplus --num-questions 50 --recruitment --recruitment-method intermediate --n-max 3 --seed 111 --output-dir ./results/ddxplus_sp --mutual --mental --trust 
+python dataset_runner.py --dataset ddxplus --num-questions 50 --recruitment --recruitment-method intermediate --n-max 3 --seed 222 --output-dir ./results/ddxplus_sp --mutual --mental --trust 
+python dataset_runner.py --dataset ddxplus --num-questions 50 --recruitment --recruitment-method intermediate --n-max 3 --seed 333 --output-dir ./results/ddxplus_sp --mutual --mental --trust 
+
+::# MedBullets dataset
+
+python dataset_runner.py --dataset medbullets --num-questions 50 --recruitment --recruitment-method intermediate --n-max 3 --seed 111 --output-dir ./results/medbullets_sp --leadership --closedloop --mutual
+python dataset_runner.py --dataset medbullets --num-questions 50 --recruitment --recruitment-method intermediate --n-max 3 --seed 222 --output-dir ./results/medbullets_sp --leadership --closedloop --mutual
+python dataset_runner.py --dataset medbullets --num-questions 50 --recruitment --recruitment-method intermediate --n-max 3 --seed 333 --output-dir ./results/medbullets_sp --leadership --closedloop --mutual
 
 echo "All special set experiments completed!"
 pause

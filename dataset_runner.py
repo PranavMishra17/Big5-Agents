@@ -2411,14 +2411,15 @@ def load_path_vqa_dataset(num_questions: int = 50, random_seed: int = 42) -> Lis
         logging.error(f"Error loading Path-VQA dataset: {str(e)}")
         return []
 
+
 def format_pmc_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-    """Format PMC-VQA with enhanced image data validation."""
+    """Format PMC-VQA with simple Answer_label usage."""
     question_text = question_data.get("Question", "")
     answer = question_data.get("Answer", "")
     answer_label = question_data.get("Answer_label", "")
     image = question_data.get("image")
     
-    # Validate image one more time
+    # Validate image
     image_valid = validate_image_for_vision_api(image)
     if not image_valid:
         logging.warning("PMC-VQA question has invalid image, setting image to None")
@@ -2431,10 +2432,15 @@ def format_pmc_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
         if choice_text and choice_text.strip():
             choices.append(f"{chr(65+i)}. {choice_text}")
     
-    # Determine correct letter
-    correct_letter = answer_label.upper() if answer_label and answer_label.upper() in "ABCD" else "A"
+    # FIXED: Use Answer_label directly as ground truth
+    correct_letter = answer_label.strip().upper() if answer_label else "A"
     
-    # Create enhanced medical context for the question
+    # Validate it's a proper option
+    if correct_letter not in "ABCD":
+        logging.warning(f"Invalid answer_label '{answer_label}', defaulting to A")
+        correct_letter = "A"
+    
+    # Enhanced description for medical image analysis
     enhanced_description = f"""MEDICAL IMAGE ANALYSIS QUESTION
 
 Question: {question_text}
@@ -2468,11 +2474,14 @@ Provide your analysis and select the most appropriate answer."""
             "dataset": "pmc_vqa", 
             "has_image": image is not None,
             "original_answer": answer,
-            "image_validated": image_valid
+            "original_answer_label": answer_label,
+            "image_validated": image_valid,
+            "num_choices": len(choices)
         }
     }
     
     return agent_task, eval_data
+
 
 def format_path_vqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Format Path-VQA as binary MCQ with enhanced pathology context."""
