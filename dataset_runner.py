@@ -84,14 +84,17 @@ def load_medqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[D
         logging.error(f"Error loading MedQA dataset: {str(e)}")
         return []
 
-def load_medmcqa_dataset(num_questions: int = 50, random_seed: int = 42, include_multi_choice: bool = True) -> List[Dict[str, Any]]:
+def load_medmcqa_dataset(num_questions: int = 50, random_seed: int = 42, include_multi_choice: bool = True) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
     """
-    Load questions from the MedMCQA dataset.
+    Load questions from the MedMCQA dataset with validation and error tracking.
     
-    Note: The include_multi_choice parameter is kept for compatibility but all questions
-    are actually single-choice due to the dataset structure.
+    Returns:
+        Tuple of (valid_questions, errors) where errors contains skipped questions
     """
     logging.info(f"Loading MedMCQA dataset with {num_questions} random questions")
+    
+    valid_questions = []
+    errors = []
     
     try:
         ds = load_dataset("openlifescienceai/medmcqa")
@@ -104,25 +107,52 @@ def load_medmcqa_dataset(num_questions: int = 50, random_seed: int = 42, include
             choice_type_counts[ct] = choice_type_counts.get(ct, 0) + 1
         
         logging.info(f"Choice type distribution in dataset sample: {choice_type_counts}")
-        logging.info("Note: All questions will be treated as single-choice due to known dataset issue")
+        logging.info("Note: All questions will be treated as single-choice")
         
         # Set random seed for reproducibility
         random.seed(random_seed)
         
         # Randomly select questions (no need to filter by choice_type)
         if num_questions < len(questions):
-            selected_questions = random.sample(questions, num_questions)
+            selected_questions = random.sample(questions, num_questions * 2)  # Get extra to account for invalid ones
         else:
             selected_questions = questions
-            logging.warning(f"Requested {num_questions} questions but dataset only has {len(questions)}. Using all available questions.")
         
-        logging.info(f"Successfully loaded {len(selected_questions)} questions from MedMCQA dataset")
-        validate_medmcqa_parsing(selected_questions)
-        return selected_questions
+        # Validate each question
+        for question_data in selected_questions:
+            try:
+                agent_task, eval_data, is_valid = format_medmcqa_for_task(question_data)
+                
+                if is_valid:
+                    # Store the original question data for later formatting
+                    valid_questions.append(question_data)
+                    if len(valid_questions) >= num_questions:
+                        break
+                else:
+                    # eval_data contains error info when is_valid is False
+                    errors.append(eval_data)
+                    logging.warning(f"Skipped question {eval_data.get('question_id', 'unknown')}: {eval_data.get('message', 'Invalid')}")
+                    
+            except Exception as e:
+                error_info = {
+                    "question_id": question_data.get("id", "unknown"),
+                    "error_type": "formatting_error", 
+                    "message": f"Error formatting question: {str(e)}"
+                }
+                errors.append(error_info)
+                logging.error(f"Error processing question {question_data.get('id', 'unknown')}: {str(e)}")
+        
+        logging.info(f"Successfully loaded {len(valid_questions)} valid questions from MedMCQA dataset")
+        logging.info(f"Skipped {len(errors)} questions due to validation errors")
+        
+        if len(valid_questions) < num_questions:
+            logging.warning(f"Only found {len(valid_questions)} valid questions, requested {num_questions}")
+        
+        return valid_questions[:num_questions], errors
     
     except Exception as e:
         logging.error(f"Error loading MedMCQA dataset: {str(e)}")
-        return []
+        return [], [{"error_type": "dataset_loading_error", "message": str(e)}]
 
 def validate_medmcqa_parsing(sample_questions: List[Dict[str, Any]]) -> None:
     """Validate that MedMCQA parsing works correctly for all question types."""
@@ -307,10 +337,10 @@ def format_medqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any]
     
     return agent_task, eval_data
 
-def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any], bool]:
     """
     Format MedMCQA question into agent task and evaluation data.
-    Enhanced to provide better context for agent recruitment.
+    Enhanced to validate ground truth and skip invalid questions.
 
     Args:
         question_data: Question data from the MedMCQA dataset.
@@ -319,6 +349,7 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
         Tuple of:
         - agent_task: Task dictionary for agent system input.
         - eval_data: Ground truth, rationale, metadata for evaluation.
+        - is_valid: Boolean indicating if the question should be processed
     """
     question_text = question_data.get("question", "")
     opa, opb, opc, opd = question_data.get("opa", ""), question_data.get("opb", ""), question_data.get("opc", ""), question_data.get("opd", "")
@@ -339,8 +370,19 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
     if original_choice_type == "multi":
         logging.debug(f"Question ID {question_data.get('id', 'unknown')} labeled as 'multi', treating as single choice.")
     
-    cop = question_data.get("cop", 1)
-    ground_truth = parse_cop_field(cop)
+    # Parse and validate cop field
+    cop = question_data.get("cop", "")
+    ground_truth, is_valid_cop = parse_cop_field(cop)
+    
+    if not is_valid_cop:
+        # Return error information for logging
+        error_info = {
+            "question_id": question_data.get("id", "unknown"),
+            "invalid_cop": cop,
+            "error_type": "invalid_ground_truth",
+            "message": f"Invalid cop value '{cop}' - question skipped"
+        }
+        return {}, error_info, False
 
     explanation = question_data.get("exp", "")
     subject_name = question_data.get("subject_name", "")
@@ -370,44 +412,51 @@ def format_medmcqa_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, An
         }
     }
 
-    return agent_task, eval_data
+    return agent_task, eval_data, True
 
-
-def parse_cop_field(cop) -> str:
+def parse_cop_field(cop) -> Tuple[str, bool]:
     """
-    Robustly parse the cop (correct option) field from MedMCQA dataset.
+    Parse the cop (correct option) field from MedMCQA dataset with 0-based indexing.
     
     Args:
         cop: The cop field value (can be int, str, or other)
         
     Returns:
-        Single letter representing the correct answer (A, B, C, or D)
+        Tuple of (letter, is_valid) where:
+        - letter: Single letter representing the correct answer (A, B, C, or D)
+        - is_valid: Boolean indicating if the parsing was successful
     """
-    # Handle integer values (most common case)
+    # Handle integer values (most common case) - 0-based indexing
     if isinstance(cop, int):
-        return chr(64 + cop) if 1 <= cop <= 4 else "A"
+        if 0 <= cop <= 3:
+            return chr(65 + cop), True  # 0→A, 1→B, 2→C, 3→D
+        else:
+            return "A", False
     
     # Handle string values
     elif isinstance(cop, str):
         cop = cop.strip()
         
-        # Handle numeric strings
+        # Handle numeric strings - 0-based indexing
         if cop.isdigit():
             cop_int = int(cop)
-            return chr(64 + cop_int) if 1 <= cop_int <= 4 else "A"
+            if 0 <= cop_int <= 3:
+                return chr(65 + cop_int), True
+            else:
+                return "A", False
         
         # Handle letter answers
         elif cop.upper() in ['A', 'B', 'C', 'D']:
-            return cop.upper()
+            return cop.upper(), True
         
-        # Handle comma-separated (take first one - fallback for edge cases)
+        # Handle comma-separated (take first one)
         elif ',' in cop:
             first_part = cop.split(',')[0].strip()
             return parse_cop_field(first_part)  # Recursive call
         
         # Handle empty strings
         elif not cop:
-            return "A"
+            return "A", False
         
         # Other string formats - try to extract number
         else:
@@ -415,9 +464,12 @@ def parse_cop_field(cop) -> str:
             match = re.search(r'\d+', cop)
             if match:
                 cop_int = int(match.group())
-                return chr(64 + cop_int) if 1 <= cop_int <= 4 else "A"
+                if 0 <= cop_int <= 3:
+                    return chr(65 + cop_int), True
+                else:
+                    return "A", False
             else:
-                return "A"  # Default fallback
+                return "A", False
     
     # Handle list/array values (edge case)
     elif isinstance(cop, (list, tuple)) and len(cop) > 0:
@@ -429,7 +481,7 @@ def parse_cop_field(cop) -> str:
         try:
             return parse_cop_field(str(cop))
         except:
-            return "A"  # Final fallback
+            return "A", False
 
 
 def format_mmlupro_med_for_task(question_data: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
@@ -1501,6 +1553,7 @@ def extract_agent_responses_info(simulation_results):
     
     return agent_responses_info
 
+
 def process_single_question(question_index: int, 
                             question: Dict[str, Any],
                             dataset_type: str,
@@ -1508,9 +1561,11 @@ def process_single_question(question_index: int,
                             deployment_config: Dict[str, str],
                             run_output_dir: str,
                             max_retries: int = 3,
-                            use_medrag: bool = False) -> Dict[str, Any]:
+                            use_medrag: bool = False,
+                            validation_errors: List = None) -> Dict[str, Any]:
     """
-    Enhanced question processing with robust vision support and error recovery.
+    Enhanced question processing with robust validation and error recovery.
+    Updated to handle new MedMCQA validation format.
     """
     import gc
     import traceback
@@ -1525,22 +1580,43 @@ def process_single_question(question_index: int,
     try:
         if dataset_type == "medqa":
             agent_task, eval_data = format_medqa_for_task(question)
+            is_valid = True
         elif dataset_type == "medmcqa":
-            agent_task, eval_data = format_medmcqa_for_task(question)
+            agent_task, eval_data, is_valid = format_medmcqa_for_task(question)
+            if not is_valid:
+                # eval_data contains error info when is_valid is False
+                if validation_errors is not None:
+                    validation_errors.append(eval_data)
+                
+                return {
+                    "question_index": question_index,
+                    "deployment_used": deployment_config['name'],
+                    "simulation_id": sim_id,
+                    "error": f"Validation error: {eval_data.get('message', 'Invalid question')}",
+                    "validation_error": True,
+                    "error_details": eval_data
+                }
         elif dataset_type == "mmlupro-med":
             agent_task, eval_data = format_mmlupro_med_for_task(question)
+            is_valid = True
         elif dataset_type == "pubmedqa":
             agent_task, eval_data = format_pubmedqa_for_task(question)
+            is_valid = True
         elif dataset_type == "ddxplus":
             agent_task, eval_data = format_ddxplus_for_task(question)
+            is_valid = True
         elif dataset_type == "medbullets":
             agent_task, eval_data = format_medbullets_for_task(question)
+            is_valid = True
         elif dataset_type == "pmc_vqa":
             agent_task, eval_data = format_pmc_vqa_for_task(question)
+            is_valid = True
         elif dataset_type == "path_vqa":
             agent_task, eval_data = format_path_vqa_for_task(question)
+            is_valid = True
         else:
             raise ValueError(f"Unknown dataset type: {dataset_type}")
+            
     except Exception as e:
         logging.error(f"Failed to format question {question_index}: {str(e)}")
         return {
@@ -1702,6 +1778,8 @@ def process_single_question(question_index: int,
     return question_result
 
 
+
+
 def extract_vision_performance_metrics(simulation_results: Dict[str, Any]) -> Dict[str, Any]:
     """Fixed vision metrics extraction."""
     vision_stats = {
@@ -1799,7 +1877,6 @@ def track_agent_mind_changes(agent_analyses, agent_decisions):
     
     return mind_changes
 
-
 def run_questions_with_configuration(
     questions: List[Dict[str, Any]],
     dataset_type: str,
@@ -1807,11 +1884,12 @@ def run_questions_with_configuration(
     output_dir: Optional[str] = None,
     max_retries: int = 3,
     n_max: int = 5,
-    use_medrag: bool = False  # FIXED: Parameter properly passed
+    use_medrag: bool = False,
+    validation_errors: List = None  # NEW: Pass validation errors from dataset loading
 ) -> Dict[str, Any]:
     """
     Run questions with specific configuration using parallel processing at question level.
-    FIXED VERSION with proper MedRAG metrics collection.
+    Updated to handle validation errors from MedMCQA.
     """
     config_name = configuration.get("name", "unknown")
     if use_medrag:
@@ -1845,7 +1923,7 @@ def run_questions_with_configuration(
     if run_output_dir:
         os.makedirs(run_output_dir, exist_ok=True)
     
-    # Initialize results structure with FIXED MedRAG metrics
+    # Initialize results structure with validation error tracking
     results = {
         "configuration": config_name,
         "use_medrag": use_medrag,
@@ -1860,6 +1938,7 @@ def run_questions_with_configuration(
         },
         "question_results": [],
         "errors": [],
+        "validation_errors": validation_errors or [],  # NEW: Track validation errors separately
         "summary": {
             "majority_voting": {"correct": 0, "total": 0},
             "weighted_voting": {"correct": 0, "total": 0},
@@ -1885,6 +1964,9 @@ def run_questions_with_configuration(
     # Add summary for yes/no/maybe if PubMedQA
     if dataset_type == "pubmedqa":
         results["summary"]["yes_no_maybe_voting"] = {"correct": 0, "total": 0}
+    
+    # Track validation errors separately (for MedMCQA)
+    current_validation_errors = []
     
     # Process questions in parallel batches
     batch_size = num_deployments
@@ -1919,7 +2001,8 @@ def run_questions_with_configuration(
                         deployment_config,
                         run_output_dir,
                         max_retries,
-                        use_medrag  # FIXED: Pass MedRAG parameter
+                        use_medrag,
+                        current_validation_errors  # Pass validation errors list
                     )
                     
                     future_to_info[future] = {
@@ -1932,9 +2015,17 @@ def run_questions_with_configuration(
                     info = future_to_info[future]
                     try:
                         question_result = future.result()
+                        
+                        # Check if this was a validation error (for MedMCQA)
+                        if question_result.get("validation_error", False):
+                            results["validation_errors"].append(question_result.get("error_details", {}))
+                            logging.warning(f"Validation error for Q{info['question_index']}: {question_result.get('error', 'Unknown')}")
+                            pbar.update(1)
+                            continue
+                        
                         results["question_results"].append(question_result)
                         
-                        # FIXED: Track MedRAG usage properly
+                        # Track MedRAG usage properly
                         if use_medrag and "medrag_info" in question_result:
                             medrag_info = question_result["medrag_info"]
                             if medrag_info.get("enabled", False):
@@ -1959,6 +2050,7 @@ def run_questions_with_configuration(
                             'deployment': info['deployment'],
                             'processed': len(results["question_results"]),
                             'errors': len(results["errors"]),
+                            'validation_errors': len(results["validation_errors"]),
                             'medrag_success': results["medrag_summary"]["successful_retrievals"] if use_medrag else 0
                         })
                         
@@ -2014,7 +2106,11 @@ def run_questions_with_configuration(
                         })
                         pbar.update(1)
     
-    # FIXED: Calculate final MedRAG statistics
+    # Add current validation errors to results
+    if current_validation_errors:
+        results["validation_errors"].extend(current_validation_errors)
+    
+    # Calculate final statistics
     total_processed = len([q for q in results["question_results"] if "error" not in q])
     results["disagreement_summary"]["disagreement_rate"] = (
         results["disagreement_summary"]["total_disagreements"] / total_processed 
@@ -2061,7 +2157,7 @@ def run_questions_with_configuration(
             correct = results["complexity_metrics"]["correct"].get(level, 0)
             results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
     
-    # Save enhanced overall results
+    # Save enhanced overall results including validation errors
     if run_output_dir:
         try:
             with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
@@ -2070,13 +2166,18 @@ def run_questions_with_configuration(
             with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
                 json.dump(results["errors"], f, indent=2)
             
+            # NEW: Save validation errors separately
+            if results["validation_errors"]:
+                with open(os.path.join(run_output_dir, "validation_errors.json"), 'w') as f:
+                    json.dump(results["validation_errors"], f, indent=2)
+            
             with open(os.path.join(run_output_dir, "disagreement_analysis.json"), 'w') as f:
                 json.dump(results["disagreement_summary"], f, indent=2)
             
             with open(os.path.join(run_output_dir, "deployment_usage.json"), 'w') as f:
                 json.dump(results["deployment_usage"], f, indent=2)
                 
-            # FIXED: Save MedRAG metrics
+            # Save MedRAG metrics
             if use_medrag:
                 with open(os.path.join(run_output_dir, "medrag_metrics.json"), 'w') as f:
                     json.dump(results["medrag_summary"], f, indent=2)
@@ -2087,7 +2188,7 @@ def run_questions_with_configuration(
         except Exception as e:
             logging.error(f"Failed to save enhanced summary results: {str(e)}")
     
-    # FIXED: Enhanced summary print with MedRAG info
+    # Enhanced summary print with validation error info
     print(f"\nSummary for {config_name} on {dataset_type}:")
     for method, stats in results["summary"].items():
         if "accuracy" in stats:
@@ -2105,7 +2206,11 @@ def run_questions_with_configuration(
         print(f"    Enhancement Success Rate: {medrag_summary['enhancement_success_rate']:.2%}")
     
     if results["errors"]:
-        print(f"  Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+        print(f"  Processing Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+    
+    # NEW: Print validation error summary
+    if results["validation_errors"]:
+        print(f"  Validation Errors: {len(results['validation_errors'])} questions skipped due to invalid ground truth")
     
     print(f"  Disagreements: {results['disagreement_summary']['total_disagreements']}/{total_processed} questions ({results['disagreement_summary']['disagreement_rate']:.2%})")
     
@@ -2541,6 +2646,7 @@ Based on your visual examination, answer: You must respond with option A or B, n
     return agent_task, eval_data 
 
 ######################### ===================================== MAIN RUNNER FUNCTION ===================================== #########################
+
 def run_dataset(
     dataset_type: str,
     num_questions: int = 50,
@@ -2562,9 +2668,10 @@ def run_dataset(
 ) -> Dict[str, Any]:
     """
     Run a dataset through the agent system with question-level parallel processing.
+    Updated to handle MedMCQA validation errors.
     
     Args:
-        dataset_type: Type of dataset ("medqa", "medmcqa", "pubmedqa", "mmlupro-med")
+        dataset_type: Type of dataset ("medqa", "medmcqa", "pubmedqa", "mmlupro-med", etc.)
         num_questions: Number of questions to process
         random_seed: Random seed for reproducibility
         run_all_configs: Whether to run all configurations
@@ -2580,6 +2687,7 @@ def run_dataset(
         recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
         recruitment_pool: Pool of agent roles to recruit from
         n_max: Maximum number of agents for intermediate teams
+        use_medrag: Enable MedRAG knowledge enhancement
         
     Returns:
         Results dictionary
@@ -2592,11 +2700,20 @@ def run_dataset(
     medrag_status = "with MedRAG" if use_medrag else "without MedRAG"
     logging.info(f"Running dataset: {dataset_type} {medrag_status}, n_max={n_max}, recruitment_method={recruitment_method}")
 
-    # Load the dataset
+    # Load the dataset with validation error tracking
+    validation_errors = []
+    
     if dataset_type == "medqa":
         questions = load_medqa_dataset(num_questions, random_seed)
     elif dataset_type == "medmcqa":
-        questions = load_medmcqa_dataset(num_questions, random_seed, include_multi_choice=True)
+        # NEW: Handle validation errors from MedMCQA
+        questions, validation_errors = load_medmcqa_dataset(num_questions, random_seed, include_multi_choice=True)
+        if validation_errors:
+            logging.warning(f"MedMCQA: {len(validation_errors)} questions had validation errors and were skipped")
+            for error in validation_errors[:5]:  # Log first 5 errors
+                logging.warning(f"  - {error.get('message', 'Unknown error')}")
+            if len(validation_errors) > 5:
+                logging.warning(f"  - ... and {len(validation_errors) - 5} more validation errors")
     elif dataset_type == "pubmedqa":
         questions = load_pubmedqa_dataset(num_questions, random_seed)
     elif dataset_type == "mmlupro-med":
@@ -2614,7 +2731,15 @@ def run_dataset(
         return {"error": f"Unknown dataset type: {dataset_type}"}
     
     if not questions:
-        return {"error": "No questions loaded"}
+        error_msg = "No questions loaded"
+        if validation_errors:
+            error_msg += f" (all {len(validation_errors)} questions had validation errors)"
+        return {"error": error_msg, "validation_errors": validation_errors}
+    
+    # Log successful loading with validation error summary
+    logging.info(f"Successfully loaded {len(questions)} valid questions")
+    if validation_errors:
+        logging.info(f"Skipped {len(validation_errors)} questions due to validation errors")
     
     # Log MedRAG configuration
     if use_medrag:
@@ -2633,6 +2758,13 @@ def run_dataset(
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_output_dir = os.path.join(output_dir, f"{dataset_type}_run_{timestamp}")
         os.makedirs(run_output_dir, exist_ok=True)
+        
+        # NEW: Save validation errors to main output directory
+        if validation_errors:
+            validation_errors_file = os.path.join(run_output_dir, "dataset_validation_errors.json")
+            with open(validation_errors_file, 'w') as f:
+                json.dump(validation_errors, f, indent=2)
+            logging.info(f"Saved {len(validation_errors)} validation errors to {validation_errors_file}")
     else:
         run_output_dir = None
     
@@ -2644,7 +2776,6 @@ def run_dataset(
     # Define configurations to test
     if run_all_configs:
         configurations = [
-
             # Single features with intermediate recruitment
             {
                 "name": "Leadership", 
@@ -2658,8 +2789,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             },
             {
                 "name": "Closed-loop", 
@@ -2673,8 +2804,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             },
             {
                 "name": "Mutual Monitoring", 
@@ -2688,8 +2819,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             },
             {
                 "name": "Shared Mental Model", 
@@ -2703,8 +2834,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             },
             {
                 "name": "Team Orientation", 
@@ -2718,8 +2849,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             },
             {
                 "name": "Mutual Trust", 
@@ -2733,8 +2864,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             },
             # All features with recruitment
             {
@@ -2749,8 +2880,8 @@ def run_dataset(
                 "recruitment": True,
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
-                "n_max": n_max,  # Use specified n_max value
-                "medrag": use_medrag  # Pass MedRAG usage
+                "n_max": n_max,
+                "medrag": use_medrag
             }
         ]
     else:
@@ -2766,8 +2897,8 @@ def run_dataset(
             "recruitment": recruitment,            
             "recruitment_method": recruitment_method,
             "recruitment_pool": recruitment_pool,
-            "n_max": n_max,  # Use specified n_max value
-            "medrag": use_medrag  # Pass MedRAG usage
+            "n_max": n_max,
+            "medrag": use_medrag
         }]
     
     # Run each configuration
@@ -2803,7 +2934,8 @@ def run_dataset(
             config_dict,
             run_output_dir,
             n_max=config_dict.get("n_max", n_max),
-             use_medrag=config_use_medrag 
+            use_medrag=config_use_medrag,
+            validation_errors=validation_errors  # NEW: Pass validation errors
         )
         all_results.append(result)
     
@@ -2811,14 +2943,28 @@ def run_dataset(
     combined_results = {
         "dataset": dataset_type,
         "num_questions": num_questions,
+        "num_valid_questions": len(questions),
+        "num_validation_errors": len(validation_errors),
         "random_seed": random_seed,
         "timestamp": datetime.now().isoformat(),
         "parallel_processing": "question_level",
         "deployments_used": [d['name'] for d in available_deployments],
         "configurations": [r["configuration"] for r in all_results],
         "summaries": {r["configuration"]: r["summary"] for r in all_results},
-        "medrag_summaries": {r["configuration"]: r.get("medrag_summary", {}) for r in all_results if r.get("use_medrag", False)}
+        "medrag_summaries": {r["configuration"]: r.get("medrag_summary", {}) for r in all_results if r.get("use_medrag", False)},
+        "validation_errors_summary": {
+            "total_validation_errors": len(validation_errors),
+            "error_types": {}
+        }
     }
+    
+    # Summarize validation error types
+    if validation_errors:
+        error_type_counts = {}
+        for error in validation_errors:
+            error_type = error.get("error_type", "unknown")
+            error_type_counts[error_type] = error_type_counts.get(error_type, 0) + 1
+        combined_results["validation_errors_summary"]["error_types"] = error_type_counts
     
     # Save combined results
     if run_output_dir:

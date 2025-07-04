@@ -176,3 +176,4 @@ results/
 results\
 /dataset
 /corpus
+fix_medmcqa_groundtruth.py
