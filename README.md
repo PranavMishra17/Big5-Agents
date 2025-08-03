@@ -2,32 +2,6 @@
 
 A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.
 
-## Table of Contents
-- [Overview](#overview)
-- [Big Five Teamwork Model](#big-five-teamwork-model)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Basic Usage](#basic-usage)
-  - [Command Line Options](#command-line-options)
-  - [Running Multiple Configurations](#running-multiple-configurations)
-- [Dataset Runner](#dataset-runner)
-  - [Dataset Runner Options](#dataset-runner-options)
-  - [Examples](#dataset-runner-examples)
-- [Agent Recruitment](#agent-recruitment)
-  - [Complexity Levels](#complexity-levels)
-  - [Recruitment Methods](#recruitment-methods)
-  - [Recruitment Pools](#recruitment-pools)
-- [Configuration](#configuration)
-  - [Task Configuration](#task-configuration)
-  - [Prompt Management](#prompt-management)
-  - [Agent Roles & Recruitment Pools](#agent-roles--recruitment-pools)
-  - [Decision Methods](#decision-methods)
-- [Logs Structure](#logs-structure)
-- [Results Output](#results-output)
-- [Project Structure](#project-structure)
-- [Extending the System](#extending-the-system)
-- [References](#references)
-
 ## Overview
 
 This system implements a multi-agent approach for collaborative problem solving with the following features:
@@ -55,8 +29,11 @@ Our system is built on the Big Five teamwork model introduced by Salas et al. (2
 
 These components are augmented by three coordinating mechanisms:
 6. **Shared Mental Models**
+
 7. **Closed-Loop Communication**
+
 8. **Mutual Trust**
+
 
 ## Installation
 
