@@ -11,82 +11,161 @@ load_dotenv()
 
 # Azure OpenAI settings - Multiple deployments for parallel processing
 AZURE_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
+AZURE_API_KEY = ""
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
+AZURE_ENDPOINT = "https://teammedagent-azureopenai.openai.azure.com/"
+
+AZURE_CHAT_COMPLETIONS_URL = "https://teammedagent-azureopenai.openai.azure.com/openai/deployments/gpt-4o-10/chat/completions?api-version=2025-01-01-preview"
 
 # Multiple deployment configuration for question-level parallel processing
 AZURE_DEPLOYMENTS = [
     {
         "name": "deployment_1",
-        "deployment": "VARELab-GPT4o",
+        "deployment": "gpt-4o",
         "api_key": AZURE_API_KEY,
         "endpoint": AZURE_ENDPOINT,
-        "api_version": "2024-08-01-preview"
-    },
+        "api_version": "2024-12-01-preview"
+    }
+]
+
+"""
+,
     {
         "name": "deployment_2", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_2', "VARELab-GPT4o-2"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-2",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_3", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_3', "VARELab-GPT4o-3"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-3",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_4", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-4"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-4",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_5", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-5"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-5",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_6", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-6"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-6",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_7", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-7"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-7",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_8", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-8"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-8",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_9", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-9"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-9",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     },
     {
         "name": "deployment_10", 
-        "deployment": os.environ.get('AZURE_DEPLOYMENT_4', "VARELab-GPT4o-10"),
-        "api_key": os.environ.get('AZURE_OPENAI_API_KEY', AZURE_API_KEY),
-        "endpoint": os.environ.get('AZURE_ENDPOINT', AZURE_ENDPOINT),
+        "deployment": "gpt-4o-10",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_11", 
+        "deployment": "gpt-4o-11",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_12", 
+        "deployment": "gpt-4o-12",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_13", 
+        "deployment": "gpt-4o-13",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_14", 
+        "deployment": "gpt-4o-14",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_15", 
+        "deployment": "gpt-4o-15",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_16", 
+        "deployment": "gpt-4o-16",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_17", 
+        "deployment": "gpt-4o-17",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_18", 
+        "deployment": "gpt-4o-18",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_19", 
+        "deployment": "gpt-4o-19",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
+        "api_version": "2025-01-01-preview"
+    },
+    {
+        "name": "deployment_20", 
+        "deployment": "gpt-4o-20",
+        "api_key": AZURE_API_KEY,
+        "endpoint": AZURE_ENDPOINT,
         "api_version": "2025-01-01-preview"
     }
-]
 
+
+    
 # Fallback to single deployment if additional deployments not configured
 available_deployments = []
 for deployment in AZURE_DEPLOYMENTS:
@@ -106,6 +185,65 @@ print(f"Configured {len(AZURE_DEPLOYMENTS)} deployment(s): {[d['name'] for d in 
 # Legacy single deployment support (for backward compatibility)
 AZURE_DEPLOYMENT = AZURE_DEPLOYMENTS[0]["deployment"]
 AZURE_API_VERSION = AZURE_DEPLOYMENTS[0]["api_version"]
+
+"""
+
+
+# OpenAI API settings - Multiple deployments for parallel processing
+#OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENAI_API_KEY = ""
+OPENAI_ORG_KEY = ""
+# Multiple deployment configuration for question-level parallel processing
+# You can repeat the same key multiple times to test rate limits
+# Or use different keys/organizations for separate rate limits
+OPENAI_DEPLOYMENTS = [
+    {
+        "name": "deployment_1",
+        "api_key": OPENAI_API_KEY,
+        "organization": os.environ.get('OPENAI_ORG_1',OPENAI_ORG_KEY ),  # Optional
+        "model": "gpt-4o"
+    },
+    {
+        "name": "deployment_2", 
+        "api_key": os.environ.get('OPENAI_API_KEY_2', OPENAI_API_KEY),  # Same or different key
+        "organization": os.environ.get('OPENAI_ORG_2', None),
+        "model": "gpt-4o"
+    },
+    {
+        "name": "deployment_3", 
+        "api_key": os.environ.get('OPENAI_API_KEY_3', OPENAI_API_KEY),
+        "organization": os.environ.get('OPENAI_ORG_3', None),
+        "model": "gpt-4o"
+    }
+]
+
+# Validate deployments
+available_deployments = []
+for deployment in OPENAI_DEPLOYMENTS:
+    if deployment["api_key"]:
+        available_deployments.append(deployment)
+    else:
+        print(f"Warning: Deployment {deployment['name']} missing API key, skipping")
+
+if not available_deployments:
+    print("Error: No deployments are properly configured!")
+    # Fallback to single deployment
+    OPENAI_DEPLOYMENTS = [{
+        "name": "fallback",
+        "api_key": OPENAI_API_KEY,
+        "organization": None,
+        "model": "gpt-4o"
+    }]
+else:
+    OPENAI_DEPLOYMENTS = available_deployments
+
+print(f"Configured {len(OPENAI_DEPLOYMENTS)} OpenAI deployment(s): {[d['name'] for d in OPENAI_DEPLOYMENTS]}")
+
+# Legacy support (update references)
+AZURE_DEPLOYMENTS = OPENAI_DEPLOYMENTS  # For backward compatibility
+AZURE_API_KEY = OPENAI_API_KEY
+AZURE_ENDPOINT = "https://api.openai.com/v1"
+
 
 # Model settings
 TEMPERATURE = 0.5
@@ -425,8 +563,11 @@ MUTUAL_TRUST_FACTOR = 0.9  # Default trust level (0.0-1.0)
 USE_AGENT_RECRUITMENT = False  # Default disabled
 
 # Parallel processing settings - Updated for question-level parallelism
-ENABLE_QUESTION_PARALLEL = len(AZURE_DEPLOYMENTS) > 1  # Enable question-level parallel processing
-MAX_PARALLEL_QUESTIONS = len(AZURE_DEPLOYMENTS)  # Maximum questions to process in parallel
+#ENABLE_QUESTION_PARALLEL = len(AZURE_DEPLOYMENTS) > 1  # Enable question-level parallel processing
+#MAX_PARALLEL_QUESTIONS = len(AZURE_DEPLOYMENTS)  # Maximum questions to process in parallel
+# Parallel processing settings
+ENABLE_QUESTION_PARALLEL = len(OPENAI_DEPLOYMENTS) > 1
+MAX_PARALLEL_QUESTIONS = len(OPENAI_DEPLOYMENTS)
 
 # Legacy parallel processing settings (deprecated but kept for compatibility)
 ENABLE_PARALLEL_PROCESSING = False  # Agent-level parallelism is now disabled
@@ -462,59 +603,34 @@ VISION_KEYWORDS = {
 VISION_ERROR_RETRY_ATTEMPTS = 2  # Extra retries for vision-specific errors
 FALLBACK_TO_TEXT_ON_VISION_FAILURE = True  # Allow fallback to text-only analysis
 
-
 def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
-    """
-    Get deployment configuration for agent based on round-robin distribution.
-    
-    NOTE: This function is now used less frequently due to the switch to 
-    question-level parallel processing, but kept for compatibility.
-    
-    Args:
-        agent_index: Index of the agent (0-based)
-        
-    Returns:
-        Deployment configuration dictionary
-    """
-    deployment_index = agent_index % len(AZURE_DEPLOYMENTS)
-    return AZURE_DEPLOYMENTS[deployment_index]
+    """Get deployment configuration for agent based on round-robin distribution."""
+    deployment_index = agent_index % len(OPENAI_DEPLOYMENTS)
+    return OPENAI_DEPLOYMENTS[deployment_index]
 
 def get_deployment_for_question(question_index: int) -> Dict[str, str]:
-    """
-    Get deployment configuration for question based on round-robin distribution.
-    
-    This is the primary method for assigning deployments in question-level parallelism.
-    
-    Args:
-        question_index: Index of the question (0-based)
-        
-    Returns:
-        Deployment configuration dictionary
-    """
-    deployment_index = question_index % len(AZURE_DEPLOYMENTS)
-    return AZURE_DEPLOYMENTS[deployment_index]
+    """Get deployment configuration for question based on round-robin distribution."""
+    deployment_index = question_index % len(OPENAI_DEPLOYMENTS)
+    return OPENAI_DEPLOYMENTS[deployment_index]
 
 def get_all_deployments() -> List[Dict[str, str]]:
     """Get all available deployment configurations."""
-    return AZURE_DEPLOYMENTS.copy()
+    return OPENAI_DEPLOYMENTS.copy()
 
 def get_parallel_processing_info() -> Dict[str, Any]:
-    """
-    Get information about the current parallel processing configuration.
-    
-    Returns:
-        Dictionary with parallel processing details
-    """
+    """Get information about the current parallel processing configuration."""
     return {
         "question_level_parallel": ENABLE_QUESTION_PARALLEL,
         "max_parallel_questions": MAX_PARALLEL_QUESTIONS,
-        "num_deployments": len(AZURE_DEPLOYMENTS),
-        "deployment_names": [d['name'] for d in AZURE_DEPLOYMENTS],
-        "agent_level_parallel": ENABLE_PARALLEL_PROCESSING,  # Should be False
+        "num_deployments": len(OPENAI_DEPLOYMENTS),
+        "deployment_names": [d['name'] for d in OPENAI_DEPLOYMENTS],
+        "agent_level_parallel": ENABLE_PARALLEL_PROCESSING,
         "processing_mode": "question_level" if ENABLE_QUESTION_PARALLEL else "sequential"
     }
-
 # Print configuration info on import
+
+
+# Print configuration info
 if __name__ == "__main__":
     print("\n=== Agent System Configuration ===")
     parallel_info = get_parallel_processing_info()
