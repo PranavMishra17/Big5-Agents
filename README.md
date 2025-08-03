@@ -54,9 +54,9 @@ Our system is built on the Big Five teamwork model introduced by Salas et al. (2
 5. **Team Orientation** - Shared mental models for better coordination
 
 These components are augmented by three coordinating mechanisms:
-- Shared Mental Models
-- Closed-Loop Communication
-- Mutual Trust
+6. **Shared Mental Models**
+7. **Closed-Loop Communication**
+8. **Mutual Trust**
 
 ## Installation
 
@@ -90,110 +90,317 @@ python main.py --trust --trust-factor 0.6
 python main.py --recruitment
 ```
 
-### Command Line Options
+## 🆕 Dynamic Features
 
-```
---leadership      Enable team leadership component
---closedloop      Enable closed-loop communication
---mutual          Enable mutual performance monitoring
---mental          Enable shared mental model
---orientation     Enable Team Orientataion
---trust           Enable Mutual Trust
---trust-factor    Custom trust factor[0-1]
---all             Run all feature combinations
---random-leader   Randomly assign leadership
---runs N          Number of runs for each configuration (default: 1)
---recruitment     Enable dynamic agent recruitment
---recruitment-method {adaptive|basic|intermediate|advanced}
---recruitment-pool {general|medical}
-```
+### Dynamic Teamwork Configuration
+- **Automatic Component Selection**: AI automatically selects up to 3 teamwork components based on question analysis
+- **Question-Adaptive**: Each question gets analyzed to determine optimal collaboration strategy
+- **Component Options**: Leadership, Closed-Loop Communication, Mutual Monitoring, Shared Mental Model, Team Orientation, Mutual Trust
 
-### Running Multiple Configurations
+### Dynamic Agent Recruitment
+- **Adaptive Team Size**: Automatically determines optimal team size (2-5 agents) per question
+- **Complexity-Based**: Team size and composition adapt to question complexity and scope
+- **Efficiency Optimized**: Balances expertise diversity with coordination overhead
+
+
+### Basic Usage (Dynamic Configuration)
 
 ```bash
-# Run all possible combinations with 3 runs each
-python main.py --all --runs 3
+# Run with dynamic selection (default)
+python dataset_runner.py --dataset medqa --num-questions 20
+
+# Run with dynamic selection explicitly enabled
+python dataset_runner.py --dataset medmcqa --num-questions 50 --enable-dynamic-selection
 ```
 
-## Dataset Runner
-
-The dataset runner allows you to evaluate your agent system on datasets like MedQA and PubMedQA:
-
-### Dataset Runner Options
-
-```
---dataset TYPE         Dataset to run (medqa or pubmedqa)
---num-questions N      Number of questions to process (default: 50)
---seed N               Random seed for reproducibility (default: 42)
---all                  Run all feature configurations
---output-dir PATH      Output directory for results
---leadership           Use team leadership
---closedloop           Use closed-loop communication
---mutual               Use mutual performance monitoring
---mental               Use shared mental model
---orientation          Use team orientation
---trust                Use mutual trust
---trust-factor N       Mutual trust factor (0.0-1.0) (default: 0.8)
---recruitment          Use dynamic agent recruitment
---recruitment-method   Method for recruitment (adaptive, basic, intermediate, advanced)
---recruitment-pool     Pool of agent roles to recruit from (general, medical)
-```
-
-### Dataset Runner Examples
+### Static Configuration (Backward Compatibility)
 
 ```bash
-# Run 50 random MedQA questions with all teamwork components
-python dataset_runner.py --dataset medqa --num-questions 50 --leadership --closedloop --mutual --mental
+# Disable dynamic selection and use static config
+python dataset_runner.py --dataset pubmedqa --num-questions 30 --disable-dynamic-selection --leadership --closedloop
 
-# Run with recruitment of medical specialists
-python dataset_runner.py --dataset medqa --recruitment --recruitment-pool medical
-
-# Run all configurations (baseline, individual components, all components) on PubMedQA
-python dataset_runner.py --dataset pubmedqa --num-questions 25 --all
-
-# Specify custom output directory and random seed
-python dataset_runner.py --dataset medqa --output-dir ./results --seed 123 --all
+# Specific team size (disables dynamic sizing)
+python dataset_runner.py --dataset ddxplus --num-questions 25 --n-max 4 --leadership --mutual
 ```
 
-## Agent Recruitment
+### Advanced Usage
 
-The system supports dynamic agent team assembly based on task complexity:
+```bash
+# Run all configurations including dynamic
+python dataset_runner.py --dataset medbullets --num-questions 40 --all
 
-### Complexity Levels
+# Custom recruitment with dynamic selection
+python dataset_runner.py --dataset medqa --recruitment --recruitment-method adaptive --recruitment-pool medical
 
-- **Basic**: Single expert for straightforward questions
-- **Intermediate**: Team of specialists (5 by default) with hierarchical relationships
-- **Advanced**: Multiple specialized teams (3 teams of 3 experts) with a chief coordinator
+# Vision-enabled datasets with dynamic configuration
+python dataset_runner.py --dataset pmc_vqa --num-questions 20 --enable-dynamic-selection
+```
 
-### Recruitment Methods
+## 📊 Supported Datasets
 
-- **Adaptive**: Automatically determines complexity level based on question analysis
-- **Fixed**: Use pre-determined complexity level (basic, intermediate, advanced)
+### Text-Only Datasets
+- **MedQA**: Medical multiple-choice questions with explanations
+- **MedMCQA**: Medical entrance exam questions  
+- **PubMedQA**: Yes/No/Maybe research questions with abstracts
+- **MMLU-Pro Medical**: Advanced medical knowledge questions
+- **DDXPlus**: Clinical diagnosis cases with patient symptoms
+- **MedBullets**: USMLE-style clinical questions
 
-### Recruitment Pools
+### Vision-Enabled Datasets  
+- **PMC-VQA**: Medical image questions from research papers
+- **Path-VQA**: Pathology slide analysis questions
 
-- **General**: Generic roles suitable for diverse tasks (Critical Analyst, Domain Expert, etc.)
-- **Medical**: Specialized medical roles for healthcare questions (Cardiologist, Neurologist, etc.)
+## 🔧 Configuration Options
 
-## Configuration
+### Dynamic Selection Parameters
 
-The `config.py` file contains all configuration settings:
+```bash
+--enable-dynamic-selection    # Enable AI-driven team configuration (default: True)
+--disable-dynamic-selection   # Use static configuration only
+```
 
-### Task Configuration
+### Teamwork Components (Static Mode)
 
-Edit the `TASK` dictionary to change the task:
+```bash
+--leadership              # Enable team leadership
+--closedloop             # Enable closed-loop communication  
+--mutual                 # Enable mutual monitoring
+--mental                 # Enable shared mental model
+--orientation            # Enable team orientation
+--trust                  # Enable mutual trust
+--trust-factor 0.8       # Set mutual trust factor (0.0-1.0)
+```
 
+### Agent Recruitment
+
+```bash
+--recruitment                    # Enable dynamic agent recruitment
+--recruitment-method adaptive    # Method: adaptive, basic, intermediate, advanced
+--recruitment-pool medical       # Pool: general, medical
+--n-max 5                       # Maximum agents (disables dynamic sizing if set)
+```
+
+### Dataset and Processing
+
+```bash
+--dataset medqa              # Dataset to use
+--num-questions 50          # Number of questions to process
+--seed 42                   # Random seed for reproducibility
+--all                       # Run all configurations for comparison
+--output-dir ./results      # Output directory for results
+```
+
+## 📈 Understanding Results
+
+### Basic Output
+```
+Summary for Dynamic Configuration on medqa:
+  Majority Voting: 42/50 correct (84.00%)
+  Weighted Voting: 45/50 correct (90.00%)
+  Borda Count: 43/50 correct (86.00%)
+  
+Dynamic Selection:
+  Team sizes used: {'3': 15, '4': 20, '5': 15}
+  Teamwork configs used: {'leadership,monitoring': 25, 'leadership,closedloop,trust': 25}
+```
+
+### Detailed Analysis Files
+- `summary.json`: Performance metrics by decision method
+- `dynamic_selection_results.json`: Dynamic selection patterns and statistics
+- `disagreement_analysis.json`: Agent disagreement patterns  
+- `complexity_distribution.json`: Question complexity analysis
+- `detailed_results_enhanced.json`: Complete simulation data
+
+## 🔍 Advanced Features
+
+### Vision Processing
+```bash
+# Automatic vision agent recruitment for image datasets
+python dataset_runner.py --dataset pmc_vqa --enable-dynamic-selection
+
+# Pathology-specific processing
+python dataset_runner.py --dataset path_vqa --recruitment-pool medical
+```
+
+### Multi-Deployment Support
+```bash
+# Parallel processing across multiple deployments
+# Automatically distributes questions across available deployments
+# Check deployment_usage.json for load distribution
+```
+
+### Error Recovery and Validation
+```bash
+# Automatic validation error handling
+# Vision fallback for corrupted images  
+# Retry mechanisms with exponential backoff
+```
+
+
+### Explicit Configuration (Disables Dynamic Selection)
+```bash
+# Any explicit teamwork parameter disables dynamic selection
+python dataset_runner.py --leadership --closedloop  # Static config used
+
+# Explicit team size disables dynamic sizing
+python dataset_runner.py --n-max 4  # Uses exactly 4 agents
+
+# Combination disables all dynamic features
+python dataset_runner.py --n-max 3 --leadership --mutual  # Fully static
+```
+
+### Legacy API Support
 ```python
-TASK = {
-    "name": "NASA Lunar Survival",
-    "description": "Rank items in order of importance for a lunar trek...",
-    "type": "ranking",  # Options: "ranking", "mcq", "open_ended"
-    "options": [...],  # List of items or options
-    "expected_output_format": "Ordered list from 1 to 15",
-    "ground_truth": [...],  # Optional ground truth for evaluation
-    "rationale": {...}  # Optional reasoning for ground truth
+# All existing function calls continue to work
+from simulator import AgentSystemSimulator
+
+# Old way (still works)
+sim = AgentSystemSimulator(
+    use_team_leadership=True,
+    use_closed_loop_comm=True,
+    n_max=4
+)
+
+# New way (with dynamic selection)
+sim = AgentSystemSimulator(
+    enable_dynamic_selection=True  # AI determines optimal config
+)
+```
+
+## 📊 Performance Analysis
+
+### Dynamic vs Static Comparison
+```bash
+# Compare dynamic vs static configurations
+python dataset_runner.py --dataset medqa --all --num-questions 100
+
+# Results show performance across:
+# - Dynamic Configuration (adapts per question)
+# - Static Leadership (always uses leadership)
+# - Static Closed-Loop (always uses closed-loop)
+# - Static All Features (uses all components)
+```
+
+### Configuration Effectiveness
+```python
+# Analyze which configurations work best for different question types
+{
+  "Dynamic Configuration": {
+    "accuracy": 0.87,
+    "team_sizes_used": {"3": 15, "4": 20, "5": 15},
+    "components_used": {"leadership,monitoring": 25, "leadership,trust": 25}
+  },
+  "Static All Features": {
+    "accuracy": 0.82,
+    "overhead": "High coordination overhead for simple questions"
+  }
 }
 ```
+
+## 🛠️ Development and Customization
+
+### Adding New Teamwork Components
+```python
+# 1. Create component in components/ directory
+# 2. Add to DYNAMIC_RECRUITMENT_PROMPTS in utils/prompts.py
+# 3. Update component_mapping in determine_optimal_teamwork_config()
+# 4. Add initialization in AgentSystemSimulator
+```
+
+### Custom Dynamic Selection Logic
+```python
+# Modify determine_optimal_teamwork_config() in agent_recruitment.py
+def determine_optimal_teamwork_config(question, complexity, team_size):
+    # Your custom logic here
+    # Return dict with teamwork component selections
+    pass
+```
+
+### Adding New Datasets
+```python
+# 1. Create load_your_dataset() function in dataset_runner.py
+# 2. Create format_your_dataset_for_task() function
+# 3. Add dataset choice to main() argument parser
+# 4. Add vision support if needed
+```
+
+## 🧪 Testing and Validation
+
+### Quick Test
+```bash
+# Test with small dataset
+python dataset_runner.py --dataset medqa --num-questions 5 --enable-dynamic-selection
+
+# Validate all datasets
+python dataset_runner.py --validate-only
+```
+
+### Configuration Testing
+```bash
+# Test static vs dynamic on same questions
+python dataset_runner.py --dataset medmcqa --num-questions 20 --seed 42 --enable-dynamic-selection
+python dataset_runner.py --dataset medmcqa --num-questions 20 --seed 42 --disable-dynamic-selection --leadership
+```
+
+### Error Simulation
+```bash
+# Test error recovery with challenging datasets
+python dataset_runner.py --dataset pmc_vqa --num-questions 10  # Vision errors
+python dataset_runner.py --dataset medmcqa --num-questions 50  # Validation errors
+```
+
+## 📝 Logging and Monitoring
+
+### Enhanced Logging
+```python
+# Dynamic selection decisions are logged
+2024-01-01 10:00:00 [INFO] Dynamic team size selection: 4 agents
+2024-01-01 10:00:01 [INFO] Dynamic teamwork configuration: ['leadership', 'monitoring']
+2024-01-01 10:00:02 [INFO] Selection rationale: Complex diagnostic case requiring coordination
+
+# Vision processing logs
+2024-01-01 10:00:03 [INFO] Vision task detected - using specialized vision-capable recruitment
+2024-01-01 10:00:04 [INFO] Pathology Specialist: Using specialized pathology analysis
+```
+
+### Monitoring Files
+- `logs/simulation_YYYYMMDD_HHMMSS.log`: Detailed simulation logs
+- `logs/recruitment_decisions.log`: Dynamic selection decisions
+- `logs/vision_processing.log`: Vision-related processing logs
+- `logs/error_recovery.log`: Error handling and recovery attempts
+
+## 🚨 Troubleshooting
+
+### Common Issues
+
+#### Dynamic Selection Not Working
+```bash
+# Check if explicit configs are disabling it
+python dataset_runner.py --dataset medqa --enable-dynamic-selection  # Good
+python dataset_runner.py --dataset medqa --leadership --enable-dynamic-selection  # Bad - leadership disables it
+```
+
+#### Vision Processing Errors
+```bash
+# Check image validation
+2024-01-01 [WARNING] PMC-VQA question has invalid image, setting image to None
+2024-01-01 [ERROR] Vision-related error for Medical Generalist, falling back to text-only
+```
+
+#### Memory Issues with Large Datasets
+```bash
+# Reduce parallel processing
+export MAX_WORKERS=2
+python dataset_runner.py --dataset ddxplus --num-questions 100
+```
+
+### Error Categories
+- `vision_error`: Image processing failures
+- `recruitment_error`: Agent recruitment failures  
+- `timeout_error`: Processing timeout
+- `api_error`: Deployment/API failures
+- `validation_error`: Ground truth validation failures
+
 
 ### Prompt Management
 

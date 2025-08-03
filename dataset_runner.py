@@ -1877,353 +1877,6 @@ def track_agent_mind_changes(agent_analyses, agent_decisions):
     
     return mind_changes
 
-def run_questions_with_configuration(
-    questions: List[Dict[str, Any]],
-    dataset_type: str,
-    configuration: Dict[str, bool],
-    output_dir: Optional[str] = None,
-    max_retries: int = 3,
-    n_max: int = 5,
-    use_medrag: bool = False,
-    validation_errors: List = None  # NEW: Pass validation errors from dataset loading
-) -> Dict[str, Any]:
-    """
-    Run questions with specific configuration using parallel processing at question level.
-    Updated to handle validation errors from MedMCQA.
-    """
-    config_name = configuration.get("name", "unknown")
-    if use_medrag:
-        config_name += "_medrag"
-    
-    logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
-    
-    # Get all available deployments
-    deployments = config.get_all_deployments()
-    num_deployments = len(deployments)
-    
-    logging.info(f"Using {num_deployments} deployments for parallel question processing: {[d['name'] for d in deployments]}")
-    
-    # Reset complexity metrics
-    from components import agent_recruitment
-    agent_recruitment.reset_complexity_metrics()
-
-    # Make sure configuration has proper recruitment method and n_max
-    if config_name == "Baseline":
-        configuration["recruitment"] = True
-        configuration["recruitment_method"] = "basic"
-        configuration["n_max"] = 1
-    elif config_name != "Custom Configuration":
-        configuration["recruitment"] = True
-        configuration["recruitment_method"] = "intermediate"
-        if "n_max" not in configuration:
-            configuration["n_max"] = n_max
-    
-    # Setup output directory
-    run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
-    if run_output_dir:
-        os.makedirs(run_output_dir, exist_ok=True)
-    
-    # Initialize results structure with validation error tracking
-    results = {
-        "configuration": config_name,
-        "use_medrag": use_medrag,
-        "dataset": dataset_type,
-        "num_questions": len(questions),
-        "timestamp": datetime.now().isoformat(),
-        "configuration_details": configuration,
-        "deployment_info": {
-            "deployments_used": deployments,
-            "parallel_processing": "question_level",
-            "num_parallel_questions": num_deployments
-        },
-        "question_results": [],
-        "errors": [],
-        "validation_errors": validation_errors or [],  # NEW: Track validation errors separately
-        "summary": {
-            "majority_voting": {"correct": 0, "total": 0},
-            "weighted_voting": {"correct": 0, "total": 0},
-            "borda_count": {"correct": 0, "total": 0}
-        },
-        "disagreement_summary": {
-            "total_disagreements": 0,
-            "disagreement_rate": 0.0,
-            "disagreement_patterns": {}
-        },
-        "medrag_summary": {
-            "enabled": use_medrag,
-            "successful_retrievals": 0,
-            "failed_retrievals": 0,
-            "total_snippets_retrieved": 0,
-            "average_retrieval_time": 0.0,
-            "enhancement_success_rate": 0.0
-        },
-        "complexity_distribution": {"basic": 0, "intermediate": 0, "advanced": 0},
-        "deployment_usage": {d['name']: 0 for d in deployments}
-    }
-    
-    # Add summary for yes/no/maybe if PubMedQA
-    if dataset_type == "pubmedqa":
-        results["summary"]["yes_no_maybe_voting"] = {"correct": 0, "total": 0}
-    
-    # Track validation errors separately (for MedMCQA)
-    current_validation_errors = []
-    
-    # Process questions in parallel batches
-    batch_size = num_deployments
-    num_batches = (len(questions) + batch_size - 1) // batch_size
-    
-    with tqdm(total=len(questions), desc=f"{config_name}") as pbar:
-        for batch_idx in range(num_batches):
-            batch_start = batch_idx * batch_size
-            batch_end = min(batch_start + batch_size, len(questions))
-            batch_questions = questions[batch_start:batch_end]
-            
-            # Prepare futures for this batch
-            future_to_info = {}
-            
-            with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(batch_questions), num_deployments)) as executor:
-                # Submit each question in the batch to a different deployment
-                for i, question in enumerate(batch_questions):
-                    question_index = batch_start + i
-                    deployment_index = i % num_deployments  # Round-robin assignment
-                    deployment_config = deployments[deployment_index]
-                    
-                    # Track deployment usage
-                    results["deployment_usage"][deployment_config['name']] += 1
-                    
-                    # Submit the question processing
-                    future = executor.submit(
-                        process_single_question,
-                        question_index,
-                        question,
-                        dataset_type,
-                        configuration,
-                        deployment_config,
-                        run_output_dir,
-                        max_retries,
-                        use_medrag,
-                        current_validation_errors  # Pass validation errors list
-                    )
-                    
-                    future_to_info[future] = {
-                        "question_index": question_index,
-                        "deployment": deployment_config['name']
-                    }
-                
-                # Collect results as they complete
-                for future in concurrent.futures.as_completed(future_to_info):
-                    info = future_to_info[future]
-                    try:
-                        question_result = future.result()
-                        
-                        # Check if this was a validation error (for MedMCQA)
-                        if question_result.get("validation_error", False):
-                            results["validation_errors"].append(question_result.get("error_details", {}))
-                            logging.warning(f"Validation error for Q{info['question_index']}: {question_result.get('error', 'Unknown')}")
-                            pbar.update(1)
-                            continue
-                        
-                        results["question_results"].append(question_result)
-                        
-                        # Track MedRAG usage properly
-                        if use_medrag and "medrag_info" in question_result:
-                            medrag_info = question_result["medrag_info"]
-                            if medrag_info.get("enabled", False):
-                                if medrag_info.get("success", False):
-                                    results["medrag_summary"]["successful_retrievals"] += 1
-                                    results["medrag_summary"]["total_snippets_retrieved"] += medrag_info.get("snippets_retrieved", 0)
-                                    
-                                    # Track retrieval time
-                                    retrieval_time = medrag_info.get("retrieval_time", 0)
-                                    if retrieval_time > 0:
-                                        current_avg = results["medrag_summary"]["average_retrieval_time"]
-                                        current_count = results["medrag_summary"]["successful_retrievals"]
-                                        results["medrag_summary"]["average_retrieval_time"] = (
-                                            (current_avg * (current_count - 1) + retrieval_time) / current_count
-                                        )
-                                else:
-                                    results["medrag_summary"]["failed_retrievals"] += 1
-
-                        # Update progress
-                        pbar.update(1)
-                        pbar.set_postfix({
-                            'deployment': info['deployment'],
-                            'processed': len(results["question_results"]),
-                            'errors': len(results["errors"]),
-                            'validation_errors': len(results["validation_errors"]),
-                            'medrag_success': results["medrag_summary"]["successful_retrievals"] if use_medrag else 0
-                        })
-                        
-                        # Update summary statistics if no error
-                        if "error" not in question_result and "performance" in question_result:
-                            task_performance = question_result["performance"]
-                            
-                            # Handle different task types properly
-                            if dataset_type == "pubmedqa":
-                                # For PubMedQA, all methods should work with yes/no/maybe
-                                for method in ["majority_voting", "weighted_voting", "borda_count"]:
-                                    if method in task_performance:
-                                        method_perf = task_performance[method]
-                                        if "correct" in method_perf:
-                                            results["summary"][method]["total"] += 1
-                                            if method_perf["correct"]:
-                                                results["summary"][method]["correct"] += 1
-                                
-                            else:
-                                methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
-                                for method in methods_to_check:
-                                    if method in task_performance:
-                                        method_perf = task_performance[method]
-                                        if "correct" in method_perf:
-                                            results["summary"][method]["total"] += 1
-                                            if method_perf["correct"]:
-                                                results["summary"][method]["correct"] += 1
-                        
-                        # Track disagreements
-                        if question_result.get("disagreement_flag", False):
-                            results["disagreement_summary"]["total_disagreements"] += 1
-                            
-                            # Track disagreement patterns
-                            disagreement_analysis = question_result.get("disagreement_analysis", {})
-                            pattern = disagreement_analysis.get("answer_distribution", {})
-                            pattern_key = "-".join(sorted(pattern.keys()))
-                            if pattern_key:
-                                results["disagreement_summary"]["disagreement_patterns"][pattern_key] = \
-                                    results["disagreement_summary"]["disagreement_patterns"].get(pattern_key, 0) + 1
-                        
-                        # Track complexity
-                        complexity = question_result.get("recruitment_info", {}).get("complexity_selected")
-                        if complexity and complexity in results["complexity_distribution"]:
-                            results["complexity_distribution"][complexity] += 1
-                        
-                    except Exception as e:
-                        logging.error(f"Error processing question {info['question_index']}: {str(e)}")
-                        results["errors"].append({
-                            "question_index": info['question_index'],
-                            "deployment": info['deployment'],
-                            "error_type": "processing_error",
-                            "error": str(e)
-                        })
-                        pbar.update(1)
-    
-    # Add current validation errors to results
-    if current_validation_errors:
-        results["validation_errors"].extend(current_validation_errors)
-    
-    # Calculate final statistics
-    total_processed = len([q for q in results["question_results"] if "error" not in q])
-    results["disagreement_summary"]["disagreement_rate"] = (
-        results["disagreement_summary"]["total_disagreements"] / total_processed 
-        if total_processed > 0 else 0
-    )
-    
-    # Calculate MedRAG enhancement success rate
-    if use_medrag:
-        total_medrag_attempts = results["medrag_summary"]["successful_retrievals"] + results["medrag_summary"]["failed_retrievals"]
-        if total_medrag_attempts > 0:
-            results["medrag_summary"]["enhancement_success_rate"] = (
-                results["medrag_summary"]["successful_retrievals"] / total_medrag_attempts
-            )
-    
-    # Calculate accuracy for each method
-    for method in results["summary"].keys():
-        method_summary = results["summary"][method]
-        method_summary["accuracy"] = (
-            method_summary["correct"] / method_summary["total"] 
-            if method_summary["total"] > 0 else 0.0
-        )
-
-    # Calculate mind change summary
-    total_mind_changes = sum(
-        q.get("mind_change_analysis", {}).get("agents_who_changed", 0) 
-        for q in results["question_results"]
-    )
-    results["disagreement_summary"]["mind_change_summary"] = {
-        "total_mind_changes": total_mind_changes,
-        "average_change_rate": total_mind_changes / (total_processed * 5) if total_processed > 0 else 0
-    }
-
-    # Add complexity metrics
-    from components import agent_recruitment
-    if hasattr(agent_recruitment, "complexity_counts") and hasattr(agent_recruitment, "complexity_correct"):
-        results["complexity_metrics"] = {
-            "counts": agent_recruitment.complexity_counts.copy(),
-            "correct": agent_recruitment.complexity_correct.copy(),
-            "accuracy": {}
-        }
-        
-        for level in ["basic", "intermediate", "advanced"]:
-            count = results["complexity_metrics"]["counts"].get(level, 0)
-            correct = results["complexity_metrics"]["correct"].get(level, 0)
-            results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
-    
-    # Save enhanced overall results including validation errors
-    if run_output_dir:
-        try:
-            with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
-                json.dump(results["summary"], f, indent=2)
-            
-            with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
-                json.dump(results["errors"], f, indent=2)
-            
-            # NEW: Save validation errors separately
-            if results["validation_errors"]:
-                with open(os.path.join(run_output_dir, "validation_errors.json"), 'w') as f:
-                    json.dump(results["validation_errors"], f, indent=2)
-            
-            with open(os.path.join(run_output_dir, "disagreement_analysis.json"), 'w') as f:
-                json.dump(results["disagreement_summary"], f, indent=2)
-            
-            with open(os.path.join(run_output_dir, "deployment_usage.json"), 'w') as f:
-                json.dump(results["deployment_usage"], f, indent=2)
-                
-            # Save MedRAG metrics
-            if use_medrag:
-                with open(os.path.join(run_output_dir, "medrag_metrics.json"), 'w') as f:
-                    json.dump(results["medrag_summary"], f, indent=2)
-                
-            # Save comprehensive detailed results
-            with open(os.path.join(run_output_dir, "detailed_results_enhanced.json"), 'w') as f:
-                json.dump(results, f, indent=2)
-        except Exception as e:
-            logging.error(f"Failed to save enhanced summary results: {str(e)}")
-    
-    # Enhanced summary print with validation error info
-    print(f"\nSummary for {config_name} on {dataset_type}:")
-    for method, stats in results["summary"].items():
-        if "accuracy" in stats:
-            print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
-
-    if use_medrag:
-        medrag_summary = results["medrag_summary"]
-        total_attempts = medrag_summary["successful_retrievals"] + medrag_summary["failed_retrievals"]
-        success_rate = medrag_summary["successful_retrievals"] / total_attempts if total_attempts > 0 else 0
-        
-        print(f"  MedRAG Enhancement:")
-        print(f"    Success Rate: {medrag_summary['successful_retrievals']}/{total_attempts} ({success_rate:.2%})")
-        print(f"    Total Snippets Retrieved: {medrag_summary['total_snippets_retrieved']}")
-        print(f"    Average Retrieval Time: {medrag_summary['average_retrieval_time']:.2f}s")
-        print(f"    Enhancement Success Rate: {medrag_summary['enhancement_success_rate']:.2%}")
-    
-    if results["errors"]:
-        print(f"  Processing Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
-    
-    # NEW: Print validation error summary
-    if results["validation_errors"]:
-        print(f"  Validation Errors: {len(results['validation_errors'])} questions skipped due to invalid ground truth")
-    
-    print(f"  Disagreements: {results['disagreement_summary']['total_disagreements']}/{total_processed} questions ({results['disagreement_summary']['disagreement_rate']:.2%})")
-    
-    # Print complexity distribution
-    if any(results["complexity_distribution"].values()):
-        print(f"  Complexity Distribution: {dict(results['complexity_distribution'])}")
-    
-    # Print deployment usage
-    print(f"  Deployment Usage: {dict(results['deployment_usage'])}")
-        
-    return results
-
-
 def create_comprehensive_combined_results(all_results, dataset_type, output_dir):
     """Create comprehensive combined results with all enhanced data"""
     
@@ -2649,7 +2302,7 @@ Based on your visual examination, answer: You must respond with option A or B, n
 
 def run_dataset(
     dataset_type: str,
-    num_questions: int = 50,
+    num_questions: int = 50, 
     random_seed: int = 42,
     run_all_configs: bool = False,
     output_dir: Optional[str] = None,
@@ -2661,59 +2314,44 @@ def run_dataset(
     mutual_trust: bool = False,
     mutual_trust_factor: float = 0.8,
     recruitment: bool = False,
-    recruitment_method: str = "adaptive",
+    recruitment_method: str = "adaptive", 
     recruitment_pool: str = "general",
-    n_max: int = 5,
+    n_max: int = None,  # CHANGED: Default to None
+    enable_dynamic_selection: bool = True,
     use_medrag: bool = False
 ) -> Dict[str, Any]:
-    """
-    Run a dataset through the agent system with question-level parallel processing.
-    Updated to handle MedMCQA validation errors.
     
-    Args:
-        dataset_type: Type of dataset ("medqa", "medmcqa", "pubmedqa", "mmlupro-med", etc.)
-        num_questions: Number of questions to process
-        random_seed: Random seed for reproducibility
-        run_all_configs: Whether to run all configurations
-        output_dir: Optional output directory for results
-        leadership: Use team leadership
-        closed_loop: Use closed-loop communication
-        mutual_monitoring: Use mutual performance monitoring
-        shared_mental_model: Use shared mental model
-        team_orientation: Use team orientation
-        mutual_trust: Use mutual trust
-        mutual_trust_factor: Mutual trust factor (0.0-1.0)
-        recruitment: Use dynamic agent recruitment
-        recruitment_method: Method for recruitment (adaptive, basic, intermediate, advanced)
-        recruitment_pool: Pool of agent roles to recruit from
-        n_max: Maximum number of agents for intermediate teams
-        use_medrag: Enable MedRAG knowledge enhancement
-        
-    Returns:
-        Results dictionary
-    """
-    # Ensure n_max has a default value
+    # FIXED: Only disable dynamic selection if there are explicit configs AND dynamic selection is not explicitly requested
+    explicit_teamwork_config = any([leadership, closed_loop, mutual_monitoring, shared_mental_model, team_orientation, mutual_trust])
+    explicit_team_size = n_max is not None
+    
+    # Don't auto-disable dynamic selection - respect the explicit enable_dynamic_selection parameter
+    if enable_dynamic_selection:
+        logging.info("Dynamic selection ENABLED - team size and teamwork components will be determined per question") 
+        # Enable recruitment by default for dynamic selection
+        if not recruitment:
+            recruitment = True
+            logging.info("Recruitment automatically enabled for dynamic selection")
+    else:
+        logging.info("Dynamic selection DISABLED - using provided/default configuration")
+    
+    # Set default n_max if not provided
     if n_max is None:
         n_max = 5
     
-    # Log parameters including MedRAG
-    medrag_status = "with MedRAG" if use_medrag else "without MedRAG"
-    logging.info(f"Running dataset: {dataset_type} {medrag_status}, n_max={n_max}, recruitment_method={recruitment_method}")
+    # Log parameters including dynamic selection
+    dynamic_status = "with dynamic selection" if enable_dynamic_selection else "with static configuration"
+    logging.info(f"Running dataset: {dataset_type} {dynamic_status}, n_max={n_max}, recruitment_method={recruitment_method}")
 
-    # Load the dataset with validation error tracking
+    # Load the dataset with validation error tracking (unchanged)
     validation_errors = []
     
     if dataset_type == "medqa":
         questions = load_medqa_dataset(num_questions, random_seed)
     elif dataset_type == "medmcqa":
-        # NEW: Handle validation errors from MedMCQA
         questions, validation_errors = load_medmcqa_dataset(num_questions, random_seed, include_multi_choice=True)
         if validation_errors:
             logging.warning(f"MedMCQA: {len(validation_errors)} questions had validation errors and were skipped")
-            for error in validation_errors[:5]:  # Log first 5 errors
-                logging.warning(f"  - {error.get('message', 'Unknown error')}")
-            if len(validation_errors) > 5:
-                logging.warning(f"  - ... and {len(validation_errors) - 5} more validation errors")
     elif dataset_type == "pubmedqa":
         questions = load_pubmedqa_dataset(num_questions, random_seed)
     elif dataset_type == "mmlupro-med":
@@ -2736,30 +2374,17 @@ def run_dataset(
             error_msg += f" (all {len(validation_errors)} questions had validation errors)"
         return {"error": error_msg, "validation_errors": validation_errors}
     
-    # Log successful loading with validation error summary
+    # Log successful loading
     logging.info(f"Successfully loaded {len(questions)} valid questions")
     if validation_errors:
         logging.info(f"Skipped {len(validation_errors)} questions due to validation errors")
     
-    # Log MedRAG configuration
-    if use_medrag:
-        # Test MedRAG availability before processing
-        test_integration = create_medrag_integration()
-        if test_integration and test_integration.is_available():
-            logging.info("MedRAG integration is available and will be used")
-        else:
-            error_msg = test_integration.get_initialization_error() if test_integration else "Failed to create integration"
-            logging.warning(f"MedRAG integration not available: {error_msg}")
-            logging.warning("Continuing without MedRAG enhancement")
-            use_medrag = False
-    
-    # Setup output directory
+    # Setup output directory (unchanged)
     if output_dir:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         run_output_dir = os.path.join(output_dir, f"{dataset_type}_run_{timestamp}")
         os.makedirs(run_output_dir, exist_ok=True)
         
-        # NEW: Save validation errors to main output directory
         if validation_errors:
             validation_errors_file = os.path.join(run_output_dir, "dataset_validation_errors.json")
             with open(validation_errors_file, 'w') as f:
@@ -2768,14 +2393,35 @@ def run_dataset(
     else:
         run_output_dir = None
     
-    # Log deployment configuration
+    # Log deployment configuration (unchanged)
     available_deployments = config.get_all_deployments()
     logging.info(f"Available deployments: {[d['name'] for d in available_deployments]}")
     logging.info(f"Questions will be distributed across {len(available_deployments)} deployments in round-robin fashion")
     
-    # Define configurations to test
+    # ENHANCED: Define configurations with dynamic selection support
     if run_all_configs:
-        configurations = [
+        configurations = []
+        
+        if enable_dynamic_selection:
+            # NEW: Dynamic configuration that adapts per question
+            configurations.append({
+                "name": "Dynamic Configuration", 
+                "description": f"Dynamic team size (2-5) and teamwork components (max 3) selected per question",
+                "leadership": None,  # Will be determined dynamically
+                "closed_loop": None,
+                "mutual_monitoring": None,
+                "shared_mental_model": None,
+                "team_orientation": None,
+                "mutual_trust": None,
+                "recruitment": True,
+                "recruitment_method": "intermediate",
+                "recruitment_pool": recruitment_pool,
+                "n_max": None,  # Will be determined dynamically
+                "enable_dynamic_selection": True
+            })
+        
+        # Traditional configurations for comparison
+        configurations.extend([
             # Single features with intermediate recruitment
             {
                 "name": "Leadership", 
@@ -2790,7 +2436,7 @@ def run_dataset(
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
                 "n_max": n_max,
-                "medrag": use_medrag
+                "enable_dynamic_selection": False
             },
             {
                 "name": "Closed-loop", 
@@ -2805,7 +2451,7 @@ def run_dataset(
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
                 "n_max": n_max,
-                "medrag": use_medrag
+                "enable_dynamic_selection": False
             },
             {
                 "name": "Mutual Monitoring", 
@@ -2820,56 +2466,10 @@ def run_dataset(
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
                 "n_max": n_max,
-                "medrag": use_medrag
+                "enable_dynamic_selection": False
             },
             {
-                "name": "Shared Mental Model", 
-                "description": f"Team of {n_max} agents with shared mental model",
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": True,
-                "team_orientation": False,
-                "mutual_trust": False,
-                "recruitment": True,
-                "recruitment_method": "intermediate",
-                "recruitment_pool": recruitment_pool,
-                "n_max": n_max,
-                "medrag": use_medrag
-            },
-            {
-                "name": "Team Orientation", 
-                "description": f"Team of {n_max} agents with team orientation",
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": False,
-                "team_orientation": True,
-                "mutual_trust": False,
-                "recruitment": True,
-                "recruitment_method": "intermediate",
-                "recruitment_pool": recruitment_pool,
-                "n_max": n_max,
-                "medrag": use_medrag
-            },
-            {
-                "name": "Mutual Trust", 
-                "description": f"Team of {n_max} agents with mutual trust",
-                "leadership": False, 
-                "closed_loop": False,
-                "mutual_monitoring": False,
-                "shared_mental_model": False,
-                "team_orientation": False,
-                "mutual_trust": True,
-                "recruitment": True,
-                "recruitment_method": "intermediate",
-                "recruitment_pool": recruitment_pool,
-                "n_max": n_max,
-                "medrag": use_medrag
-            },
-            # All features with recruitment
-            {
-                "name": "All Features with Recruitment", 
+                "name": "All Features", 
                 "description": f"Team of {n_max} agents with all teamwork components",
                 "leadership": True, 
                 "closed_loop": True,
@@ -2881,52 +2481,55 @@ def run_dataset(
                 "recruitment_method": "intermediate",
                 "recruitment_pool": recruitment_pool,
                 "n_max": n_max,
-                "medrag": use_medrag
+                "enable_dynamic_selection": False
             }
-        ]
+        ])
     else:
-        # Use the specified configuration
+        # FIXED: Use the specified configuration with dynamic selection support
         configurations = [{
             "name": "Custom Configuration",
-            "leadership": leadership,
-            "closed_loop": closed_loop,
-            "mutual_monitoring": mutual_monitoring,
-            "shared_mental_model": shared_mental_model,
-            "team_orientation": team_orientation,
-            "mutual_trust": mutual_trust,
-            "recruitment": recruitment,            
+            "leadership": leadership if not enable_dynamic_selection else None,
+            "closed_loop": closed_loop if not enable_dynamic_selection else None, 
+            "mutual_monitoring": mutual_monitoring if not enable_dynamic_selection else None,
+            "shared_mental_model": shared_mental_model if not enable_dynamic_selection else None,
+            "team_orientation": team_orientation if not enable_dynamic_selection else None,
+            "mutual_trust": mutual_trust if not enable_dynamic_selection else None,
+            "recruitment": recruitment,  # Use the recruitment setting (now True for dynamic)            
             "recruitment_method": recruitment_method,
             "recruitment_pool": recruitment_pool,
-            "n_max": n_max,
-            "medrag": use_medrag
+            "n_max": n_max if not enable_dynamic_selection else None,  # None enables dynamic sizing
+            "enable_dynamic_selection": enable_dynamic_selection
         }]
     
     # Run each configuration
     all_results = []
     for config_dict in configurations:
-        # Ensure each config has proper n_max value
+        # Ensure each config has proper settings
         if "n_max" not in config_dict:
-            config_dict["n_max"] = n_max
-
-        # Get MedRAG setting for this configuration
-        config_use_medrag = config_dict.get("use_medrag", False)
+            config_dict["n_max"] = n_max if not config_dict.get("enable_dynamic_selection", False) else None
         
+        if "enable_dynamic_selection" not in config_dict:
+            config_dict["enable_dynamic_selection"] = enable_dynamic_selection
+
         # Special handling for Baseline - always use basic recruitment with 1 agent
         if config_dict["name"] == "Baseline":
             config_dict["recruitment"] = True
             config_dict["recruitment_method"] = "basic"
             config_dict["n_max"] = 1
+            config_dict["enable_dynamic_selection"] = False
         
         # Add recruitment settings to all configs if recruitment is enabled
         if config_dict["recruitment"]:
             config_dict["recruitment_method"] = config_dict.get("recruitment_method", recruitment_method)
             config_dict["recruitment_pool"] = config_dict.get("recruitment_pool", recruitment_pool)
         
-        # Log current configuration with MedRAG status
+        # Log current configuration with dynamic selection status
         description = config_dict.get("description", "")
-        medrag_note = " with MedRAG" if config_use_medrag else ""
-        desc_str = f" - {description}{medrag_note}" if description else medrag_note
-        logging.info(f"Running configuration: {config_dict['name']}{desc_str}, recruitment={config_dict['recruitment']}, method={config_dict['recruitment_method']}, n_max={config_dict['n_max']}")
+        dynamic_note = " (with dynamic selection)" if config_dict.get("enable_dynamic_selection", False) else ""
+        desc_str = f" - {description}{dynamic_note}" if description else dynamic_note
+        logging.info(f"Running configuration: {config_dict['name']}{desc_str}, "
+                    f"recruitment={config_dict['recruitment']}, method={config_dict['recruitment_method']}, "
+                    f"n_max={config_dict['n_max']}, dynamic={config_dict.get('enable_dynamic_selection', False)}")
         
         result = run_questions_with_configuration(
             questions,
@@ -2934,12 +2537,13 @@ def run_dataset(
             config_dict,
             run_output_dir,
             n_max=config_dict.get("n_max", n_max),
-            use_medrag=config_use_medrag,
-            validation_errors=validation_errors  # NEW: Pass validation errors
+            use_medrag=use_medrag,
+            validation_errors=validation_errors,
+            enable_dynamic_selection=config_dict.get("enable_dynamic_selection", False)  # NEW: Pass dynamic flag
         )
         all_results.append(result)
     
-    # Compile combined results
+    # Compile combined results with dynamic selection metadata
     combined_results = {
         "dataset": dataset_type,
         "num_questions": num_questions,
@@ -2951,14 +2555,21 @@ def run_dataset(
         "deployments_used": [d['name'] for d in available_deployments],
         "configurations": [r["configuration"] for r in all_results],
         "summaries": {r["configuration"]: r["summary"] for r in all_results},
-        "medrag_summaries": {r["configuration"]: r.get("medrag_summary", {}) for r in all_results if r.get("use_medrag", False)},
+        "dynamic_selection_enabled": enable_dynamic_selection,  # NEW: Track if dynamic selection was used
+        "dynamic_selection_results": {},  # NEW: Will be populated with per-config dynamic results
         "validation_errors_summary": {
             "total_validation_errors": len(validation_errors),
             "error_types": {}
         }
     }
     
-    # Summarize validation error types
+    # NEW: Collect dynamic selection results from each configuration
+    for result in all_results:
+        config_name = result["configuration"]
+        if "dynamic_selection_summary" in result:
+            combined_results["dynamic_selection_results"][config_name] = result["dynamic_selection_summary"]
+    
+    # Summarize validation error types (unchanged)
     if validation_errors:
         error_type_counts = {}
         for error in validation_errors:
@@ -2966,7 +2577,7 @@ def run_dataset(
             error_type_counts[error_type] = error_type_counts.get(error_type, 0) + 1
         combined_results["validation_errors_summary"]["error_types"] = error_type_counts
     
-    # Save combined results
+    # Save combined results with dynamic selection metadata
     if run_output_dir:
         with open(os.path.join(run_output_dir, "combined_results.json"), 'w') as f:
             json.dump(combined_results, f, indent=2)
@@ -2976,12 +2587,587 @@ def run_dataset(
     
     return combined_results
 
+
+def run_questions_with_configuration(
+    questions: List[Dict[str, Any]],
+    dataset_type: str,
+    configuration: Dict[str, bool],
+    output_dir: Optional[str] = None,
+    max_retries: int = 3,
+    n_max: int = 5,
+    use_medrag: bool = False,
+    validation_errors: List = None,
+    enable_dynamic_selection: bool = False  # NEW: Dynamic selection flag
+) -> Dict[str, Any]:
+    """
+    Enhanced configuration runner with dynamic selection support.
+    
+    NEW PARAMETERS:
+        enable_dynamic_selection: Whether to enable dynamic selection for this configuration
+    """
+    config_name = configuration.get("name", "unknown")
+    if use_medrag:
+        config_name += "_medrag"
+    
+    # NEW: Add dynamic selection status to config name for clarity
+    if enable_dynamic_selection:
+        config_name += "_dynamic"
+    
+    logging.info(f"Running {len(questions)} questions with configuration: {config_name}")
+    
+    # Get all available deployments (unchanged)
+    deployments = config.get_all_deployments()
+    num_deployments = len(deployments)
+    
+    logging.info(f"Using {num_deployments} deployments for parallel question processing: {[d['name'] for d in deployments]}")
+    
+    # Reset complexity metrics (unchanged)
+    from components import agent_recruitment
+    agent_recruitment.reset_complexity_metrics()
+
+    # Make sure configuration has proper recruitment method and n_max
+    if config_name == "Baseline":
+        configuration["recruitment"] = True
+        configuration["recruitment_method"] = "basic"
+        configuration["n_max"] = 1
+        configuration["enable_dynamic_selection"] = False
+    elif config_name != "Custom Configuration":
+        configuration["recruitment"] = True
+        configuration["recruitment_method"] = configuration.get("recruitment_method", "intermediate")
+        if "n_max" not in configuration and not enable_dynamic_selection:
+            configuration["n_max"] = n_max
+    
+    # Setup output directory (unchanged)
+    run_output_dir = os.path.join(output_dir, f"{dataset_type}_{config_name.lower().replace(' ', '_')}") if output_dir else None
+    if run_output_dir:
+        os.makedirs(run_output_dir, exist_ok=True)
+    
+    # Initialize results structure with dynamic selection tracking
+    results = {
+        "configuration": config_name,
+        "use_medrag": use_medrag,
+        "dataset": dataset_type,
+        "num_questions": len(questions),
+        "timestamp": datetime.now().isoformat(),
+        "configuration_details": configuration,
+        "enable_dynamic_selection": enable_dynamic_selection,  # NEW: Track dynamic selection usage
+        "dynamic_selection_summary": {  # NEW: Track dynamic selection results
+            "enabled": enable_dynamic_selection,
+            "team_sizes_selected": {},
+            "teamwork_configs_selected": {},
+            "selection_patterns": {}
+        },
+        "deployment_info": {
+            "deployments_used": deployments,
+            "parallel_processing": "question_level",
+            "num_parallel_questions": num_deployments
+        },
+        "question_results": [],
+        "errors": [],
+        "validation_errors": validation_errors or [],
+        "summary": {
+            "majority_voting": {"correct": 0, "total": 0},
+            "weighted_voting": {"correct": 0, "total": 0},
+            "borda_count": {"correct": 0, "total": 0}
+        },
+        "disagreement_summary": {
+            "total_disagreements": 0,
+            "disagreement_rate": 0.0,
+            "disagreement_patterns": {}
+        },
+        "complexity_distribution": {"basic": 0, "intermediate": 0, "advanced": 0},
+        "deployment_usage": {d['name']: 0 for d in deployments}
+    }
+    
+    # Add summary for yes/no/maybe if PubMedQA (unchanged)
+    if dataset_type == "pubmedqa":
+        results["summary"]["yes_no_maybe_voting"] = {"correct": 0, "total": 0}
+    
+    # Track validation errors separately (unchanged)
+    current_validation_errors = []
+    
+    # Process questions in parallel batches (unchanged logic, enhanced with dynamic selection tracking)
+    batch_size = num_deployments
+    num_batches = (len(questions) + batch_size - 1) // batch_size
+    
+    with tqdm(total=len(questions), desc=f"{config_name}") as pbar:
+        for batch_idx in range(num_batches):
+            batch_start = batch_idx * batch_size
+            batch_end = min(batch_start + batch_size, len(questions))
+            batch_questions = questions[batch_start:batch_end]
+            
+            # Prepare futures for this batch
+            future_to_info = {}
+            
+            with concurrent.futures.ThreadPoolExecutor(max_workers=min(len(batch_questions), num_deployments)) as executor:
+                # Submit each question in the batch to a different deployment
+                for i, question in enumerate(batch_questions):
+                    question_index = batch_start + i
+                    deployment_index = i % num_deployments
+                    deployment_config = deployments[deployment_index]
+                    
+                    # Track deployment usage
+                    results["deployment_usage"][deployment_config['name']] += 1
+                    
+                    # Submit the question processing with dynamic selection support
+                    future = executor.submit(
+                        process_single_question_enhanced,  # NEW: Enhanced function with dynamic selection
+                        question_index,
+                        question,
+                        dataset_type,
+                        configuration,
+                        deployment_config,
+                        run_output_dir,
+                        max_retries,
+                        use_medrag,
+                        current_validation_errors,
+                        enable_dynamic_selection  # NEW: Pass dynamic selection flag
+                    )
+                    
+                    future_to_info[future] = {
+                        "question_index": question_index,
+                        "deployment": deployment_config['name']
+                    }
+                
+                # Collect results as they complete (enhanced with dynamic selection tracking)
+                for future in concurrent.futures.as_completed(future_to_info):
+                    info = future_to_info[future]
+                    try:
+                        question_result = future.result()
+                        
+                        # Check if this was a validation error
+                        if question_result.get("validation_error", False):
+                            results["validation_errors"].append(question_result.get("error_details", {}))
+                            logging.warning(f"Validation error for Q{info['question_index']}: {question_result.get('error', 'Unknown')}")
+                            pbar.update(1)
+                            continue
+                        
+                        results["question_results"].append(question_result)
+                        
+                        # NEW: Track dynamic selection results if enabled
+                        if enable_dynamic_selection and "dynamic_selection" in question_result:
+                            dynamic_info = question_result["dynamic_selection"]
+                            
+                            # Track team sizes
+                            team_size = dynamic_info.get("team_size_selected")
+                            if team_size:
+                                results["dynamic_selection_summary"]["team_sizes_selected"][str(team_size)] = \
+                                    results["dynamic_selection_summary"]["team_sizes_selected"].get(str(team_size), 0) + 1
+                            
+                            # Track teamwork configurations
+                            teamwork_config = dynamic_info.get("teamwork_config_selected", {})
+                            enabled_components = [k.replace("use_", "") for k, v in teamwork_config.items() if v]
+                            config_key = ",".join(sorted(enabled_components)) if enabled_components else "none"
+                            results["dynamic_selection_summary"]["teamwork_configs_selected"][config_key] = \
+                                results["dynamic_selection_summary"]["teamwork_configs_selected"].get(config_key, 0) + 1
+                        
+                        # Update progress
+                        pbar.update(1)
+                        pbar.set_postfix({
+                            'deployment': info['deployment'],
+                            'processed': len(results["question_results"]),
+                            'errors': len(results["errors"]),
+                            'validation_errors': len(results["validation_errors"]),
+                            'dynamic': "Yes" if enable_dynamic_selection else "No"
+                        })
+                        
+                        # Update summary statistics (unchanged)
+                        if "error" not in question_result and "performance" in question_result:
+                            task_performance = question_result["performance"]
+                            
+                            if dataset_type == "pubmedqa":
+                                for method in ["majority_voting", "weighted_voting", "borda_count"]:
+                                    if method in task_performance:
+                                        method_perf = task_performance[method]
+                                        if "correct" in method_perf:
+                                            results["summary"][method]["total"] += 1
+                                            if method_perf["correct"]:
+                                                results["summary"][method]["correct"] += 1
+                            else:
+                                methods_to_check = ["majority_voting", "weighted_voting", "borda_count"]
+                                for method in methods_to_check:
+                                    if method in task_performance:
+                                        method_perf = task_performance[method]
+                                        if "correct" in method_perf:
+                                            results["summary"][method]["total"] += 1
+                                            if method_perf["correct"]:
+                                                results["summary"][method]["correct"] += 1
+                        
+                        # Track disagreements (unchanged)
+                        if question_result.get("disagreement_flag", False):
+                            results["disagreement_summary"]["total_disagreements"] += 1
+                            
+                            disagreement_analysis = question_result.get("disagreement_analysis", {})
+                            pattern = disagreement_analysis.get("answer_distribution", {})
+                            pattern_key = "-".join(sorted(pattern.keys()))
+                            if pattern_key:
+                                results["disagreement_summary"]["disagreement_patterns"][pattern_key] = \
+                                    results["disagreement_summary"]["disagreement_patterns"].get(pattern_key, 0) + 1
+                        
+                        # Track complexity (unchanged)
+                        complexity = question_result.get("recruitment_info", {}).get("complexity_selected")
+                        if complexity and complexity in results["complexity_distribution"]:
+                            results["complexity_distribution"][complexity] += 1
+                        
+                    except Exception as e:
+                        logging.error(f"Error processing question {info['question_index']}: {str(e)}")
+                        results["errors"].append({
+                            "question_index": info['question_index'],
+                            "deployment": info['deployment'],
+                            "error_type": "processing_error",
+                            "error": str(e)
+                        })
+                        pbar.update(1)
+    
+    # Add current validation errors to results (unchanged)
+    if current_validation_errors:
+        results["validation_errors"].extend(current_validation_errors)
+    
+    # Calculate final statistics (unchanged)
+    total_processed = len([q for q in results["question_results"] if "error" not in q])
+    results["disagreement_summary"]["disagreement_rate"] = (
+        results["disagreement_summary"]["total_disagreements"] / total_processed
+        if total_processed > 0 else 0
+    )
+    
+    # Calculate accuracy for each method (unchanged)
+    for method in results["summary"].keys():
+        method_summary = results["summary"][method]
+        method_summary["accuracy"] = (
+            method_summary["correct"] / method_summary["total"] 
+            if method_summary["total"] > 0 else 0.0
+        )
+
+    # Calculate mind change summary (unchanged)
+    total_mind_changes = sum(
+        q.get("mind_change_analysis", {}).get("agents_who_changed", 0) 
+        for q in results["question_results"]
+    )
+    results["disagreement_summary"]["mind_change_summary"] = {
+        "total_mind_changes": total_mind_changes,
+        "average_change_rate": total_mind_changes / (total_processed * 5) if total_processed > 0 else 0
+    }
+
+    # Add complexity metrics (unchanged)
+    from components import agent_recruitment
+    if hasattr(agent_recruitment, "complexity_counts") and hasattr(agent_recruitment, "complexity_correct"):
+        results["complexity_metrics"] = {
+            "counts": agent_recruitment.complexity_counts.copy(),
+            "correct": agent_recruitment.complexity_correct.copy(),
+            "accuracy": {}
+        }
+        
+        for level in ["basic", "intermediate", "advanced"]:
+            count = results["complexity_metrics"]["counts"].get(level, 0)
+            correct = results["complexity_metrics"]["correct"].get(level, 0)
+            results["complexity_metrics"]["accuracy"][level] = correct / count if count > 0 else 0.0
+    
+    # NEW: Log dynamic selection summary
+    if enable_dynamic_selection:
+        dynamic_summary = results["dynamic_selection_summary"]
+        logging.info(f"Dynamic Selection Summary for {config_name}:")
+        
+        if dynamic_summary["team_sizes_selected"]:
+            team_size_dist = dynamic_summary["team_sizes_selected"]
+            logging.info(f"  Team sizes: {dict(team_size_dist)}")
+        
+        if dynamic_summary["teamwork_configs_selected"]:
+            config_dist = dynamic_summary["teamwork_configs_selected"]
+            logging.info(f"  Teamwork configurations: {dict(config_dist)}")
+    
+    # Save enhanced overall results (unchanged with dynamic selection additions)
+    if run_output_dir:
+        try:
+            with open(os.path.join(run_output_dir, "summary.json"), 'w') as f:
+                json.dump(results["summary"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "errors.json"), 'w') as f:
+                json.dump(results["errors"], f, indent=2)
+            
+            if results["validation_errors"]:
+                with open(os.path.join(run_output_dir, "validation_errors.json"), 'w') as f:
+                    json.dump(results["validation_errors"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "disagreement_analysis.json"), 'w') as f:
+                json.dump(results["disagreement_summary"], f, indent=2)
+            
+            with open(os.path.join(run_output_dir, "deployment_usage.json"), 'w') as f:
+                json.dump(results["deployment_usage"], f, indent=2)
+                
+            # NEW: Save dynamic selection results
+            if enable_dynamic_selection:
+                with open(os.path.join(run_output_dir, "dynamic_selection_results.json"), 'w') as f:
+                    json.dump(results["dynamic_selection_summary"], f, indent=2)
+                
+            # Save comprehensive detailed results
+            with open(os.path.join(run_output_dir, "detailed_results_enhanced.json"), 'w') as f:
+                json.dump(results, f, indent=2)
+        except Exception as e:
+            logging.error(f"Failed to save enhanced summary results: {str(e)}")
+    
+    # Enhanced summary print with dynamic selection info
+    print(f"\nSummary for {config_name} on {dataset_type}:")
+    for method, stats in results["summary"].items():
+        if "accuracy" in stats:
+            print(f"  {method.replace('_', ' ').title()}: {stats['correct']}/{stats['total']} correct ({stats['accuracy']:.2%})")
+
+    if results["errors"]:
+        print(f"  Processing Errors: {len(results['errors'])}/{len(questions)} questions ({len(results['errors'])/len(questions):.2%})")
+    
+    if results["validation_errors"]:
+        print(f"  Validation Errors: {len(results['validation_errors'])} questions skipped due to invalid ground truth")
+    
+    print(f"  Disagreements: {results['disagreement_summary']['total_disagreements']}/{total_processed} questions ({results['disagreement_summary']['disagreement_rate']:.2%})")
+    
+    # NEW: Print dynamic selection summary
+    if enable_dynamic_selection:
+        dynamic_summary = results["dynamic_selection_summary"]
+        print(f"  Dynamic Selection:")
+        
+        team_sizes = dynamic_summary["team_sizes_selected"]
+        if team_sizes:
+            print(f"    Team sizes used: {dict(team_sizes)}")
+        
+        configs = dynamic_summary["teamwork_configs_selected"]
+        if configs:
+            print(f"    Teamwork configs used: {dict(configs)}")
+    
+    # Print complexity distribution (unchanged)
+    if any(results["complexity_distribution"].values()):
+        print(f"  Complexity Distribution: {dict(results['complexity_distribution'])}")
+    
+    # Print deployment usage (unchanged)
+    print(f"  Deployment Usage: {dict(results['deployment_usage'])}")
+        
+    return results
+
+
+def process_single_question_enhanced(question_index: int, 
+                                   question: Dict[str, Any],
+                                   dataset_type: str,
+                                   configuration: Dict[str, Any],
+                                   deployment_config: Dict[str, str],
+                                   run_output_dir: str,
+                                   max_retries: int = 3,
+                                   use_medrag: bool = False,
+                                   validation_errors: List = None,
+                                   enable_dynamic_selection: bool = False) -> Dict[str, Any]:
+    """
+    Enhanced question processing with dynamic selection support.
+    
+    NEW PARAMETERS:
+        enable_dynamic_selection: Whether to enable dynamic selection for this question
+    """
+    import gc
+    import traceback
+    import time
+
+    # Create unique simulation ID
+    sim_id = f"{dataset_type}_{configuration['name'].lower().replace(' ', '_')}_q{question_index}_{deployment_config['name']}"
+    if use_medrag:
+        sim_id += "_medrag"
+    if enable_dynamic_selection:
+        sim_id += "_dynamic"
+    
+    # Format question based on dataset type (unchanged)
+    try:
+        if dataset_type == "medqa":
+            agent_task, eval_data = format_medqa_for_task(question)
+            is_valid = True
+        elif dataset_type == "medmcqa":
+            agent_task, eval_data, is_valid = format_medmcqa_for_task(question)
+            if not is_valid:
+                if validation_errors is not None:
+                    validation_errors.append(eval_data)
+                
+                return {
+                    "question_index": question_index,
+                    "deployment_used": deployment_config['name'],
+                    "simulation_id": sim_id,
+                    "error": f"Validation error: {eval_data.get('message', 'Invalid question')}",
+                    "validation_error": True,
+                    "error_details": eval_data
+                }
+        elif dataset_type == "mmlupro-med":
+            agent_task, eval_data = format_mmlupro_med_for_task(question)
+            is_valid = True
+        elif dataset_type == "pubmedqa":
+            agent_task, eval_data = format_pubmedqa_for_task(question)
+            is_valid = True
+        elif dataset_type == "ddxplus":
+            agent_task, eval_data = format_ddxplus_for_task(question)
+            is_valid = True
+        elif dataset_type == "medbullets":
+            agent_task, eval_data = format_medbullets_for_task(question)
+            is_valid = True
+        elif dataset_type == "pmc_vqa":
+            agent_task, eval_data = format_pmc_vqa_for_task(question)
+            is_valid = True
+        elif dataset_type == "path_vqa":
+            agent_task, eval_data = format_path_vqa_for_task(question)
+            is_valid = True
+        else:
+            raise ValueError(f"Unknown dataset type: {dataset_type}")
+            
+    except Exception as e:
+        logging.error(f"Failed to format question {question_index}: {str(e)}")
+        return {
+            "question_index": question_index,
+            "deployment_used": deployment_config['name'],
+            "simulation_id": sim_id,
+            "error": f"Question formatting error: {str(e)}",
+            "format_error": True
+        }
+
+    # Set thread-local data for this question
+    thread_local.question_index = question_index
+    thread_local.question_task = agent_task
+    thread_local.question_eval = eval_data
+
+    # Initialize result structure with enhanced dynamic selection metadata
+    question_result = {
+        "question_index": question_index,
+        "deployment_used": deployment_config['name'],
+        "simulation_id": sim_id,
+        "dataset_type": dataset_type,
+        "enable_dynamic_selection": enable_dynamic_selection,  # NEW: Track if dynamic selection was enabled
+        "dynamic_selection": {},  # NEW: Will store dynamic selection results
+        "has_image": agent_task.get("image_data", {}).get("image_available", False),
+        "image_type": agent_task.get("image_data", {}).get("image_type", "none"),
+        "requires_vision": agent_task.get("image_data", {}).get("requires_visual_analysis", False),
+        "recruitment_info": {},
+        "agent_responses": {},
+        "disagreement_analysis": {},
+        "disagreement_flag": False,
+        "team_composition": {},  # NEW: Track final team composition
+        "vision_performance": {}
+    }
+
+    # Enhanced retry logic with dynamic selection support
+    for attempt in range(max_retries):
+        try:
+            # Log attempt with dynamic selection status
+            vision_status = "with vision" if question_result["has_image"] else "text-only"
+            dynamic_status = "with dynamic selection" if enable_dynamic_selection else "static config"
+            logging.info(f"Processing Q{question_index} attempt {attempt+1}/{max_retries} "
+                        f"({vision_status}, {dynamic_status}) on {deployment_config['name']}")
+
+            # ENHANCED: Create simulator with dynamic selection support
+            simulator = AgentSystemSimulator(
+                simulation_id=sim_id,
+                use_team_leadership=configuration.get("leadership"),
+                use_closed_loop_comm=configuration.get("closed_loop"),
+                use_mutual_monitoring=configuration.get("mutual_monitoring"),
+                use_shared_mental_model=configuration.get("shared_mental_model"),
+                use_team_orientation=configuration.get("team_orientation"),
+                use_mutual_trust=configuration.get("mutual_trust"),
+                use_recruitment=configuration.get("recruitment", False),
+                recruitment_method=configuration.get("recruitment_method", "adaptive"),
+                recruitment_pool=configuration.get("recruitment_pool", "general"),
+                n_max=configuration.get("n_max", 5),
+                deployment_config=deployment_config,
+                question_specific_context=True,
+                task_config=agent_task,
+                eval_data=eval_data,
+                enable_dynamic_selection=enable_dynamic_selection  # NEW: Pass dynamic selection flag
+            )
+
+            # Run simulation with enhanced error capture
+            simulation_results = simulator.run_simulation()
+            performance = simulator.evaluate_performance()
+
+            # Extract comprehensive results
+            question_result.update({
+                "agent_responses": extract_agent_responses_info(simulation_results),
+                "disagreement_analysis": detect_agent_disagreement(simulation_results.get("agent_responses", {})),
+                "decisions": simulation_results.get("decision_results", {}),
+                "performance": performance.get("task_performance", {}),
+                "agent_conversations": simulation_results.get("exchanges", []),
+                "simulation_metadata": simulation_results.get("simulation_metadata", {})
+            })
+
+            # NEW: Extract dynamic selection results
+            if enable_dynamic_selection and "simulation_metadata" in simulation_results:
+                sim_metadata = simulation_results["simulation_metadata"]
+                if "dynamic_selection" in sim_metadata:
+                    question_result["dynamic_selection"] = sim_metadata["dynamic_selection"]
+                    logging.info(f"Q{question_index}: Dynamic selection results captured")
+                
+                # Extract team composition
+                if "team_composition" in sim_metadata:
+                    question_result["team_composition"] = sim_metadata["team_composition"]
+            
+            # Extract vision performance metrics (unchanged)
+            if question_result["has_image"]:
+                vision_stats = extract_vision_performance_metrics(simulation_results)
+                question_result["vision_performance"] = vision_stats
+                logging.info(f"Q{question_index}: Vision usage - {vision_stats}")
+
+            # Check for disagreements (unchanged)
+            if question_result["disagreement_analysis"].get("has_disagreement", False):
+                question_result["disagreement_flag"] = True
+
+            # Save individual result (unchanged)
+            if run_output_dir:
+                question_result_file = os.path.join(run_output_dir, f"question_{question_index}_result.json")
+                with open(question_result_file, 'w') as f:
+                    json.dump(question_result, f, indent=2, default=str)
+                logging.info(f"Saved Q{question_index} result to {question_result_file}")
+
+            # Success - break retry loop
+            break
+
+        except Exception as e:
+            error_msg = str(e)
+            logging.error(f"Q{question_index} attempt {attempt+1} failed: {error_msg}")
+            
+            # Enhanced error categorization (unchanged)
+            if "invalid image" in error_msg.lower() or "base64" in error_msg.lower():
+                logging.error(f"Q{question_index}: Image processing error - {error_msg}")
+                if question_result["has_image"]:
+                    question_result["vision_performance"]["image_error"] = error_msg
+                    if attempt == max_retries - 1:
+                        logging.warning(f"Q{question_index}: Final attempt - disabling image for fallback")
+                        agent_task["image_data"]["image"] = None
+                        agent_task["image_data"]["image_available"] = False
+                        question_result["has_image"] = False
+                        question_result["vision_fallback_used"] = True
+            
+            elif "timeout" in error_msg.lower():
+                logging.error(f"Q{question_index}: Timeout error - {error_msg}")
+                question_result["timeout_error"] = error_msg
+            
+            # Exponential backoff for retries
+            if attempt < max_retries - 1:
+                wait_time = min(2 ** attempt * 2, 30)
+                logging.info(f"Q{question_index}: Waiting {wait_time}s before retry...")
+                time.sleep(wait_time)
+            else:
+                # Final failure
+                question_result["error"] = f"All attempts failed. Last error: {error_msg}"
+                question_result["final_error_type"] = categorize_error(error_msg)
+                logging.error(f"Q{question_index}: Final failure after {max_retries} attempts")
+
+    # Cleanup (unchanged)
+    try:
+        if hasattr(thread_local, 'question_task'):
+            delattr(thread_local, 'question_task')
+        if hasattr(thread_local, 'question_eval'):
+            delattr(thread_local, 'question_eval')
+        if 'simulator' in locals():
+            del simulator
+        gc.collect()
+    except Exception as cleanup_error:
+        logging.warning(f"Cleanup warning for Q{question_index}: {cleanup_error}")
+
+    return question_result
+
 def main():
-    """Main entry point."""
-    parser = argparse.ArgumentParser(description='Run datasets through the agent system')
+    """Enhanced main entry point with dynamic selection support."""
+    parser = argparse.ArgumentParser(description='Run datasets through the agent system with dynamic configuration')
     parser.add_argument('--dataset', type=str, default="medqa", 
-                      choices=["medqa", "medmcqa", "pubmedqa", "mmlupro-med", "ddxplus", "medbullets", "symcat", "pmc_vqa", "path_vqa"], 
-                      help='Dataset to run (medqa, medmcqa, pubmedqa, or mmlupro-med)')
+                      choices=["medqa", "medmcqa", "pubmedqa", "mmlupro-med", "ddxplus", "medbullets", "pmc_vqa", "path_vqa"], 
+                      help='Dataset to run')
     parser.add_argument('--num-questions', type=int, default=50, 
                       help='Number of questions to process')
     parser.add_argument('--seed', type=int, default=42, 
@@ -2991,7 +3177,7 @@ def main():
     parser.add_argument('--output-dir', type=str, default=None, 
                       help='Output directory for results')
     
-    # Teamwork components
+    # Teamwork components (unchanged)
     parser.add_argument('--leadership', action='store_true', 
                       help='Use team leadership')
     parser.add_argument('--closedloop', action='store_true', 
@@ -3007,7 +3193,7 @@ def main():
     parser.add_argument('--trust-factor', type=float, default=0.8, 
                       help='Mutual trust factor (0.0-1.0)')
     
-    # Recruitment arguments
+    # Recruitment arguments (unchanged)
     parser.add_argument('--recruitment', action='store_true', 
                       help='Use dynamic agent recruitment')
     parser.add_argument('--recruitment-method', type=str, 
@@ -3016,18 +3202,16 @@ def main():
                       help='Recruitment method to use')
     parser.add_argument('--recruitment-pool', type=str, 
                       choices=['general', 'medical'], 
-                      default='medical' if '--dataset' in sys.argv and sys.argv[sys.argv.index('--dataset')+1] in ['medqa', 'medmcqa', 'pubmedqa'] else 'general', 
+                      default='medical', 
                       help='Pool of roles to recruit from')
     parser.add_argument('--n-max', type=int, default=None, 
                       help='Maximum number of agents for intermediate team')
     
-    # Add MedRAG argument
-    parser.add_argument('--medrag', action='store_true', 
-                      help='Enable MedRAG knowledge enhancement')
-    parser.add_argument('--medrag-retriever', type=str, default='MedCPT',
-                      help='MedRAG retriever to use (default: MedCPT)')
-    parser.add_argument('--medrag-corpus', type=str, default='Textbooks',
-                      help='MedRAG corpus to use (default: Textbooks)')
+    # NEW: Dynamic selection arguments
+    parser.add_argument('--enable-dynamic-selection', action='store_true', default=True,
+                      help='Enable dynamic selection of team size and teamwork components (default: True)')
+    parser.add_argument('--disable-dynamic-selection', action='store_true',
+                      help='Disable dynamic selection (use static configuration)')
     
     parser.add_argument('--validate-only', action='store_true',
                       help='Only validate dataset availability, do not run')
@@ -3037,7 +3221,11 @@ def main():
     # Set up logging
     setup_logging()
     
-    # Validate requested dataset before running
+    # Handle dynamic selection flags
+    if args.disable_dynamic_selection:
+        args.enable_dynamic_selection = False
+    
+    # Validate requested dataset before running (unchanged)
     logging.info(f"Validating requested dataset: {args.dataset}")
     
     try:
@@ -3046,13 +3234,11 @@ def main():
         elif args.dataset == "medbullets":
             test_load = load_medbullets_dataset(num_questions=1, random_seed=42)
         else:
-            # For existing datasets, do a quick validation
-            test_load = True  # Assume they work if we get here
+            test_load = True
         
         if not test_load:
             logging.error(f"Dataset {args.dataset} validation failed - no data loaded")
             print(f"[ERROR] Dataset {args.dataset} is not available or empty")
-            print("Use --validate-only to check all datasets")
             return
             
         logging.info(f"[PASSED] Dataset {args.dataset} validation successful")
@@ -3060,44 +3246,25 @@ def main():
     except Exception as e:
         logging.error(f"Dataset {args.dataset} validation failed: {str(e)}")
         print(f"[ERROR] Dataset {args.dataset} validation failed: {str(e)}")
-        print("Use --validate-only to check all datasets")
         return
-    
 
-    # Log MedRAG configuration if enabled
-    if args.medrag:
-        logging.info(f"MedRAG enhancement enabled with {args.medrag_retriever}/{args.medrag_corpus}")
-        
-        # Test MedRAG availability
-        test_integration = create_medrag_integration(
-            retriever_name=args.medrag_retriever,
-            corpus_name=args.medrag_corpus
-        )
-        
-        if test_integration and test_integration.is_available():
-            logging.info("MedRAG integration test successful")
-        else:
-            error_msg = test_integration.get_initialization_error() if test_integration else "Failed to create integration"
-            logging.error(f"MedRAG integration test failed: {error_msg}")
-            logging.error("Consider disabling MedRAG or fixing the configuration")
-            
-            # Option to continue without MedRAG
-            response = input("Continue without MedRAG? (y/n): ")
-            if response.lower() != 'y':
-                return
-            args.medrag = False
-
-    # Log deployment configuration
+    # Log deployment configuration (unchanged)
     deployments = config.get_all_deployments()
     logging.info(f"Available deployments: {[d['name'] for d in deployments]}")
     logging.info(f"Question-level parallel processing will be used with {len(deployments)} deployments")
 
-    # If n_max is specified, automatically set recruitment method to intermediate
+    # If n_max is specified, automatically set recruitment method to intermediate (unchanged)
     if args.n_max is not None:
         args.recruitment = True
         args.recruitment_method = "intermediate"
     
-    # Run dataset
+    # NEW: Log dynamic selection status
+    if args.enable_dynamic_selection:
+        logging.info("Dynamic selection ENABLED - team size and teamwork components will be determined per question")
+    else:
+        logging.info("Dynamic selection DISABLED - using provided/default static configuration")
+    
+    # Run dataset with enhanced dynamic selection support
     results = run_dataset(
         dataset_type=args.dataset,
         num_questions=args.num_questions,
@@ -3115,10 +3282,11 @@ def main():
         recruitment_method=args.recruitment_method,
         recruitment_pool=args.recruitment_pool,
         n_max=args.n_max,
-        use_medrag=args.medrag  
+        enable_dynamic_selection=args.enable_dynamic_selection,  # NEW: Pass dynamic selection flag
+        use_medrag=False  # Removed MedRAG for now as requested
     )
     
-    # Print overall summary
+    # Print overall summary with dynamic selection info
     print("\nOverall Results:")
     for config_name, summary in results.get("summaries", {}).items():
         print(f"\n{config_name}:")
@@ -3126,19 +3294,22 @@ def main():
             if "accuracy" in stats:
                 print(f"  {method.replace('_', ' ').title()}: {stats['accuracy']:.2%} accuracy")
 
-    # Print MedRAG summary if used
-    if args.medrag and "medrag_summaries" in results:
-        print(f"\nMedRAG Enhancement Summary:")
-        for config_name, medrag_summary in results["medrag_summaries"].items():
-            if medrag_summary:
-                total_attempts = medrag_summary.get("successful_retrievals", 0) + medrag_summary.get("failed_retrievals", 0)
-                success_rate = medrag_summary.get("successful_retrievals", 0) / total_attempts if total_attempts > 0 else 0
+    # NEW: Print dynamic selection summary if used
+    if args.enable_dynamic_selection and "dynamic_selection_results" in results:
+        print(f"\nDynamic Selection Summary:")
+        for config_name, dynamic_results in results["dynamic_selection_results"].items():
+            if dynamic_results.get("enabled", False):
                 print(f"  {config_name}:")
-                print(f"    Retrieval Success Rate: {success_rate:.2%}")
-                print(f"    Average Retrieval Time: {medrag_summary.get('average_retrieval_time', 0):.2f}s")
-                print(f"    Total Snippets: {medrag_summary.get('total_snippets_retrieved', 0)}")
+                
+                team_sizes = dynamic_results.get("team_sizes_selected", {})
+                if team_sizes:
+                    print(f"    Team sizes used: {dict(team_sizes)}")
+                
+                configs = dynamic_results.get("teamwork_configs_selected", {})
+                if configs:
+                    print(f"    Teamwork configs used: {dict(configs)}")
 
-    # Print deployment information
+    # Print deployment information (unchanged)
     deployments = config.get_all_deployments()
     print(f"\nDeployment Information:")
     print(f"  Total deployments used: {len(deployments)}")

@@ -1,8 +1,15 @@
 """
-Enhanced prompts.py with proper round separation and final decision prompts.
+Enhanced prompts.py with dynamic recruitment prompts for team size and teamwork configuration.
+This file extends the existing prompts while maintaining backward compatibility.
+
+To implement: Replace or extend your existing utils/prompts.py with this content.
 """
 
+# Keep all existing prompts from the original file
 # Agent System Prompts
+from typing import Dict, List
+
+
 AGENT_SYSTEM_PROMPTS = {
     "base": """You are a {role} who {expertise_description}. Your job is to collaborate with other medical experts in a team.
     
@@ -382,6 +389,109 @@ Above is just an example, thus, you should organize your own unique MDTs but you
 """
 }
 
+# NEW: Dynamic Recruitment Prompts
+DYNAMIC_RECRUITMENT_PROMPTS = {
+    "team_size_determination": """
+    You are a Team Size Optimization Specialist. Analyze the following question and determine the optimal number of agents (2-5) needed for effective collaborative problem-solving.
+
+    Question: {question}
+    Complexity Level: {complexity}
+    Maximum Agents Allowed: {max_agents}
+
+    Consider these factors:
+    1. **Question Scope**: How many distinct areas of expertise are needed?
+    2. **Complexity**: Does the question require multiple perspectives or can fewer experts handle it?
+    3. **Collaboration Benefits**: Will additional agents add value or create unnecessary overhead?
+    4. **Decision Quality**: What team size balances diverse input with efficient decision-making?
+
+    Guidelines:
+    - 2 agents: Simple questions requiring limited expertise diversity
+    - 3 agents: Moderate complexity requiring some specialization diversity
+    - 4 agents: Complex questions benefiting from multiple specialized perspectives
+    - 5 agents: Highly complex, interdisciplinary questions requiring maximum expertise diversity
+
+    Provide your analysis and conclude with:
+    TEAM_SIZE: X (where X is a number between 2 and {max_agents})
+
+    Remember: More agents isn't always better - consider the optimal balance for this specific question.
+    """,
+
+    "teamwork_config_selection": """
+    You are a Teamwork Configuration Specialist. Analyze the following question and team characteristics to determine which teamwork components would be most beneficial. You can select up to 3 components maximum.
+
+    Question: {question}
+    Complexity Level: {complexity}  
+    Team Size: {team_size} agents
+
+    Available Teamwork Components:
+    1. **Leadership** - Designates a team leader to guide discussion and synthesize decisions
+       - Best for: Teams needing direction, complex coordination, final decision synthesis
+       - Overhead: Moderate - adds leadership coordination steps
+
+    2. **Closed-Loop Communication** - Ensures message acknowledgment and understanding verification
+       - Best for: Critical information exchange, reducing miscommunication
+       - Overhead: High - adds acknowledgment and verification steps
+
+    3. **Mutual Monitoring** - Agents monitor each other's performance and provide feedback
+       - Best for: Quality control, error detection, performance improvement
+       - Overhead: High - adds monitoring and feedback processes
+
+    4. **Shared Mental Model** - Maintains shared understanding of task and team state
+       - Best for: Complex tasks requiring aligned understanding, team coordination
+       - Overhead: Moderate - adds alignment and synchronization steps
+
+    5. **Team Orientation** - Prioritizes team goals and incorporates diverse perspectives
+       - Best for: Collaborative decision-making, perspective integration
+       - Overhead: Low - focuses on collaboration attitudes
+
+    6. **Mutual Trust** - Fosters open information sharing and vulnerability
+       - Best for: Psychological safety, information sharing, team cohesion
+       - Overhead: Low - focuses on trust-building behaviors
+
+    Selection Criteria:
+    - **Question Type**: Medical diagnosis, treatment planning, research analysis, etc.
+    - **Team Size**: Larger teams may benefit from more coordination mechanisms
+    - **Complexity**: Higher complexity may require more teamwork support
+    - **Efficiency**: Balance benefits against coordination overhead
+    - **Maximum 3 Components**: Select the most impactful combination
+
+    Analysis Guidelines:
+    - For diagnostic questions: Consider leadership + monitoring for quality
+    - For complex analysis: Consider shared mental model + team orientation
+    - For larger teams (4-5): Consider leadership + communication
+    - For high-stakes decisions: Consider monitoring + trust
+    - Avoid excessive overhead that might hinder performance
+
+    Provide your analysis and conclude with:
+    SELECTED_COMPONENTS: component1, component2, component3
+
+    Where components are selected from: leadership, closed_loop, monitoring, mental_model, orientation, trust
+    """,
+
+    "dynamic_recruitment_validation": """
+    You are a Recruitment Validation Specialist. Review the following team configuration and validate if it's appropriate for the given question.
+
+    Question: {question}
+    Recommended Team Size: {team_size}
+    Selected Teamwork Components: {selected_components}
+    Complexity Level: {complexity}
+
+    Validation Checklist:
+    1. **Team Size Appropriateness**: Is the team size suitable for this question's scope?
+    2. **Component Relevance**: Are the selected teamwork components relevant to this task?
+    3. **Overhead vs Benefit**: Will the teamwork components add value without excessive overhead?
+    4. **Component Synergy**: Do the selected components work well together?
+
+    Provide your validation assessment:
+    VALIDATION_RESULT: APPROVED / NEEDS_ADJUSTMENT
+    
+    If NEEDS_ADJUSTMENT, suggest:
+    ADJUSTED_TEAM_SIZE: X
+    ADJUSTED_COMPONENTS: component1, component2, component3
+    REASON: Brief explanation of adjustments
+    """
+}
+
 # Task Analysis Prompts - Enhanced with clearer round separation
 TASK_ANALYSIS_PROMPTS = {
     "ranking_task": """
@@ -584,9 +694,84 @@ DISCUSSION_PROMPTS = {
     If you are using closed-loop communication, acknowledge the message and confirm your
     understanding before providing your response.
     """,
-    
-    # Remove the old collaborative_discussion prompts that had explicit answers
-    # These are now handled in the final decision prompts
+}
+
+# Enhanced existing recruitment prompts with dynamic awareness
+ENHANCED_RECRUITMENT_PROMPTS = {
+    "adaptive_team_selection": """
+    You are an adaptive medical expert recruiter. Based on the question analysis, recruit the optimal number of experts (2-5) with the most relevant specialties.
+
+    Question: {question}
+    Recommended Team Size: {team_size}
+    Teamwork Components Enabled: {teamwork_components}
+
+    IMPORTANT: Recruit exactly {team_size} experts with DISTINCT and NON-OVERLAPPING specialties that are directly relevant to this medical question.
+
+    For each expert, specify:
+    1. Role and specialty
+    2. Relevance to this specific question  
+    3. Weight (importance for this question, total should sum to 1.0)
+    4. Hierarchy relationship
+
+    Consider the enabled teamwork components when defining interactions:
+    {teamwork_guidance}
+
+    Format your response as:
+    1. [Role] - [Expertise description] - Hierarchy: [relationship] - Weight: [0.0-1.0]
+    2. [Role] - [Expertise description] - Hierarchy: [relationship] - Weight: [0.0-1.0]
+    ... (continue for exactly {team_size} experts)
+
+    Ensure weights sum to 1.0 and hierarchy relationships make sense for the enabled teamwork components.
+    """,
+
+    "complexity_and_size_evaluation": """
+    You are a Medical Question Analysis Specialist. Perform a comprehensive analysis to determine both complexity level and optimal team characteristics.
+
+    Question: {question}
+
+    Provide analysis for:
+
+    1. **Complexity Classification** (basic/intermediate/advanced):
+    - Basic: Single domain, straightforward application of knowledge
+    - Intermediate: Multiple domains, moderate interdisciplinary reasoning
+    - Advanced: Complex interdisciplinary, novel scenarios, high uncertainty
+
+    2. **Optimal Team Size** (2-5 agents):
+    - Consider knowledge domains needed
+    - Balance expertise diversity with coordination efficiency
+    - Account for question scope and decision complexity
+
+    3. **Recommended Teamwork Components** (up to 3):
+    - Leadership: For coordination and synthesis
+    - Closed-Loop: For critical information exchange
+    - Monitoring: For quality control and error prevention
+    - Mental Model: For shared understanding maintenance
+    - Orientation: For collaborative perspective integration
+    - Trust: For open information sharing
+
+    Format your response as:
+    COMPLEXITY: [basic/intermediate/advanced]
+    TEAM_SIZE: [2-5]
+    COMPONENTS: [component1, component2, component3]
+    RATIONALE: [Brief explanation of choices]
+    """
+}
+
+# Integration prompts for backward compatibility
+COMPATIBILITY_PROMPTS = {
+    "static_config_notification": """
+    Note: Using provided static configuration.
+    Team Size: {team_size}
+    Teamwork Components: {enabled_components}
+    Dynamic selection has been bypassed to maintain backward compatibility.
+    """,
+
+    "dynamic_config_summary": """
+    Dynamic Configuration Selected:
+    Team Size: {team_size} agents (dynamically determined)
+    Teamwork Components: {enabled_components} (dynamically selected)
+    Rationale: {selection_rationale}
+    """
 }
 
 def get_adaptive_prompt(base_key: str, task_type: str, **kwargs) -> str:
@@ -639,3 +824,150 @@ def get_adaptive_prompt(base_key: str, task_type: str, **kwargs) -> str:
     # Default fallback
     else:
         return f"Unknown prompt key: {base_key}"
+
+def get_dynamic_recruitment_prompt(prompt_type: str, **kwargs) -> str:
+    """
+    Get dynamic recruitment prompt with proper formatting.
+    
+    Args:
+        prompt_type: Type of dynamic prompt needed
+        **kwargs: Formatting arguments
+        
+    Returns:
+        Formatted prompt string
+    """
+    if prompt_type in DYNAMIC_RECRUITMENT_PROMPTS:
+        return DYNAMIC_RECRUITMENT_PROMPTS[prompt_type].format(**kwargs)
+    elif prompt_type in ENHANCED_RECRUITMENT_PROMPTS:
+        return ENHANCED_RECRUITMENT_PROMPTS[prompt_type].format(**kwargs)
+    else:
+        raise ValueError(f"Unknown dynamic recruitment prompt type: {prompt_type}")
+
+def get_teamwork_guidance(enabled_components: List[str]) -> str:
+    """
+    Generate teamwork guidance text based on enabled components.
+    
+    Args:
+        enabled_components: List of enabled teamwork component names
+        
+    Returns:
+        Guidance text for recruitment
+    """
+    guidance_map = {
+        "use_team_leadership": "- Designate clear leader roles and hierarchy relationships",
+        "use_closed_loop_comm": "- Structure communication for acknowledgment and verification",
+        "use_mutual_monitoring": "- Enable cross-monitoring and feedback relationships",
+        "use_shared_mental_model": "- Foster shared understanding and alignment",
+        "use_team_orientation": "- Emphasize collaborative perspective integration",
+        "use_mutual_trust": "- Encourage open information sharing and vulnerability"
+    }
+    
+    guidance_lines = []
+    for component in enabled_components:
+        if component in guidance_map:
+            guidance_lines.append(guidance_map[component])
+    
+    if not guidance_lines:
+        return "- Focus on individual expertise and independent analysis"
+    
+    return "\n".join(guidance_lines)
+
+def create_dynamic_selection_prompt(question: str, analysis_type: str, **context) -> str:
+    """
+    Create a dynamic selection prompt based on question and analysis type.
+    
+    Args:
+        question: The question to analyze
+        analysis_type: Type of analysis ("team_size", "teamwork_config", "validation") 
+        **context: Additional context for the prompt
+        
+    Returns:
+        Formatted dynamic selection prompt
+    """
+    if analysis_type == "team_size":
+        return get_dynamic_recruitment_prompt("team_size_determination", 
+                                            question=question, **context)
+    elif analysis_type == "teamwork_config":
+        return get_dynamic_recruitment_prompt("teamwork_config_selection",
+                                            question=question, **context)
+    elif analysis_type == "validation":
+        return get_dynamic_recruitment_prompt("dynamic_recruitment_validation",
+                                            question=question, **context)
+    else:
+        raise ValueError(f"Unknown dynamic selection analysis type: {analysis_type}")
+
+# Utility functions for prompt management
+def get_all_available_prompts() -> Dict[str, List[str]]:
+    """
+    Get a dictionary of all available prompt categories and their keys.
+    
+    Returns:
+        Dictionary mapping category names to lists of prompt keys
+    """
+    return {
+        "agent_system": list(AGENT_SYSTEM_PROMPTS.keys()),
+        "leadership": list(LEADERSHIP_PROMPTS.keys()),
+        "communication": list(COMMUNICATION_PROMPTS.keys()),
+        "monitoring": list(MONITORING_PROMPTS.keys()),
+        "mental_model": list(MENTAL_MODEL_PROMPTS.keys()),
+        "orientation": list(ORIENTATION_PROMPTS.keys()),
+        "trust": list(TRUST_PROMPTS.keys()),
+        "recruitment": list(RECRUITMENT_PROMPTS.keys()),
+        "dynamic_recruitment": list(DYNAMIC_RECRUITMENT_PROMPTS.keys()),
+        "task_analysis": list(TASK_ANALYSIS_PROMPTS.keys()),
+        "final_decision": list(FINAL_DECISION_PROMPTS.keys()),
+        "discussion": list(DISCUSSION_PROMPTS.keys()),
+        "enhanced_recruitment": list(ENHANCED_RECRUITMENT_PROMPTS.keys()),
+        "compatibility": list(COMPATIBILITY_PROMPTS.keys())
+    }
+
+def validate_prompt_parameters(prompt_key: str, category: str, **kwargs) -> bool:
+    """
+    Validate that all required parameters are provided for a prompt.
+    
+    Args:
+        prompt_key: The specific prompt key
+        category: The prompt category
+        **kwargs: Parameters to validate
+        
+    Returns:
+        True if all required parameters are present, False otherwise
+    """
+    # Get the prompt template
+    category_map = {
+        "agent_system": AGENT_SYSTEM_PROMPTS,
+        "leadership": LEADERSHIP_PROMPTS,
+        "communication": COMMUNICATION_PROMPTS,
+        "monitoring": MONITORING_PROMPTS,
+        "mental_model": MENTAL_MODEL_PROMPTS,
+        "orientation": ORIENTATION_PROMPTS,
+        "trust": TRUST_PROMPTS,
+        "recruitment": RECRUITMENT_PROMPTS,
+        "dynamic_recruitment": DYNAMIC_RECRUITMENT_PROMPTS,
+        "task_analysis": TASK_ANALYSIS_PROMPTS,
+        "final_decision": FINAL_DECISION_PROMPTS,
+        "discussion": DISCUSSION_PROMPTS,
+        "enhanced_recruitment": ENHANCED_RECRUITMENT_PROMPTS,
+        "compatibility": COMPATIBILITY_PROMPTS
+    }
+    
+    if category not in category_map:
+        return False
+    
+    if prompt_key not in category_map[category]:
+        return False
+    
+    template = category_map[category][prompt_key]
+    
+    # Extract required parameters from template
+    import re
+    required_params = set(re.findall(r'\{(\w+)\}', template))
+    provided_params = set(kwargs.keys())
+    
+    missing_params = required_params - provided_params
+    
+    if missing_params:
+        print(f"Missing parameters for {category}.{prompt_key}: {missing_params}")
+        return False
+    
+    return True

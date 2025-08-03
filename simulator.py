@@ -1,5 +1,9 @@
 """
-Fixed simulator.py with proper MedRAG integration and knowledge enhancement.
+simulator.py with support for dynamic teamwork configuration and recruitment.
+Key changes:
+1. Added enable_dynamic_selection parameter for backward compatibility
+2. Enhanced logging for dynamic selection decisions
+3. Proper handling of variable teamwork configurations
 """
 
 import os
@@ -13,7 +17,7 @@ from datetime import datetime
 import copy
 
 from components.modular_agent import MedicalImageAnalyst, ModularAgent, PathologySpecialist, create_agent_team
-from components.agent_recruitment import determine_complexity, recruit_agents
+from components.agent_recruitment import determine_complexity, recruit_agents_isolated
 from components.closed_loop import ClosedLoopCommunication
 from components.mutual_monitoring import MutualMonitoring
 from components.shared_mental_model import SharedMentalModel
@@ -24,11 +28,11 @@ from components.team_orientation import TeamOrientation
 from components.mutual_trust import MutualTrust
 
 from utils.prompts import DISCUSSION_PROMPTS, LEADERSHIP_PROMPTS, get_adaptive_prompt
-from components.medrag_integration import MedRAGIntegration, create_medrag_integration
 
 class AgentSystemSimulator:
     """
-    Enhanced simulator with proper MedRAG integration for parallel question handling.
+    Enhanced simulator with dynamic teamwork configuration support.
+    Maintains backward compatibility while enabling dynamic selection.
     """
     
     def __init__(self, 
@@ -49,13 +53,34 @@ class AgentSystemSimulator:
          question_specific_context=False,
          task_config: Dict[str, Any] = None,
          eval_data: Dict[str, Any] = None,
-         use_medrag: bool = False):
-        """Initialize the simulator with isolated task configuration."""
+         enable_dynamic_selection: bool = True):  # NEW: Dynamic selection control
+        """Initialize the simulator with enhanced dynamic configuration support."""
         
         # Set simulation ID and configuration
         self.simulation_id = simulation_id or f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
         
-        # Use config values if not specified
+        # NEW: Dynamic selection control for backward compatibility
+        self.enable_dynamic_selection = enable_dynamic_selection
+        
+        # Determine if we should use dynamic selection
+        # Dynamic selection is disabled if specific teamwork configs are provided
+        explicit_teamwork_config = any([
+            use_team_leadership is not None,
+            use_closed_loop_comm is not None,
+            use_mutual_monitoring is not None,
+            use_shared_mental_model is not None,
+            use_team_orientation is not None,
+            use_mutual_trust is not None
+        ])
+        
+        explicit_team_size = n_max is not None and n_max != 5  # 5 is default
+        
+        # Disable dynamic selection if explicit configs provided (backward compatibility)
+        if explicit_teamwork_config or explicit_team_size:
+            self.enable_dynamic_selection = False
+            logging.info("Dynamic selection disabled due to explicit configuration provided")
+        
+        # Use config values if not specified (backward compatibility)
         self.use_team_leadership = use_team_leadership if use_team_leadership is not None else config.USE_TEAM_LEADERSHIP
         self.use_closed_loop_comm = use_closed_loop_comm if use_closed_loop_comm is not None else config.USE_CLOSED_LOOP_COMM
         self.use_mutual_monitoring = use_mutual_monitoring if use_mutual_monitoring is not None else config.USE_MUTUAL_MONITORING
@@ -77,13 +102,25 @@ class AgentSystemSimulator:
         self.task_config = task_config or copy.deepcopy(config.TASK)
         self.evaluation_data = eval_data or {}
         
+        # NEW: Store dynamic selection results for logging
+        self.dynamic_selection_results = {
+            "enabled": self.enable_dynamic_selection,
+            "team_size_selected": None,
+            "teamwork_config_selected": None,
+            "selection_rationale": None
+        }
+        
         self.metadata = {}
 
-        # MedRAG Integration - FIXED
-        self.use_medrag = use_medrag
-        self.medrag_integration = None
-        self.retrieved_knowledge = None
-        
+        # Create initial teamwork config for backward compatibility
+        self.initial_teamwork_config = {
+            "use_team_leadership": self.use_team_leadership,
+            "use_closed_loop_comm": self.use_closed_loop_comm,
+            "use_mutual_monitoring": self.use_mutual_monitoring,
+            "use_shared_mental_model": self.use_shared_mental_model,
+            "use_team_orientation": self.use_team_orientation,
+            "use_mutual_trust": self.use_mutual_trust
+        }
 
         # Setup configuration
         self.config = {
@@ -101,7 +138,7 @@ class AgentSystemSimulator:
             "n_max": self.n_max,
             "task": self.task_config.get("name", "Unknown"),
             "deployment": self.deployment_config['name'] if self.deployment_config else "default",
-            "use_medrag": self.use_medrag,
+            "enable_dynamic_selection": self.enable_dynamic_selection,
         }
         
         # Setup logging
@@ -111,29 +148,27 @@ class AgentSystemSimulator:
             config=self.config
         )
 
-        # Initialize MedRAG FIRST (before creating agents)
-        if self.use_medrag:
-            self._initialize_medrag()
-
-        # Create agent team with isolated context
+        # Create agent team with isolated context and dynamic selection
         self._create_agent_team(isolated_context=question_specific_context)
         
-        # Initialize teamwork components
-        self.comm_handler = ClosedLoopCommunication() if self.use_closed_loop_comm else None
-        self.mutual_monitor = MutualMonitoring() if self.use_mutual_monitoring else None
-        self.mental_model = SharedMentalModel() if self.use_shared_mental_model else None
-        self.team_orientation = TeamOrientation() if self.use_team_orientation else None
-        self.mutual_trust = MutualTrust(self.mutual_trust_factor) if self.use_mutual_trust else None
+        # Initialize teamwork components based on final configuration
+        # (This will use the dynamically selected config if dynamic selection is enabled)
+        final_config = self.get_final_teamwork_config()
+        self.comm_handler = ClosedLoopCommunication() if final_config.get("use_closed_loop_comm", False) else None
+        self.mutual_monitor = MutualMonitoring() if final_config.get("use_mutual_monitoring", False) else None
+        self.mental_model = SharedMentalModel() if final_config.get("use_shared_mental_model", False) else None
+        self.team_orientation = TeamOrientation() if final_config.get("use_team_orientation", False) else None
+        self.mutual_trust = MutualTrust(self.mutual_trust_factor) if final_config.get("use_mutual_trust", False) else None
         
         # Initialize mutual trust network if enabled
-        if self.mutual_trust:
+        if self.mutual_trust and hasattr(self, 'agents'):
             self.mutual_trust.initialize_trust_network(list(self.agents.keys()))
         
         # Initialize decision methods with isolated task config
         self.decision_methods = DecisionMethods(task_config=self.task_config)
         
         # Initialize shared knowledge with isolated task config
-        if self.mental_model:
+        if self.mental_model and hasattr(self, 'agents'):
             self.mental_model.initialize_task_model(self.task_config)
             self.mental_model.initialize_team_model(list(self.agents.keys()))
         
@@ -141,83 +176,85 @@ class AgentSystemSimulator:
         self.results = {
             "simulation_id": self.simulation_id,
             "config": self.config,
+            "dynamic_selection": self.dynamic_selection_results,
             "exchanges": [],
             "decision_results": {}
         }
         
         deployment_name = self.deployment_config['name'] if self.deployment_config else "default"
         self.logger.logger.info(f"Initialized simulation {self.simulation_id} with deployment: {deployment_name}")
+        
+        # Log dynamic selection results if enabled
+        if self.enable_dynamic_selection:
+            self._log_dynamic_selection_results()
 
-    def _initialize_medrag(self):
-        """Initialize MedRAG integration."""
-        try:
-            self.medrag_integration = create_medrag_integration(
-                deployment_config=self.deployment_config,
-                retriever_name="MedCPT",
-                corpus_name="Textbooks"
-            )
-            
-            if not self.medrag_integration:
-                self.logger.logger.warning("MedRAG integration not available")
-                self.use_medrag = False
-                return
-            
-            # Retrieve knowledge for the current question
-            question = self.task_config.get("description", "")
-            options = self.task_config.get("options", [])
-            
-            if question:
-                self.logger.logger.info("Retrieving medical knowledge with MedRAG...")
-                self.retrieved_knowledge = self.medrag_integration.retrieve_knowledge(
-                    question=question,
-                    options=options,
-                    question_id=self.simulation_id
-                )
-                
-                if self.retrieved_knowledge.get("available", False):
-                    num_snippets = len(self.retrieved_knowledge.get("knowledge_snippets", []))
-                    self.logger.logger.info(f"MedRAG retrieved {num_snippets} knowledge snippets successfully")
-                else:
-                    self.logger.logger.warning(f"MedRAG retrieval failed: {self.retrieved_knowledge.get('error', 'Unknown error')}")
-            else:
-                self.logger.logger.warning("No question available for MedRAG retrieval")
-                
-        except Exception as e:
-            self.logger.logger.error(f"MedRAG initialization failed: {str(e)}")
-            self.use_medrag = False
-            self.retrieved_knowledge = None
+    def get_final_teamwork_config(self) -> Dict[str, bool]:
+        """Get the final teamwork configuration (either static or dynamically selected)."""
+        if self.dynamic_selection_results["teamwork_config_selected"]:
+            return self.dynamic_selection_results["teamwork_config_selected"]
+        else:
+            return self.initial_teamwork_config
+
+    def _log_dynamic_selection_results(self):
+        """Log the results of dynamic selection for analysis."""
+        if not self.enable_dynamic_selection:
+            self.logger.logger.info("Dynamic selection disabled - using provided configuration")
+            return
+        
+        results = self.dynamic_selection_results
+        
+        if results["team_size_selected"]:
+            self.logger.logger.info(f"Dynamic team size selection: {results['team_size_selected']} agents")
+        
+        if results["teamwork_config_selected"]:
+            enabled_components = [k.replace("use_", "").replace("_", " ") 
+                                for k, v in results["teamwork_config_selected"].items() if v]
+            self.logger.logger.info(f"Dynamic teamwork configuration: {enabled_components}")
+        
+        if results["selection_rationale"]:
+            self.logger.logger.info(f"Selection rationale: {results['selection_rationale']}")
 
     def _create_agent_team(self, isolated_context: bool = False):
-        """Create agent team with proper recruitment handling and deployment assignment."""
+        """Enhanced agent team creation with dynamic selection support."""
         if self.use_recruitment and self.task_config.get("description"):
             try:
                 from components.agent_recruitment import determine_complexity, recruit_agents_isolated
                 complexity = determine_complexity(self.task_config["description"], self.recruitment_method)
                 self.metadata["complexity"] = complexity
                 
-                # Create teamwork config to pass to recruitment
-                teamwork_config = {
-                    "use_team_leadership": self.use_team_leadership,
-                    "use_closed_loop_comm": self.use_closed_loop_comm,
-                    "use_mutual_monitoring": self.use_mutual_monitoring,
-                    "use_shared_mental_model": self.use_shared_mental_model,
-                    "use_team_orientation": self.use_team_orientation,
-                    "use_mutual_trust": self.use_mutual_trust
-                }
-                
-                # Use isolated recruitment that doesn't read from global config
+                # NEW: Use dynamic selection if enabled
                 agents, leader = recruit_agents_isolated(
                     self.task_config["description"],
                     complexity,
                     self.recruitment_pool,
-                    self.n_max,
+                    self.n_max if not self.enable_dynamic_selection else None,  # Pass None for dynamic
                     self.recruitment_method,
                     self.deployment_config,
                     self.task_config,
-                    teamwork_config  # Pass teamwork config
+                    self.initial_teamwork_config if not self.enable_dynamic_selection else None,  # Pass None for dynamic
+                    enable_dynamic_selection=self.enable_dynamic_selection
                 )
+                
                 self.agents = agents
                 self.leader = leader
+                
+                # NEW: Store dynamic selection results if used
+                if self.enable_dynamic_selection:
+                    # The recruitment function will have made dynamic decisions
+                    # We can infer some information from the created team
+                    self.dynamic_selection_results["team_size_selected"] = len(agents)
+                    
+                    # Try to get teamwork config from the first agent
+                    if agents:
+                        first_agent = next(iter(agents.values()))
+                        self.dynamic_selection_results["teamwork_config_selected"] = {
+                            "use_team_leadership": hasattr(first_agent, 'can_lead') and first_agent.can_lead,
+                            "use_closed_loop_comm": hasattr(first_agent, 'use_closed_loop_comm') and first_agent.use_closed_loop_comm,
+                            "use_mutual_monitoring": hasattr(first_agent, 'use_mutual_monitoring') and first_agent.use_mutual_monitoring,
+                            "use_shared_mental_model": hasattr(first_agent, 'use_shared_mental_model') and first_agent.use_shared_mental_model,
+                            "use_team_orientation": hasattr(first_agent, 'use_team_orientation') and first_agent.use_team_orientation,
+                            "use_mutual_trust": hasattr(first_agent, 'use_mutual_trust') and first_agent.use_mutual_trust
+                        }
                 
             except Exception as e:
                 logging.error(f"Recruitment failed: {str(e)}, using default team")
@@ -264,7 +301,7 @@ class AgentSystemSimulator:
             use_mutual_trust=self.use_mutual_trust,
             deployment_config=self.deployment_config,
             agent_index=0,
-            task_config=self.task_config  # Pass isolated task config
+            task_config=self.task_config
         )
         
         agents[role] = agent
@@ -275,24 +312,29 @@ class AgentSystemSimulator:
 
     def run_simulation(self):
         """
-        Run the enhanced 3-round simulation process with MedRAG integration.
+        Run the enhanced 3-round simulation process with dynamic configuration logging.
         
         Returns:
-            Dictionary with simulation results
+            Dictionary with simulation results including dynamic selection metadata
         """
-        # ENHANCEMENT PHASE: Apply MedRAG knowledge if available
-        if self.use_medrag and self.retrieved_knowledge:
-            self.logger.logger.info("ENHANCEMENT PHASE: Applying retrieved medical knowledge to agents")
-            self._enhance_agents_with_retrieved_knowledge()
+        # Log dynamic configuration at start of simulation
+        final_config = self.get_final_teamwork_config()
+        enabled_components = [k.replace("use_", "").replace("_", " ") for k, v in final_config.items() if v]
+        
+        self.logger.logger.info(f"Starting simulation with {len(self.agents)} agents")
+        self.logger.logger.info(f"Active teamwork components: {enabled_components}")
+        
+        if self.enable_dynamic_selection:
+            self.logger.logger.info("Configuration determined dynamically based on question analysis")
         else:
-            self.results["medrag_enhancement"] = {"enabled": False}
+            self.logger.logger.info("Configuration provided explicitly (backward compatibility mode)")
 
         # ROUND 1: Independent Analysis (Sequential)
         self.logger.logger.info("ROUND 1: Independent task analysis (sequential execution)")
         round1_analyses = self._run_round1_independent_analysis()
         
         # Leadership definition if enabled (between rounds)
-        if self.use_team_leadership and self.leader:
+        if final_config.get("use_team_leadership", False) and self.leader:
             self.logger.logger.info("Leadership phase: Defining task approach")
             self._run_leadership_definition()
         
@@ -320,18 +362,24 @@ class AgentSystemSimulator:
         # Save results
         self.save_results()
         
-        # Return enhanced results structure
+        # Return enhanced results structure with dynamic selection metadata
         return {
             "simulation_metadata": {
                 "simulation_id": self.simulation_id,
                 "timestamp": datetime.now().isoformat(),
                 "deployment": self.deployment_config['name'] if self.deployment_config else "default",
-                "medrag_enhancement": self.results.get("medrag_enhancement", {}),
+                "dynamic_selection": self.dynamic_selection_results,
                 "task_info": {
                     "name": self.task_config.get("name", ""),
                     "type": self.task_config.get("type", ""),
                     "description": self.task_config.get("description", "")[:200] + "...",
                     "options": self.task_config.get("options", [])
+                },
+                "final_teamwork_config": self.get_final_teamwork_config(),
+                "team_composition": {
+                    "size": len(self.agents),
+                    "roles": list(self.agents.keys()),
+                    "leader": self.leader.role if self.leader else None
                 }
             },
             "agent_analyses": round1_analyses,      # Round 1 independent analyses
@@ -340,131 +388,9 @@ class AgentSystemSimulator:
             "decision_results": decision_results
         }
 
-
-    def _enhance_agents_with_retrieved_knowledge(self):
-        """
-        Apply retrieved MedRAG knowledge to agents.
-        FIXED VERSION - Actually integrates knowledge into agent responses.
-        """
-        if not self.retrieved_knowledge or not self.retrieved_knowledge.get("available", False):
-            self.logger.logger.warning("No valid retrieved knowledge to apply to agents")
-            self.results["medrag_enhancement"] = {
-                "enabled": True,
-                "success": False,
-                "error": "No valid knowledge retrieved",
-                "agents_enhanced": 0,
-                "total_agents": len(self.agents),
-                "snippets_retrieved": 0
-            }
-            return
-
-        enhanced_agents = 0
-        
-        try:
-            # Create comprehensive knowledge context from retrieved snippets
-            knowledge_context = self._create_medrag_context()
-            
-            # Enhance each agent with the knowledge context
-            for role, agent in self.agents.items():
-                try:
-                    # Store the knowledge context in agent's knowledge base
-                    agent.add_to_knowledge_base("medrag_knowledge", self.retrieved_knowledge)
-                    agent.add_to_knowledge_base("medrag_context", knowledge_context)
-                    
-                    # CRITICAL FIX: Set a flag that the agent has MedRAG enhancement
-                    agent.add_to_knowledge_base("has_medrag_enhancement", True)
-                    
-                    enhanced_agents += 1
-                    self.logger.logger.debug(f"Enhanced {role} with MedRAG knowledge")
-                    
-                except Exception as e:
-                    self.logger.logger.error(f"Failed to enhance {role}: {str(e)}")
-            
-            # Enhance shared mental model if available
-            if self.use_shared_mental_model and self.mental_model:
-                success = self.medrag_integration.enhance_shared_mental_model(
-                    self.mental_model, 
-                    self.retrieved_knowledge
-                )
-                if success:
-                    self.logger.logger.info("Enhanced shared mental model with MedRAG knowledge")
-            
-            # Log enhancement summary
-            num_snippets = len(self.retrieved_knowledge.get("knowledge_snippets", []))
-            retrieval_time = self.retrieved_knowledge.get("retrieval_time", 0)
-            
-            self.logger.logger.info(
-                f"MedRAG enhancement completed: {enhanced_agents}/{len(self.agents)} agents enhanced, "
-                f"{num_snippets} knowledge snippets applied in {retrieval_time:.2f}s"
-            )
-            
-            # Store for results
-            self.results["medrag_enhancement"] = {
-                "enabled": True,
-                "success": True,
-                "agents_enhanced": enhanced_agents,
-                "total_agents": len(self.agents),
-                "snippets_retrieved": num_snippets,
-                "retrieval_time": retrieval_time,
-                "summary": self.retrieved_knowledge.get("summary", ""),
-                "knowledge_context": knowledge_context[:500] + "..." if len(knowledge_context) > 500 else knowledge_context
-            }
-            
-        except Exception as e:
-            error_msg = f"Failed to enhance agents with MedRAG knowledge: {str(e)}"
-            self.logger.logger.error(error_msg)
-            self.logger.logger.error(traceback.format_exc())
-            
-            self.results["medrag_enhancement"] = {
-                "enabled": True,
-                "success": False,
-                "error": error_msg,
-                "agents_enhanced": enhanced_agents,
-                "total_agents": len(self.agents),
-                "snippets_retrieved": 0,
-                "retrieval_time": 0
-            }
-
-    def _create_medrag_context(self) -> str:
-        """Create formatted medical knowledge context from retrieved snippets."""
-        if not self.retrieved_knowledge or not self.retrieved_knowledge.get("knowledge_snippets"):
-            return ""
-        
-        snippets = self.retrieved_knowledge["knowledge_snippets"]
-        context_parts = []
-        
-        context_parts.append("=== RETRIEVED MEDICAL KNOWLEDGE ===")
-        context_parts.append("The following medical literature is relevant to this question:\n")
-        
-        # Use top 3 most relevant snippets
-        top_snippets = sorted(snippets, key=lambda x: x.get("relevance_score", 0), reverse=True)[:3]
-        
-        for i, snippet in enumerate(top_snippets, 1):
-            title = snippet.get("title", f"Medical Reference {i}")
-            content = snippet.get("content", "")
-            score = snippet.get("relevance_score", 0)
-            
-            # Truncate very long content
-            if len(content) > 300:
-                content = content[:300] + "..."
-            
-            context_parts.append(f"[{i}] {title} (relevance: {score:.2f}):")
-            context_parts.append(f"{content}\n")
-        
-        # Add insights if available
-        insights = self.retrieved_knowledge.get("medrag_insights", {})
-        if insights.get("reasoning"):
-            context_parts.append("Additional clinical reasoning from literature:")
-            context_parts.append(f"{insights['reasoning'][:200]}...\n")
-        
-        context_parts.append("=== END RETRIEVED KNOWLEDGE ===")
-        
-        return "\n".join(context_parts)
-
+    # Keep all existing simulation methods unchanged for backward compatibility
     def _run_round1_independent_analysis(self) -> Dict[str, Dict[str, Any]]:
-        """
-        ROUND 1: Each agent analyzes the task independently with enhanced image support.
-        """
+        """ROUND 1: Each agent analyzes the task independently with enhanced image support."""
         agent_analyses = {}
         
         # Extract image from task config if available
@@ -541,17 +467,13 @@ class AgentSystemSimulator:
                 }
                 
                 # Update shared mental model if enabled
-                if self.use_shared_mental_model and self.mental_model:
+                final_config = self.get_final_teamwork_config()
+                if final_config.get("use_shared_mental_model", False) and self.mental_model:
                     understanding = self.mental_model.extract_understanding_from_message(analysis)
                     self.mental_model.update_shared_understanding(role, understanding)
                 
-                # Log MedRAG and vision usage
-                medrag_used = agent.get_from_knowledge_base("has_medrag_enhancement")
-                if medrag_used and task_image is not None:
-                    self.logger.logger.info(f"{role}: Used both MedRAG enhancement and vision analysis")
-                elif medrag_used:
-                    self.logger.logger.info(f"{role}: Used MedRAG enhancement")
-                elif task_image is not None:
+                # Log teamwork component usage
+                if task_image is not None:
                     self.logger.logger.info(f"{role}: Used vision analysis")
                     
             except Exception as e:
@@ -599,9 +521,7 @@ class AgentSystemSimulator:
         return agent_analyses
 
     def _run_round2_collaborative_discussion(self, round1_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
-        """
-        ROUND 2: Enhanced collaborative discussion with vision-aware prompting.
-        """
+        """ROUND 2: Enhanced collaborative discussion with vision-aware prompting."""
         round2_discussions = {}
         
         # Check if this is a vision task
@@ -640,8 +560,8 @@ class AgentSystemSimulator:
                     discussion_parts = [
                         f"""You have completed your initial analysis. Now review your teammates' reasoning to enhance your understanding.
 
-    Your initial analysis:
-    {round1_analyses[role]['analysis']}"""
+Your initial analysis:
+{round1_analyses[role]['analysis']}"""
                     ]
                     
                     # Add text-only teammate analyses
@@ -657,26 +577,27 @@ class AgentSystemSimulator:
                     
                     # Add discussion instructions
                     discussion_parts.append("""
-    Based on these different perspectives:
-    1. Identify where you agree or disagree with your teammates
-    2. Question any reasoning that seems unclear or potentially flawed
-    3. Share additional insights that might help the team""")
+Based on these different perspectives:
+1. Identify where you agree or disagree with your teammates
+2. Question any reasoning that seems unclear or potentially flawed
+3. Share additional insights that might help the team""")
                     
                     # Add vision-specific instructions if applicable
                     if has_vision_task:
                         discussion_parts.append("""
-    4. If you can see the image, compare your visual observations with teammates' findings
-    5. Discuss any visual details that might have been missed or interpreted differently
-    6. Consider how image findings support or contradict different reasoning approaches""")
+4. If you can see the image, compare your visual observations with teammates' findings
+5. Discuss any visual details that might have been missed or interpreted differently
+6. Consider how image findings support or contradict different reasoning approaches""")
                     
                     discussion_parts.append("""
-    DO NOT provide a final answer in this round. Focus on collaborative analysis and discussion.
-    This is about improving understanding before making your final decision.""")
+DO NOT provide a final answer in this round. Focus on collaborative analysis and discussion.
+This is about improving understanding before making your final decision.""")
                     
                     discussion_prompt = "\n\n".join(discussion_parts)
                     
                     # Apply teamwork components
-                    if self.use_mutual_monitoring and self.mutual_monitor:
+                    final_config = self.get_final_teamwork_config()
+                    if final_config.get("use_mutual_monitoring", False) and self.mutual_monitor:
                         for other_role, analysis in other_analyses.items():
                             other_agent = self.agents[other_role]
                             extract = other_agent.extract_response_isolated(analysis, self.task_config)
@@ -691,10 +612,10 @@ class AgentSystemSimulator:
                                 )
                                 discussion_prompt += f"""
 
-    Based on monitoring {other_role}'s analysis, you've identified:
-    {feedback}
+Based on monitoring {other_role}'s analysis, you've identified:
+{feedback}
 
-    Consider these points in your discussion."""
+Consider these points in your discussion."""
                     
                     # Execute discussion with or without image
                     if task_image is not None and round1_analyses[role].get("used_vision", False):
@@ -734,9 +655,7 @@ class AgentSystemSimulator:
 
     def _run_round3_final_decisions(self, round1_analyses: Dict[str, Dict[str, Any]], 
                                 round2_discussions: Dict[str, str]) -> Dict[str, Dict[str, Any]]:
-        """
-        ROUND 3: Enhanced final decisions with vision support and error recovery.
-        """
+        """ROUND 3: Enhanced final decisions with vision support and error recovery."""
         round3_decisions = {}
         
         # Check if this is a vision task
@@ -768,36 +687,36 @@ class AgentSystemSimulator:
                         if task_type == "yes_no_maybe":
                             final_prompt = f"""Based on your initial image analysis and team discussion, provide your final answer.
 
-    Your initial analysis (with image):
-    {round1_analyses[role]['analysis']}
+Your initial analysis (with image):
+{round1_analyses[role]['analysis']}
 
-    Team discussion insights:
-    {round2_discussions.get(role, "No discussion occurred.")}
+Team discussion insights:
+{round2_discussions.get(role, "No discussion occurred.")}
 
-    Now examine the image once more and provide your final answer.
-    Begin with "ANSWER: X" (yes, no, or maybe) followed by your integrated reasoning."""
+Now examine the image once more and provide your final answer.
+Begin with "ANSWER: X" (yes, no, or maybe) followed by your integrated reasoning."""
                         else:
                             final_prompt = f"""Based on your initial image analysis and team discussion, provide your final answer.
 
-    Your initial analysis (with image):
-    {round1_analyses[role]['analysis']}
+Your initial analysis (with image):
+{round1_analyses[role]['analysis']}
 
-    Team discussion insights:
-    {round2_discussions.get(role, "No discussion occurred.")}
+Team discussion insights:
+{round2_discussions.get(role, "No discussion occurred.")}
 
-    Now examine the image once more and provide your final answer.
-    Begin with "ANSWER: X" (your chosen option) followed by your integrated visual and clinical reasoning."""
+Now examine the image once more and provide your final answer.
+Begin with "ANSWER: X" (your chosen option) followed by your integrated visual and clinical reasoning."""
                     else:
                         # Standard fallback for text-only
                         final_prompt = f"""Based on your initial analysis and team discussion, provide your final answer.
 
-    Your initial analysis:
-    {round1_analyses[role]['analysis']}
+Your initial analysis:
+{round1_analyses[role]['analysis']}
 
-    Team discussion insights:
-    {round2_discussions.get(role, "No discussion occurred.")}
+Team discussion insights:
+{round2_discussions.get(role, "No discussion occurred.")}
 
-    Now provide your final answer with "ANSWER: X" followed by your reasoning."""
+Now provide your final answer with "ANSWER: X" followed by your reasoning."""
                 
                 # Execute final decision with vision support and error recovery
                 try:
@@ -858,7 +777,8 @@ class AgentSystemSimulator:
                 }
         
         # Enhanced leadership synthesis with vision support
-        if self.use_team_leadership and self.leader:
+        final_config = self.get_final_teamwork_config()
+        if final_config.get("use_team_leadership", False) and self.leader:
             try:
                 context = "\n\n".join([f"{role}:\n{decision['final_decision']}" 
                                     for role, decision in round3_decisions.items() 
@@ -868,10 +788,10 @@ class AgentSystemSimulator:
                 if task_image is not None:
                     synthesis_prompt = f"""As team leader, synthesize the team's responses considering both textual reasoning and visual analysis.
 
-    Team responses:
-    {context}
+Team responses:
+{context}
 
-    Provide final guidance integrating all perspectives and visual findings."""
+Provide final guidance integrating all perspectives and visual findings."""
                     
                     leader_synthesis = self.leader.chat_with_image(synthesis_prompt, task_image)
                 else:
@@ -917,7 +837,6 @@ class AgentSystemSimulator:
             return self.task_config["image_data"].get("image")
         return None
 
-
     def _run_leadership_definition(self) -> str:
         """Have the leader define the team's approach (between Round 1 and 2)."""
         if not self.leader:
@@ -931,7 +850,7 @@ class AgentSystemSimulator:
             
             self.results["exchanges"].append({
                 "type": "leadership_definition",
-                "communication": "standard",
+                "communication": "standard", 
                 "sender": self.leader.role,
                 "message": leader_definition
             })
@@ -1014,19 +933,21 @@ class AgentSystemSimulator:
         """Collect teamwork metrics from enabled components."""
         self.results["teamwork_metrics"] = {}
         
-        if self.use_closed_loop_comm and self.comm_handler:
+        final_config = self.get_final_teamwork_config()
+        
+        if final_config.get("use_closed_loop_comm", False) and self.comm_handler:
             self.results["teamwork_metrics"]["closed_loop_communication"] = self.comm_handler.get_communication_metrics()
             
-        if self.use_mutual_monitoring and self.mutual_monitor:
+        if final_config.get("use_mutual_monitoring", False) and self.mutual_monitor:
             self.results["teamwork_metrics"]["mutual_monitoring"] = self.mutual_monitor.analyze_team_performance()
             
-        if self.use_shared_mental_model and self.mental_model:
+        if final_config.get("use_shared_mental_model", False) and self.mental_model:
             self.results["teamwork_metrics"]["shared_mental_model"] = self.mental_model.analyze_mental_model_effectiveness()
         
-        if self.use_team_orientation and self.team_orientation:
+        if final_config.get("use_team_orientation", False) and self.team_orientation:
             self.results["teamwork_metrics"]["team_orientation"] = self.team_orientation.get_team_orientation_metrics()
             
-        if self.use_mutual_trust and self.mutual_trust:
+        if final_config.get("use_mutual_trust", False) and self.mutual_trust:
             self.results["teamwork_metrics"]["mutual_trust"] = self.mutual_trust.get_trust_metrics()
 
     def save_results(self) -> str:
@@ -1142,8 +1063,9 @@ class AgentSystemSimulator:
     def _evaluate_teamwork_performance(self) -> Dict[str, Any]:
         """Evaluate performance of the teamwork components."""
         teamwork_metrics = {}
+        final_config = self.get_final_teamwork_config()
         
-        if "closed_loop_communication" in self.results["teamwork_metrics"]:
+        if final_config.get("use_closed_loop_comm", False) and "closed_loop_communication" in self.results.get("teamwork_metrics", {}):
             comm_metrics = self.results["teamwork_metrics"]["closed_loop_communication"]
             teamwork_metrics["closed_loop_communication"] = {
                 "effectiveness": comm_metrics.get("effectiveness_rating", "N/A"),
@@ -1151,7 +1073,7 @@ class AgentSystemSimulator:
                 "total_exchanges": comm_metrics.get("total_exchanges", 0)
             }
         
-        if "mutual_monitoring" in self.results["teamwork_metrics"]:
+        if final_config.get("use_mutual_monitoring", False) and "mutual_monitoring" in self.results.get("teamwork_metrics", {}):
             monitor_metrics = self.results["teamwork_metrics"]["mutual_monitoring"]
             teamwork_metrics["mutual_monitoring"] = {
                 "effectiveness": monitor_metrics.get("team_monitoring_effectiveness", "N/A"),
@@ -1159,7 +1081,7 @@ class AgentSystemSimulator:
                 "total_issues_detected": monitor_metrics.get("total_issues_detected", 0)
             }
         
-        if "shared_mental_model" in self.results["teamwork_metrics"]:
+        if final_config.get("use_shared_mental_model", False) and "shared_mental_model" in self.results.get("teamwork_metrics", {}):
             model_metrics = self.results["teamwork_metrics"]["shared_mental_model"]
             teamwork_metrics["shared_mental_model"] = {
                 "effectiveness": model_metrics.get("effectiveness_rating", "N/A"),
@@ -1167,7 +1089,7 @@ class AgentSystemSimulator:
                 "final_convergence": model_metrics.get("final_convergence", 0)
             }
         
-        if self.use_team_leadership:
+        if final_config.get("use_team_leadership", False):
             leadership_actions = sum(1 for exchange in self.results["exchanges"] 
                                   if exchange.get("type") in ["leadership_definition", "leadership_synthesis"])
             
@@ -1249,45 +1171,3 @@ class AgentSystemSimulator:
                 }
         
         return metrics
-    
-    ##################### =================================================== Image Vision Enhancements =================================================== #####################
-
-
-    # UPDATE: Add vision analysis method to ModularAgent
-    def analyze_task_with_image(self, task_config: Dict[str, Any], image) -> str:
-        """
-        Analyze task with image using vision capabilities.
-        
-        Args:
-            task_config: Task configuration with image data
-            image: PIL Image object
-            
-        Returns:
-            Analysis incorporating visual findings
-        """
-        task_type = task_config["type"]
-        question = task_config["description"]
-        
-        # Check if this agent is vision-specialized
-        if isinstance(self, (MedicalImageAnalyst, PathologySpecialist)):
-            if isinstance(self, MedicalImageAnalyst):
-                return self.analyze_medical_image(question, image, task_config)
-            elif isinstance(self, PathologySpecialist):
-                return self.analyze_pathology_slide(question, image, task_config)
-        
-        # For general agents, use enhanced vision prompt
-        vision_prompt = f"""
-    You are analyzing a medical question that includes an image. Please examine the provided image carefully and incorporate your visual findings into your analysis.
-
-    Question: {question}
-
-    Please provide:
-    1. **Visual Analysis**: Describe what you observe in the image
-    2. **Medical Assessment**: Interpret the medical significance of your visual findings  
-    3. **Clinical Reasoning**: Connect the image findings to the question asked
-    4. **Answer Determination**: Use both the question text and image analysis to determine your answer
-
-    Provide your final answer clearly at the end.
-    """
-        
-        return self.chat_with_image(vision_prompt, image)
