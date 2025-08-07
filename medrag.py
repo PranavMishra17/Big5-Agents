@@ -16,6 +16,9 @@ import threading
 from langchain_openai import AzureChatOpenAI
 import tiktoken
 
+# Import token counter
+from utils.token_counter import get_token_counter
+
 
 class MedRAG:
     """
@@ -126,6 +129,12 @@ class MedRAG:
     def generate(self, messages: List[Dict[str, str]], **kwargs) -> str:
         """Generate response using Azure OpenAI."""
         try:
+            # Get token counter
+            token_counter = get_token_counter()
+            
+            # Count input tokens
+            input_tokens = token_counter.count_message_tokens(messages, self.llm_name)
+            
             # Convert messages to LangChain format
             from langchain_core.messages import HumanMessage, SystemMessage
             
@@ -137,7 +146,23 @@ class MedRAG:
                     lc_messages.append(HumanMessage(content=msg["content"]))
             
             response = self.client.invoke(lc_messages)
-            return response.content
+            response_content = response.content
+            
+            # Count output tokens and track usage
+            output_tokens = token_counter.count_tokens(response_content, self.llm_name)
+            
+            # Track the API call
+            token_counter.track_api_call(
+                input_tokens=input_tokens,
+                output_tokens=output_tokens,
+                model=self.llm_name,
+                agent_role="MedRAG",
+                operation_type="medrag_generate"
+            )
+            
+            self.logger.debug(f"MedRAG generate completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens")
+            
+            return response_content
             
         except Exception as e:
             self.logger.error(f"Error generating response: {str(e)}")

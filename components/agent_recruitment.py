@@ -102,17 +102,17 @@ def determine_complexity(question, method="adaptive"):
     complexity_counts[complexity] += 1
     return complexity
 
-def determine_optimal_team_size(question: str, complexity: str, max_agents: int = 5) -> int:
+def determine_optimal_team_size(question: str, complexity: str, max_agents: int = 4) -> int:
     """
     Dynamically determine optimal team size based on question complexity and content.
     
     Args:
         question: The question to analyze
         complexity: Pre-determined complexity level
-        max_agents: Maximum number of agents allowed
+        max_agents: Maximum number of agents allowed (2-4 range)
         
     Returns:
-        Optimal number of agents (2-5)
+        Optimal number of agents (2-4)
     """
     try:
         evaluator = Agent(
@@ -134,20 +134,20 @@ def determine_optimal_team_size(question: str, complexity: str, max_agents: int 
         
         if size_match:
             optimal_size = int(size_match.group(1))
-            # Ensure within bounds
-            optimal_size = max(2, min(optimal_size, max_agents))
-            logging.info(f"Dynamic team size determination: {optimal_size} agents")
+            # Ensure within bounds (2-4 agents only)
+            optimal_size = max(2, min(optimal_size, min(max_agents, 4)))
+            logging.info(f"Dynamic team size determination: {optimal_size} agents (limited to 2-4 range)")
             return optimal_size
         else:
-            # Fallback based on complexity
+            # Fallback based on complexity (2-4 range)
             fallback_sizes = {"basic": 2, "intermediate": 3, "advanced": 4}
             fallback_size = fallback_sizes.get(complexity, 3)
-            logging.warning(f"Could not extract team size, using fallback: {fallback_size}")
+            logging.warning(f"Could not extract team size, using fallback: {fallback_size} (2-4 range)")
             return fallback_size
             
     except Exception as e:
         logging.error(f"Error in team size determination: {str(e)}")
-        # Complexity-based fallback
+        # Complexity-based fallback (2-4 range)
         fallback_sizes = {"basic": 2, "intermediate": 3, "advanced": 4}
         return fallback_sizes.get(complexity, 3)
 
@@ -291,11 +291,13 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
     
     # Determine team size
     if use_dynamic_team_size:
-        optimal_team_size = determine_optimal_team_size(question, complexity, max_agents=5)
+        optimal_team_size = determine_optimal_team_size(question, complexity, max_agents=4)
         logging.info(f"Dynamic team size selection: {optimal_team_size} agents")
     else:
-        optimal_team_size = n_max if n_max is not None else 5
-        logging.info(f"Using provided team size: {optimal_team_size} agents")
+        # Ensure provided team size is within 2-4 range
+        optimal_team_size = n_max if n_max is not None else 4
+        optimal_team_size = max(2, min(optimal_team_size, 4))
+        logging.info(f"Using provided team size: {optimal_team_size} agents (limited to 2-4 range)")
     
     # Determine teamwork configuration
     if use_dynamic_teamwork:

@@ -26,6 +26,7 @@ from utils.prompts import (
     ORIENTATION_PROMPTS,
     TRUST_PROMPTS
 )
+from utils.token_counter import get_token_counter, TokenUsage
 
 
 class TimeoutError(Exception):
@@ -80,6 +81,10 @@ class Agent:
         self.conversation_history = []
         self.knowledge_base = {}
         self.agent_index = agent_index
+        
+        # Initialize context for token tracking
+        self.question_id = None
+        self.simulation_id = None
         
         # Initialize logger
         self.logger = logging.getLogger(f"agent.{role}")
@@ -175,6 +180,11 @@ class Agent:
         """Retrieve information from the agent's knowledge base."""
         return self.knowledge_base.get(key)
     
+    def set_tracking_context(self, question_id: str = None, simulation_id: str = None):
+        """Set context for token tracking."""
+        self.question_id = question_id
+        self.simulation_id = simulation_id
+    
     def _timeout_handler(self, signum, frame):
         """Handle timeout signal."""
         raise TimeoutError("Request timed out")
@@ -186,6 +196,18 @@ class Agent:
         
         def target():
             try:
+                # Get token counter
+                token_counter = get_token_counter()
+                
+                # Count input tokens
+                input_tokens = token_counter.count_message_tokens(messages, self.model)
+                
+                # Validate token limits
+                is_valid, message = token_counter.validate_token_limits(input_tokens, self.model)
+                if not is_valid:
+                    self.logger.warning(f"Token limit validation failed: {message}")
+                    # Could truncate or raise error based on requirements
+                
                 # Check if this is a vision call
                 has_image = any(
                     isinstance(msg.get("content"), list) and 
@@ -201,14 +223,33 @@ class Agent:
                 }
                 
                 # Add max_tokens for vision calls or if specified
+                max_tokens = None
                 if has_image or self.is_vision_task:
-                    api_params["max_tokens"] = 4000
+                    max_tokens = 4000
+                    api_params["max_tokens"] = max_tokens
                 elif config.MAX_TOKENS:
-                    api_params["max_tokens"] = config.MAX_TOKENS
+                    max_tokens = config.MAX_TOKENS
+                    api_params["max_tokens"] = max_tokens
                 
                 # Make API call
                 response = self.client.chat.completions.create(**api_params)
                 self._response = response.choices[0].message.content
+                
+                # Count output tokens and track usage
+                output_tokens = token_counter.count_tokens(self._response, self.model)
+                
+                # Track the API call
+                token_counter.track_api_call(
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    model=self.model,
+                    agent_role=self.role,
+                    question_id=self.question_id,
+                    simulation_id=self.simulation_id,
+                    operation_type="chat_with_timeout"
+                )
+                
+                self.logger.debug(f"API call completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens")
                     
             except Exception as e:
                 self.logger.error(f"OpenAI API call error: {str(e)}")
@@ -385,6 +426,17 @@ Based on the retrieved medical literature above, provide your analysis consideri
         
         for attempt in range(config.MAX_RETRIES):
             try:
+                # Get token counter
+                token_counter = get_token_counter()
+                
+                # Count input tokens
+                input_tokens = token_counter.count_message_tokens(messages, self.model)
+                
+                # Validate token limits
+                is_valid, token_message = token_counter.validate_token_limits(input_tokens, self.model)
+                if not is_valid:
+                    self.logger.warning(f"Token limit validation failed: {token_message}")
+                
                 # API call parameters
                 api_params = {
                     "model": self.model,
@@ -399,10 +451,26 @@ Based on the retrieved medical literature above, provide your analysis consideri
                 response = self.client.chat.completions.create(**api_params)
                 assistant_message = response.choices[0].message.content
                 
+                # Count output tokens and track usage
+                output_tokens = token_counter.count_tokens(assistant_message, self.model)
+                
+                # Track the API call
+                token_counter.track_api_call(
+                    input_tokens=input_tokens,
+                    output_tokens=output_tokens,
+                    model=self.model,
+                    agent_role=self.role,
+                    question_id=self.question_id,
+                    simulation_id=self.simulation_id,
+                    operation_type="chat"
+                )
+                
                 # Store response (use original message)
                 self.messages.append({"role": "user", "content": message})
                 self.messages.append({"role": "assistant", "content": assistant_message})
                 self.conversation_history.append({"user": message, "assistant": assistant_message})
+                
+                self.logger.debug(f"Chat completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens")
                 
                 return assistant_message
                 

@@ -13,9 +13,8 @@ load_dotenv()
 AZURE_API_KEY = os.environ.get('AZURE_OPENAI_API_KEY')
 AZURE_API_KEY = ""
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
-AZURE_ENDPOINT = "https://teammedagent-azureopenai.openai.azure.com/"
+AZURE_ENDPOINT = ""
 
-AZURE_CHAT_COMPLETIONS_URL = "https://teammedagent-azureopenai.openai.azure.com/openai/deployments/gpt-4o-10/chat/completions?api-version=2025-01-01-preview"
 
 # Multiple deployment configuration for question-level parallel processing
 AZURE_DEPLOYMENTS = [
@@ -248,6 +247,16 @@ AZURE_ENDPOINT = "https://api.openai.com/v1"
 # Model settings
 TEMPERATURE = 0.5
 MAX_TOKENS = 1500
+
+# Token usage limits
+MAX_INPUT_TOKENS = 10000  # Maximum input tokens per API call
+MAX_OUTPUT_TOKENS = 8192   # Maximum output tokens per API call  
+TOKEN_BUDGET_PER_QUESTION = 50000  # Token budget per question (soft limit)
+
+# Team size limits (to control costs)
+MIN_TEAM_SIZE = 2  # Minimum number of agents
+MAX_TEAM_SIZE = 4  # Maximum number of agents (was 5, reduced for cost control)
+DEFAULT_TEAM_SIZE = 3  # Default team size when not specified
 
 # Request timeout settings
 REQUEST_TIMEOUT = 30  # seconds

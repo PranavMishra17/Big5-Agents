@@ -23,6 +23,7 @@ import config
 from utils.logger import SimulationLogger
 from components.agent_recruitment import determine_complexity, recruit_agents
 from components.medrag_integration import create_medrag_integration
+from utils.token_counter import get_token_counter, reset_global_counter
 
 import pickle
 import pandas as pd
@@ -1670,7 +1671,7 @@ def process_single_question(question_index: int,
                 use_recruitment=configuration.get("recruitment", False),
                 recruitment_method=configuration.get("recruitment_method", "adaptive"),
                 recruitment_pool=configuration.get("recruitment_pool", "general"),
-                n_max=configuration.get("n_max", 5),
+                n_max=configuration.get("n_max", 4),
                 deployment_config=deployment_config,
                 question_specific_context=True,
                 task_config=agent_task,
@@ -1678,9 +1679,22 @@ def process_single_question(question_index: int,
                 use_medrag=use_medrag
             )
 
+            # Initialize token tracking for this question
+            token_counter = get_token_counter()
+            pre_simulation_usage = token_counter.get_session_usage()
+            
             # Run simulation with enhanced error capture
             simulation_results = simulator.run_simulation()
             performance = simulator.evaluate_performance()
+            
+            # Get token usage for this question
+            post_simulation_usage = token_counter.get_session_usage()
+            question_token_usage = {
+                "input_tokens": post_simulation_usage["total_usage"]["input_tokens"] - pre_simulation_usage["total_usage"]["input_tokens"],
+                "output_tokens": post_simulation_usage["total_usage"]["output_tokens"] - pre_simulation_usage["total_usage"]["output_tokens"],
+                "total_tokens": post_simulation_usage["total_usage"]["total_tokens"] - pre_simulation_usage["total_usage"]["total_tokens"],
+                "api_calls": post_simulation_usage["total_usage"]["api_calls"] - pre_simulation_usage["total_usage"]["api_calls"]
+            }
 
             # Extract comprehensive results
             question_result.update({
@@ -1689,7 +1703,8 @@ def process_single_question(question_index: int,
                 "decisions": simulation_results.get("decision_results", {}),
                 "performance": performance.get("task_performance", {}),
                 "agent_conversations": simulation_results.get("exchanges", []),
-                "simulation_metadata": simulation_results.get("simulation_metadata", {})
+                "simulation_metadata": simulation_results.get("simulation_metadata", {}),
+                "token_usage": question_token_usage
             })
 
             # Extract MedRAG information
@@ -1720,6 +1735,19 @@ def process_single_question(question_index: int,
                 with open(question_result_file, 'w') as f:
                     json.dump(question_result, f, indent=2, default=str)  # default=str for PIL images
                 logging.info(f"Saved Q{question_index} result to {question_result_file}")
+                
+                # Save token usage for this question
+                token_usage_file = os.path.join(run_output_dir, f"question_{question_index}_token_usage.json")
+                with open(token_usage_file, 'w') as f:
+                    json.dump({
+                        "question_index": question_index,
+                        "token_usage": question_token_usage,
+                        "saved_at": datetime.now().isoformat()
+                    }, f, indent=2)
+                
+                logging.info(f"Q{question_index} token usage: {question_token_usage['total_tokens']} total tokens "
+                           f"({question_token_usage['input_tokens']} in, {question_token_usage['output_tokens']} out, "
+                           f"{question_token_usage['api_calls']} calls)")
 
             # Success - break retry loop
             break
@@ -2321,6 +2349,15 @@ def run_dataset(
     use_medrag: bool = False
 ) -> Dict[str, Any]:
     
+    # Initialize token tracking for this run
+    reset_global_counter()  # Reset global counter for fresh run
+    token_counter = get_token_counter(
+        output_dir=os.path.join(output_dir or "results", "token_logs") if output_dir else "token_logs",
+        max_input_tokens=config.MAX_INPUT_TOKENS,
+        max_output_tokens=config.MAX_OUTPUT_TOKENS
+    )
+    run_start_time = datetime.now()
+    
     # FIXED: Only disable dynamic selection if there are explicit configs AND dynamic selection is not explicitly requested
     explicit_teamwork_config = any([leadership, closed_loop, mutual_monitoring, shared_mental_model, team_orientation, mutual_trust])
     explicit_team_size = n_max is not None
@@ -2335,9 +2372,9 @@ def run_dataset(
     else:
         logging.info("Dynamic selection DISABLED - using provided/default configuration")
     
-    # Set default n_max if not provided
+    # Set default n_max if not provided (2-4 range)
     if n_max is None:
-        n_max = 5
+        n_max = 4
     
     # Log parameters including dynamic selection
     dynamic_status = "with dynamic selection" if enable_dynamic_selection else "with static configuration"
@@ -2584,6 +2621,47 @@ def run_dataset(
         
         # Also create comprehensive combined results
         create_comprehensive_combined_results(all_results, dataset_type, run_output_dir)
+        
+        # Save run-level token usage summary
+        run_duration = datetime.now() - run_start_time
+        final_usage = token_counter.get_session_usage()
+        run_token_summary = {
+            "run_metadata": {
+                "dataset_type": dataset_type,
+                "num_questions": num_questions,
+                "random_seed": random_seed,
+                "run_duration_seconds": run_duration.total_seconds(),
+                "run_start_time": run_start_time.isoformat(),
+                "run_end_time": datetime.now().isoformat()
+            },
+            "total_token_usage": final_usage["total_usage"],
+            "questions_processed": len(all_results),
+            "average_tokens_per_question": final_usage["total_usage"]["total_tokens"] / max(len(all_results), 1),
+            "average_api_calls_per_question": final_usage["total_usage"]["api_calls"] / max(len(all_results), 1)
+        }
+        
+        token_summary_file = os.path.join(run_output_dir, "run_token_summary.json")
+        with open(token_summary_file, 'w') as f:
+            json.dump(run_token_summary, f, indent=2)
+        
+        # Create token logs directory and save detailed usage
+        token_logs_dir = os.path.join(run_output_dir, "token_logs")
+        os.makedirs(token_logs_dir, exist_ok=True)
+        token_counter.save_session_usage(f"{dataset_type}_run_{random_seed}")
+        
+        logging.info(f"Run completed: {final_usage['total_usage']['total_tokens']:,} total tokens, "
+                   f"{final_usage['total_usage']['api_calls']} API calls, "
+                   f"avg {run_token_summary['average_tokens_per_question']:.1f} tokens/question")
+    
+    # Add token summary to combined results
+    if 'token_counter' in locals():
+        final_usage = token_counter.get_session_usage()
+        combined_results["token_usage_summary"] = {
+            "total_tokens": final_usage["total_usage"]["total_tokens"],
+            "total_api_calls": final_usage["total_usage"]["api_calls"],
+            "input_tokens": final_usage["total_usage"]["input_tokens"], 
+            "output_tokens": final_usage["total_usage"]["output_tokens"]
+        }
     
     return combined_results
 
@@ -3064,7 +3142,7 @@ def process_single_question_enhanced(question_index: int,
                 use_recruitment=configuration.get("recruitment", False),
                 recruitment_method=configuration.get("recruitment_method", "adaptive"),
                 recruitment_pool=configuration.get("recruitment_pool", "general"),
-                n_max=configuration.get("n_max", 5),
+                n_max=configuration.get("n_max", 4),
                 deployment_config=deployment_config,
                 question_specific_context=True,
                 task_config=agent_task,
@@ -3072,9 +3150,22 @@ def process_single_question_enhanced(question_index: int,
                 enable_dynamic_selection=enable_dynamic_selection  # NEW: Pass dynamic selection flag
             )
 
+            # Initialize token tracking for this question
+            token_counter = get_token_counter()
+            pre_simulation_usage = token_counter.get_session_usage()
+            
             # Run simulation with enhanced error capture
             simulation_results = simulator.run_simulation()
             performance = simulator.evaluate_performance()
+            
+            # Get token usage for this question
+            post_simulation_usage = token_counter.get_session_usage()
+            question_token_usage = {
+                "input_tokens": post_simulation_usage["total_usage"]["input_tokens"] - pre_simulation_usage["total_usage"]["input_tokens"],
+                "output_tokens": post_simulation_usage["total_usage"]["output_tokens"] - pre_simulation_usage["total_usage"]["output_tokens"],
+                "total_tokens": post_simulation_usage["total_usage"]["total_tokens"] - pre_simulation_usage["total_usage"]["total_tokens"],
+                "api_calls": post_simulation_usage["total_usage"]["api_calls"] - pre_simulation_usage["total_usage"]["api_calls"]
+            }
 
             # Extract comprehensive results
             question_result.update({
@@ -3083,7 +3174,8 @@ def process_single_question_enhanced(question_index: int,
                 "decisions": simulation_results.get("decision_results", {}),
                 "performance": performance.get("task_performance", {}),
                 "agent_conversations": simulation_results.get("exchanges", []),
-                "simulation_metadata": simulation_results.get("simulation_metadata", {})
+                "simulation_metadata": simulation_results.get("simulation_metadata", {}),
+                "token_usage": question_token_usage
             })
 
             # NEW: Extract dynamic selection results

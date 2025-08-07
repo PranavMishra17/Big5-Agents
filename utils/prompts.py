@@ -18,6 +18,13 @@ AGENT_SYSTEM_PROMPTS = {
     {task_description}
     
     This is a {task_type} task, and your output should be in the format: {expected_output_format}
+    
+    IMPORTANT RESPONSE GUIDELINES:
+    - Be precise, concise, and to the point
+    - Focus directly on the medical/clinical content
+    - Avoid unnecessary salutations, emotional language, or rejection concerns
+    - Provide clear, evidence-based reasoning
+    - Use efficient, professional medical communication
     """,
 }
 
@@ -31,6 +38,7 @@ LEADERSHIP_PROMPTS = {
     4. Seeking and evaluating information that affects team functioning
     5. Clarifying team member roles
     6. Engaging in preparatory discussions and feedback sessions with the team
+    7. Be precise, concise, and to the point
     """,
     
     "define_task": """
@@ -131,6 +139,7 @@ COMMUNICATION_PROMPTS = {
     1. Acknowledge that you have received this message
     2. Confirm your understanding by restating the key points in your own words
     3. Then provide your response to the content
+    4. Be precise, concise, and to the point
     
     Begin your response with an acknowledgment and confirmation.
     """,
@@ -148,6 +157,7 @@ COMMUNICATION_PROMPTS = {
     1. Verify whether they understood your message correctly
     2. Clarify any misunderstandings if necessary
     3. Then continue the conversation based on their response
+    4. Be precise, concise, and to the point
     
     Begin your response with verification of their understanding.
     """
@@ -161,6 +171,7 @@ MONITORING_PROMPTS = {
     2. Checking for errors or omissions in their reasoning
     3. Providing constructive feedback when you identify issues
     4. Ensuring the overall quality of the team's work
+    5. Be precise, concise, and to the point
     
     Do this respectfully and with the goal of improving the team's decision-making.
     """
@@ -174,6 +185,7 @@ MENTAL_MODEL_PROMPTS = {
     2. Checking alignment on how the team interprets the task
     3. Establishing shared terminology and frameworks
     4. Clarifying your reasoning process so others can follow it
+    5. Be precise, concise, and to the point
     
     This helps ensure all team members are aligned in their understanding.
     """,
@@ -206,6 +218,7 @@ MENTAL_MODEL_PROMPTS = {
     5. You are not allowed to consult external sources.
     6. You do not have any additional information other than what is provided in the question.
     7. Reflect on how different perspectives affect initial assessment of the question: If your answer changed based on this reflection, provide your decision and a brief explanation that includes whether your opinion has changed and why.
+    8. Be precise, concise, and to the point
 
     Task-specific understanding:
     Objective: {objective}
@@ -236,6 +249,7 @@ ORIENTATION_PROMPTS = {
     3. Prioritize team goals over individual recognition or achievement
     4. Actively participate in goal setting and strategy development
     5. Consider how your contributions can complement and enhance the work of others
+    6. Be precise, concise, and to the point
     
     Remember that team success depends on the integration of diverse perspectives and the coordination of individual efforts toward collective goals.
     """
@@ -250,6 +264,7 @@ TRUST_PROMPTS = {
     3. Assuming teammates are acting with positive intentions for the team's benefit
     4. Recognizing and respecting the expertise and rights of all team members
     5. Being willing to make yourself vulnerable by asking for help when needed
+    6. Be precise, concise, and to the point
     """,
     
     "low_trust": """

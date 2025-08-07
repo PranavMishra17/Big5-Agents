@@ -48,7 +48,7 @@ class AgentSystemSimulator:
          use_recruitment: bool = None,
          recruitment_method: str = None,
          recruitment_pool: str = None,
-         n_max: int = 5,
+         n_max: int = 4,
          deployment_config: Dict[str, str] = None,
          question_specific_context=False,
          task_config: Dict[str, Any] = None,
@@ -73,7 +73,7 @@ class AgentSystemSimulator:
             use_mutual_trust is not None
         ])
         
-        explicit_team_size = n_max is not None and n_max != 5  # 5 is default
+        explicit_team_size = n_max is not None and n_max != 4  # 4 is default
         
         # Disable dynamic selection if explicit configs provided (backward compatibility)
         if explicit_teamwork_config or explicit_team_size:
@@ -92,7 +92,7 @@ class AgentSystemSimulator:
         self.recruitment_method = recruitment_method or config.RECRUITMENT_METHOD
         self.recruitment_pool = recruitment_pool or "general"
         self.random_leader = random_leader
-        self.n_max = n_max if n_max is not None else 5
+        self.n_max = n_max if n_max is not None else 4
         self.question_specific_context = question_specific_context
         
         # Store deployment configuration for this question
@@ -261,6 +261,14 @@ class AgentSystemSimulator:
                 self.agents, self.leader = self._create_default_team()
         else:
             self.agents, self.leader = self._create_default_team()
+        
+        # Set tracking context for all agents after creation
+        if hasattr(self, 'agents') and self.agents:
+            question_id = self.task_config.get("question_index") if self.task_config else None
+            for agent in self.agents.values():
+                if hasattr(agent, 'set_tracking_context'):
+                    agent.set_tracking_context(question_id=str(question_id) if question_id is not None else None, 
+                                             simulation_id=self.simulation_id)
 
     def _create_default_team(self):
         """Create default team with deployment override if specified."""
@@ -307,6 +315,12 @@ class AgentSystemSimulator:
         agents[role] = agent
         if self.use_team_leadership:
             leader = agent
+        
+        # Set tracking context for the agent
+        question_id = self.task_config.get("question_index") if self.task_config else None
+        if hasattr(agent, 'set_tracking_context'):
+            agent.set_tracking_context(question_id=str(question_id) if question_id is not None else None, 
+                                     simulation_id=self.simulation_id)
             
         return agents, leader
 

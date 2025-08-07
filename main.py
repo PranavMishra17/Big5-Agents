@@ -44,7 +44,7 @@ def run_simulation(
     use_recruitment: bool = None,
     recruitment_method: str = None,
     recruitment_pool: str = None,
-    n_max: int = 5,
+    n_max: int = 4,
     runs= 1,
     deployment_config: Dict[str, str] = None
 ) -> Dict[str, Any]:
@@ -163,7 +163,7 @@ def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     return aggregated
 
 
-def run_all_configurations(runs=1, n_max=5):
+def run_all_configurations(runs=1, n_max=4):
     """
     Run simulations with individual and all feature combinations.
     
@@ -616,7 +616,7 @@ def main():
             use_recruitment=args.recruitment,
             recruitment_method=args.recruitment_method,
             recruitment_pool=args.recruitment_pool,
-            n_max=args.n_max if args.n_max is not None else 5,
+            n_max=args.n_max if args.n_max is not None else 4,
             deployment_config=deployment_config
         )
         
