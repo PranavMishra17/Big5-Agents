@@ -178,3 +178,4 @@ results\
 /corpus
 fix_medmcqa_groundtruth.py
 LATEX/
+verify_medmcqa.py

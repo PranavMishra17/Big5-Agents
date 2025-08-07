@@ -231,14 +231,18 @@ class Agent:
                     max_tokens = config.MAX_TOKENS
                     api_params["max_tokens"] = max_tokens
                 
-                # Make API call
+                # Time the API call
+                start_time = time.time()
                 response = self.client.chat.completions.create(**api_params)
+                end_time = time.time()
+                response_time_ms = (end_time - start_time) * 1000
+                
                 self._response = response.choices[0].message.content
                 
                 # Count output tokens and track usage
                 output_tokens = token_counter.count_tokens(self._response, self.model)
                 
-                # Track the API call
+                # Track the API call with timing
                 token_counter.track_api_call(
                     input_tokens=input_tokens,
                     output_tokens=output_tokens,
@@ -246,10 +250,11 @@ class Agent:
                     agent_role=self.role,
                     question_id=self.question_id,
                     simulation_id=self.simulation_id,
-                    operation_type="chat_with_timeout"
+                    operation_type="chat_with_timeout",
+                    response_time_ms=response_time_ms
                 )
                 
-                self.logger.debug(f"API call completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens")
+                self.logger.debug(f"API call completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens, Time: {response_time_ms:.1f}ms")
                     
             except Exception as e:
                 self.logger.error(f"OpenAI API call error: {str(e)}")
@@ -447,14 +452,18 @@ Based on the retrieved medical literature above, provide your analysis consideri
                 if config.MAX_TOKENS:
                     api_params["max_tokens"] = config.MAX_TOKENS
                 
-                # Make API call
+                # Time the API call
+                start_time = time.time()
                 response = self.client.chat.completions.create(**api_params)
+                end_time = time.time()
+                response_time_ms = (end_time - start_time) * 1000
+                
                 assistant_message = response.choices[0].message.content
                 
                 # Count output tokens and track usage
                 output_tokens = token_counter.count_tokens(assistant_message, self.model)
                 
-                # Track the API call
+                # Track the API call with timing
                 token_counter.track_api_call(
                     input_tokens=input_tokens,
                     output_tokens=output_tokens,
@@ -462,7 +471,8 @@ Based on the retrieved medical literature above, provide your analysis consideri
                     agent_role=self.role,
                     question_id=self.question_id,
                     simulation_id=self.simulation_id,
-                    operation_type="chat"
+                    operation_type="chat",
+                    response_time_ms=response_time_ms
                 )
                 
                 # Store response (use original message)
@@ -470,7 +480,7 @@ Based on the retrieved medical literature above, provide your analysis consideri
                 self.messages.append({"role": "assistant", "content": assistant_message})
                 self.conversation_history.append({"user": message, "assistant": assistant_message})
                 
-                self.logger.debug(f"Chat completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens")
+                self.logger.debug(f"Chat completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens, Time: {response_time_ms:.1f}ms")
                 
                 return assistant_message
                 

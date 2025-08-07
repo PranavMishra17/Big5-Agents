@@ -145,19 +145,25 @@ class MedRAG:
                 elif msg["role"] == "user":
                     lc_messages.append(HumanMessage(content=msg["content"]))
             
+            # Time the API call
+            start_time = time.time()
             response = self.client.invoke(lc_messages)
+            end_time = time.time()
+            response_time_ms = (end_time - start_time) * 1000
+            
             response_content = response.content
             
             # Count output tokens and track usage
             output_tokens = token_counter.count_tokens(response_content, self.llm_name)
             
-            # Track the API call
+            # Track the API call with timing
             token_counter.track_api_call(
                 input_tokens=input_tokens,
                 output_tokens=output_tokens,
                 model=self.llm_name,
                 agent_role="MedRAG",
-                operation_type="medrag_generate"
+                operation_type="medrag_generate",
+                response_time_ms=response_time_ms
             )
             
             self.logger.debug(f"MedRAG generate completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens")

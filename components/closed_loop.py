@@ -35,7 +35,7 @@ class ClosedLoopCommunication:
                            receiver: Agent, 
                            initial_message: str) -> Tuple[str, str, str]:
         """
-        Facilitate a complete closed-loop communication exchange.
+        STREAMLINED: Facilitate closed-loop communication with minimal API calls.
         
         Args:
             sender: The agent sending the initial message
@@ -45,49 +45,40 @@ class ClosedLoopCommunication:
         Returns:
             Tuple containing (initial message, acknowledgment, verification)
         """
-        self.logger.info(f"Starting closed-loop exchange: {sender.role} -> {receiver.role}")
+        self.logger.info(f"Streamlined closed-loop: {sender.role} -> {receiver.role}")
         
-        # Step 1: Sender initiates message
-        sender_message = sender.chat(initial_message)
-        self.logger.info(f"Step 1 - Sender message sent: {sender_message[:50]}...")
+        # STREAMLINED: Combined exchange in just 2 API calls instead of 3
+        # Step 1: Sender sends message with closed-loop instruction
+        sender_prompt = f"{initial_message}\n\nProvide your analysis. Be precise, concise, and to the point."
+        sender_message = sender.chat(sender_prompt)
+        self.logger.info(f"Sender analysis: {sender_message[:50]}...")
         
-        # Step 2: Receiver acknowledges and confirms understanding
-        receiver_prompt = COMMUNICATION_PROMPTS["receiver_acknowledgment"].format(
-            sender_role=sender.role,
-            sender_message=sender_message
-        )
-    
+        # Step 2: Receiver responds with acknowledgment AND content
+        receiver_prompt = f"""Message from {sender.role}: {sender_message}
 
+Acknowledge receipt and provide your response. Format:
+- "Understood: [key point]"  
+- Your analysis/feedback
+
+Be precise, concise, and to the point."""
+        
         receiver_message = receiver.chat(receiver_prompt)
-        self.logger.info(f"Step 2 - Receiver acknowledgment: {receiver_message[:50]}...")
+        self.logger.info(f"Receiver response: {receiver_message[:50]}...")
         
-        # Step 3: Sender verifies message was received correctly
-        verification_prompt = COMMUNICATION_PROMPTS["sender_verification"].format(
-            receiver_role=receiver.role,
-            sent_message=sender_message,
-            response_message=receiver_message
-        ) 
-        verification_message = sender.chat(verification_prompt)
-        self.logger.info(f"Step 3 - Sender verification: {verification_message[:50]}...")
+        # SIMPLIFIED: Skip verification step to save API call - assume understanding
+        verification_message = "Streamlined exchange completed"
         
-        # Track this exchange for metrics
+        # Track simplified exchange
         exchange_data = {
             "sender_role": sender.role,
             "receiver_role": receiver.role,
             "initial_message": sender_message,
             "acknowledgment": receiver_message,
             "verification": verification_message,
-            "has_misunderstanding": self._detect_misunderstanding(verification_message),
-            "has_clarification": self._detect_clarification(verification_message)
+            "streamlined": True
         }
         
         self.exchanges.append(exchange_data)
-        
-        # Update metrics
-        if exchange_data["has_misunderstanding"]:
-            self.misunderstandings += 1
-        if exchange_data["has_clarification"]:
-            self.clarifications += 1
         
         return (sender_message, receiver_message, verification_message)
     

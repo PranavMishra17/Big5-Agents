@@ -285,17 +285,23 @@ def recruit_agents_isolated(question: str, complexity: str, recruitment_pool: st
         instance_id = id(question)
         logging.debug("Thread-local question index not found; falling back to question ID.")
 
+    # DYNAMIC SELECTION: Force intermediate complexity when dynamic is enabled
+    if enable_dynamic_selection:
+        complexity = "intermediate"
+        logging.info(f"Dynamic selection enabled - forcing complexity to 'intermediate'")
+    
     # BACKWARD COMPATIBILITY: If specific configs provided, skip dynamic selection
     use_dynamic_team_size = (n_max is None and enable_dynamic_selection)
     use_dynamic_teamwork = (teamwork_config is None and enable_dynamic_selection)
     
     # Determine team size
     if use_dynamic_team_size:
-        optimal_team_size = determine_optimal_team_size(question, complexity, max_agents=4)
-        logging.info(f"Dynamic team size selection: {optimal_team_size} agents")
+        # For intermediate complexity, use 3 agents (from config DEFAULT_TEAM_SIZE)
+        optimal_team_size = 3
+        logging.info(f"Dynamic team size selection: {optimal_team_size} agents (intermediate complexity)")
     else:
         # Ensure provided team size is within 2-4 range
-        optimal_team_size = n_max if n_max is not None else 4
+        optimal_team_size = n_max if n_max is not None else 3
         optimal_team_size = max(2, min(optimal_team_size, 4))
         logging.info(f"Using provided team size: {optimal_team_size} agents (limited to 2-4 range)")
     
@@ -391,76 +397,58 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
     # Log recruitment parameters
     logging.info(f"Intermediate team recruitment: n_max={n_max}, pool={recruitment_pool}")
     
-    # Create a recruiter agent
+    # STREAMLINED: Create a recruiter agent for single API call
     recruiter = Agent(
-        role="Recruiter",
-        expertise_description="Assembles teams of medical experts for collaborative problem-solving"
+        role="Medical Team Recruiter",
+        expertise_description="Efficiently determines optimal team composition for medical questions"
     )
     
-    # Create prompt for team selection
-    selection_prompt = RECRUITMENT_PROMPTS["team_selection"].format(
-        question=question,
-        num_agents=n_max
-    )
+    # STREAMLINED: Single prompt to determine all aspects: number, roles, and specializations
+    streamlined_prompt = f"""Given this medical question, determine the optimal team in ONE response:
 
-    response = recruiter.chat(selection_prompt)
+QUESTION: {question}
+
+Provide exactly {n_max} medical specialists. For each, specify:
+1. Role name (e.g., "Cardiologist", "Emergency Medicine Physician")
+2. Key specialization (one line)
+
+Format your response as:
+AGENT_1: [Role] - [Specialization]
+AGENT_2: [Role] - [Specialization] 
+AGENT_3: [Role] - [Specialization]
+
+Be precise, concise, and to the point. Choose complementary specialties that best address this question."""
+
+    response = recruiter.chat(streamlined_prompt)
     
-    # Parse selected team
+    # STREAMLINED: Parse selected team with simple format
     lines = [line.strip() for line in response.split('\n') if line.strip()]
     selected_team = []
     leader_role = None
-    hierarchies = {}
-    weights = {}
     
     for line in lines:
-        if " - Hierarchy: " not in line:
-            continue
-            
-        # Extract role, expertise, and hierarchy
-        parts = line.split(" - Hierarchy: ")
-        if len(parts) != 2:
-            continue
-            
-        agent_info, hierarchy_weight = parts
-        
-        # Extract role and expertise from agent info
-        try:
-            if '.' in agent_info:
-                agent_info = agent_info.split('.', 1)[1].strip()
-                
-            if ' - ' in agent_info:
-                role, expertise = agent_info.split(' - ', 1)
-            else:
-                role = agent_info
-                expertise = "General expertise in this domain"
-        except:
-            continue
-            
-        # Extract weight
-        weight = 0.2  # Default weight
-        if " - Weight: " in hierarchy_weight:
-            hierarchy, weight_part = hierarchy_weight.split(" - Weight: ")
+        # Look for AGENT_X: format
+        if "AGENT_" in line and ":" in line:
             try:
-                weight = float(weight_part.strip())
-            except:
-                weight = 0.2
-        else:
-            hierarchy = hierarchy_weight
-        
-        # Determine hierarchy
-        if "Independent" in hierarchy:
-            hierarchies[role] = "Independent"
-        else:
-            if ">" in hierarchy:
-                parts = hierarchy.split(">")
-                superior = parts[0].strip()
-                if superior == role:
-                    if leader_role is None:
-                        leader_role = role
-        
-        # Store weight and add to selected team
-        weights[role] = weight
-        selected_team.append((role, expertise, hierarchies.get(role, "Independent"), weight))
+                # Extract role and specialization
+                agent_part = line.split(":", 1)[1].strip()
+                if " - " in agent_part:
+                    role, expertise = agent_part.split(" - ", 1)
+                    role = role.strip()
+                    expertise = expertise.strip()
+                else:
+                    role = agent_part.strip()
+                    expertise = "Medical specialist"
+                
+                # First agent is leader
+                if leader_role is None:
+                    leader_role = role
+                
+                selected_team.append((role, expertise, "Independent", 0.33))  # Equal weights for streamlined approach
+                
+            except Exception as e:
+                logging.warning(f"Failed to parse agent line: {line}")
+                continue
         
         # Stop when we have enough agents
         if len(selected_team) >= n_max:
@@ -473,10 +461,11 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
     
     # If no team members found or less than specified, create a default team
     if len(selected_team) < n_max:
+        logging.warning(f"Only found {len(selected_team)} agents from parsing, creating defaults to reach {n_max}")
         default_roles = [
             ("Medical Generalist", "Broad knowledge across medical disciplines", "Leader", 0.3),
-            ("Medical Specialist", "Focused expertise in relevant area", "Independent", 0.3),
-            ("Diagnostician", "Expert in diagnostic reasoning", "Independent", 0.4)
+            ("Emergency Medicine Physician", "Acute care and emergency diagnosis", "Independent", 0.3),
+            ("Internal Medicine Specialist", "Complex diagnostic reasoning", "Independent", 0.4)
         ]
         
         for role_info in default_roles:
@@ -484,6 +473,7 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
                 break
             if not any(role_info[0] == team_role[0] for team_role in selected_team):
                 selected_team.append(role_info)
+                logging.info(f"Added default role: {role_info[0]}")
         
         if not leader_role:
             leader_role = "Medical Generalist"
@@ -521,7 +511,10 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
         )
         
         # Store weight in agent's knowledge base
-        agent.add_to_knowledge_base("weight", weight)
+        try:
+            agent.add_to_knowledge_base("weight", weight)
+        except Exception as e:
+            logging.warning(f"Failed to add weight to knowledge base for {role}: {e}")
         
         agents[role] = agent
         
@@ -533,9 +526,10 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
     # Log recruitment with teamwork configuration
     deployment_info = [f"{role}:{agent.deployment_config['name']}" for role, agent in agents.items()]
     teamwork_enabled = [name for name, enabled in teamwork_config.items() if enabled]
+    agent_weights = {role: weight for role, expertise, hierarchy, weight in selected_team}
     
     logging.info(f"Intermediate complexity: Recruited team of {len(agents)} experts with leader '{leader_role}'")
-    logging.info(f"Agent weights: {weights}")
+    logging.info(f"Agent weights: {agent_weights}")
     logging.info(f"Teamwork components enabled: {teamwork_enabled}")
     logging.info(f"Deployment distribution: {deployment_info}")
     

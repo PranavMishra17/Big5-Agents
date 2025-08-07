@@ -24,6 +24,7 @@ class TokenUsage:
     question_id: Optional[str] = None
     simulation_id: Optional[str] = None
     operation_type: Optional[str] = None  # e.g., 'analysis', 'decision', 'chat', 'medrag'
+    response_time_ms: Optional[float] = None  # Response time in milliseconds
 
 
 class TokenCounter:
@@ -55,6 +56,10 @@ class TokenCounter:
             "total_tokens": 0,
             "api_calls": 0
         }
+        
+        # Time tracking
+        self._session_start_time = datetime.now()
+        self._total_response_time_ms = 0.0
         
         # Create output directory
         os.makedirs(output_dir, exist_ok=True)
@@ -171,7 +176,8 @@ class TokenCounter:
     
     def track_api_call(self, input_tokens: int, output_tokens: int, model: str, 
                       agent_role: str = None, question_id: str = None, 
-                      simulation_id: str = None, operation_type: str = None) -> TokenUsage:
+                      simulation_id: str = None, operation_type: str = None,
+                      response_time_ms: float = None) -> TokenUsage:
         """
         Track an API call's token usage.
         
@@ -188,7 +194,8 @@ class TokenCounter:
             agent_role=agent_role,
             question_id=question_id,
             simulation_id=simulation_id,
-            operation_type=operation_type
+            operation_type=operation_type,
+            response_time_ms=response_time_ms
         )
         
         with self._lock:
@@ -197,6 +204,8 @@ class TokenCounter:
             self._total_usage["output_tokens"] += output_tokens
             self._total_usage["total_tokens"] += total_tokens
             self._total_usage["api_calls"] += 1
+            if response_time_ms:
+                self._total_response_time_ms += response_time_ms
         
         self.logger.debug(f"Tracked API call: {input_tokens} in, {output_tokens} out, {total_tokens} total")
         return usage
@@ -204,10 +213,28 @@ class TokenCounter:
     def get_session_usage(self) -> Dict[str, Any]:
         """Get current session usage statistics."""
         with self._lock:
+            session_duration = (datetime.now() - self._session_start_time).total_seconds()
+            avg_response_time = self._total_response_time_ms / max(self._total_usage["api_calls"], 1)
+            
             return {
                 "total_usage": self._total_usage.copy(),
+                "timing_summary": {
+                    "total_time_seconds": round(session_duration, 2),
+                    "total_time_minutes": round(session_duration / 60, 2),
+                    "average_time_per_call_ms": round(avg_response_time, 2),
+                    "average_time_per_call_seconds": round(avg_response_time / 1000, 2),
+                    "total_api_response_time_ms": round(self._total_response_time_ms, 2),
+                    "session_start_time": self._session_start_time.isoformat(),
+                    "session_end_time": datetime.now().isoformat()
+                },
                 "call_count": len(self._session_usage),
-                "detailed_calls": [asdict(usage) for usage in self._session_usage]
+                "detailed_calls": [asdict(usage) for usage in self._session_usage],
+                "timing_stats": {
+                    "session_duration_seconds": session_duration,
+                    "total_response_time_ms": self._total_response_time_ms,
+                    "average_response_time_ms": avg_response_time,
+                    "session_start_time": self._session_start_time.isoformat()
+                }
             }
     
     def get_question_usage(self, question_id: str) -> Dict[str, Any]:
@@ -221,12 +248,41 @@ class TokenCounter:
             total_input = sum(call.input_tokens for call in question_calls)
             total_output = sum(call.output_tokens for call in question_calls)
             
+            # Calculate timing for this question
+            question_response_times = [call.response_time_ms for call in question_calls if call.response_time_ms is not None]
+            total_response_time = sum(question_response_times)
+            avg_response_time = total_response_time / max(len(question_response_times), 1)
+            
+            # Get first and last call timestamps for question duration
+            timestamps = [call.timestamp for call in question_calls]
+            if timestamps:
+                start_time = min(timestamps)
+                end_time = max(timestamps)
+                try:
+                    from datetime import datetime
+                    start_dt = datetime.fromisoformat(start_time)
+                    end_dt = datetime.fromisoformat(end_time)
+                    question_duration = (end_dt - start_dt).total_seconds()
+                except:
+                    question_duration = 0
+            else:
+                question_duration = 0
+            
             return {
                 "question_id": question_id,
                 "total_input_tokens": total_input,
                 "total_output_tokens": total_output,
                 "total_tokens": total_input + total_output,
                 "api_calls": len(question_calls),
+                "timing_summary": {
+                    "question_duration_seconds": round(question_duration, 2),
+                    "question_duration_minutes": round(question_duration / 60, 2),
+                    "total_api_response_time_ms": round(total_response_time, 2),
+                    "average_response_time_ms": round(avg_response_time, 2),
+                    "average_response_time_seconds": round(avg_response_time / 1000, 2),
+                    "question_start_time": min(timestamps) if timestamps else None,
+                    "question_end_time": max(timestamps) if timestamps else None
+                },
                 "detailed_calls": [asdict(usage) for usage in question_calls]
             }
     

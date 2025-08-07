@@ -119,47 +119,27 @@ LEADERSHIP_PROMPTS = {
     """
 }
 
-# Closed-Loop Communication Prompts
+# STREAMLINED: Closed-Loop Communication Prompts
 COMMUNICATION_PROMPTS = {
     "closed_loop": """
-    When communicating with your teammates, you should use closed-loop communication:
-    1. When you send information, make it clear and specific
-    2. When you receive information, acknowledge receipt and confirm understanding
-    3. When your sent information is acknowledged, verify that it was understood correctly
-    
-    This three-step process ensures that critical information is properly exchanged.
+    Use clear, specific communication. Acknowledge receipt and confirm understanding.
     """,
     
     "receiver_acknowledgment": """
-    You have received the following message from the {sender_role}:
+    Message from {sender_role}: "{sender_message}"
     
-    "{sender_message}"
+    Acknowledge and respond:
+    1. "Understood: [key point]"
+    2. Your response
     
-    Following closed-loop communication protocol:
-    1. Acknowledge that you have received this message
-    2. Confirm your understanding by restating the key points in your own words
-    3. Then provide your response to the content
-    4. Be precise, concise, and to the point
-    
-    Begin your response with an acknowledgment and confirmation.
+    Be precise, concise, and to the point.
     """,
     
     "sender_verification": """
-    You sent the following message to the {receiver_role}:
+    You sent: "{sent_message}"
+    They replied: "{response_message}"
     
-    "{sent_message}"
-    
-    They responded with:
-    
-    "{response_message}"
-    
-    Following closed-loop communication protocol:
-    1. Verify whether they understood your message correctly
-    2. Clarify any misunderstandings if necessary
-    3. Then continue the conversation based on their response
-    4. Be precise, concise, and to the point
-    
-    Begin your response with verification of their understanding.
+    Verify understanding and continue. Be precise, concise, and to the point.
     """
 }
 

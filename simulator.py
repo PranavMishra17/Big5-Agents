@@ -549,6 +549,32 @@ class AgentSystemSimulator:
             self.logger.logger.info("Round 2: Text-only collaborative discussion")
             task_image = None
         
+        # OPTIMIZED: Single closed-loop exchange for the entire round (not per agent)
+        final_config = self.get_final_teamwork_config()
+        closed_loop_done = False
+        closed_loop_content = None
+        
+        if final_config.get("use_closed_loop_comm", False) and self.comm_handler and len(self.agents) > 1:
+            # Perform ONE closed-loop exchange between first two agents
+            agent_list = list(self.agents.items())
+            if len(agent_list) >= 2:
+                sender_role, sender_agent = agent_list[0]
+                receiver_role, receiver_agent = agent_list[1]
+                
+                # Create discussion summary for closed-loop
+                analyses_summary = "\n\n".join([f"{r}: {a['analysis'][:200]}..." for r, a in round1_analyses.items()])
+                discussion_prompt = f"Review team analyses and discuss key findings:\n{analyses_summary}\n\nBe precise, concise, and to the point."
+                
+                try:
+                    _, acknowledgment, verification = self.comm_handler.facilitate_exchange(
+                        sender_agent, receiver_agent, discussion_prompt
+                    )
+                    closed_loop_content = f"Closed-loop discussion:\nSender: {sender_role}\nReceiver: {receiver_role}\nContent: {acknowledgment}"
+                    closed_loop_done = True
+                    self.logger.logger.info(f"Completed closed-loop exchange: {sender_role} ↔ {receiver_role}")
+                except Exception as e:
+                    self.logger.logger.warning(f"Closed-loop communication failed: {e}")
+        
         # Sequential execution to maintain discussion flow
         for role, agent in self.agents.items():
             try:
@@ -589,23 +615,17 @@ Your initial analysis:
                         vision_text = "\n\n".join(vision_insights)
                         discussion_parts.append(f"Vision-based insights from teammates:\n{vision_text}")
                     
-                    # Add discussion instructions
+                    # STREAMLINED: Concise discussion instructions
                     discussion_parts.append("""
-Based on these different perspectives:
-1. Identify where you agree or disagree with your teammates
-2. Question any reasoning that seems unclear or potentially flawed
-3. Share additional insights that might help the team""")
+Collaborate with teammates:
+1. Compare perspectives and identify key differences
+2. Share critical insights and challenge unclear reasoning
+3. Build consensus on the strongest evidence""")
                     
-                    # Add vision-specific instructions if applicable
                     if has_vision_task:
-                        discussion_parts.append("""
-4. If you can see the image, compare your visual observations with teammates' findings
-5. Discuss any visual details that might have been missed or interpreted differently
-6. Consider how image findings support or contradict different reasoning approaches""")
+                        discussion_parts.append("4. Compare visual observations and interpret conflicting findings")
                     
-                    discussion_parts.append("""
-DO NOT provide a final answer in this round. Focus on collaborative analysis and discussion.
-This is about improving understanding before making your final decision.""")
+                    discussion_parts.append("NO final answer - focus on collaborative analysis only.")
                     
                     discussion_prompt = "\n\n".join(discussion_parts)
                     
@@ -631,13 +651,20 @@ Based on monitoring {other_role}'s analysis, you've identified:
 
 Consider these points in your discussion."""
                     
-                    # Execute discussion with or without image
-                    if task_image is not None and round1_analyses[role].get("used_vision", False):
-                        # Agent used vision in Round 1, so include image in discussion
-                        discussion_response = agent.chat_with_image(discussion_prompt, task_image)
+                    # OPTIMIZED: Use shared closed-loop content if available, otherwise standard discussion
+                    if closed_loop_done and closed_loop_content:
+                        # Include closed-loop insights in discussion
+                        enhanced_prompt = f"{discussion_prompt}\n\nClosed-loop insights: {closed_loop_content}\n\nProvide your analysis considering these insights."
+                        if task_image is not None and round1_analyses[role].get("used_vision", False):
+                            discussion_response = agent.chat_with_image(enhanced_prompt, task_image)
+                        else:
+                            discussion_response = agent.chat(enhanced_prompt)
                     else:
-                        # Text-only discussion
-                        discussion_response = agent.chat(discussion_prompt)
+                        # Standard discussion
+                        if task_image is not None and round1_analyses[role].get("used_vision", False):
+                            discussion_response = agent.chat_with_image(discussion_prompt, task_image)
+                        else:
+                            discussion_response = agent.chat(discussion_prompt)
                     
                     # Log to main discussion channel
                     self.logger.log_main_discussion(

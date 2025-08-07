@@ -1695,6 +1695,14 @@ def process_single_question(question_index: int,
                 "total_tokens": post_simulation_usage["total_usage"]["total_tokens"] - pre_simulation_usage["total_usage"]["total_tokens"],
                 "api_calls": post_simulation_usage["total_usage"]["api_calls"] - pre_simulation_usage["total_usage"]["api_calls"]
             }
+            
+            # Add timing information
+            pre_timing = pre_simulation_usage.get("timing_stats", {})
+            post_timing = post_simulation_usage.get("timing_stats", {})
+            question_timing = {
+                "response_time_ms": post_timing.get("total_response_time_ms", 0) - pre_timing.get("total_response_time_ms", 0),
+                "average_response_time_ms": post_timing.get("average_response_time_ms", 0)
+            }
 
             # Extract comprehensive results
             question_result.update({
@@ -1704,7 +1712,8 @@ def process_single_question(question_index: int,
                 "performance": performance.get("task_performance", {}),
                 "agent_conversations": simulation_results.get("exchanges", []),
                 "simulation_metadata": simulation_results.get("simulation_metadata", {}),
-                "token_usage": question_token_usage
+                "token_usage": question_token_usage,
+                "timing_stats": question_timing
             })
 
             # Extract MedRAG information
@@ -1738,10 +1747,23 @@ def process_single_question(question_index: int,
                 
                 # Save token usage for this question
                 token_usage_file = os.path.join(run_output_dir, f"question_{question_index}_token_usage.json")
+                
+                # Enhanced timing calculation
+                question_duration_seconds = question_timing.get("response_time_ms", 0) / 1000
+                avg_time_per_call = question_timing.get("average_response_time_ms", 0) / 1000
+                
                 with open(token_usage_file, 'w') as f:
                     json.dump({
                         "question_index": question_index,
+                        "timing_summary": {
+                            "total_time_seconds": round(question_duration_seconds, 2),
+                            "total_time_minutes": round(question_duration_seconds / 60, 2),
+                            "average_time_per_call_seconds": round(avg_time_per_call, 2),
+                            "average_time_per_call_ms": round(question_timing.get("average_response_time_ms", 0), 2),
+                            "total_api_calls": question_token_usage.get("api_calls", 0)
+                        },
                         "token_usage": question_token_usage,
+                        "detailed_timing_stats": question_timing,
                         "saved_at": datetime.now().isoformat()
                     }, f, indent=2)
                 
@@ -2635,9 +2657,11 @@ def run_dataset(
                 "run_end_time": datetime.now().isoformat()
             },
             "total_token_usage": final_usage["total_usage"],
+            "timing_summary": final_usage.get("timing_summary", {}),
             "questions_processed": len(all_results),
             "average_tokens_per_question": final_usage["total_usage"]["total_tokens"] / max(len(all_results), 1),
-            "average_api_calls_per_question": final_usage["total_usage"]["api_calls"] / max(len(all_results), 1)
+            "average_api_calls_per_question": final_usage["total_usage"]["api_calls"] / max(len(all_results), 1),
+            "average_time_per_question_seconds": run_duration.total_seconds() / max(len(all_results), 1)
         }
         
         token_summary_file = os.path.join(run_output_dir, "run_token_summary.json")
@@ -3166,6 +3190,14 @@ def process_single_question_enhanced(question_index: int,
                 "total_tokens": post_simulation_usage["total_usage"]["total_tokens"] - pre_simulation_usage["total_usage"]["total_tokens"],
                 "api_calls": post_simulation_usage["total_usage"]["api_calls"] - pre_simulation_usage["total_usage"]["api_calls"]
             }
+            
+            # Add timing information
+            pre_timing = pre_simulation_usage.get("timing_stats", {})
+            post_timing = post_simulation_usage.get("timing_stats", {})
+            question_timing = {
+                "response_time_ms": post_timing.get("total_response_time_ms", 0) - pre_timing.get("total_response_time_ms", 0),
+                "average_response_time_ms": post_timing.get("average_response_time_ms", 0)
+            }
 
             # Extract comprehensive results
             question_result.update({
@@ -3175,7 +3207,8 @@ def process_single_question_enhanced(question_index: int,
                 "performance": performance.get("task_performance", {}),
                 "agent_conversations": simulation_results.get("exchanges", []),
                 "simulation_metadata": simulation_results.get("simulation_metadata", {}),
-                "token_usage": question_token_usage
+                "token_usage": question_token_usage,
+                "timing_stats": question_timing
             })
 
             # NEW: Extract dynamic selection results
@@ -3205,6 +3238,28 @@ def process_single_question_enhanced(question_index: int,
                 with open(question_result_file, 'w') as f:
                     json.dump(question_result, f, indent=2, default=str)
                 logging.info(f"Saved Q{question_index} result to {question_result_file}")
+                
+                # Save token usage for this question
+                token_usage_file = os.path.join(run_output_dir, f"question_{question_index}_token_usage.json")
+                
+                # Enhanced timing calculation
+                question_duration_seconds = question_timing.get("response_time_ms", 0) / 1000
+                avg_time_per_call = question_timing.get("average_response_time_ms", 0) / 1000
+                
+                with open(token_usage_file, 'w') as f:
+                    json.dump({
+                        "question_index": question_index,
+                        "timing_summary": {
+                            "total_time_seconds": round(question_duration_seconds, 2),
+                            "total_time_minutes": round(question_duration_seconds / 60, 2),
+                            "average_time_per_call_seconds": round(avg_time_per_call, 2),
+                            "average_time_per_call_ms": round(question_timing.get("average_response_time_ms", 0), 2),
+                            "total_api_calls": question_token_usage.get("api_calls", 0)
+                        },
+                        "token_usage": question_token_usage,
+                        "detailed_timing_stats": question_timing,
+                        "saved_at": datetime.now().isoformat()
+                    }, f, indent=2)
 
             # Success - break retry loop
             break
@@ -3382,24 +3437,29 @@ def main():
     print("\nOverall Results:")
     for config_name, summary in results.get("summaries", {}).items():
         print(f"\n{config_name}:")
-        for method, stats in summary.items():
-            if "accuracy" in stats:
-                print(f"  {method.replace('_', ' ').title()}: {stats['accuracy']:.2%} accuracy")
+        if summary and isinstance(summary, dict):
+            for method, stats in summary.items():
+                if stats and "accuracy" in stats:
+                    print(f"  {method.replace('_', ' ').title()}: {stats['accuracy']:.2%} accuracy")
+        else:
+            print("  No valid summary data available")
 
     # NEW: Print dynamic selection summary if used
     if args.enable_dynamic_selection and "dynamic_selection_results" in results:
         print(f"\nDynamic Selection Summary:")
-        for config_name, dynamic_results in results["dynamic_selection_results"].items():
-            if dynamic_results.get("enabled", False):
-                print(f"  {config_name}:")
-                
-                team_sizes = dynamic_results.get("team_sizes_selected", {})
-                if team_sizes:
-                    print(f"    Team sizes used: {dict(team_sizes)}")
-                
-                configs = dynamic_results.get("teamwork_configs_selected", {})
-                if configs:
-                    print(f"    Teamwork configs used: {dict(configs)}")
+        dynamic_selection_results = results.get("dynamic_selection_results", {})
+        if dynamic_selection_results:
+            for config_name, dynamic_results in dynamic_selection_results.items():
+                if dynamic_results and dynamic_results.get("enabled", False):
+                    print(f"  {config_name}:")
+                    
+                    team_sizes = dynamic_results.get("team_sizes_selected", {})
+                    if team_sizes:
+                        print(f"    Team sizes used: {dict(team_sizes)}")
+                    
+                    configs = dynamic_results.get("teamwork_configs_selected", {})
+                    if configs:
+                        print(f"    Teamwork configs used: {dict(configs)}")
 
     # Print deployment information (unchanged)
     deployments = config.get_all_deployments()
