@@ -189,97 +189,6 @@ class Agent:
         """Handle timeout signal."""
         raise TimeoutError("Request timed out")
     
-    def _chat_with_timeout(self, messages: List[Dict[str, Any]], timeout: int = None) -> str:
-        """Chat with timeout and retry logic for OpenAI API."""
-        if timeout is None:
-            timeout = config.INACTIVITY_TIMEOUT
-        
-        def target():
-            try:
-                # Get token counter
-                token_counter = get_token_counter()
-                
-                # Count input tokens
-                input_tokens = token_counter.count_message_tokens(messages, self.model)
-                
-                # Validate token limits
-                is_valid, message = token_counter.validate_token_limits(input_tokens, self.model)
-                if not is_valid:
-                    self.logger.warning(f"Token limit validation failed: {message}")
-                    # Could truncate or raise error based on requirements
-                
-                # Check if this is a vision call
-                has_image = any(
-                    isinstance(msg.get("content"), list) and 
-                    any(item.get("type") == "image_url" for item in msg["content"])
-                    for msg in messages
-                )
-                
-                # Prepare API call parameters
-                api_params = {
-                    "model": self.model,
-                    "messages": messages,
-                    "temperature": config.TEMPERATURE
-                }
-                
-                # Add max_tokens for vision calls or if specified
-                max_tokens = None
-                if has_image or self.is_vision_task:
-                    max_tokens = 4000
-                    api_params["max_tokens"] = max_tokens
-                elif config.MAX_TOKENS:
-                    max_tokens = config.MAX_TOKENS
-                    api_params["max_tokens"] = max_tokens
-                
-                # Time the API call
-                start_time = time.time()
-                response = self.client.chat.completions.create(**api_params)
-                end_time = time.time()
-                response_time_ms = (end_time - start_time) * 1000
-                
-                self._response = response.choices[0].message.content
-                
-                # Count output tokens and track usage
-                output_tokens = token_counter.count_tokens(self._response, self.model)
-                
-                # Track the API call with timing
-                token_counter.track_api_call(
-                    input_tokens=input_tokens,
-                    output_tokens=output_tokens,
-                    model=self.model,
-                    agent_role=self.role,
-                    question_id=self.question_id,
-                    simulation_id=self.simulation_id,
-                    operation_type="chat_with_timeout",
-                    response_time_ms=response_time_ms
-                )
-                
-                self.logger.debug(f"API call completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens, Time: {response_time_ms:.1f}ms")
-                    
-            except Exception as e:
-                self.logger.error(f"OpenAI API call error: {str(e)}")
-                self._exception = e
-        
-        # Reset response and exception
-        self._response = None
-        self._exception = None
-        
-        # Start thread for API call
-        thread = threading.Thread(target=target)
-        thread.start()
-        thread.join(timeout)
-        
-        if thread.is_alive():
-            self.logger.warning(f"Request timed out after {timeout} seconds")
-            raise TimeoutError(f"Request timed out after {timeout} seconds")
-        
-        if self._exception:
-            raise self._exception
-        
-        if self._response is None:
-            raise Exception("No response received")
-        
-        return self._response
 
     def _encode_image_for_openai(self, image) -> Dict[str, Any]:
         """Encode image for OpenAI Vision API."""
@@ -337,7 +246,7 @@ class Agent:
             return None
 
     def chat_with_image(self, message: str, image=None) -> str:
-        """Chat with image using OpenAI Vision API."""
+        """Chat with image using OpenAI Vision API with enhanced token tracking."""
         if not getattr(self, 'is_vision_task', False):
             return self.chat(message)
         
@@ -368,9 +277,21 @@ class Agent:
         
         messages = self.messages + [vision_message]
         
-        # API call with retries
+        # API call with retries and enhanced token tracking
         for attempt in range(config.MAX_RETRIES):
             try:
+                # Get token counter and calculate tokens with vision support
+                token_counter = get_token_counter()
+                
+                # Enhanced token counting for vision messages
+                total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
+                
+                # Validate token limits
+                is_valid, token_message = token_counter.validate_token_limits(total_input_tokens, self.model)
+                if not is_valid:
+                    self.logger.warning(f"Token limit validation failed: {token_message}")
+                
+                # Prepare API call parameters
                 api_params = {
                     "model": self.model,
                     "messages": messages,
@@ -378,8 +299,31 @@ class Agent:
                     "max_tokens": 4000  # Required for vision
                 }
                 
+                # Time the API call
+                start_time = time.time()
                 response = self.client.chat.completions.create(**api_params)
+                end_time = time.time()
+                response_time_ms = (end_time - start_time) * 1000
+                
                 assistant_message = response.choices[0].message.content
+                
+                # Count output tokens
+                output_tokens = token_counter.count_tokens(assistant_message, self.model)
+                
+                # Track the API call with enhanced vision token data
+                token_counter.track_api_call(
+                    input_tokens=total_input_tokens,
+                    output_tokens=output_tokens,
+                    model=self.model,
+                    agent_role=self.role,
+                    question_id=self.question_id,
+                    simulation_id=self.simulation_id,
+                    operation_type="chat_with_image",
+                    response_time_ms=response_time_ms,
+                    image_tokens=image_tokens,
+                    text_tokens=text_tokens,
+                    num_images=1
+                )
                 
                 # Store in conversation (avoid corrupted image data)
                 self.messages.append({
@@ -391,8 +335,14 @@ class Agent:
                 self.conversation_history.append({
                     "user": message,
                     "assistant": assistant_message,
-                    "has_image": True
+                    "has_image": True,
+                    "image_tokens": image_tokens,
+                    "text_tokens": text_tokens
                 })
+                
+                self.logger.debug(f"Vision API call completed - Input: {total_input_tokens} ({text_tokens} text + {image_tokens} image), "
+                                f"Output: {output_tokens}, Total: {total_input_tokens + output_tokens} tokens, "
+                                f"Time: {response_time_ms:.1f}ms")
                 
                 return assistant_message
                 
@@ -408,8 +358,9 @@ class Agent:
                 else:
                     return self.chat(f"{enhanced_message}\n\n[Vision failed after retries]")
 
+
     def chat(self, message: str) -> str:
-        """Send a message to the agent and get a response using OpenAI API."""
+        """Send a message to the agent and get a response using OpenAI API with enhanced token tracking."""
         self.logger.info(f"Received message: {message[:100]}...")
         
         # Apply MedRAG enhancement if available
@@ -423,7 +374,7 @@ class Agent:
 
 Based on the retrieved medical literature above, provide your analysis considering this evidence alongside your clinical expertise. If the literature supports, contradicts, or adds important context to your reasoning, please integrate this into your response."""
                 
-                self.logger.info("Applied MedRAG knowledge enhancement to agent message")
+            self.logger.info("Applied MedRAG knowledge enhancement to agent message")
         
         # Create message
         user_message = {"role": "user", "content": enhanced_message}
@@ -431,14 +382,14 @@ Based on the retrieved medical literature above, provide your analysis consideri
         
         for attempt in range(config.MAX_RETRIES):
             try:
-                # Get token counter
+                # Get token counter and calculate tokens with enhanced vision support
                 token_counter = get_token_counter()
                 
-                # Count input tokens
-                input_tokens = token_counter.count_message_tokens(messages, self.model)
+                # Enhanced token counting (handles both text-only and vision messages)
+                total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
                 
                 # Validate token limits
-                is_valid, token_message = token_counter.validate_token_limits(input_tokens, self.model)
+                is_valid, token_message = token_counter.validate_token_limits(total_input_tokens, self.model)
                 if not is_valid:
                     self.logger.warning(f"Token limit validation failed: {token_message}")
                 
@@ -460,27 +411,40 @@ Based on the retrieved medical literature above, provide your analysis consideri
                 
                 assistant_message = response.choices[0].message.content
                 
-                # Count output tokens and track usage
+                # Count output tokens
                 output_tokens = token_counter.count_tokens(assistant_message, self.model)
                 
-                # Track the API call with timing
+                # Track the API call with enhanced token data
+                is_vision_call = image_tokens > 0
                 token_counter.track_api_call(
-                    input_tokens=input_tokens,
+                    input_tokens=total_input_tokens,
                     output_tokens=output_tokens,
                     model=self.model,
                     agent_role=self.role,
                     question_id=self.question_id,
                     simulation_id=self.simulation_id,
                     operation_type="chat",
-                    response_time_ms=response_time_ms
+                    response_time_ms=response_time_ms,
+                    image_tokens=image_tokens if is_vision_call else None,
+                    text_tokens=text_tokens if is_vision_call else total_input_tokens,
+                    num_images=0 if not is_vision_call else None
                 )
                 
                 # Store response (use original message)
                 self.messages.append({"role": "user", "content": message})
                 self.messages.append({"role": "assistant", "content": assistant_message})
-                self.conversation_history.append({"user": message, "assistant": assistant_message})
+                self.conversation_history.append({
+                    "user": message, 
+                    "assistant": assistant_message,
+                    "image_tokens": image_tokens if is_vision_call else 0,
+                    "text_tokens": text_tokens if is_vision_call else total_input_tokens
+                })
                 
-                self.logger.debug(f"Chat completed - Input: {input_tokens}, Output: {output_tokens}, Total: {input_tokens + output_tokens} tokens, Time: {response_time_ms:.1f}ms")
+                log_msg = f"Chat completed - Input: {total_input_tokens}, Output: {output_tokens}, Total: {total_input_tokens + output_tokens} tokens"
+                if is_vision_call:
+                    log_msg += f" (Vision: {text_tokens} text + {image_tokens} image)"
+                log_msg += f", Time: {response_time_ms:.1f}ms"
+                self.logger.debug(log_msg)
                 
                 return assistant_message
                 
@@ -490,6 +454,113 @@ Based on the retrieved medical literature above, provide your analysis consideri
                     time.sleep(config.RETRY_DELAY * (2 ** attempt))
                 else:
                     raise Exception(f"All attempts failed: {str(e)}")
+
+
+    def _chat_with_timeout(self, messages: List[Dict[str, Any]], timeout: int = None) -> str:
+        """Chat with timeout and retry logic for OpenAI API with enhanced token tracking."""
+        if timeout is None:
+            timeout = config.INACTIVITY_TIMEOUT
+        
+        def target():
+            try:
+                # Get token counter and calculate tokens with enhanced vision support
+                token_counter = get_token_counter()
+                
+                # Enhanced token counting for all message types
+                total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
+                
+                # Validate token limits
+                is_valid, message = token_counter.validate_token_limits(total_input_tokens, self.model)
+                if not is_valid:
+                    self.logger.warning(f"Token limit validation failed: {message}")
+                
+                # Check if this is a vision call
+                has_image = image_tokens > 0
+                
+                # Prepare API call parameters
+                api_params = {
+                    "model": self.model,
+                    "messages": messages,
+                    "temperature": config.TEMPERATURE
+                }
+                
+                # Add max_tokens for vision calls or if specified
+                max_tokens = None
+                if has_image or self.is_vision_task:
+                    max_tokens = 4000
+                    api_params["max_tokens"] = max_tokens
+                elif config.MAX_TOKENS:
+                    max_tokens = config.MAX_TOKENS
+                    api_params["max_tokens"] = max_tokens
+                
+                # Time the API call
+                start_time = time.time()
+                response = self.client.chat.completions.create(**api_params)
+                end_time = time.time()
+                response_time_ms = (end_time - start_time) * 1000
+                
+                self._response = response.choices[0].message.content
+                
+                # Count output tokens
+                output_tokens = token_counter.count_tokens(self._response, self.model)
+                
+                # Track the API call with enhanced timing and vision data
+                token_counter.track_api_call(
+                    input_tokens=total_input_tokens,
+                    output_tokens=output_tokens,
+                    model=self.model,
+                    agent_role=self.role,
+                    question_id=self.question_id,
+                    simulation_id=self.simulation_id,
+                    operation_type="chat_with_timeout",
+                    response_time_ms=response_time_ms,
+                    image_tokens=image_tokens if has_image else None,
+                    text_tokens=text_tokens if has_image else total_input_tokens,
+                    num_images=self._count_images_in_messages(messages) if has_image else None
+                )
+                
+                log_msg = f"API call completed - Input: {total_input_tokens}, Output: {output_tokens}, Total: {total_input_tokens + output_tokens} tokens"
+                if has_image:
+                    log_msg += f" (Vision: {text_tokens} text + {image_tokens} image)"
+                log_msg += f", Time: {response_time_ms:.1f}ms"
+                self.logger.debug(log_msg)
+                    
+            except Exception as e:
+                self.logger.error(f"OpenAI API call error: {str(e)}")
+                self._exception = e
+        
+        # Reset response and exception
+        self._response = None
+        self._exception = None
+        
+        # Start thread for API call
+        thread = threading.Thread(target=target)
+        thread.start()
+        thread.join(timeout)
+        
+        if thread.is_alive():
+            self.logger.warning(f"Request timed out after {timeout} seconds")
+            raise TimeoutError(f"Request timed out after {timeout} seconds")
+        
+        if self._exception:
+            raise self._exception
+        
+        if self._response is None:
+            raise Exception("No response received")
+        
+        return self._response
+
+
+    def _count_images_in_messages(self, messages: List[Dict[str, Any]]) -> int:
+        """Count the number of images in a list of messages."""
+        image_count = 0
+        for message in messages:
+            content = message.get("content")
+            if isinstance(content, list):
+                for item in content:
+                    if isinstance(item, dict) and item.get("type") == "image_url":
+                        image_count += 1
+        return image_count
 
     def get_conversation_history(self) -> List[Dict[str, str]]:
         """Get the conversation history."""

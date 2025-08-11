@@ -1767,9 +1767,16 @@ def process_single_question(question_index: int,
                         "saved_at": datetime.now().isoformat()
                     }, f, indent=2)
                 
-                logging.info(f"Q{question_index} token usage: {question_token_usage['total_tokens']} total tokens "
-                           f"({question_token_usage['input_tokens']} in, {question_token_usage['output_tokens']} out, "
-                           f"{question_token_usage['api_calls']} calls)")
+                # Enhanced logging with vision breakdown
+                if is_vision_task and question_token_usage.get("image_tokens", 0) > 0:
+                    logging.info(f"Q{question_index} vision token usage: {question_token_usage['total_tokens']} total "
+                               f"({question_token_usage['text_tokens']} text + {question_token_usage['image_tokens']} image), "
+                               f"{question_token_usage['vision_calls']}/{question_token_usage['api_calls']} vision calls, "
+                               f"{question_token_usage['vision_percentage']:.1f}% vision tokens")
+                else:
+                    logging.info(f"Q{question_index} token usage: {question_token_usage['total_tokens']} total tokens "
+                               f"({question_token_usage['input_tokens']} in, {question_token_usage['output_tokens']} out, "
+                               f"{question_token_usage['api_calls']} calls)")
 
             # Success - break retry loop
             break
@@ -1828,10 +1835,8 @@ def process_single_question(question_index: int,
     return question_result
 
 
-
-
 def extract_vision_performance_metrics(simulation_results: Dict[str, Any]) -> Dict[str, Any]:
-    """Fixed vision metrics extraction."""
+    """Extract vision performance metrics including token costs."""
     vision_stats = {
         "agents_used_vision_round1": 0,
         "agents_used_vision_round3": 0,
@@ -2644,9 +2649,13 @@ def run_dataset(
         # Also create comprehensive combined results
         create_comprehensive_combined_results(all_results, dataset_type, run_output_dir)
         
-        # Save run-level token usage summary
+# Save enhanced run-level token usage summary
         run_duration = datetime.now() - run_start_time
         final_usage = token_counter.get_session_usage()
+        
+        # Check if this dataset has vision tasks
+        is_vision_dataset = any("vqa" in dataset_type.lower() or "vision" in dataset_type.lower() for _ in [dataset_type])
+        
         run_token_summary = {
             "run_metadata": {
                 "dataset_type": dataset_type,
@@ -2654,7 +2663,8 @@ def run_dataset(
                 "random_seed": random_seed,
                 "run_duration_seconds": run_duration.total_seconds(),
                 "run_start_time": run_start_time.isoformat(),
-                "run_end_time": datetime.now().isoformat()
+                "run_end_time": datetime.now().isoformat(),
+                "is_vision_dataset": is_vision_dataset
             },
             "total_token_usage": final_usage["total_usage"],
             "timing_summary": final_usage.get("timing_summary", {}),
@@ -2663,6 +2673,19 @@ def run_dataset(
             "average_api_calls_per_question": final_usage["total_usage"]["api_calls"] / max(len(all_results), 1),
             "average_time_per_question_seconds": run_duration.total_seconds() / max(len(all_results), 1)
         }
+        
+        # Add vision breakdown if applicable
+        if is_vision_dataset and final_usage["total_usage"].get("image_tokens", 0) > 0:
+            vision_stats = token_counter.get_vision_statistics()
+            run_token_summary["vision_analysis"] = {
+                "total_image_tokens": final_usage["total_usage"].get("image_tokens", 0),
+                "total_text_tokens": final_usage["total_usage"].get("text_tokens", 0),
+                "vision_calls": final_usage["total_usage"].get("vision_calls", 0),
+                "vision_call_percentage": vision_stats.get("vision_call_percentage", 0),
+                "image_token_percentage": vision_stats.get("image_token_percentage", 0),
+                "average_tokens_per_image": vision_stats.get("average_tokens_per_image", 0),
+                "cost_impact_factor": final_usage["total_usage"].get("image_tokens", 0) / max(final_usage["total_usage"].get("text_tokens", 1), 1) if final_usage["total_usage"].get("text_tokens", 0) > 0 else 0
+            }
         
         token_summary_file = os.path.join(run_output_dir, "run_token_summary.json")
         with open(token_summary_file, 'w') as f:
@@ -2673,11 +2696,22 @@ def run_dataset(
         os.makedirs(token_logs_dir, exist_ok=True)
         token_counter.save_session_usage(f"{dataset_type}_run_{random_seed}")
         
-        logging.info(f"Run completed: {final_usage['total_usage']['total_tokens']:,} total tokens, "
-                   f"{final_usage['total_usage']['api_calls']} API calls, "
-                   f"avg {run_token_summary['average_tokens_per_question']:.1f} tokens/question")
+        if is_vision_dataset and final_usage["total_usage"].get("image_tokens", 0) > 0:
+            vision_stats = token_counter.get_vision_statistics()
+            logging.info(f"Vision run completed: {final_usage['total_usage']['total_tokens']:,} total tokens "
+                       f"({final_usage['total_usage'].get('text_tokens', 0):,} text + {final_usage['total_usage'].get('image_tokens', 0):,} image), "
+                       f"{final_usage['total_usage']['api_calls']} API calls "
+                       f"({final_usage['total_usage'].get('vision_calls', 0)} vision), "
+                       f"avg {run_token_summary['average_tokens_per_question']:.1f} tokens/question")
+            logging.info(f"Vision impact: {vision_stats.get('image_token_percentage', 0):.1f}% of total tokens from images, "
+                       f"avg {vision_stats.get('average_tokens_per_image', 0):.1f} tokens/image")
+        else:
+            logging.info(f"Run completed: {final_usage['total_usage']['total_tokens']:,} total tokens, "
+                       f"{final_usage['total_usage']['api_calls']} API calls, "
+                       f"avg {run_token_summary['average_tokens_per_question']:.1f} tokens/question")
+
     
-    # Add token summary to combined results
+    # Add enhanced token summary to combined results
     if 'token_counter' in locals():
         final_usage = token_counter.get_session_usage()
         combined_results["token_usage_summary"] = {
@@ -2686,6 +2720,15 @@ def run_dataset(
             "input_tokens": final_usage["total_usage"]["input_tokens"], 
             "output_tokens": final_usage["total_usage"]["output_tokens"]
         }
+        
+        # Add vision breakdown if applicable
+        if is_vision_dataset and final_usage["total_usage"].get("image_tokens", 0) > 0:
+            combined_results["token_usage_summary"]["vision_breakdown"] = {
+                "image_tokens": final_usage["total_usage"].get("image_tokens", 0),
+                "text_tokens": final_usage["total_usage"].get("text_tokens", 0),
+                "vision_calls": final_usage["total_usage"].get("vision_calls", 0),
+                "vision_percentage": (final_usage["total_usage"].get("image_tokens", 0) / max(final_usage["total_usage"]["total_tokens"], 1)) * 100
+            }
     
     return combined_results
 
@@ -3182,7 +3225,7 @@ def process_single_question_enhanced(question_index: int,
             simulation_results = simulator.run_simulation()
             performance = simulator.evaluate_performance()
             
-            # Get token usage for this question
+            # Get enhanced token usage for this question
             post_simulation_usage = token_counter.get_session_usage()
             question_token_usage = {
                 "input_tokens": post_simulation_usage["total_usage"]["input_tokens"] - pre_simulation_usage["total_usage"]["input_tokens"],
@@ -3190,6 +3233,21 @@ def process_single_question_enhanced(question_index: int,
                 "total_tokens": post_simulation_usage["total_usage"]["total_tokens"] - pre_simulation_usage["total_usage"]["total_tokens"],
                 "api_calls": post_simulation_usage["total_usage"]["api_calls"] - pre_simulation_usage["total_usage"]["api_calls"]
             }
+            
+            # Add vision token tracking if this is a vision task
+            is_vision_task = question_result.get("has_image", False)
+            if is_vision_task:
+                question_token_usage.update({
+                    "image_tokens": post_simulation_usage["total_usage"].get("image_tokens", 0) - pre_simulation_usage["total_usage"].get("image_tokens", 0),
+                    "text_tokens": post_simulation_usage["total_usage"].get("text_tokens", 0) - pre_simulation_usage["total_usage"].get("text_tokens", 0),
+                    "vision_calls": post_simulation_usage["total_usage"].get("vision_calls", 0) - pre_simulation_usage["total_usage"].get("vision_calls", 0),
+                    "vision_percentage": 0.0
+                })
+                
+                # Calculate vision percentage
+                if question_token_usage["total_tokens"] > 0:
+                    question_token_usage["vision_percentage"] = (question_token_usage["image_tokens"] / question_token_usage["total_tokens"]) * 100
+
             
             # Add timing information
             pre_timing = pre_simulation_usage.get("timing_stats", {})
@@ -3246,20 +3304,34 @@ def process_single_question_enhanced(question_index: int,
                 question_duration_seconds = question_timing.get("response_time_ms", 0) / 1000
                 avg_time_per_call = question_timing.get("average_response_time_ms", 0) / 1000
                 
+                token_summary = {
+                    "question_index": question_index,
+                    "is_vision_task": is_vision_task,
+                    "timing_summary": {
+                        "total_time_seconds": round(question_duration_seconds, 2),
+                        "total_time_minutes": round(question_duration_seconds / 60, 2),
+                        "average_time_per_call_seconds": round(avg_time_per_call, 2),
+                        "average_time_per_call_ms": round(question_timing.get("average_response_time_ms", 0), 2),
+                        "total_api_calls": question_token_usage.get("api_calls", 0)
+                    },
+                    "token_usage": question_token_usage,
+                    "detailed_timing_stats": question_timing,
+                    "saved_at": datetime.now().isoformat()
+                }
+                
+                # Add vision breakdown if applicable
+                if is_vision_task and question_token_usage.get("image_tokens", 0) > 0:
+                    token_summary["vision_breakdown"] = {
+                        "vision_calls": question_token_usage["vision_calls"],
+                        "text_only_calls": question_token_usage["api_calls"] - question_token_usage["vision_calls"],
+                        "image_tokens": question_token_usage["image_tokens"],
+                        "text_tokens": question_token_usage["text_tokens"],
+                        "vision_token_percentage": question_token_usage["vision_percentage"],
+                        "cost_impact_note": "Image tokens significantly increase costs for vision tasks"
+                    }
+                
                 with open(token_usage_file, 'w') as f:
-                    json.dump({
-                        "question_index": question_index,
-                        "timing_summary": {
-                            "total_time_seconds": round(question_duration_seconds, 2),
-                            "total_time_minutes": round(question_duration_seconds / 60, 2),
-                            "average_time_per_call_seconds": round(avg_time_per_call, 2),
-                            "average_time_per_call_ms": round(question_timing.get("average_response_time_ms", 0), 2),
-                            "total_api_calls": question_token_usage.get("api_calls", 0)
-                        },
-                        "token_usage": question_token_usage,
-                        "detailed_timing_stats": question_timing,
-                        "saved_at": datetime.now().isoformat()
-                    }, f, indent=2)
+                    json.dump(token_summary, f, indent=2)
 
             # Success - break retry loop
             break
