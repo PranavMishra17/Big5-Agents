@@ -1,6 +1,8 @@
 # Big5-Agents
 
-A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.
+![Framework](TeamMDAgent.pmg)
+
+> *A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.*
 
 ## Overview
 
