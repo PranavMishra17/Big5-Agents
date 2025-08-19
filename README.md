@@ -1,6 +1,6 @@
 # Big5-Agents
 
-![Framework](TeamMDAgent.pmg)
+![Framework](https://github.com/PranavMishra17/Big5-Agents/blob/77454226bbe725e189c3f9f775563802e76d4443/TeamMDAgent.png)
 
 > *A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.*
 
