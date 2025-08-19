@@ -1,8 +1,15 @@
-# Big5-Agents
+# Big5-Agents [Submitted to AAAI as TeamMedAgents]
+
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
+![Python](https://img.shields.io/badge/Python-3.8+-green.svg)
+![arXiv](https://img.shields.io/badge/arXiv-2508.08115-red.svg)
+![Status](https://img.shields.io/badge/Status-Under%20Review-yellow.svg)
 
 ![Framework](https://github.com/PranavMishra17/Big5-Agents/blob/186d3f604b5597ce5f5f6ebfb020279e55b742c3/frame.png)
 
 > *A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.*
+
+📄 **Paper:** [TeamMedAgents: Enhancing Medical Decision-Making Through Structured Teamwork](https://arxiv.org/abs/2508.08115)
 
 ## Overview
 
