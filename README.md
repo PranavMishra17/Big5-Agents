@@ -11,6 +11,9 @@
 
 📄 **Paper:** [TeamMedAgents: Enhancing Medical Decision-Making Through Structured Teamwork](https://arxiv.org/abs/2508.08115)
 
+### 'SLM' Branch
+This code repo helps with using SLMs in out multiagent framework
+
 ## Overview
 
 This system implements a multi-agent approach for collaborative problem solving with the following features:

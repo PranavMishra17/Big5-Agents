@@ -103,19 +103,44 @@ class Agent:
                 image_data.get("requires_visual_analysis", False) and 
                 image_data.get("image_available", False)
             )
+        
+        # Detect deployment type and initialize appropriate client
+        self.deployment_type = self.deployment_config.get("type", "vertex_ai")
+        
+        if self.deployment_type == "vertex_ai":
+            # Initialize Vertex AI using the simple approach
+            from google.cloud import aiplatform
             
-        # Initialize OpenAI client
-        client_params = {
-            "api_key": self.deployment_config["api_key"],
-            "timeout": config.REQUEST_TIMEOUT
-        }
-        
-        # Add organization if specified
-        if self.deployment_config.get("organization"):
-            client_params["organization"] = self.deployment_config["organization"]
-        
-        self.client = OpenAI(**client_params)
-        self.model = self.deployment_config.get("model", "gpt-4o")
+            # Initialize Vertex AI
+            aiplatform.init(
+                project=self.deployment_config["project"],
+                location=self.deployment_config["location"]
+            )
+            
+            # Get the endpoint using the simple approach
+            self.endpoint = aiplatform.Endpoint(
+                f"projects/{self.deployment_config['project']}/"
+                f"locations/{self.deployment_config['location']}/"
+                f"endpoints/{self.deployment_config['endpoint_id']}"
+            )
+            
+            self.model = self.deployment_config["model"]
+            
+            self.logger.info(f"Initialized {self.role} with Vertex AI deployment {self.deployment_config['name']} using simple endpoint approach")
+            
+        else:
+            # Fallback OpenAI initialization (should not be used in SLM branch)
+            self.logger.warning(f"OpenAI deployment type detected in SLM branch - this should not happen")
+            client_params = {
+                "api_key": self.deployment_config["api_key"],
+                "timeout": config.REQUEST_TIMEOUT
+            }
+            
+            if self.deployment_config.get("organization"):
+                client_params["organization"] = self.deployment_config["organization"]
+            
+            self.client = OpenAI(**client_params)
+            self.model = self.deployment_config.get("model", "gpt-4o")
         
         # Build initial system message using global config (for backward compatibility)
         self.messages = [
@@ -258,7 +283,7 @@ class Agent:
             return None
 
     def chat_with_image(self, message: str, image=None, max_tokens: Optional[int] = None) -> str:
-        """Chat with image using OpenAI Vision API with enhanced token tracking."""
+        """Chat with image using appropriate API (Vision not fully supported for Vertex AI in SLM branch)."""
         if not getattr(self, 'is_vision_task', False):
             return self.chat(message)
         
@@ -272,107 +297,115 @@ class Agent:
             if medrag_context:
                 enhanced_message = f"{message}\n\n{medrag_context}\n\nIntegrate visual and literature findings."
         
-        # Encode image
-        image_content = self._encode_image_for_openai(image)
-        if not image_content:
-            self.logger.error("Image encoding failed")
-            return self.chat(f"{enhanced_message}\n\n[Image processing failed]")
-        
-        # Create message with image
-        vision_message = {
-            "role": "user",
-            "content": [
-                {"type": "text", "text": enhanced_message},
-                image_content
-            ]
-        }
-        
-        messages = self.messages + [vision_message]
-        
-        # API call with retries and enhanced token tracking
-        for attempt in range(config.MAX_RETRIES):
-            try:
-                # Get token counter and calculate tokens with vision support
-                token_counter = get_token_counter()
-                
-                # Enhanced token counting for vision messages
-                total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
-                
-                # Validate token limits
-                is_valid, token_message = token_counter.validate_token_limits(total_input_tokens, self.model)
-                if not is_valid:
-                    self.logger.warning(f"Token limit validation failed: {token_message}")
-                
-                # Prepare API call parameters
-                api_params = {
-                    "model": self.model,
-                    "messages": messages,
-                    "temperature": config.TEMPERATURE,
-                    "max_tokens": max_tokens if max_tokens else 4000  # Use passed param or default for vision
-                }
-                
-                # Time the API call
-                start_time = time.time()
-                response = self.client.chat.completions.create(**api_params)
-                end_time = time.time()
-                response_time_ms = (end_time - start_time) * 1000
-                
-                assistant_message = response.choices[0].message.content
-                
-                # Count output tokens
-                output_tokens = token_counter.count_tokens(assistant_message, self.model)
-                
-                # Track the API call with enhanced vision token data
-                token_counter.track_api_call(
-                    input_tokens=total_input_tokens,
-                    output_tokens=output_tokens,
-                    model=self.model,
-                    agent_role=self.role,
-                    question_id=self.question_id,
-                    simulation_id=self.simulation_id,
-                    operation_type="chat_with_image",
-                    response_time_ms=response_time_ms,
-                    image_tokens=image_tokens,
-                    text_tokens=text_tokens,
-                    num_images=1
-                )
-                
-                # Store in conversation (avoid corrupted image data)
-                self.messages.append({
-                    "role": "user", 
-                    "content": message  # Store as simple text
-                })
-                self.messages.append({"role": "assistant", "content": assistant_message})
-                
-                self.conversation_history.append({
-                    "user": message,
-                    "assistant": assistant_message,
-                    "has_image": True,
-                    "image_tokens": image_tokens,
-                    "text_tokens": text_tokens
-                })
-                
-                self.logger.debug(f"Vision API call completed - Input: {total_input_tokens} ({text_tokens} text + {image_tokens} image), "
-                                f"Output: {output_tokens}, Total: {total_input_tokens + output_tokens} tokens, "
-                                f"Time: {response_time_ms:.1f}ms")
-                
-                return assistant_message
-                
-            except Exception as e:
-                self.logger.warning(f"Vision attempt {attempt + 1} failed: {str(e)}")
-                
-                if "image" in str(e).lower() or "vision" in str(e).lower():
-                    self.logger.error("Vision error, falling back to text")
-                    return self.chat(f"{enhanced_message}\n\n[Image processing failed]")
-                
-                if attempt < config.MAX_RETRIES - 1:
-                    time.sleep(config.RETRY_DELAY * (2 ** attempt))
-                else:
-                    return self.chat(f"{enhanced_message}\n\n[Vision failed after retries]", max_tokens=max_tokens)
+        if self.deployment_type == "vertex_ai":
+            # Vertex AI vision not fully implemented, use text-only fallback
+            self.logger.warning("Vertex AI vision not fully implemented, using text-only fallback")
+            return self.chat(f"{enhanced_message}\n\n[Image provided but vision analysis not available for Vertex AI models - describe what you would analyze based on the context]")
+        else:
+            # Existing OpenAI vision logic (fallback - should not be used in SLM branch)
+            self.logger.warning("Using OpenAI vision fallback in SLM branch")
+            
+            # Encode image
+            image_content = self._encode_image_for_openai(image)
+            if not image_content:
+                self.logger.error("Image encoding failed")
+                return self.chat(f"{enhanced_message}\n\n[Image processing failed]")
+            
+            # Create message with image
+            vision_message = {
+                "role": "user",
+                "content": [
+                    {"type": "text", "text": enhanced_message},
+                    image_content
+                ]
+            }
+            
+            messages = self.messages + [vision_message]
+            
+            # API call with retries and enhanced token tracking
+            for attempt in range(config.MAX_RETRIES):
+                try:
+                    # Get token counter and calculate tokens with vision support
+                    token_counter = get_token_counter()
+                    
+                    # Enhanced token counting for vision messages
+                    total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
+                    
+                    # Validate token limits
+                    is_valid, token_message = token_counter.validate_token_limits(total_input_tokens, self.model)
+                    if not is_valid:
+                        self.logger.warning(f"Token limit validation failed: {token_message}")
+                    
+                    # Prepare API call parameters
+                    api_params = {
+                        "model": self.model,
+                        "messages": messages,
+                        "temperature": config.TEMPERATURE,
+                        "max_tokens": max_tokens if max_tokens else 4000  # Use passed param or default for vision
+                    }
+                    
+                    # Time the API call
+                    start_time = time.time()
+                    response = self.client.chat.completions.create(**api_params)
+                    end_time = time.time()
+                    response_time_ms = (end_time - start_time) * 1000
+                    
+                    assistant_message = response.choices[0].message.content
+                    
+                    # Count output tokens
+                    output_tokens = token_counter.count_tokens(assistant_message, self.model)
+                    
+                    # Track the API call with enhanced vision token data
+                    token_counter.track_api_call(
+                        input_tokens=total_input_tokens,
+                        output_tokens=output_tokens,
+                        model=self.model,
+                        agent_role=self.role,
+                        question_id=self.question_id,
+                        simulation_id=self.simulation_id,
+                        operation_type="chat_with_image",
+                        response_time_ms=response_time_ms,
+                        image_tokens=image_tokens,
+                        text_tokens=text_tokens,
+                        num_images=1
+                    )
+                    
+                    # Store in conversation (avoid corrupted image data)
+                    self.messages.append({
+                        "role": "user", 
+                        "content": message  # Store as simple text
+                    })
+                    self.messages.append({"role": "assistant", "content": assistant_message})
+                    
+                    self.conversation_history.append({
+                        "user": message,
+                        "assistant": assistant_message,
+                        "has_image": True,
+                        "image_tokens": image_tokens,
+                        "text_tokens": text_tokens
+                    })
+                    
+                    self.logger.debug(f"Vision API call completed - Input: {total_input_tokens} ({text_tokens} text + {image_tokens} image), "
+                                    f"Output: {output_tokens}, Total: {total_input_tokens + output_tokens} tokens, "
+                                    f"Time: {response_time_ms:.1f}ms")
+                    
+                    return assistant_message
+                    
+                except Exception as e:
+                    self.logger.warning(f"Vision attempt {attempt + 1} failed: {str(e)}")
+                    
+                    if "image" in str(e).lower() or "vision" in str(e).lower():
+                        self.logger.error("Vision error, falling back to text")
+                        return self.chat(f"{enhanced_message}\n\n[Image processing failed]")
+                    
+                    if attempt < config.MAX_RETRIES - 1:
+                        time.sleep(config.RETRY_DELAY * (2 ** attempt))
+                    else:
+                        return self.chat(f"{enhanced_message}\n\n[Vision failed after retries]", max_tokens=max_tokens)
 
 
     def chat(self, message: str, max_tokens: Optional[int] = None) -> str:
-        """Send a message to the agent and get a response using OpenAI API with enhanced token tracking."""
+        """Send a message to the agent and get a response using appropriate API (Vertex AI for SLM branch)."""
         self.logger.info(f"Received message: {message[:100]}...")
         
         # Apply MedRAG enhancement if available
@@ -388,79 +421,69 @@ Based on the retrieved medical literature above, provide your analysis consideri
                 
             self.logger.info("Applied MedRAG knowledge enhancement to agent message")
         
-        # Create message
-        user_message = {"role": "user", "content": enhanced_message}
-        messages = self.messages + [user_message]
-        
         for attempt in range(config.MAX_RETRIES):
             try:
-                # Get token counter and calculate tokens with enhanced vision support
-                token_counter = get_token_counter()
-                
-                # Enhanced token counting (handles both text-only and vision messages)
-                total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
-                
-                # Validate token limits
-                is_valid, token_message = token_counter.validate_token_limits(total_input_tokens, self.model)
-                if not is_valid:
-                    self.logger.warning(f"Token limit validation failed: {token_message}")
-                
-                # API call parameters
-                api_params = {
-                    "model": self.model,
-                    "messages": messages,
-                    "temperature": config.TEMPERATURE
-                }
-                
-                # Use passed max_tokens or fall back to config
-                if max_tokens:
-                    api_params["max_tokens"] = max_tokens
-                elif config.MAX_TOKENS:
-                    api_params["max_tokens"] = config.MAX_TOKENS
-                
-                # Time the API call
                 start_time = time.time()
-                response = self.client.chat.completions.create(**api_params)
+                
+                # Route to appropriate API
+                if self.deployment_type == "vertex_ai":
+                    assistant_message = self._chat_vertex_ai(enhanced_message)
+                    # Approximate token counting for Vertex AI
+                    input_tokens = len(enhanced_message.split()) * 1.3
+                    output_tokens = len(assistant_message.split()) * 1.3
+                    
+                else:
+                    # Existing OpenAI logic (fallback - should not be used in SLM branch)
+                    self.logger.warning("Using OpenAI fallback in SLM branch")
+                    user_message = {"role": "user", "content": enhanced_message}
+                    messages = self.messages + [user_message]
+                    
+                    # Get token counter and calculate tokens with enhanced vision support
+                    token_counter = get_token_counter()
+                    total_input_tokens, text_tokens, image_tokens = token_counter.count_message_tokens(messages, self.model)
+                    
+                    api_params = {
+                        "model": self.model,
+                        "messages": messages,
+                        "temperature": config.TEMPERATURE
+                    }
+                    
+                    if max_tokens:
+                        api_params["max_tokens"] = max_tokens
+                    elif config.MAX_TOKENS:
+                        api_params["max_tokens"] = config.MAX_TOKENS
+                    
+                    response = self.client.chat.completions.create(**api_params)
+                    assistant_message = response.choices[0].message.content
+                    
+                    # Accurate token counting for OpenAI
+                    output_tokens = token_counter.count_tokens(assistant_message, self.model)
+                    input_tokens = total_input_tokens
+                
                 end_time = time.time()
                 response_time_ms = (end_time - start_time) * 1000
                 
-                assistant_message = response.choices[0].message.content
-                
-                # Count output tokens
-                output_tokens = token_counter.count_tokens(assistant_message, self.model)
-                
-                # Track the API call with enhanced token data
-                is_vision_call = image_tokens > 0
-                token_counter.track_api_call(
-                    input_tokens=total_input_tokens,
-                    output_tokens=output_tokens,
+                # Track API call with unified interface
+                get_token_counter().track_api_call(
+                    input_tokens=int(input_tokens),
+                    output_tokens=int(output_tokens),
                     model=self.model,
                     agent_role=self.role,
                     question_id=self.question_id,
                     simulation_id=self.simulation_id,
-                    operation_type="chat",
-                    response_time_ms=response_time_ms,
-                    image_tokens=image_tokens if is_vision_call else None,
-                    text_tokens=text_tokens if is_vision_call else total_input_tokens,
-                    num_images=0 if not is_vision_call else None
+                    operation_type=f"{self.deployment_type}_chat",
+                    response_time_ms=response_time_ms
                 )
                 
-                # Store response (use original message)
+                # Store response (use original message, not enhanced)
                 self.messages.append({"role": "user", "content": message})
                 self.messages.append({"role": "assistant", "content": assistant_message})
                 self.conversation_history.append({
-                    "user": message, 
-                    "assistant": assistant_message,
-                    "image_tokens": image_tokens if is_vision_call else 0,
-                    "text_tokens": text_tokens if is_vision_call else total_input_tokens
+                    "user": message,
+                    "assistant": assistant_message
                 })
                 
-                log_msg = f"Chat completed - Input: {total_input_tokens}, Output: {output_tokens}, Total: {total_input_tokens + output_tokens} tokens"
-                if is_vision_call:
-                    log_msg += f" (Vision: {text_tokens} text + {image_tokens} image)"
-                log_msg += f", Time: {response_time_ms:.1f}ms"
-                self.logger.debug(log_msg)
-                
+                self.logger.debug(f"Chat completed via {self.deployment_type} - Input: {int(input_tokens)}, Output: {int(output_tokens)}, Time: {response_time_ms:.1f}ms")
                 return assistant_message
                 
             except Exception as e:
@@ -565,6 +588,60 @@ Based on the retrieved medical literature above, provide your analysis consideri
         
         return self._response
 
+    def _chat_vertex_ai(self, message: str) -> str:
+        """Chat using Vertex AI deployed model with simple endpoint approach."""
+        try:
+            # Prepare instance for Vertex AI prediction using simple format
+            instances = [{"prompt": message}]
+            
+            # Add parameters if needed
+            parameters = {
+                "temperature": config.TEMPERATURE,
+                "max_output_tokens": config.MAX_TOKENS or 1500,
+                "top_p": 0.8,
+                "top_k": 40
+            }
+            
+            self.logger.debug(f"Making prediction with instances: {instances}")
+            
+            # Make prediction using the simple endpoint approach
+            response = self.endpoint.predict(instances=instances, parameters=parameters)
+            
+            self.logger.debug(f"Raw prediction response: {response}")
+            
+            # Parse response - try different ways to extract the content
+            if response.predictions:
+                prediction = response.predictions[0]
+                self.logger.debug(f"First prediction: {prediction}")
+                
+                # Handle different response formats
+                if isinstance(prediction, dict):
+                    # Try different response fields
+                    content = (prediction.get("content") or
+                              prediction.get("generated_text") or 
+                              prediction.get("output") or
+                              prediction.get("response") or
+                              prediction.get("text") or
+                              str(prediction))
+                elif isinstance(prediction, str):
+                    content = prediction
+                    
+                    # If the response contains "Output:" extract what comes after it
+                    if "Output:" in content:
+                        output_part = content.split("Output:", 1)[1].strip()
+                        if output_part:
+                            content = output_part
+                else:
+                    # Convert to string if it's some other type
+                    content = str(prediction)
+                
+                return content if content and content != str(prediction) else "No response generated"
+            
+            return "No response generated"
+            
+        except Exception as e:
+            self.logger.error(f"Vertex AI prediction failed: {str(e)}")
+            raise
 
     def _count_images_in_messages(self, messages: List[Dict[str, Any]]) -> int:
         """Count the number of images in a list of messages."""
