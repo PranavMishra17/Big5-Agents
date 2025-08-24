@@ -138,8 +138,20 @@ class Agent:
         # Use provided task config or fall back to global
         task_config = task_config or config.TASK
         
+        # Check if this is a pathology vision task
+        is_pathology_vision = (
+            self.is_vision_task and 
+            task_config.get("image_data", {}).get("is_pathology_image", False)
+        )
+        
+        # Choose appropriate prompt template
+        if is_pathology_vision:
+            prompt_template = "pathology_vision"
+        else:
+            prompt_template = "base"
+            
         # Base prompt
-        prompt = AGENT_SYSTEM_PROMPTS["base"].format(
+        prompt = AGENT_SYSTEM_PROMPTS[prompt_template].format(
             role=self.role,
             expertise_description=self.expertise_description,
             team_name=config.TEAM_NAME,
@@ -245,13 +257,13 @@ class Agent:
             self.logger.error(f"Image encoding failed: {str(e)}")
             return None
 
-    def chat_with_image(self, message: str, image=None) -> str:
+    def chat_with_image(self, message: str, image=None, max_tokens: Optional[int] = None) -> str:
         """Chat with image using OpenAI Vision API with enhanced token tracking."""
         if not getattr(self, 'is_vision_task', False):
             return self.chat(message)
         
         if image is None:
-            return self.chat(message)
+            return self.chat(message, max_tokens=max_tokens)
         
         # Apply MedRAG if available
         enhanced_message = message
@@ -296,7 +308,7 @@ class Agent:
                     "model": self.model,
                     "messages": messages,
                     "temperature": config.TEMPERATURE,
-                    "max_tokens": 4000  # Required for vision
+                    "max_tokens": max_tokens if max_tokens else 4000  # Use passed param or default for vision
                 }
                 
                 # Time the API call
@@ -356,10 +368,10 @@ class Agent:
                 if attempt < config.MAX_RETRIES - 1:
                     time.sleep(config.RETRY_DELAY * (2 ** attempt))
                 else:
-                    return self.chat(f"{enhanced_message}\n\n[Vision failed after retries]")
+                    return self.chat(f"{enhanced_message}\n\n[Vision failed after retries]", max_tokens=max_tokens)
 
 
-    def chat(self, message: str) -> str:
+    def chat(self, message: str, max_tokens: Optional[int] = None) -> str:
         """Send a message to the agent and get a response using OpenAI API with enhanced token tracking."""
         self.logger.info(f"Received message: {message[:100]}...")
         
@@ -400,7 +412,10 @@ Based on the retrieved medical literature above, provide your analysis consideri
                     "temperature": config.TEMPERATURE
                 }
                 
-                if config.MAX_TOKENS:
+                # Use passed max_tokens or fall back to config
+                if max_tokens:
+                    api_params["max_tokens"] = max_tokens
+                elif config.MAX_TOKENS:
                     api_params["max_tokens"] = config.MAX_TOKENS
                 
                 # Time the API call

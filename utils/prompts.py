@@ -26,6 +26,29 @@ AGENT_SYSTEM_PROMPTS = {
     - Provide clear, evidence-based reasoning
     - Use efficient, professional medical communication
     """,
+    
+    "pathology_vision": """You are a {role} who {expertise_description}. You specialize in systematic pathology image analysis.
+    
+    You are working on the following task: {task_name}
+    
+    {task_description}
+    
+    PATHOLOGY IMAGE ANALYSIS PROTOCOL:
+    1. SYSTEMATIC EXAMINATION:
+       - Overall tissue architecture and pattern
+       - Cellular morphology (size, shape, nuclear features)
+       - Staining characteristics and intensity
+       - Pathological abnormalities or lesions
+    
+    2. CLINICAL CORRELATION:
+       - Integrate visual findings with pathological knowledge
+       - Consider differential diagnoses
+       - Assess diagnostic significance
+    
+    3. ANSWER FORMAT: {expected_output_format}
+    
+    CRITICAL: Base your answer ONLY on what you can observe in the image. Be systematic and thorough.
+    """,
 }
 
 # Team Leadership Prompts
@@ -116,6 +139,32 @@ LEADERSHIP_PROMPTS = {
     4. Summarize key insights so far
     
     Your goal is to help the team make progress rather than advocate for a specific position.
+    """,
+    
+    "vision_round2_guidance": """
+    Based on team's initial visual analyses, provide focused guidance for collaborative discussion.
+    
+    Initial findings: {initial_findings}
+    
+    As team leader, emphasize:
+    1. Key visual features identified by each member
+    2. Areas requiring further consensus
+    3. Integration of pathological findings
+    
+    Provide 2-3 specific focus points (max 100 tokens):
+    """,
+    
+    "vision_final_synthesis": """
+    As designated leader, synthesize visual findings into final pathology assessment.
+    
+    Team analyses: {team_analyses}
+    
+    Create consensus that:
+    1. Reconciles different visual interpretations
+    2. Prioritizes most clinically significant findings
+    3. Provides definitive pathological conclusion
+    
+    You MUST begin with "ANSWER: A" (Yes) or "ANSWER: B" (No).
     """
 }
 

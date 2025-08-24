@@ -615,3 +615,18 @@ class SharedMentalModel:
         
         self.logger.info(f"Mental model effectiveness analysis: {analysis['effectiveness_rating']} effectiveness")
         return analysis
+    
+    def get_convergence_summary(self) -> str:
+        """Get a brief summary of team convergence insights for discussion."""
+        if not self.convergence_metrics:
+            return ""
+        
+        latest_metrics = self.convergence_metrics[-1]
+        convergence_score = latest_metrics.get("overall_convergence", 0.0)
+        
+        if convergence_score > 0.7:
+            return f"Strong consensus emerging (convergence: {convergence_score:.2f})"
+        elif convergence_score > 0.4:
+            return f"Some alignment observed (convergence: {convergence_score:.2f})"
+        else:
+            return f"Diverse perspectives present (convergence: {convergence_score:.2f})"

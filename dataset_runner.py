@@ -2167,58 +2167,129 @@ def load_pmc_vqa_dataset(num_questions: int = 50, random_seed: int = 42,
 
 def load_path_vqa_dataset(num_questions: int = 50, random_seed: int = 42) -> List[Dict[str, Any]]:
     """
-    Load Path-VQA dataset with proper image validation for yes/no questions.
+    Load Path-VQA dataset with robust filtering to ensure ONLY yes/no questions.
+    Pre-filters larger pool to guarantee exact count of valid yes/no questions.
     """
-    logging.info(f"Loading Path-VQA dataset with {num_questions} yes/no questions")
+    logging.info(f"Loading Path-VQA dataset - requesting {num_questions} yes/no questions")
     
     try:
         from datasets import load_dataset
+        import random
         
         # Use streaming
         ds = load_dataset("flaviagiammarino/path-vqa", streaming=True)
         split_name = list(ds.keys())[0]
         
-        # Collect valid yes/no questions with images
-        questions = []
-        random.seed(random_seed)
-        
+        # PHASE 1: Collect larger pool of yes/no candidates
+        candidate_pool = []
+        pool_target = num_questions * 3  # Collect 3x to ensure enough after validation
         attempted = 0
-        max_attempts = num_questions * 20  # Path-VQA might have fewer yes/no questions
+        max_search_limit = num_questions * 10  # Reasonable search limit
+        
+        logging.info(f"Phase 1: Collecting {pool_target} yes/no candidate questions...")
         
         for question in ds[split_name]:
             attempted += 1
             
             try:
-                # Check answer is yes/no
+                # STRICT yes/no filtering
                 answer = question.get('answer', '').lower().strip()
                 if answer not in ['yes', 'no']:
                     continue
+                    
+                # Basic validation
+                question_text = question.get('question', '').strip()
+                if not question_text:
+                    continue
+                    
+                img = question.get('image')
+                if img is None:
+                    continue
                 
-                # Validate image
+                candidate_pool.append(question)
+                
+                if len(candidate_pool) >= pool_target:
+                    break
+                    
+            except Exception as e:
+                logging.debug(f"Skipped candidate due to error: {e}")
+                continue
+            
+            if attempted >= max_search_limit:
+                logging.warning(f"Reached search limit ({max_search_limit}), found {len(candidate_pool)} candidates")
+                break
+        
+        logging.info(f"Phase 1 complete: Found {len(candidate_pool)} yes/no candidates from {attempted} questions")
+        
+        if len(candidate_pool) < num_questions:
+            logging.error(f"INSUFFICIENT YES/NO QUESTIONS: Only {len(candidate_pool)} found, need {num_questions}")
+            logging.error("PathVQA dataset may not have enough yes/no questions. Reduce --num-questions parameter.")
+            return candidate_pool  # Return what we have
+        
+        # PHASE 2: Final validation and image verification
+        logging.info(f"Phase 2: Validating images for {num_questions} final questions...")
+        
+        # Shuffle the candidate pool
+        random.seed(random_seed)
+        random.shuffle(candidate_pool)
+        
+        final_questions = []
+        validation_attempts = 0
+        
+        for question in candidate_pool:
+            validation_attempts += 1
+            
+            try:
+                # Re-validate answer (double-check)
+                answer = question.get('answer', '').lower().strip()
+                if answer not in ['yes', 'no']:
+                    logging.warning(f"Validation failed: Answer '{answer}' is not yes/no")
+                    continue
+                
+                # Thorough image validation
                 img = question.get('image')
                 if not validate_image_for_vision_api(img):
                     continue
                 
-                # Check question text
+                # Final question text check
                 question_text = question.get('question', '').strip()
-                if not question_text:
+                if not question_text or len(question_text) < 10:
                     continue
                 
-                questions.append(question)
+                final_questions.append(question)
                 
-                if len(questions) >= num_questions:
+                if len(final_questions) >= num_questions:
                     break
                     
             except Exception as e:
-                logging.debug(f"Skipped Path-VQA question due to error: {e}")
+                logging.debug(f"Validation error: {e}")
                 continue
-            
-            if attempted >= max_attempts:
-                logging.warning(f"Reached max attempts ({max_attempts}), stopping with {len(questions)} questions")
-                break
         
-        logging.info(f"Successfully loaded {len(questions)} Path-VQA yes/no questions with valid images")
-        return questions[:num_questions]
+        logging.info(f"Phase 2 complete: Validated {len(final_questions)} questions with valid images")
+        
+        # PHASE 3: Final verification
+        if len(final_questions) < num_questions:
+            logging.warning(f"After validation: Only {len(final_questions)} questions available (requested {num_questions})")
+        
+        # Verify all answers are yes/no
+        answer_verification = {}
+        for q in final_questions:
+            ans = q.get('answer', '').lower().strip()
+            answer_verification[ans] = answer_verification.get(ans, 0) + 1
+        
+        logging.info(f"Final answer distribution: {answer_verification}")
+        
+        # Double-check: Remove any non yes/no that slipped through
+        verified_questions = []
+        for q in final_questions:
+            ans = q.get('answer', '').lower().strip()
+            if ans in ['yes', 'no']:
+                verified_questions.append(q)
+            else:
+                logging.warning(f"Removing question with answer '{ans}' - not yes/no")
+        
+        logging.info(f"SUCCESS: Loaded {len(verified_questions)} PURE yes/no Path-VQA questions")
+        return verified_questions[:num_questions]
         
     except Exception as e:
         logging.error(f"Error loading Path-VQA dataset: {str(e)}")

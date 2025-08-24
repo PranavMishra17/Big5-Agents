@@ -360,3 +360,48 @@ class MutualTrust:
             metrics["trust_environment"] = "low"
             
         return metrics
+    
+    def get_trust_scores_for_agent(self, agent_role: str) -> Dict[str, float]:
+        """Get trust scores for a specific agent from all other agents."""
+        trust_scores = {}
+        for from_role, trust_dict in self.trust_levels.items():
+            if from_role != agent_role and agent_role in trust_dict:
+                trust_scores[from_role] = trust_dict[agent_role]
+        return trust_scores
+    
+    def get_agent_trust_metrics(self, agent_role: str) -> Dict[str, Any]:
+        """Get comprehensive trust metrics for a specific agent."""
+        metrics = {
+            "average_trust": 0.0,
+            "incoming_trust": {},
+            "outgoing_trust": {}
+        }
+        
+        # Calculate incoming trust (how others trust this agent)
+        incoming_trusts = []
+        for from_role, trust_dict in self.trust_levels.items():
+            if from_role != agent_role and agent_role in trust_dict:
+                trust_level = trust_dict[agent_role]
+                metrics["incoming_trust"][from_role] = trust_level
+                incoming_trusts.append(trust_level)
+        
+        # Calculate outgoing trust (how this agent trusts others)
+        if agent_role in self.trust_levels:
+            for to_role, trust_level in self.trust_levels[agent_role].items():
+                metrics["outgoing_trust"][to_role] = trust_level
+        
+        # Calculate average trust
+        if incoming_trusts:
+            metrics["average_trust"] = sum(incoming_trusts) / len(incoming_trusts)
+        
+        return metrics
+    
+    def update_trust_from_interaction(self, agent_role: str, interaction_type: str, quality_score: float) -> None:
+        """Update trust based on interaction quality."""
+        # Simple trust update based on interaction quality
+        magnitude = 0.02 if quality_score > 0.7 else -0.01
+        
+        # Update trust from all other agents to this agent
+        for from_role in self.trust_levels:
+            if from_role != agent_role:
+                self.update_trust_level(from_role, agent_role, interaction_type, magnitude)

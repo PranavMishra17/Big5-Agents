@@ -535,22 +535,52 @@ class AgentSystemSimulator:
         return agent_analyses
 
     def _run_round2_collaborative_discussion(self, round1_analyses: Dict[str, Dict[str, Any]]) -> Dict[str, str]:
-        """ROUND 2: Enhanced collaborative discussion with vision-aware prompting."""
+        """ROUND 2: Token-optimized collaborative discussion - text-only even for vision tasks."""
         round2_discussions = {}
         
-        # Check if this is a vision task
+        # Check if this is a vision task for logging
         has_vision_task = any(analysis.get("used_vision", False) for analysis in round1_analyses.values())
         
         if has_vision_task:
-            self.logger.logger.info("Round 2: Vision-enabled collaborative discussion")
-            # Get fresh image for discussion
-            task_image = self._get_fresh_image()
+            # For vision tasks, keep image available for reference but optimize token usage
+            self.logger.logger.info("Round 2: Collaborative discussion with image reference (vision task)")
+            task_image = self.task_config.get("image_data", {}).get("image")  # Keep image available
         else:
             self.logger.logger.info("Round 2: Text-only collaborative discussion")
             task_image = None
         
-        # OPTIMIZED: Single closed-loop exchange for the entire round (not per agent)
+        # Leadership guidance at start of Round 2 based on initial analyses
         final_config = self.get_final_teamwork_config()
+        leadership_guidance = None
+        
+        if final_config.get("use_team_leadership", False) and self.leader:
+            try:
+                # Create concise summary of Round 1 findings for leadership guidance
+                r1_summary = "\n".join([f"{role}: {data['extract'].get('answer', 'No clear answer')}" 
+                                       for role, data in round1_analyses.items()])
+                
+                if has_vision_task:
+                    # Use vision-specific leadership prompt
+                    from utils.prompts import LEADERSHIP_PROMPTS
+                    leadership_prompt = LEADERSHIP_PROMPTS["vision_round2_guidance"].format(
+                        initial_findings=r1_summary
+                    )
+                else:
+                    leadership_prompt = f"""Based on team's initial analyses, provide brief guidance for collaborative discussion:
+
+Initial findings: {r1_summary}
+
+Provide 2-3 key focus points for team collaboration. Be concise (max 100 tokens)."""
+                
+                leadership_guidance = self.leader.chat(leadership_prompt, max_tokens=150)
+                
+                self.logger.log_leadership_action("round2_guidance", leadership_guidance)
+                self.logger.logger.info(f"Leadership guidance provided for Round 2 collaboration")
+                
+            except Exception as e:
+                self.logger.logger.warning(f"Leadership guidance failed: {e}")
+        
+        # OPTIMIZED: Single closed-loop exchange for the entire round (not per agent)
         closed_loop_done = False
         closed_loop_content = None
         
@@ -561,15 +591,15 @@ class AgentSystemSimulator:
                 sender_role, sender_agent = agent_list[0]
                 receiver_role, receiver_agent = agent_list[1]
                 
-                # Create discussion summary for closed-loop
-                analyses_summary = "\n\n".join([f"{r}: {a['analysis'][:200]}..." for r, a in round1_analyses.items()])
-                discussion_prompt = f"Review team analyses and discuss key findings:\n{analyses_summary}\n\nBe precise, concise, and to the point."
+                # Create concise discussion summary for closed-loop
+                analyses_summary = "\n\n".join([f"{r}: {a['analysis'][:150]}..." for r, a in round1_analyses.items()])
+                discussion_prompt = f"Review team analyses and discuss key findings:\n{analyses_summary}\n\nBe precise, concise, and to the point (max 200 tokens)."
                 
                 try:
                     _, acknowledgment, verification = self.comm_handler.facilitate_exchange(
-                        sender_agent, receiver_agent, discussion_prompt
+                        sender_agent, receiver_agent, discussion_prompt, max_tokens=250
                     )
-                    closed_loop_content = f"Closed-loop discussion:\nSender: {sender_role}\nReceiver: {receiver_role}\nContent: {acknowledgment}"
+                    closed_loop_content = f"Closed-loop insights: {acknowledgment[:200]}..."
                     closed_loop_done = True
                     self.logger.logger.info(f"Completed closed-loop exchange: {sender_role} ↔ {receiver_role}")
                 except Exception as e:
@@ -615,6 +645,10 @@ Your initial analysis:
                         vision_text = "\n\n".join(vision_insights)
                         discussion_parts.append(f"Vision-based insights from teammates:\n{vision_text}")
                     
+                    # Enhanced discussion instructions with leadership guidance
+                    if leadership_guidance:
+                        discussion_parts.append(f"\nLeadership guidance for this discussion:\n{leadership_guidance}")
+                    
                     # STREAMLINED: Concise discussion instructions
                     discussion_parts.append("""
 Collaborate with teammates:
@@ -625,12 +659,12 @@ Collaborate with teammates:
                     if has_vision_task:
                         discussion_parts.append("4. Compare visual observations and interpret conflicting findings")
                     
-                    discussion_parts.append("NO final answer - focus on collaborative analysis only.")
+                    discussion_parts.append("\nBe concise (max 300 tokens). NO final answer - focus on collaborative analysis only.")
                     
                     discussion_prompt = "\n\n".join(discussion_parts)
                     
-                    # Apply teamwork components
-                    final_config = self.get_final_teamwork_config()
+                    # Apply teamwork components with selective feedback
+                    monitoring_feedback = []
                     if final_config.get("use_mutual_monitoring", False) and self.mutual_monitor:
                         for other_role, analysis in other_analyses.items():
                             other_agent = self.agents[other_role]
@@ -640,31 +674,54 @@ Collaborate with teammates:
                                 other_role, analysis, None
                             )
                             
-                            if monitoring_result["issues_detected"]:
+                            # SELECTIVE: Only add feedback if significant issues detected
+                            if monitoring_result["issues_detected"] and monitoring_result.get("severity", "low") in ["medium", "high"]:
                                 feedback = self.mutual_monitor.generate_feedback(
                                     monitoring_result, role
                                 )
-                                discussion_prompt += f"""
-
-Based on monitoring {other_role}'s analysis, you've identified:
-{feedback}
-
-Consider these points in your discussion."""
+                                monitoring_feedback.append(f"Monitoring alert for {other_role}: {feedback[:150]}...")
                     
-                    # OPTIMIZED: Use shared closed-loop content if available, otherwise standard discussion
+                    # Add concise monitoring feedback if any issues found
+                    if monitoring_feedback:
+                        discussion_parts.append(f"\nMonitoring insights:\n" + "\n".join(monitoring_feedback))
+                    
+                    # Update shared mental model if enabled
+                    if final_config.get("use_shared_mental_model", False) and self.mental_model:
+                        try:
+                            # Extract key insights from other agents for shared understanding
+                            for other_role, analysis in other_analyses.items():
+                                understanding = self.mental_model.extract_understanding_from_message(analysis)
+                                self.mental_model.update_shared_understanding(other_role, understanding)
+                            
+                            # Get shared insights to include in discussion
+                            shared_insights = self.mental_model.get_convergence_summary()
+                            if shared_insights:
+                                discussion_parts.append(f"\nShared team insights: {shared_insights[:200]}...")
+                        except Exception as e:
+                            self.logger.logger.warning(f"Shared mental model update failed: {e}")
+                    
+                    # Apply trust network considerations if enabled
+                    if final_config.get("use_mutual_trust", False) and self.mutual_trust:
+                        try:
+                            # Get trust-weighted insights
+                            trust_scores = self.mutual_trust.get_trust_scores_for_agent(role)
+                            high_trust_agents = [agent_role for agent_role, score in trust_scores.items() 
+                                               if score > 0.7 and agent_role in other_analyses]
+                            
+                            if high_trust_agents:
+                                discussion_parts.append(f"\nNote: Pay special attention to insights from {', '.join(high_trust_agents)} (high trust).")
+                        except Exception as e:
+                            self.logger.logger.warning(f"Trust network integration failed: {e}")
+                    
+                    # Include closed-loop insights if available
                     if closed_loop_done and closed_loop_content:
-                        # Include closed-loop insights in discussion
-                        enhanced_prompt = f"{discussion_prompt}\n\nClosed-loop insights: {closed_loop_content}\n\nProvide your analysis considering these insights."
-                        if task_image is not None and round1_analyses[role].get("used_vision", False):
-                            discussion_response = agent.chat_with_image(enhanced_prompt, task_image)
-                        else:
-                            discussion_response = agent.chat(enhanced_prompt)
-                    else:
-                        # Standard discussion
-                        if task_image is not None and round1_analyses[role].get("used_vision", False):
-                            discussion_response = agent.chat_with_image(discussion_prompt, task_image)
-                        else:
-                            discussion_response = agent.chat(discussion_prompt)
+                        discussion_parts.append(f"\nClosed-loop insights: {closed_loop_content}")
+                    
+                    discussion_prompt = "\n\n".join(discussion_parts)
+                    
+                    # ALWAYS text-only discussion in Round 2 for token efficiency
+                    # Even for vision tasks, agents discuss their visual findings without re-seeing image
+                    discussion_response = agent.chat(discussion_prompt, max_tokens=350)
                     
                     # Log to main discussion channel
                     self.logger.log_main_discussion(
@@ -684,13 +741,33 @@ Consider these points in your discussion."""
                     
                     round2_discussions[role] = discussion_response
                     
+                    # Update trust scores based on discussion quality if trust is enabled
+                    if final_config.get("use_mutual_trust", False) and self.mutual_trust:
+                        try:
+                            # Simple quality assessment based on response length and content
+                            discussion_quality = min(1.0, len(discussion_response.split()) / 100)  # Normalize by word count
+                            self.mutual_trust.update_trust_from_interaction(role, "discussion", discussion_quality)
+                        except Exception as e:
+                            self.logger.logger.warning(f"Trust update failed for {role}: {e}")
+                    
                 else:
                     # Single agent case
                     round2_discussions[role] = "No teammates to discuss with."
                     
             except Exception as e:
                 self.logger.logger.error(f"Error in Round 2 discussion for {role}: {str(e)}")
-                round2_discussions[role] = f"Error in discussion: {str(e)}"
+                # Graceful error handling with fallback
+                try:
+                    fallback_prompt = f"Based on your initial analysis, provide brief insights for team discussion: {round1_analyses[role]['analysis'][:200]}... Be concise (max 200 tokens)."
+                    round2_discussions[role] = agent.chat(fallback_prompt, max_tokens=250)
+                    self.logger.logger.info(f"Used fallback discussion for {role}")
+                except Exception as fallback_e:
+                    self.logger.logger.error(f"Fallback also failed for {role}: {str(fallback_e)}")
+                    round2_discussions[role] = f"Error in discussion: {str(e)}"
+        
+        # Log Round 2 completion with teamwork metrics
+        discussion_count = len([d for d in round2_discussions.values() if not d.startswith("Error")])
+        self.logger.logger.info(f"Round 2 completed: {discussion_count}/{len(self.agents)} successful discussions")
         
         return round2_discussions
 
@@ -703,7 +780,7 @@ Consider these points in your discussion."""
         has_vision_task = any(analysis.get("used_vision", False) for analysis in round1_analyses.values())
         
         if has_vision_task:
-            self.logger.logger.info("Round 3: Vision-enabled final decisions")
+            self.logger.logger.info("Round 3: Vision-enabled final decisions (image re-added for accuracy)")
             task_image = self._get_fresh_image()
         else:
             self.logger.logger.info("Round 3: Text-only final decisions")
@@ -729,50 +806,50 @@ Consider these points in your discussion."""
                             final_prompt = f"""Based on your initial image analysis and team discussion, provide your final answer.
 
 Your initial analysis (with image):
-{round1_analyses[role]['analysis']}
+{round1_analyses[role]['analysis'][:300]}...
 
 Team discussion insights:
-{round2_discussions.get(role, "No discussion occurred.")}
+{round2_discussions.get(role, "No discussion occurred.")[:200]}...
 
 Now examine the image once more and provide your final answer.
-Begin with "ANSWER: X" (yes, no, or maybe) followed by your integrated reasoning."""
+Begin with "ANSWER: X" (yes, no, or maybe) followed by your integrated reasoning. Be concise (max 400 tokens)."""
                         else:
                             final_prompt = f"""Based on your initial image analysis and team discussion, provide your final answer.
 
 Your initial analysis (with image):
-{round1_analyses[role]['analysis']}
+{round1_analyses[role]['analysis'][:300]}...
 
 Team discussion insights:
-{round2_discussions.get(role, "No discussion occurred.")}
+{round2_discussions.get(role, "No discussion occurred.")[:200]}...
 
 Now examine the image once more and provide your final answer.
-Begin with "ANSWER: X" (your chosen option) followed by your integrated visual and clinical reasoning."""
+Begin with "ANSWER: X" (your chosen option) followed by your integrated visual and clinical reasoning. Be concise (max 400 tokens)."""
                     else:
                         # Standard fallback for text-only
                         final_prompt = f"""Based on your initial analysis and team discussion, provide your final answer.
 
 Your initial analysis:
-{round1_analyses[role]['analysis']}
+{round1_analyses[role]['analysis'][:300]}...
 
 Team discussion insights:
-{round2_discussions.get(role, "No discussion occurred.")}
+{round2_discussions.get(role, "No discussion occurred.")[:200]}...
 
-Now provide your final answer with "ANSWER: X" followed by your reasoning."""
+Now provide your final answer with "ANSWER: X" followed by your reasoning. Be concise (max 400 tokens)."""
                 
                 # Execute final decision with vision support and error recovery
                 try:
                     if task_image is not None and round1_analyses[role].get("used_vision", False):
-                        # Agent used vision successfully in Round 1
-                        final_decision = agent.chat_with_image(final_prompt, task_image)
+                        # Agent used vision successfully in Round 1 - re-add image for final accuracy
+                        final_decision = agent.chat_with_image(final_prompt, task_image, max_tokens=450)
                     else:
                         # Text-only final decision
-                        final_decision = agent.chat(final_prompt)
+                        final_decision = agent.chat(final_prompt, max_tokens=450)
                 except Exception as vision_error:
                     # Vision error recovery
                     if task_image is not None:
                         self.logger.logger.warning(f"Vision error in Round 3 for {role}, falling back to text: {vision_error}")
                         fallback_prompt = f"{final_prompt}\n\n[Note: Image analysis requested but failed. Providing text-based reasoning.]"
-                        final_decision = agent.chat(fallback_prompt)
+                        final_decision = agent.chat(fallback_prompt, max_tokens=450)
                     else:
                         raise vision_error
                 
@@ -798,11 +875,21 @@ Now provide your final answer with "ANSWER: X" followed by your reasoning."""
                 # Get agent weight
                 weight = agent.get_from_knowledge_base("weight") or 0.2
                 
-                # Store enhanced decision data
+                # Store enhanced decision data with trust metrics
+                final_config = self.get_final_teamwork_config()
+                trust_score = 1.0  # Default trust score
+                if final_config.get("use_mutual_trust", False) and self.mutual_trust:
+                    try:
+                        trust_metrics = self.mutual_trust.get_agent_trust_metrics(role)
+                        trust_score = trust_metrics.get("average_trust", 1.0)
+                    except Exception as e:
+                        self.logger.logger.warning(f"Trust metrics retrieval failed for {role}: {e}")
+                
                 round3_decisions[role] = {
                     "final_decision": final_decision,
                     "extract": extracted,
-                    "weight": weight,
+                    "weight": weight * trust_score,  # Weight decisions by trust
+                    "trust_score": trust_score,
                     "used_vision_round1": round1_analyses[role].get("used_vision", False),
                     "used_vision_round3": task_image is not None and round1_analyses[role].get("used_vision", False),
                     "agent_type": type(agent).__name__
@@ -825,18 +912,18 @@ Now provide your final answer with "ANSWER: X" followed by your reasoning."""
                                     for role, decision in round3_decisions.items() 
                                     if role != self.leader.role])
                 
-                # Leader synthesis with vision if available
+                # Leader synthesis with vision if available and token limits
                 if task_image is not None:
                     synthesis_prompt = f"""As team leader, synthesize the team's responses considering both textual reasoning and visual analysis.
 
 Team responses:
-{context}
+{context[:800]}...
 
-Provide final guidance integrating all perspectives and visual findings."""
+Provide final guidance integrating all perspectives and visual findings. Be concise (max 300 tokens)."""
                     
-                    leader_synthesis = self.leader.chat_with_image(synthesis_prompt, task_image)
+                    leader_synthesis = self.leader.chat_with_image(synthesis_prompt, task_image, max_tokens=350)
                 else:
-                    leader_synthesis = self.leader.leadership_action_isolated("synthesize", context, self.task_config)
+                    leader_synthesis = self.leader.leadership_action_isolated("synthesize", context[:800], self.task_config)
                 
                 self.logger.log_leadership_action("synthesis", leader_synthesis)
                 self.logger.log_main_discussion("leadership_synthesis", self.leader.role, leader_synthesis)
@@ -849,14 +936,16 @@ Provide final guidance integrating all perspectives and visual findings."""
                     "used_vision": task_image is not None
                 })
                 
-                # Update leader's decision
+                # Update leader's decision with trust weighting
                 leader_extract = self.leader.extract_response_isolated(leader_synthesis, self.task_config)
-                round3_decisions[self.leader.role] = {
+                leader_trust = round3_decisions[self.leader.role].get("trust_score", 1.0)
+                round3_decisions[self.leader.role].update({
                     "final_decision": leader_synthesis,
                     "extract": leader_extract,
-                    "weight": round3_decisions[self.leader.role].get("weight", 0.2),
-                    "is_leader_synthesis": True
-                }
+                    "weight": round3_decisions[self.leader.role].get("weight", 0.2) * 1.2,  # Leader bonus with trust
+                    "is_leader_synthesis": True,
+                    "leadership_applied": True
+                })
                 
             except Exception as e:
                 self.logger.logger.error(f"Error in leadership synthesis: {str(e)}")

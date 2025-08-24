@@ -33,7 +33,8 @@ class ClosedLoopCommunication:
     def facilitate_exchange(self, 
                            sender: Agent, 
                            receiver: Agent, 
-                           initial_message: str) -> Tuple[str, str, str]:
+                           initial_message: str,
+                           max_tokens: int = 300) -> Tuple[str, str, str]:
         """
         STREAMLINED: Facilitate closed-loop communication with minimal API calls.
         
@@ -49,8 +50,13 @@ class ClosedLoopCommunication:
         
         # STREAMLINED: Combined exchange in just 2 API calls instead of 3
         # Step 1: Sender sends message with closed-loop instruction
-        sender_prompt = f"{initial_message}\n\nProvide your analysis. Be precise, concise, and to the point."
-        sender_message = sender.chat(sender_prompt)
+        sender_prompt = f"{initial_message}\n\nProvide your analysis. Be precise, concise, and to the point (max {max_tokens//2} tokens)."
+        
+        try:
+            sender_message = sender.chat(sender_prompt, max_tokens=max_tokens//2)
+        except TypeError:
+            # Fallback if agent doesn't support max_tokens
+            sender_message = sender.chat(sender_prompt)
         self.logger.info(f"Sender analysis: {sender_message[:50]}...")
         
         # Step 2: Receiver responds with acknowledgment AND content
@@ -60,9 +66,13 @@ Acknowledge receipt and provide your response. Format:
 - "Understood: [key point]"  
 - Your analysis/feedback
 
-Be precise, concise, and to the point."""
+Be precise, concise, and to the point (max {max_tokens//2} tokens)."""
         
-        receiver_message = receiver.chat(receiver_prompt)
+        try:
+            receiver_message = receiver.chat(receiver_prompt, max_tokens=max_tokens//2)
+        except TypeError:
+            # Fallback if agent doesn't support max_tokens
+            receiver_message = receiver.chat(receiver_prompt)
         self.logger.info(f"Receiver response: {receiver_message[:50]}...")
         
         # SIMPLIFIED: Skip verification step to save API call - assume understanding
