@@ -184,3 +184,5 @@ run_dynamic_datasets.bat
 z.bat
 z.bat
 /.claude
+SLM_Results/gemma/medmcqa/medmcqa_run_20250824_134054/combined_results.json
+/SLM_Results
