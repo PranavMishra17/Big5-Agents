@@ -15,6 +15,7 @@ AZURE_API_KEY = ""
 AZURE_ENDPOINT = os.environ.get('AZURE_ENDPOINT')
 AZURE_ENDPOINT = ""
 
+AZURE_CHAT_COMPLETIONS_URL = ""
 
 # Multiple deployment configuration for question-level parallel processing
 AZURE_DEPLOYMENTS = [
@@ -213,9 +214,20 @@ OPENAI_DEPLOYMENTS = [
         "api_key": os.environ.get('OPENAI_API_KEY_3', OPENAI_API_KEY),
         "organization": os.environ.get('OPENAI_ORG_3', None),
         "model": "gpt-4o"
+    },
+        {
+        "name": "deployment_4", 
+        "api_key": os.environ.get('OPENAI_API_KEY_5', OPENAI_API_KEY),  # Same or different key
+        "organization": os.environ.get('OPENAI_ORG_5', None),
+        "model": "gpt-4o"
+    },
+    {
+        "name": "deployment_5", 
+        "api_key": os.environ.get('OPENAI_API_KEY_4', OPENAI_API_KEY),
+        "organization": os.environ.get('OPENAI_ORG_4', None),
+        "model": "gpt-4o"
     }
 ]
-
 # Validate deployments
 available_deployments = []
 for deployment in OPENAI_DEPLOYMENTS:
@@ -238,6 +250,83 @@ else:
 
 print(f"Configured {len(OPENAI_DEPLOYMENTS)} OpenAI deployment(s): {[d['name'] for d in OPENAI_DEPLOYMENTS]}")
 
+# Vertex AI Common Configuration
+VERTEX_AI_CONFIG = {
+    "default_project": os.environ.get('VERTEX_AI_PROJECT', ""),
+    "default_location": os.environ.get('VERTEX_AI_LOCATION', "us-central1"),
+    "endpoints": {
+        "gemma-3-12b": {
+            "endpoint_id": os.environ.get('VERTEX_AI_GEMMA_ENDPOINT', ""),
+            "model": "gemma-3-12b-it"
+        },
+        # Medgemma endpoint config (currently not in use)
+        "medgemma-4b": {
+            "endpoint_id": os.environ.get('VERTEX_AI_MEDGEMMA_ENDPOINT', ""),
+            "model": "medgemma-4b-it"
+        }
+    }
+}
+
+def get_vertex_endpoint_url(project_id, location, endpoint_id):
+    return f"https://{endpoint_id}.{location}-{project_id}.prediction.vertexai.goog"
+
+# Vertex AI deployments for SLM integration
+VERTEX_AI_DEPLOYMENTS = []
+
+# Create multiple deployments using the common configuration
+for i in range(1, 6):  # Creating 5 deployments
+    deployment = {
+        "name": f"gemma3_12b_{i}",
+        "type": "vertex_ai",
+        "project": VERTEX_AI_CONFIG["default_project"],
+        "endpoint_id": VERTEX_AI_CONFIG["endpoints"]["gemma-3-12b"]["endpoint_id"],
+        "location": VERTEX_AI_CONFIG["default_location"],
+        "model": VERTEX_AI_CONFIG["endpoints"]["gemma-3-12b"]["model"],
+    }
+    deployment["endpoint_url"] = get_vertex_endpoint_url(
+        deployment["project"], 
+        deployment["location"], 
+        deployment["endpoint_id"]
+    )
+    VERTEX_AI_DEPLOYMENTS.append(deployment)
+
+# Example deployment configuration for medgemma (currently disabled)
+"""
+# To enable medgemma deployment, uncomment and add to VERTEX_AI_DEPLOYMENTS:
+deployment = {
+    "name": "medgemma_4b_1",
+    "type": "vertex_ai",
+    "project": VERTEX_AI_CONFIG["default_project"],
+    "endpoint_id": VERTEX_AI_CONFIG["endpoints"]["medgemma-4b"]["endpoint_id"],
+    "location": VERTEX_AI_CONFIG["default_location"],
+    "model": VERTEX_AI_CONFIG["endpoints"]["medgemma-4b"]["model"]
+}
+deployment["endpoint_url"] = get_vertex_endpoint_url(
+    deployment["project"],
+    deployment["location"],
+    deployment["endpoint_id"]
+)
+VERTEX_AI_DEPLOYMENTS.append(deployment)
+"""
+
+# Validate Vertex AI deployments
+available_vertex_deployments = []
+for deployment in VERTEX_AI_DEPLOYMENTS:
+    if deployment["project"] and deployment["endpoint_id"] and deployment["location"]:
+        available_vertex_deployments.append(deployment)
+    else:
+        print(f"Warning: Vertex AI deployment {deployment['name']} not properly configured, skipping")
+
+if available_vertex_deployments:
+    VERTEX_AI_DEPLOYMENTS = available_vertex_deployments
+    print(f"Configured {len(VERTEX_AI_DEPLOYMENTS)} Vertex AI deployment(s): {[d['name'] for d in VERTEX_AI_DEPLOYMENTS]}")
+else:
+    print("No Vertex AI deployments properly configured")
+    VERTEX_AI_DEPLOYMENTS = []
+
+# Combine all deployments (but keep separate for selective use)
+ALL_DEPLOYMENTS = VERTEX_AI_DEPLOYMENTS
+
 # Legacy support (update references)
 AZURE_DEPLOYMENTS = OPENAI_DEPLOYMENTS  # For backward compatibility
 AZURE_API_KEY = OPENAI_API_KEY
@@ -249,12 +338,12 @@ TEMPERATURE = 0.5
 MAX_TOKENS = 1500
 
 # Token usage limits
-MAX_INPUT_TOKENS = 10000  # Maximum input tokens per API call
+MAX_INPUT_TOKENS = 10000 # Maximum input tokens per API call
 MAX_OUTPUT_TOKENS = 8192   # Maximum output tokens per API call  
 TOKEN_BUDGET_PER_QUESTION = 50000  # Token budget per question (soft limit)
 
 # Team size limits (to control costs)
-MIN_TEAM_SIZE = 2  # Minimum number of agents
+MIN_TEAM_SIZE = 3  # Minimum number of agents for vision tasks
 MAX_TEAM_SIZE = 4  # Maximum number of agents (was 5, reduced for cost control)
 DEFAULT_TEAM_SIZE = 3  # Default team size when not specified
 
@@ -560,23 +649,23 @@ Member 3: [Specialist] - [Expertise and relevance to options]
 
 
 # Configure which teamwork components to use
-USE_TEAM_LEADERSHIP = False
-USE_CLOSED_LOOP_COMM = False
-USE_MUTUAL_MONITORING = False
-USE_SHARED_MENTAL_MODEL = False
-USE_TEAM_ORIENTATION = False  # Default disabled
-USE_MUTUAL_TRUST = False  # Default disabled
+USE_TEAM_LEADERSHIP = True  # Enable for vision task coordination
+USE_CLOSED_LOOP_COMM = False  # Keep disabled for token optimization
+USE_MUTUAL_MONITORING = True  # Enable for accuracy improvements
+USE_SHARED_MENTAL_MODEL = True  # Enable for multi-step pathology reasoning
+USE_TEAM_ORIENTATION = True  # Enable for team coordination
+USE_MUTUAL_TRUST = False  # Keep disabled for now
 
 MUTUAL_TRUST_FACTOR = 0.9  # Default trust level (0.0-1.0)
 
-USE_AGENT_RECRUITMENT = False  # Default disabled
+USE_AGENT_RECRUITMENT = True  # Enable for vision task specialization
 
 # Parallel processing settings - Updated for question-level parallelism
 #ENABLE_QUESTION_PARALLEL = len(AZURE_DEPLOYMENTS) > 1  # Enable question-level parallel processing
 #MAX_PARALLEL_QUESTIONS = len(AZURE_DEPLOYMENTS)  # Maximum questions to process in parallel
-# Parallel processing settings
-ENABLE_QUESTION_PARALLEL = len(OPENAI_DEPLOYMENTS) > 1
-MAX_PARALLEL_QUESTIONS = len(OPENAI_DEPLOYMENTS)
+# Parallel processing settings - Updated for Vertex AI SLM models only
+ENABLE_QUESTION_PARALLEL = len(VERTEX_AI_DEPLOYMENTS) > 1
+MAX_PARALLEL_QUESTIONS = len(VERTEX_AI_DEPLOYMENTS)
 
 # Legacy parallel processing settings (deprecated but kept for compatibility)
 ENABLE_PARALLEL_PROCESSING = False  # Agent-level parallelism is now disabled
@@ -614,25 +703,29 @@ FALLBACK_TO_TEXT_ON_VISION_FAILURE = True  # Allow fallback to text-only analysi
 
 def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
     """Get deployment configuration for agent based on round-robin distribution."""
-    deployment_index = agent_index % len(OPENAI_DEPLOYMENTS)
-    return OPENAI_DEPLOYMENTS[deployment_index]
+    if not VERTEX_AI_DEPLOYMENTS:
+        raise ValueError("No Vertex AI deployments configured")
+    deployment_index = agent_index % len(VERTEX_AI_DEPLOYMENTS)
+    return VERTEX_AI_DEPLOYMENTS[deployment_index]
 
 def get_deployment_for_question(question_index: int) -> Dict[str, str]:
     """Get deployment configuration for question based on round-robin distribution."""
-    deployment_index = question_index % len(OPENAI_DEPLOYMENTS)
-    return OPENAI_DEPLOYMENTS[deployment_index]
+    if not VERTEX_AI_DEPLOYMENTS:
+        raise ValueError("No Vertex AI deployments configured")
+    deployment_index = question_index % len(VERTEX_AI_DEPLOYMENTS)
+    return VERTEX_AI_DEPLOYMENTS[deployment_index]
 
 def get_all_deployments() -> List[Dict[str, str]]:
     """Get all available deployment configurations."""
-    return OPENAI_DEPLOYMENTS.copy()
+    return VERTEX_AI_DEPLOYMENTS.copy()
 
 def get_parallel_processing_info() -> Dict[str, Any]:
     """Get information about the current parallel processing configuration."""
     return {
         "question_level_parallel": ENABLE_QUESTION_PARALLEL,
         "max_parallel_questions": MAX_PARALLEL_QUESTIONS,
-        "num_deployments": len(OPENAI_DEPLOYMENTS),
-        "deployment_names": [d['name'] for d in OPENAI_DEPLOYMENTS],
+        "num_deployments": len(VERTEX_AI_DEPLOYMENTS),
+        "deployment_names": [d['name'] for d in VERTEX_AI_DEPLOYMENTS],
         "agent_level_parallel": ENABLE_PARALLEL_PROCESSING,
         "processing_mode": "question_level" if ENABLE_QUESTION_PARALLEL else "sequential"
     }

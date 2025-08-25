@@ -189,18 +189,44 @@ def determine_optimal_teamwork_config(question: str, complexity: str, team_size:
             "trust": "use_mutual_trust"
         }
         
-        # Parse response for selected components
+        # Parse response for selected components with enhanced pattern matching
         import re
-        selected_match = re.search(r"SELECTED_COMPONENTS:\s*(.+)", response)
+        logging.info(f"Teamwork Configuration Specialist response: {response[:200]}...")
         
-        if selected_match:
-            selected_text = selected_match.group(1).lower()
+        # Try multiple patterns to catch the selected components
+        patterns = [
+            r"SELECTED_COMPONENTS:\s*(.+)",  # Original pattern
+            r"Selected components?:\s*(.+)",  # Alternative pattern
+            r"Components?:\s*(.+)",           # Shortened pattern
+            r"I recommend:\s*(.+)",           # Natural language pattern
+            r"(?:leadership|closed_loop|monitoring|mental_model|orientation|trust)"  # Direct component matching
+        ]
+        
+        selected_text = ""
+        for pattern in patterns:
+            selected_match = re.search(pattern, response, re.IGNORECASE)
+            if selected_match:
+                selected_text = selected_match.group(1).lower()
+                logging.info(f"Found components using pattern '{pattern}': {selected_text}")
+                break
+        
+        # If no pattern matched, search for components directly in the response
+        if not selected_text:
+            response_lower = response.lower()
+            for component, config_key in component_mapping.items():
+                if component in response_lower:
+                    selected_components.append(config_key)
+                    logging.info(f"Found component directly in response: {component}")
+        else:
+            # Parse from matched text
             for component, config_key in component_mapping.items():
                 if component in selected_text:
                     selected_components.append(config_key)
+                    logging.info(f"Parsed component from matched text: {component}")
         
         # Limit to maximum 3 components
         selected_components = selected_components[:3]
+        logging.info(f"Final selected components: {selected_components}")
         
         # Create configuration dictionary
         teamwork_config = {
@@ -215,6 +241,17 @@ def determine_optimal_teamwork_config(question: str, complexity: str, team_size:
         # Enable selected components
         for component in selected_components:
             teamwork_config[component] = True
+        
+        # If no components were selected, apply reasonable defaults based on complexity
+        if not selected_components:
+            logging.warning("No teamwork components selected by agent, applying default based on complexity")
+            if complexity == "intermediate":
+                teamwork_config["use_team_leadership"] = True
+                teamwork_config["use_mutual_monitoring"] = True
+            elif complexity == "advanced":
+                teamwork_config["use_team_leadership"] = True
+                teamwork_config["use_mutual_monitoring"] = True
+                teamwork_config["use_shared_mental_model"] = True
         
         selected_names = [k.replace("use_", "").replace("_", " ") for k, v in teamwork_config.items() if v]
         logging.info(f"Dynamic teamwork configuration: {selected_names}")

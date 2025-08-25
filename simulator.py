@@ -99,7 +99,11 @@ class AgentSystemSimulator:
         self.deployment_config = deployment_config
         
         # CRITICAL: Store task configuration separately to avoid global state contamination
-        self.task_config = task_config or copy.deepcopy(config.TASK)
+        # Use deep copy to prevent thread safety issues during parallel processing
+        if task_config:
+            self.task_config = copy.deepcopy(task_config)
+        else:
+            self.task_config = copy.deepcopy(config.TASK)
         self.evaluation_data = eval_data or {}
         
         # NEW: Store dynamic selection results for logging
@@ -439,30 +443,33 @@ class AgentSystemSimulator:
                 # Enhanced image analysis with agent type matching
                 if task_image is not None:
                     # Check if we have specialized vision agents
+                    # Use deep copy for image analysis to prevent thread contamination
+                    task_config_copy = copy.deepcopy(self.task_config)
                     if isinstance(agent, PathologySpecialist) and image_type == "pathology":
                         self.logger.logger.info(f"{role}: Using specialized pathology analysis")
                         analysis = agent.analyze_pathology_slide(
-                            self.task_config["description"], 
+                            task_config_copy["description"], 
                             task_image, 
-                            self.task_config
+                            task_config_copy
                         )
                     elif isinstance(agent, MedicalImageAnalyst):
                         self.logger.logger.info(f"{role}: Using specialized medical imaging analysis")
                         analysis = agent.analyze_medical_image(
-                            self.task_config["description"], 
+                            task_config_copy["description"], 
                             task_image, 
-                            self.task_config
+                            task_config_copy
                         )
                     else:
                         # General agent with image
                         self.logger.logger.info(f"{role}: Using general vision analysis")
-                        analysis = agent.analyze_task_with_image(self.task_config, task_image)
+                        analysis = agent.analyze_task_with_image(task_config_copy, task_image)
                 else:
-                    # Text-only analysis
-                    analysis = agent.analyze_task_isolated(self.task_config)
+                    # Text-only analysis - use deep copy to prevent thread contamination
+                    task_config_copy = copy.deepcopy(self.task_config)
+                    analysis = agent.analyze_task_isolated(task_config_copy)
                 
-                # Extract response using isolated task config
-                extract = agent.extract_response_isolated(analysis, self.task_config)
+                # Extract response using isolated task config - use same copy
+                extract = agent.extract_response_isolated(analysis, task_config_copy)
                 
                 # Log to main discussion channel
                 self.logger.log_main_discussion(
