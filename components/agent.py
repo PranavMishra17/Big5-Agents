@@ -108,16 +108,20 @@ class Agent:
         self.deployment_type = self.deployment_config.get("type", "vertex_ai")
         
         if self.deployment_type == "vertex_ai":
-            # Initialize Vertex AI using the simple approach
+            # Initialize Vertex AI with thread-safe approach
             from google.cloud import aiplatform
+            import threading
             
-            # Initialize Vertex AI
-            aiplatform.init(
-                project=self.deployment_config["project"],
-                location=self.deployment_config["location"]
-            )
+            # Use thread-local storage to prevent global state contamination
+            if not hasattr(threading.current_thread(), 'vertex_ai_initialized'):
+                # Each thread gets its own aiplatform initialization
+                aiplatform.init(
+                    project=self.deployment_config["project"],
+                    location=self.deployment_config["location"]
+                )
+                threading.current_thread().vertex_ai_initialized = True
             
-            # Get the endpoint using the simple approach
+            # Get the endpoint using thread-safe approach
             self.endpoint = aiplatform.Endpoint(
                 f"projects/{self.deployment_config['project']}/"
                 f"locations/{self.deployment_config['location']}/"
@@ -126,7 +130,7 @@ class Agent:
             
             self.model = self.deployment_config["model"]
             
-            self.logger.info(f"Initialized {self.role} with Vertex AI deployment {self.deployment_config['name']} using simple endpoint approach")
+            self.logger.info(f"Initialized {self.role} with Vertex AI deployment {self.deployment_config['name']} using thread-safe approach")
             
         else:
             # Fallback OpenAI initialization (should not be used in SLM branch)
@@ -589,7 +593,7 @@ Based on the retrieved medical literature above, provide your analysis consideri
         return self._response
 
     def _chat_vertex_ai(self, message: str) -> str:
-        """Chat using Vertex AI deployed model with simple endpoint approach."""
+        """Chat using Vertex AI deployed model with thread-safe approach."""
         try:
             # Prepare instance for Vertex AI prediction using simple format
             instances = [{"prompt": message}]
@@ -602,9 +606,9 @@ Based on the retrieved medical literature above, provide your analysis consideri
                 "top_k": 40
             }
             
-            self.logger.debug(f"Making prediction with instances: {instances}")
+            self.logger.debug(f"Making thread-safe prediction for {self.role}")
             
-            # Make prediction using the simple endpoint approach
+            # Make prediction using the thread-safe endpoint approach
             response = self.endpoint.predict(instances=instances, parameters=parameters)
             
             self.logger.debug(f"Raw prediction response: {response}")
@@ -635,12 +639,25 @@ Based on the retrieved medical literature above, provide your analysis consideri
                     # Convert to string if it's some other type
                     content = str(prediction)
                 
-                return content if content and content != str(prediction) else "No response generated"
+                # Clean up the content - remove common artifacts
+                if isinstance(content, str):
+                    content = content.strip()
+                    # Remove input echo if present
+                    if content.startswith(message):
+                        content = content[len(message):].strip()
+                    
+                    # Remove common prefixes
+                    for prefix in ["Output:", "Response:", "Answer:"]:
+                        if content.startswith(prefix):
+                            content = content[len(prefix):].strip()
+                            break
+                
+                return content if content else "No response generated"
             
             return "No response generated"
             
         except Exception as e:
-            self.logger.error(f"Vertex AI prediction failed: {str(e)}")
+            self.logger.error(f"Vertex AI prediction failed for {self.role}: {str(e)}")
             raise
 
     def _count_images_in_messages(self, messages: List[Dict[str, Any]]) -> int:

@@ -26,31 +26,31 @@ REM MedMCQA Dataset - 50 questions
 echo.
 echo Running MedMCQA dataset (50 questions)...
 echo Available: 182,822 questions
-python dataset_runner.py --dataset medmcqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/medmcqa
+python dataset_runner.py --dataset medmcqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/medmcqa --recruitment --recruitment-method intermediate
 
 REM MedQA Dataset - 50 questions
 echo.
 echo Running MedQA dataset (50 questions)...
 echo Available: 10,178 questions
-python dataset_runner.py --dataset medqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/medqa
+python dataset_runner.py --dataset medqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/medqa --recruitment --recruitment-method intermediate
 
 REM PubMedQA Dataset - 50 questions
 echo.
 echo Running PubMedQA dataset (50 questions)...
 echo Available: 1,000 questions
-python dataset_runner.py --dataset pubmedqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/pubmedqa
+python dataset_runner.py --dataset pubmedqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/pubmedqa --recruitment --recruitment-method intermediate
 
 REM MMLU-Pro Medical Dataset - 50 questions
 echo.
 echo Running MMLU-Pro Medical dataset (50 questions)...
 echo Available: 823 questions
-python dataset_runner.py --dataset mmlupro-med --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/mmlupro-med
+python dataset_runner.py --dataset mmlupro-med --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/mmlupro-med --recruitment --recruitment-method intermediate
 
 REM MedBullets Dataset - 50 questions
 echo.
 echo Running MedBullets dataset (50 questions)...
 echo Available: 308 questions
-python dataset_runner.py --dataset medbullets --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/medbullets
+python dataset_runner.py --dataset medbullets --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/medbullets --recruitment --recruitment-method intermediate
 
 REM =============================================================================
 REM VISION-BASED DATASETS
@@ -64,12 +64,12 @@ echo ===========================================================================
 REM Path-VQA Dataset - 50 questions
 echo.
 echo Running Path-VQA dataset (50 questions)...
-python dataset_runner.py --dataset path_vqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/path_vqa
+python dataset_runner.py --dataset path_vqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/path_vqa --recruitment --recruitment-method intermediate
 
 REM PMC-VQA Dataset - 50 questions
 echo.
 echo Running PMC-VQA dataset (50 questions)...
-python dataset_runner.py --dataset pmc_vqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/pmc_vqa
+python dataset_runner.py --dataset pmc_vqa --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/pmc_vqa --recruitment --recruitment-method intermediate
 
 REM =============================================================================
 REM CONDITIONAL DATASETS
@@ -84,7 +84,7 @@ REM DDXPlus Dataset - 50 questions
 echo.
 echo Running DDXPlus dataset (50 questions)...
 echo Available: 1,025,602 questions
-python dataset_runner.py --dataset ddxplus --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/ddxplus
+python dataset_runner.py --dataset ddxplus --num-questions 50 --seed 42 --output-dir ./SLM_Results/gemma/ddxplus --recruitment --recruitment-method intermediate
 
 REM =============================================================================
 REM EVALUATION SUMMARY

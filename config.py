@@ -252,16 +252,16 @@ print(f"Configured {len(OPENAI_DEPLOYMENTS)} OpenAI deployment(s): {[d['name'] f
 
 # Vertex AI Common Configuration
 VERTEX_AI_CONFIG = {
-    "default_project": os.environ.get('VERTEX_AI_PROJECT', ""),
+    "default_project": os.environ.get('VERTEX_AI_PROJECT', "369007258962"),
     "default_location": os.environ.get('VERTEX_AI_LOCATION', "us-central1"),
     "endpoints": {
         "gemma-3-12b": {
-            "endpoint_id": os.environ.get('VERTEX_AI_GEMMA_ENDPOINT', ""),
+            "endpoint_id": os.environ.get('VERTEX_AI_GEMMA_ENDPOINT', "2640414501941280768"),
             "model": "gemma-3-12b-it"
         },
         # Medgemma endpoint config (currently not in use)
         "medgemma-4b": {
-            "endpoint_id": os.environ.get('VERTEX_AI_MEDGEMMA_ENDPOINT', ""),
+            "endpoint_id": os.environ.get('VERTEX_AI_MEDGEMMA_ENDPOINT', "3612629071499886592"),
             "model": "medgemma-4b-it"
         }
     }
@@ -335,7 +335,7 @@ AZURE_ENDPOINT = "https://api.openai.com/v1"
 
 # Model settings
 TEMPERATURE = 0.5
-MAX_TOKENS = 1500
+MAX_TOKENS = 3000  # Increased from 1500 to allow full responses
 
 # Token usage limits
 MAX_INPUT_TOKENS = 10000 # Maximum input tokens per API call
