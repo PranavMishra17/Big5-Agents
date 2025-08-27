@@ -46,7 +46,8 @@ def run_simulation(
     recruitment_pool: str = None,
     n_max: int = 4,
     runs= 1,
-    deployment_config: Dict[str, str] = None
+    deployment_config: Dict[str, str] = None,
+    output_dir: str = None
 ) -> Dict[str, Any]:
     """
     Run a single agent system simulation with selected teamwork components.
@@ -65,6 +66,7 @@ def run_simulation(
         recruitment_pool: Pool of agent roles to recruit from
         runs: Number of simulation runs
         deployment_config: Optional specific deployment configuration
+        output_dir: Output directory for results
         
     Returns:
         Simulation results
@@ -86,7 +88,8 @@ def run_simulation(
             recruitment_method=recruitment_method,
             recruitment_pool=recruitment_pool,
             n_max=n_max,
-            deployment_config=deployment_config
+            deployment_config=deployment_config,
+            output_dir=output_dir
         )
         
         # Run the simulation
@@ -163,7 +166,7 @@ def aggregate_results(results_list: List[Dict[str, Any]]) -> Dict[str, Any]:
     return aggregated
 
 
-def run_all_configurations(runs=1, n_max=4):
+def run_all_configurations(runs=1, n_max=4, output_dir=None):
     """
     Run simulations with individual and all feature combinations.
     
@@ -378,7 +381,8 @@ def run_all_configurations(runs=1, n_max=4):
                 recruitment_method=config.get("recruitment_method", "adaptive"),
                 recruitment_pool=config.get("recruitment_pool", "general"),
                 n_max=config.get("n_max", n_max),
-                deployment_config=default_deployment
+                deployment_config=default_deployment,
+                output_dir=output_dir
             )
             
             # Extract decision results for each method
@@ -409,7 +413,9 @@ def run_all_configurations(runs=1, n_max=4):
         }
 
     # Save aggregate results
-    output_path = os.path.join(config.OUTPUT_DIR, f"all_configurations_results.json")
+    results_output_dir = output_dir if output_dir is not None else config.OUTPUT_DIR
+    os.makedirs(results_output_dir, exist_ok=True)
+    output_path = os.path.join(results_output_dir, f"all_configurations_results.json")
     with open(output_path, 'w') as f:
         json.dump({
             "task": config.TASK.get("name", "Unnamed Task"),
@@ -567,6 +573,8 @@ def main():
     
     parser.add_argument('--n-max', type=int, default=5, 
                       help='Maximum number of agents for intermediate team (default: 5)')
+    parser.add_argument('--output-dir', type=str, default=None, 
+                      help='Output directory for results (default: output)')
     
     args = parser.parse_args()
     
@@ -589,7 +597,7 @@ def main():
     
     if args.all:
         logging.info(f"Running all feature combinations with {args.runs} runs per configuration, n_max={args.n_max}")
-        run_all_configurations(runs=args.runs, n_max=args.n_max)
+        run_all_configurations(runs=args.runs, n_max=args.n_max, output_dir=args.output_dir)
     else:
         logging.info("Running single simulation")
         
@@ -617,7 +625,8 @@ def main():
             recruitment_method=args.recruitment_method,
             recruitment_pool=args.recruitment_pool,
             n_max=args.n_max if args.n_max is not None else 4,
-            deployment_config=deployment_config
+            deployment_config=deployment_config,
+            output_dir=args.output_dir
         )
         
         # Determine which features were used from simulation metadata

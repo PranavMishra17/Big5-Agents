@@ -53,7 +53,8 @@ class AgentSystemSimulator:
          question_specific_context=False,
          task_config: Dict[str, Any] = None,
          eval_data: Dict[str, Any] = None,
-         enable_dynamic_selection: bool = True):  # NEW: Dynamic selection control
+         enable_dynamic_selection: bool = True,  # NEW: Dynamic selection control
+         output_dir: str = None):  # NEW: Custom output directory
         """Initialize the simulator with enhanced dynamic configuration support."""
         
         # Set simulation ID and configuration
@@ -180,6 +181,11 @@ class AgentSystemSimulator:
             "exchanges": [],
             "decision_results": {}
         }
+        
+        # Set output directory
+        self.output_dir = output_dir if output_dir is not None else config.OUTPUT_DIR
+        # Create output directory if it doesn't exist
+        os.makedirs(self.output_dir, exist_ok=True)
         
         deployment_name = self.deployment_config['name'] if self.deployment_config else "default"
         self.logger.logger.info(f"Initialized simulation {self.simulation_id} with deployment: {deployment_name}")
@@ -1082,7 +1088,7 @@ Provide final guidance integrating all perspectives and visual findings. Be conc
 
     def save_results(self) -> str:
         """Save simulation results to file."""
-        output_path = os.path.join(config.OUTPUT_DIR, f"{self.simulation_id}_results.json")
+        output_path = os.path.join(self.output_dir, f"{self.simulation_id}_results.json")
         
         with open(output_path, 'w') as f:
             json.dump(self.results, f, indent=2)

@@ -1,15 +1,19 @@
 # Big5-Agents [Submitted to AAAI as TeamMedAgents]
 
-![License](https://img.shields.io/badge/License-MIT-blue.svg)
-![Python](https://img.shields.io/badge/Python-3.8+-green.svg)
-![arXiv](https://img.shields.io/badge/arXiv-2508.08115-red.svg)
-![Status](https://img.shields.io/badge/Status-Under%20Review-yellow.svg)
+<div align="center">
 
-![Framework](https://github.com/PranavMishra17/Big5-Agents/blob/186d3f604b5597ce5f5f6ebfb020279e55b742c3/frame.png)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.8+-green.svg)](https://www.python.org/)
+[![arXiv](https://img.shields.io/badge/arXiv-2508.08115-red.svg)](https://arxiv.org/abs/2508.08115)
+[![Status](https://img.shields.io/badge/Status-In%20Review-yellow.svg)](#)
 
-> *A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.*
+<img src="https://github.com/PranavMishra17/Big5-Agents/blob/186d3f604b5597ce5f5f6ebfb020279e55b742c3/frame.png" alt="Big5-Agents Framework" width="800"/>
+
+<h3><em>A flexible multi-agent system with modular teamwork components based on the Big Five teamwork model. Agents collaborate on various tasks with configurable teamwork behaviors.</em></h3>
 
 📄 **Paper:** [TeamMedAgents: Enhancing Medical Decision-Making Through Structured Teamwork](https://arxiv.org/abs/2508.08115)
+
+</div>
 
 ## Overview
 
@@ -42,6 +46,16 @@ These components are augmented by three coordinating mechanisms:
 7. **Closed-Loop Communication**
 
 8. **Mutual Trust**
+
+## Results
+
+<div align="center">
+
+<img src="https://github.com/PranavMishra17/Big5-Agents/blob/main/metrics.png" alt="Performance Metrics" width="800"/>
+
+<p><em>Performance comparison across different teamwork configurations and medical datasets. The Big5-Agents system demonstrates significant improvements in accuracy and decision-making quality when all teamwork components are enabled.</em></p>
+
+</div> 
 
 
 ## Installation

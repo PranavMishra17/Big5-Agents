@@ -184,3 +184,8 @@ run_dynamic_datasets.bat
 z.bat
 z.bat
 /.claude
+/debug_test_results
+/debug_test_results_fixed
+/SLM_Results
+/test_results
+/demo
