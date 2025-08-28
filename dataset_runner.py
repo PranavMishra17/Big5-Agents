@@ -1696,6 +1696,9 @@ def process_single_question(question_index: int,
                 "api_calls": post_simulation_usage["total_usage"]["api_calls"] - pre_simulation_usage["total_usage"]["api_calls"]
             }
             
+            # Define is_vision_task before using it
+            is_vision_task = question_result.get("has_image", False)
+
             # Add timing information
             pre_timing = pre_simulation_usage.get("timing_stats", {})
             post_timing = post_simulation_usage.get("timing_stats", {})

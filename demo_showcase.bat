@@ -60,12 +60,12 @@ echo Medical image analysis with advanced multi-agent collaboration:
 echo - Dataset: PMC-VQA (PubMed Central Visual Question Answering)
 echo - Features: All Big5 teamwork components
 echo - Team: Advanced recruitment with vision specialists
-echo - Questions: 3 medical image questions
+echo - Questions: 5 medical image questions
 echo.
-echo Command: python dataset_runner.py --dataset pmc_vqa --num-questions 3 --leadership --closedloop --mutual --mental --orientation --trust --recruitment --recruitment-method advanced --recruitment-pool medical --n-max 5 --output-dir demo/vision_advanced
+echo Command: python dataset_runner.py --dataset pmc_vqa --num-questions 5 --leadership --closedloop --mutual --mental --orientation --trust --recruitment --recruitment-method advanced --recruitment-pool medical --n-max 5 --output-dir demo/vision_advanced
 echo.
 pause
-python dataset_runner.py --dataset pmc_vqa --num-questions 3 --leadership --closedloop --mutual --mental --orientation --trust --recruitment --recruitment-method advanced --recruitment-pool medical --n-max 5 --output-dir demo/vision_advanced
+python dataset_runner.py --dataset pmc_vqa --num-questions 5 --leadership --closedloop --mutual --mental --orientation --trust --recruitment --recruitment-method advanced --recruitment-pool medical --n-max 5 --output-dir demo/vision_advanced
 echo.
 echo ================================================================
 echo Demo 3 Complete! Advanced vision-enabled collaboration with
@@ -91,16 +91,16 @@ echo - Team: AI determines optimal team composition
 echo - Questions: 5 diagnostic scenarios
 echo.
 echo First: Dynamic AI-driven configuration
-echo Command: python dataset_runner.py --dataset ddxplus --num-questions 5 --enable-dynamic-selection --recruitment-pool medical --output-dir demo/dynamic_selection
+echo Command: python dataset_runner.py --dataset medqa --num-questions 5 --enable-dynamic-selection --recruitment-pool medical --output-dir demo/dynamic_selection
 echo.
 pause
-python dataset_runner.py --dataset ddxplus --num-questions 5 --enable-dynamic-selection --recruitment-pool medical --output-dir demo/dynamic_selection
+python dataset_runner.py --dataset medqa --num-questions 5 --enable-dynamic-selection --recruitment-pool medical --output-dir demo/dynamic_selection
 echo.
 echo Now: Static configuration with fixed teamwork components
-echo Command: python dataset_runner.py --dataset ddxplus --num-questions 5 --disable-dynamic-selection --leadership --closedloop --recruitment --recruitment-method intermediate --recruitment-pool medical --output-dir demo/static_config
+echo Command: python dataset_runner.py --dataset medqa --num-questions 5 --disable-dynamic-selection --leadership --closedloop --recruitment --recruitment-method intermediate --recruitment-pool medical --output-dir demo/static_config
 echo.
 pause
-python dataset_runner.py --dataset ddxplus --num-questions 5 --disable-dynamic-selection --leadership --closedloop --recruitment --recruitment-method intermediate --recruitment-pool medical --output-dir demo/static_config
+python dataset_runner.py --dataset medqa --num-questions 5 --disable-dynamic-selection --leadership --closedloop --recruitment --recruitment-method intermediate --recruitment-pool medical --output-dir demo/static_config
 echo.
 echo ================================================================
 echo Demo 7 Complete! Compared dynamic AI selection with static
