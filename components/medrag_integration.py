@@ -1,5 +1,6 @@
 """
-Fixed MedRAG integration component that properly works with Azure OpenAI.
+MedRAG integration component for SLM branch - Currently disabled for Vertex AI SLMs.
+Note: MedRAG library does not currently support Vertex AI Gemma models.
 """
 
 import logging
@@ -16,11 +17,12 @@ import config
 
 class MedRAGIntegration:
     """
-    Fixed MedRAG integration for knowledge enhancement in the agent system.
+    MedRAG integration for knowledge enhancement - DISABLED for SLM branch.
+    The MedRAG library does not currently support Vertex AI Gemma models.
     """
     
     def __init__(self, 
-                 llm_name: str = "azure_openai",
+                 llm_name: str = "vertex_ai",
                  retriever_name: str = "MedCPT", 
                  corpus_name: str = "Textbooks",
                  k_retrieval: int = 16,
@@ -47,50 +49,35 @@ class MedRAGIntegration:
         self.logger.info(f"MedRAG integration initialized with {retriever_name}/{corpus_name}")
     
     def _get_default_deployment(self) -> Dict[str, str]:
-        """Get default deployment configuration."""
+        """Get default deployment configuration - Uses Vertex AI for SLM branch."""
         deployments = config.get_all_deployments()
         return deployments[0] if deployments else {
             "name": "default",
-            "deployment": "gpt-4",
-            "api_key": config.AZURE_API_KEY,
-            "endpoint": config.AZURE_ENDPOINT,
-            "api_version": "2024-08-01-preview"
+            "type": "vertex_ai", 
+            "project": config.VERTEX_AI_CONFIG["default_project"],
+            "location": config.VERTEX_AI_CONFIG["default_location"],
+            "endpoint_id": config.VERTEX_AI_CONFIG["endpoints"]["gemma-3-12b"]["endpoint_id"],
+            "model": config.VERTEX_AI_CONFIG["endpoints"]["gemma-3-12b"]["model"]
         }
     
     def _initialize_medrag(self):
-        """Initialize MedRAG with proper error handling."""
-        try:
-            # Import our fixed MedRAG implementation
-            from medrag import MedRAG
-            
-            # Configure for Azure OpenAI using the deployment config
-            azure_config = {
-                "api_key": self.deployment_config["api_key"],
-                "api_version": self.deployment_config["api_version"],
-                "azure_endpoint": self.deployment_config["endpoint"],
-                "azure_deployment": self.deployment_config["deployment"]
-            }
-            
-            # Initialize MedRAG with Azure OpenAI configuration
-            self.medrag = MedRAG(
-                llm_name="azure_openai",
-                rag=True,
-                retriever_name=self.retriever_name,
-                corpus_name=self.corpus_name,
-                azure_config=azure_config,
-                corpus_cache=True  # Enable caching for performance
-            )
-            
-            self.logger.info("MedRAG successfully initialized with Azure OpenAI")
-            
-        except ImportError as e:
-            self._initialization_error = f"MedRAG not available: {str(e)}"
-            self.logger.error(f"Failed to import MedRAG: {str(e)}")
-            
-        except Exception as e:
-            self._initialization_error = f"MedRAG initialization failed: {str(e)}"
-            self.logger.error(f"Failed to initialize MedRAG: {str(e)}")
-            self.logger.error(traceback.format_exc())
+        """Initialize MedRAG - DISABLED for SLM branch."""
+        # MedRAG is disabled for SLM branch since it doesn't support Vertex AI Gemma models
+        self._initialization_error = "MedRAG disabled for SLM branch - Vertex AI Gemma models not supported"
+        self.medrag = None
+        
+        self.logger.info("MedRAG disabled for SLM branch - using Vertex AI Gemma models without RAG enhancement")
+        
+        # Future implementation could add Vertex AI support here when MedRAG library adds support
+        # try:
+        #     from medrag import MedRAG
+        #     # Vertex AI configuration would go here when supported
+        # except ImportError as e:
+        #     self._initialization_error = f"MedRAG not available: {str(e)}"
+        #     self.logger.error(f"Failed to import MedRAG: {str(e)}")
+        # except Exception as e:
+        #     self._initialization_error = f"MedRAG initialization failed: {str(e)}"
+        #     self.logger.error(f"Failed to initialize MedRAG: {str(e)}")
     
     def is_available(self) -> bool:
         """Check if MedRAG is available and properly initialized."""

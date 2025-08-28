@@ -1546,6 +1546,12 @@ def extract_agent_responses_info(simulation_results):
             # Extract confidence if available
             if "confidence" in response_data:
                 info["confidence"] = response_data["confidence"]
+            
+            # CRITICAL FIX: Use extract.answer as fallback when final_answer is null
+            if not info["final_answer"] and "extract" in response_data:
+                if isinstance(response_data["extract"], dict) and "answer" in response_data["extract"]:
+                    info["final_answer"] = response_data["extract"]["answer"]
+                    
         else:
             info["final_answer"] = extract_answer_option(str(response_data))
             info["reasoning"] = str(response_data)[:500] + "..." if len(str(response_data)) > 500 else str(response_data)
@@ -1767,6 +1773,9 @@ def process_single_question(question_index: int,
                         "saved_at": datetime.now().isoformat()
                     }, f, indent=2)
                 
+                # Check if this is a vision task
+                is_vision_task = question_result.get("has_image", False) and question_result.get("requires_vision", False)
+
                 # Enhanced logging with vision breakdown
                 if is_vision_task and question_token_usage.get("image_tokens", 0) > 0:
                     logging.info(f"Q{question_index} vision token usage: {question_token_usage['total_tokens']} total "

@@ -461,55 +461,23 @@ DYNAMIC_RECRUITMENT_PROMPTS = {
     """,
 
     "teamwork_config_selection": """
-    You are a Teamwork Configuration Specialist. Analyze the following question and team characteristics to determine which teamwork components would be most beneficial. You can select up to 3 components maximum.
+    Select teamwork components for this medical question:
 
     Question: {question}
-    Complexity Level: {complexity}  
     Team Size: {team_size} agents
+    Complexity: {complexity}
 
-    Available Teamwork Components:
-    1. **Leadership** - Designates a team leader to guide discussion and synthesize decisions
-       - Best for: Teams needing direction, complex coordination, final decision synthesis
-       - Overhead: Moderate - adds leadership coordination steps
+    Available components:
+    - leadership: Team leader guides decisions
+    - monitoring: Quality control and feedback
+    - mental_model: Shared understanding
+    - orientation: Team collaboration focus
+    - trust: Open information sharing
+    - closed_loop: Communication verification
 
-    2. **Closed-Loop Communication** - Ensures message acknowledgment and understanding verification
-       - Best for: Critical information exchange, reducing miscommunication
-       - Overhead: High - adds acknowledgment and verification steps
+    For medical diagnosis questions, recommend: leadership, monitoring
 
-    3. **Mutual Monitoring** - Agents monitor each other's performance and provide feedback
-       - Best for: Quality control, error detection, performance improvement
-       - Overhead: High - adds monitoring and feedback processes
-
-    4. **Shared Mental Model** - Maintains shared understanding of task and team state
-       - Best for: Complex tasks requiring aligned understanding, team coordination
-       - Overhead: Moderate - adds alignment and synchronization steps
-
-    5. **Team Orientation** - Prioritizes team goals and incorporates diverse perspectives
-       - Best for: Collaborative decision-making, perspective integration
-       - Overhead: Low - focuses on collaboration attitudes
-
-    6. **Mutual Trust** - Fosters open information sharing and vulnerability
-       - Best for: Psychological safety, information sharing, team cohesion
-       - Overhead: Low - focuses on trust-building behaviors
-
-    Selection Criteria:
-    - **Question Type**: Medical diagnosis, treatment planning, research analysis, etc.
-    - **Team Size**: Larger teams may benefit from more coordination mechanisms
-    - **Complexity**: Higher complexity may require more teamwork support
-    - **Efficiency**: Balance benefits against coordination overhead
-    - **Maximum 3 Components**: Select the most impactful combination
-
-    Analysis Guidelines:
-    - For diagnostic questions: Consider leadership + monitoring for quality
-    - For complex analysis: Consider shared mental model + team orientation
-    - For larger teams (4-5): Consider leadership + communication
-    - For high-stakes decisions: Consider monitoring + trust
-    - Avoid excessive overhead that might hinder performance
-
-    Provide your analysis and conclude with:
-    SELECTED_COMPONENTS: component1, component2, component3
-
-    Where components are selected from: leadership, closed_loop, monitoring, mental_model, orientation, trust
+    SELECTED_COMPONENTS: leadership, monitoring
     """,
 
     "dynamic_recruitment_validation": """

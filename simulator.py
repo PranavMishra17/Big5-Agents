@@ -608,7 +608,7 @@ Provide 2-3 key focus points for team collaboration. Be concise (max 100 tokens)
                     )
                     closed_loop_content = f"Closed-loop insights: {acknowledgment[:200]}..."
                     closed_loop_done = True
-                    self.logger.logger.info(f"Completed closed-loop exchange: {sender_role} ↔ {receiver_role}")
+                    self.logger.logger.info(f"Completed closed-loop exchange: {sender_role} <-> {receiver_role}")
                 except Exception as e:
                     self.logger.logger.warning(f"Closed-loop communication failed: {e}")
         

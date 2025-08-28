@@ -199,30 +199,33 @@ def determine_optimal_teamwork_config(question: str, complexity: str, team_size:
             r"Selected components?:\s*(.+)",  # Alternative pattern
             r"Components?:\s*(.+)",           # Shortened pattern
             r"I recommend:\s*(.+)",           # Natural language pattern
-            r"(?:leadership|closed_loop|monitoring|mental_model|orientation|trust)"  # Direct component matching
         ]
         
         selected_text = ""
         for pattern in patterns:
             selected_match = re.search(pattern, response, re.IGNORECASE)
             if selected_match:
-                selected_text = selected_match.group(1).lower()
-                logging.info(f"Found components using pattern '{pattern}': {selected_text}")
-                break
+                try:
+                    selected_text = selected_match.group(1).lower()
+                    logging.info(f"Found components using pattern '{pattern}': {selected_text}")
+                    break
+                except IndexError:
+                    logging.warning(f"Pattern '{pattern}' matched but no capture group found")
+                    continue
         
-        # If no pattern matched, search for components directly in the response
-        if not selected_text:
-            response_lower = response.lower()
+        # Enhanced direct search - always search the full response for components
+        response_lower = response.lower()
+        for component, config_key in component_mapping.items():
+            if component in response_lower:
+                selected_components.append(config_key)
+                logging.info(f"Found component directly in response: {component}")
+        
+        # Also check the matched text if we found any
+        if selected_text:
             for component, config_key in component_mapping.items():
-                if component in response_lower:
+                if component in selected_text and config_key not in selected_components:
                     selected_components.append(config_key)
-                    logging.info(f"Found component directly in response: {component}")
-        else:
-            # Parse from matched text
-            for component, config_key in component_mapping.items():
-                if component in selected_text:
-                    selected_components.append(config_key)
-                    logging.info(f"Parsed component from matched text: {component}")
+                    logging.info(f"Parsed additional component from matched text: {component}")
         
         # Limit to maximum 3 components
         selected_components = selected_components[:3]
@@ -440,51 +443,57 @@ def recruit_intermediate_team_isolated(question: str, recruitment_pool: str, n_m
         expertise_description="Efficiently determines optimal team composition for medical questions"
     )
     
-    # STREAMLINED: Single prompt to determine all aspects: number, roles, and specializations
-    streamlined_prompt = f"""Given this medical question, determine the optimal team in ONE response:
+    # SIMPLIFIED: Direct prompt optimized for Vertex AI SLM completion patterns
+    streamlined_prompt = f"""Select {n_max} medical specialists for this question:
 
-QUESTION: {question}
+{question}
 
-Provide exactly {n_max} medical specialists. For each, specify:
-1. Role name (e.g., "Cardiologist", "Emergency Medicine Physician")
-2. Key specialization (one line)
+Response format:
+AGENT_1: [Specialty] - [Reason]
+AGENT_2: [Specialty] - [Reason]  
+AGENT_3: [Specialty] - [Reason]
 
-Format your response as:
-AGENT_1: [Role] - [Specialization]
-AGENT_2: [Role] - [Specialization] 
-AGENT_3: [Role] - [Specialization]
-
-Be precise, concise, and to the point. Choose complementary specialties that best address this question."""
+Answer:"""
 
     response = recruiter.chat(streamlined_prompt)
     
-    # STREAMLINED: Parse selected team with simple format
+    # ENHANCED: Parse selected team with improved pattern matching
     lines = [line.strip() for line in response.split('\n') if line.strip()]
     selected_team = []
     leader_role = None
     
+    logging.info(f"Parsing recruitment response with {len(lines)} lines")
+    
     for line in lines:
-        # Look for AGENT_X: format
-        if "AGENT_" in line and ":" in line:
+        # Look for AGENT_X: format or numbered format
+        if ("AGENT_" in line and ":" in line) or (line.startswith(tuple('123456789')) and ":" in line):
             try:
                 # Extract role and specialization
-                agent_part = line.split(":", 1)[1].strip()
-                if " - " in agent_part:
-                    role, expertise = agent_part.split(" - ", 1)
-                    role = role.strip()
-                    expertise = expertise.strip()
-                else:
-                    role = agent_part.strip()
-                    expertise = "Medical specialist"
-                
-                # First agent is leader
-                if leader_role is None:
-                    leader_role = role
-                
-                selected_team.append((role, expertise, "Independent", 0.33))  # Equal weights for streamlined approach
+                if ":" in line:
+                    agent_part = line.split(":", 1)[1].strip()
+                    if " - " in agent_part:
+                        role, expertise = agent_part.split(" - ", 1)
+                        role = role.strip()
+                        expertise = expertise.strip()
+                    else:
+                        # Handle case where only role is provided
+                        role = agent_part.strip()
+                        expertise = f"{role} specialization"
+                    
+                    # Clean up role names
+                    role = role.replace("Agent", "").replace("agent", "").strip()
+                    if not role:
+                        continue
+                    
+                    # First agent is leader
+                    if leader_role is None:
+                        leader_role = role
+                    
+                    selected_team.append((role, expertise, "Independent", 0.33))
+                    logging.info(f"Parsed agent: {role} - {expertise}")
                 
             except Exception as e:
-                logging.warning(f"Failed to parse agent line: {line}")
+                logging.warning(f"Failed to parse agent line '{line}': {e}")
                 continue
         
         # Stop when we have enough agents
@@ -499,21 +508,29 @@ Be precise, concise, and to the point. Choose complementary specialties that bes
     # If no team members found or less than specified, create a default team
     if len(selected_team) < n_max:
         logging.warning(f"Only found {len(selected_team)} agents from parsing, creating defaults to reach {n_max}")
+        
+        # Try to use what we parsed first, then fill with defaults
+        remaining_slots = n_max - len(selected_team)
+        
         default_roles = [
             ("Medical Generalist", "Broad knowledge across medical disciplines", "Leader", 0.3),
             ("Emergency Medicine Physician", "Acute care and emergency diagnosis", "Independent", 0.3),
             ("Internal Medicine Specialist", "Complex diagnostic reasoning", "Independent", 0.4)
         ]
         
+        # Add defaults for remaining slots
         for role_info in default_roles:
-            if len(selected_team) >= n_max:
+            if remaining_slots <= 0:
                 break
+            # Check if we already have this role
             if not any(role_info[0] == team_role[0] for team_role in selected_team):
                 selected_team.append(role_info)
                 logging.info(f"Added default role: {role_info[0]}")
+                remaining_slots -= 1
         
-        if not leader_role:
-            leader_role = "Medical Generalist"
+        # Ensure we have a leader
+        if not leader_role and selected_team:
+            leader_role = selected_team[0][0]
     
     # If no leader designated, choose the first as leader
     if not leader_role:
@@ -552,6 +569,9 @@ Be precise, concise, and to the point. Choose complementary specialties that bes
             agent.add_to_knowledge_base("weight", weight)
         except Exception as e:
             logging.warning(f"Failed to add weight to knowledge base for {role}: {e}")
+        
+        # Increment agent index for next agent to use different deployment
+        agent_index += 1
         
         agents[role] = agent
         

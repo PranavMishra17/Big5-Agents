@@ -166,25 +166,10 @@ AZURE_DEPLOYMENTS = [
 
 
     
-# Fallback to single deployment if additional deployments not configured
-available_deployments = []
-for deployment in AZURE_DEPLOYMENTS:
-    if deployment["deployment"] and deployment["api_key"] and deployment["endpoint"]:
-        available_deployments.append(deployment)
-    else:
-        print(f"Warning: Deployment {deployment['name']} not properly configured, skipping")
-
-if not available_deployments:
-    print("Error: No deployments are properly configured!")
-    AZURE_DEPLOYMENTS = [AZURE_DEPLOYMENTS[0]]  # Use first as fallback
-else:
-    AZURE_DEPLOYMENTS = available_deployments
-
-print(f"Configured {len(AZURE_DEPLOYMENTS)} deployment(s): {[d['name'] for d in AZURE_DEPLOYMENTS]}")
-
-# Legacy single deployment support (for backward compatibility)
-AZURE_DEPLOYMENT = AZURE_DEPLOYMENTS[0]["deployment"]
-AZURE_API_VERSION = AZURE_DEPLOYMENTS[0]["api_version"]
+# =============================================================================
+# LEGACY AZURE/OPENAI VALIDATION REMOVED FOR SLM BRANCH
+# SLM branch uses only Vertex AI - no Azure/OpenAI validation needed
+# =============================================================================
 
 """
 
@@ -228,27 +213,10 @@ OPENAI_DEPLOYMENTS = [
         "model": "gpt-4o"
     }
 ]
-# Validate deployments
-available_deployments = []
-for deployment in OPENAI_DEPLOYMENTS:
-    if deployment["api_key"]:
-        available_deployments.append(deployment)
-    else:
-        print(f"Warning: Deployment {deployment['name']} missing API key, skipping")
-
-if not available_deployments:
-    print("Error: No deployments are properly configured!")
-    # Fallback to single deployment
-    OPENAI_DEPLOYMENTS = [{
-        "name": "fallback",
-        "api_key": OPENAI_API_KEY,
-        "organization": None,
-        "model": "gpt-4o"
-    }]
-else:
-    OPENAI_DEPLOYMENTS = available_deployments
-
-print(f"Configured {len(OPENAI_DEPLOYMENTS)} OpenAI deployment(s): {[d['name'] for d in OPENAI_DEPLOYMENTS]}")
+# =============================================================================
+# LEGACY OPENAI VALIDATION REMOVED FOR SLM BRANCH
+# SLM branch uses only Vertex AI - no OpenAI validation needed
+# =============================================================================
 
 # Vertex AI Common Configuration
 VERTEX_AI_CONFIG = {
@@ -270,10 +238,12 @@ VERTEX_AI_CONFIG = {
 def get_vertex_endpoint_url(project_id, location, endpoint_id):
     return f"https://{endpoint_id}.{location}-{project_id}.prediction.vertexai.goog"
 
-# Vertex AI deployments for SLM integration
-VERTEX_AI_DEPLOYMENTS = []
+# =============================================================================
+# SEPARATED DEPLOYMENT LISTS FOR GEMMA3 AND MEDGEMMA - NEVER MIX IN ONE RUN!
+# =============================================================================
 
-# Create multiple deployments using the common configuration
+# Gemma3 Deployments - Primary SLM for general medical tasks
+GEMMA3_DEPLOYMENTS = []
 for i in range(1, 6):  # Creating 5 deployments
     deployment = {
         "name": f"gemma3_12b_{i}",
@@ -288,59 +258,71 @@ for i in range(1, 6):  # Creating 5 deployments
         deployment["location"], 
         deployment["endpoint_id"]
     )
-    VERTEX_AI_DEPLOYMENTS.append(deployment)
+    GEMMA3_DEPLOYMENTS.append(deployment)
 
-# Example deployment configuration for medgemma (currently disabled)
-"""
-# To enable medgemma deployment, uncomment and add to VERTEX_AI_DEPLOYMENTS:
-deployment = {
-    "name": "medgemma_4b_1",
-    "type": "vertex_ai",
-    "project": VERTEX_AI_CONFIG["default_project"],
-    "endpoint_id": VERTEX_AI_CONFIG["endpoints"]["medgemma-4b"]["endpoint_id"],
-    "location": VERTEX_AI_CONFIG["default_location"],
-    "model": VERTEX_AI_CONFIG["endpoints"]["medgemma-4b"]["model"]
-}
-deployment["endpoint_url"] = get_vertex_endpoint_url(
-    deployment["project"],
-    deployment["location"],
-    deployment["endpoint_id"]
-)
-VERTEX_AI_DEPLOYMENTS.append(deployment)
-"""
+# MedGemma Deployments - Specialized medical SLM (currently configured but not active)
+MEDGEMMA_DEPLOYMENTS = []
+for i in range(1, 4):  # Creating 3 deployments for MedGemma
+    deployment = {
+        "name": f"medgemma_4b_{i}",
+        "type": "vertex_ai", 
+        "project": VERTEX_AI_CONFIG["default_project"],
+        "endpoint_id": VERTEX_AI_CONFIG["endpoints"]["medgemma-4b"]["endpoint_id"],
+        "location": VERTEX_AI_CONFIG["default_location"],
+        "model": VERTEX_AI_CONFIG["endpoints"]["medgemma-4b"]["model"]
+    }
+    deployment["endpoint_url"] = get_vertex_endpoint_url(
+        deployment["project"],
+        deployment["location"],
+        deployment["endpoint_id"]
+    )
+    MEDGEMMA_DEPLOYMENTS.append(deployment)
 
-# Validate Vertex AI deployments
-available_vertex_deployments = []
-for deployment in VERTEX_AI_DEPLOYMENTS:
+# =============================================================================
+# ACTIVE DEPLOYMENT SELECTION - CHANGE THIS ONE LINE TO SWITCH MODELS
+# =============================================================================
+ACTIVE_DEPLOYMENTS = GEMMA3_DEPLOYMENTS  # Switch to MEDGEMMA_DEPLOYMENTS to use MedGemma
+# ACTIVE_DEPLOYMENTS = MEDGEMMA_DEPLOYMENTS  # Uncomment this line and comment above to use MedGemma
+
+# Validate active deployments
+available_deployments = []
+for deployment in ACTIVE_DEPLOYMENTS:
     if deployment["project"] and deployment["endpoint_id"] and deployment["location"]:
-        available_vertex_deployments.append(deployment)
+        available_deployments.append(deployment)
     else:
-        print(f"Warning: Vertex AI deployment {deployment['name']} not properly configured, skipping")
+        print(f"Warning: Active deployment {deployment['name']} not properly configured, skipping")
 
-if available_vertex_deployments:
-    VERTEX_AI_DEPLOYMENTS = available_vertex_deployments
-    print(f"Configured {len(VERTEX_AI_DEPLOYMENTS)} Vertex AI deployment(s): {[d['name'] for d in VERTEX_AI_DEPLOYMENTS]}")
+if available_deployments:
+    ACTIVE_DEPLOYMENTS = available_deployments
+    model_type = "Gemma3" if ACTIVE_DEPLOYMENTS == GEMMA3_DEPLOYMENTS else "MedGemma"
+    print(f"Configured {len(ACTIVE_DEPLOYMENTS)} {model_type} deployment(s): {[d['name'] for d in ACTIVE_DEPLOYMENTS]}")
 else:
-    print("No Vertex AI deployments properly configured")
-    VERTEX_AI_DEPLOYMENTS = []
+    print("No active deployments properly configured")
+    ACTIVE_DEPLOYMENTS = []
 
-# Combine all deployments (but keep separate for selective use)
-ALL_DEPLOYMENTS = VERTEX_AI_DEPLOYMENTS
+# =============================================================================
+# LEGACY COMPATIBILITY - Update references to use ACTIVE_DEPLOYMENTS
+# =============================================================================
+VERTEX_AI_DEPLOYMENTS = ACTIVE_DEPLOYMENTS  # For backward compatibility
+ALL_DEPLOYMENTS = ACTIVE_DEPLOYMENTS
 
-# Legacy support (update references)
-AZURE_DEPLOYMENTS = OPENAI_DEPLOYMENTS  # For backward compatibility
-AZURE_API_KEY = OPENAI_API_KEY
-AZURE_ENDPOINT = "https://api.openai.com/v1"
+# =============================================================================
+# REMOVE LEGACY AZURE/OPENAI REFERENCES - SLM ONLY USES VERTEX AI
+# =============================================================================
+# Legacy variables disabled for SLM branch
+AZURE_DEPLOYMENTS = []  # Disabled - SLM uses Vertex AI only
+AZURE_API_KEY = ""      # Disabled - SLM uses Vertex AI only
+AZURE_ENDPOINT = ""     # Disabled - SLM uses Vertex AI only
 
 
 # Model settings
 TEMPERATURE = 0.5
-MAX_TOKENS = 3000  # Increased from 1500 to allow full responses
+MAX_TOKENS = 32000  # Significantly increased to prevent any response truncation
 
-# Token usage limits
-MAX_INPUT_TOKENS = 10000 # Maximum input tokens per API call
-MAX_OUTPUT_TOKENS = 8192   # Maximum output tokens per API call  
-TOKEN_BUDGET_PER_QUESTION = 50000  # Token budget per question (soft limit)
+# Token usage limits - INCREASED FOR SLM COMPLETE RESPONSES
+MAX_INPUT_TOKENS = 20000   # Maximum input tokens per API call (increased)
+MAX_OUTPUT_TOKENS = 32000  # Maximum output tokens per API call (increased to prevent truncation)
+TOKEN_BUDGET_PER_QUESTION = 100000  # Token budget per question (increased soft limit)
 
 # Team size limits (to control costs)
 MIN_TEAM_SIZE = 3  # Minimum number of agents for vision tasks
@@ -663,9 +645,9 @@ USE_AGENT_RECRUITMENT = True  # Enable for vision task specialization
 # Parallel processing settings - Updated for question-level parallelism
 #ENABLE_QUESTION_PARALLEL = len(AZURE_DEPLOYMENTS) > 1  # Enable question-level parallel processing
 #MAX_PARALLEL_QUESTIONS = len(AZURE_DEPLOYMENTS)  # Maximum questions to process in parallel
-# Parallel processing settings - Updated for Vertex AI SLM models only
-ENABLE_QUESTION_PARALLEL = len(VERTEX_AI_DEPLOYMENTS) > 1
-MAX_PARALLEL_QUESTIONS = len(VERTEX_AI_DEPLOYMENTS)
+# Parallel processing settings - Updated for Active SLM models only
+ENABLE_QUESTION_PARALLEL = len(ACTIVE_DEPLOYMENTS) > 1
+MAX_PARALLEL_QUESTIONS = len(ACTIVE_DEPLOYMENTS)
 
 # Legacy parallel processing settings (deprecated but kept for compatibility)
 ENABLE_PARALLEL_PROCESSING = False  # Agent-level parallelism is now disabled
@@ -674,7 +656,7 @@ MAX_PARALLEL_WORKERS = 1  # Always use sequential agent processing
 # Add these to your config.py file
 
 # Vision API settings
-VISION_MAX_TOKENS = 4000  # Required for vision API calls
+VISION_MAX_TOKENS = 32000  # Increased to prevent vision response truncation
 VISION_MAX_IMAGE_SIZE = 2000  # Maximum dimension for images
 VISION_RETRY_DELAY = 3  # Extra delay for vision API retries
 
@@ -703,29 +685,31 @@ FALLBACK_TO_TEXT_ON_VISION_FAILURE = True  # Allow fallback to text-only analysi
 
 def get_deployment_for_agent(agent_index: int) -> Dict[str, str]:
     """Get deployment configuration for agent based on round-robin distribution."""
-    if not VERTEX_AI_DEPLOYMENTS:
-        raise ValueError("No Vertex AI deployments configured")
-    deployment_index = agent_index % len(VERTEX_AI_DEPLOYMENTS)
-    return VERTEX_AI_DEPLOYMENTS[deployment_index]
+    if not ACTIVE_DEPLOYMENTS:
+        raise ValueError("No active deployments configured")
+    deployment_index = agent_index % len(ACTIVE_DEPLOYMENTS)
+    return ACTIVE_DEPLOYMENTS[deployment_index]
 
 def get_deployment_for_question(question_index: int) -> Dict[str, str]:
     """Get deployment configuration for question based on round-robin distribution."""
-    if not VERTEX_AI_DEPLOYMENTS:
-        raise ValueError("No Vertex AI deployments configured")
-    deployment_index = question_index % len(VERTEX_AI_DEPLOYMENTS)
-    return VERTEX_AI_DEPLOYMENTS[deployment_index]
+    if not ACTIVE_DEPLOYMENTS:
+        raise ValueError("No active deployments configured")
+    deployment_index = question_index % len(ACTIVE_DEPLOYMENTS)
+    return ACTIVE_DEPLOYMENTS[deployment_index]
 
 def get_all_deployments() -> List[Dict[str, str]]:
     """Get all available deployment configurations."""
-    return VERTEX_AI_DEPLOYMENTS.copy()
+    return ACTIVE_DEPLOYMENTS.copy()
 
 def get_parallel_processing_info() -> Dict[str, Any]:
     """Get information about the current parallel processing configuration."""
+    model_type = "Gemma3" if ACTIVE_DEPLOYMENTS == GEMMA3_DEPLOYMENTS else "MedGemma" if ACTIVE_DEPLOYMENTS == MEDGEMMA_DEPLOYMENTS else "Unknown"
     return {
         "question_level_parallel": ENABLE_QUESTION_PARALLEL,
         "max_parallel_questions": MAX_PARALLEL_QUESTIONS,
-        "num_deployments": len(VERTEX_AI_DEPLOYMENTS),
-        "deployment_names": [d['name'] for d in VERTEX_AI_DEPLOYMENTS],
+        "num_deployments": len(ACTIVE_DEPLOYMENTS),
+        "deployment_names": [d['name'] for d in ACTIVE_DEPLOYMENTS],
+        "active_model_type": model_type,
         "agent_level_parallel": ENABLE_PARALLEL_PROCESSING,
         "processing_mode": "question_level" if ENABLE_QUESTION_PARALLEL else "sequential"
     }
@@ -734,8 +718,9 @@ def get_parallel_processing_info() -> Dict[str, Any]:
 
 # Print configuration info
 if __name__ == "__main__":
-    print("\n=== Agent System Configuration ===")
+    print("\n=== SLM Agent System Configuration ===")
     parallel_info = get_parallel_processing_info()
+    print(f"Active Model Type: {parallel_info['active_model_type']}")
     print(f"Processing Mode: {parallel_info['processing_mode']}")
     print(f"Available Deployments: {parallel_info['num_deployments']}")
     print(f"Deployment Names: {parallel_info['deployment_names']}")
