@@ -190,12 +190,34 @@ AZURE_API_VERSION = AZURE_DEPLOYMENTS[0]["api_version"]
 
 # OpenAI API settings - Multiple deployments for parallel processing
 #OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-OPENAI_API_KEY = ""
-OPENAI_ORG_KEY = ""
+OPENAI_API_KEY = "sk-proj-"
+OPENAI_ORG_KEY = "org-"
 # Multiple deployment configuration for question-level parallel processing
 # You can repeat the same key multiple times to test rate limits
 # Or use different keys/organizations for separate rate limits
 OPENAI_DEPLOYMENTS = [
+    {
+        "name": "deployment_1",
+        "api_key": OPENAI_API_KEY,
+        "organization": os.environ.get('OPENAI_ORG_1',OPENAI_ORG_KEY ),  # Optional
+        "model": "gpt-4.1"
+    },
+    {
+        "name": "deployment_2", 
+        "api_key": os.environ.get('OPENAI_API_KEY_2', OPENAI_API_KEY),  # Same or different key
+        "organization": os.environ.get('OPENAI_ORG_2', None),
+        "model": "gpt-4.1"
+    },
+    {
+        "name": "deployment_3", 
+        "api_key": os.environ.get('OPENAI_API_KEY_3', OPENAI_API_KEY),
+        "organization": os.environ.get('OPENAI_ORG_3', None),
+        "model": "gpt-4.1"
+    }
+]
+
+
+OPENAI_DEPLOYMENTS2 = [
     {
         "name": "deployment_1",
         "api_key": OPENAI_API_KEY,

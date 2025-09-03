@@ -2351,6 +2351,14 @@ Provide your analysis and select the most appropriate answer."""
             "image_available": image is not None,
             "requires_visual_analysis": True,
             "image_type": "medical_image"
+        },
+        "metadata": {
+            "dataset": "pmc_vqa", 
+            "has_image": image is not None,
+            "original_answer": answer,
+            "original_answer_label": answer_label,
+            "image_validated": image_valid,
+            "num_choices": len(choices)
         }
     }
     
@@ -2411,6 +2419,12 @@ Based on your visual examination, answer: You must respond with option A or B, n
             "is_pathology_image": True,
             "requires_visual_analysis": True,
             "image_type": "pathology_slide"
+        },
+        "metadata": {
+            "dataset": "path_vqa", 
+            "original_answer": answer, 
+            "has_image": image is not None,
+            "image_validated": image_valid
         }
     }
     

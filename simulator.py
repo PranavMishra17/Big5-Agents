@@ -725,9 +725,18 @@ Collaborate with teammates:
                     
                     discussion_prompt = "\n\n".join(discussion_parts)
                     
-                    # ALWAYS text-only discussion in Round 2 for token efficiency
-                    # Even for vision tasks, agents discuss their visual findings without re-seeing image
-                    discussion_response = agent.chat(discussion_prompt, max_tokens=350)
+                    # Check if this is a path-vqa or pmc-vqa dataset that requires images in all rounds
+                    dataset_type = self.task_config.get("metadata", {}).get("dataset", "")
+                    requires_full_vision = dataset_type in ["path_vqa", "pmc_vqa"]
+                    
+                    if requires_full_vision and task_image is not None and round1_analyses[role].get("used_vision", False):
+                        # For path-vqa and pmc-vqa: Use image in collaborative discussion for maximum accuracy
+                        self.logger.logger.info(f"Round 2: {role} using image for {dataset_type} collaborative discussion")
+                        discussion_response = agent.chat_with_image(discussion_prompt, task_image, max_tokens=350)
+                    else:
+                        # Standard text-only discussion for token efficiency
+                        # Even for vision tasks, agents discuss their visual findings without re-seeing image
+                        discussion_response = agent.chat(discussion_prompt, max_tokens=350)
                     
                     # Log to main discussion channel
                     self.logger.log_main_discussion(
@@ -737,12 +746,14 @@ Collaborate with teammates:
                     )
                     
                     # Store in results
+                    used_vision_round2 = (requires_full_vision and task_image is not None and 
+                                        round1_analyses[role].get("used_vision", False))
                     self.results["exchanges"].append({
                         "type": "round2_collaborative_discussion",
                         "communication": "standard",
                         "sender": role,
                         "message": discussion_response,
-                        "used_vision": task_image is not None and round1_analyses[role].get("used_vision", False)
+                        "used_vision": used_vision_round2
                     })
                     
                     round2_discussions[role] = discussion_response
@@ -785,8 +796,15 @@ Collaborate with teammates:
         # Check if this is a vision task
         has_vision_task = any(analysis.get("used_vision", False) for analysis in round1_analyses.values())
         
-        if has_vision_task:
-            self.logger.logger.info("Round 3: Vision-enabled final decisions (image re-added for accuracy)")
+        # Check if this is path-vqa or pmc-vqa dataset that requires full vision support
+        dataset_type = self.task_config.get("metadata", {}).get("dataset", "")
+        requires_full_vision = dataset_type in ["path_vqa", "pmc_vqa"]
+        
+        if has_vision_task or requires_full_vision:
+            if requires_full_vision:
+                self.logger.logger.info(f"Round 3: Vision-enabled final decisions for {dataset_type} (image re-added for accuracy)")
+            else:
+                self.logger.logger.info("Round 3: Vision-enabled final decisions (image re-added for accuracy)")
             task_image = self._get_fresh_image()
         else:
             self.logger.logger.info("Round 3: Text-only final decisions")
@@ -844,8 +862,12 @@ Now provide your final answer with "ANSWER: X" followed by your reasoning. Be co
                 
                 # Execute final decision with vision support and error recovery
                 try:
-                    if task_image is not None and round1_analyses[role].get("used_vision", False):
-                        # Agent used vision successfully in Round 1 - re-add image for final accuracy
+                    used_vision_previously = round1_analyses[role].get("used_vision", False)
+                    
+                    if task_image is not None and (used_vision_previously or requires_full_vision):
+                        # Agent used vision in Round 1 OR this is path-vqa/pmc-vqa dataset - re-add image for final accuracy
+                        if requires_full_vision:
+                            self.logger.logger.info(f"Round 3: {role} using image for {dataset_type} final decision")
                         final_decision = agent.chat_with_image(final_prompt, task_image, max_tokens=450)
                     else:
                         # Text-only final decision
@@ -867,12 +889,14 @@ Now provide your final answer with "ANSWER: X" followed by your reasoning. Be co
                 )
                 
                 # Store in results with enhanced metadata
+                used_vision_round3 = (task_image is not None and 
+                                    (round1_analyses[role].get("used_vision", False) or requires_full_vision))
                 self.results["exchanges"].append({
                     "type": "round3_final_decision",
                     "communication": "standard",
                     "sender": role,
                     "message": final_decision,
-                    "used_vision": task_image is not None and round1_analyses[role].get("used_vision", False)
+                    "used_vision": used_vision_round3
                 })
                 
                 # Extract the response structure
@@ -897,7 +921,7 @@ Now provide your final answer with "ANSWER: X" followed by your reasoning. Be co
                     "weight": weight * trust_score,  # Weight decisions by trust
                     "trust_score": trust_score,
                     "used_vision_round1": round1_analyses[role].get("used_vision", False),
-                    "used_vision_round3": task_image is not None and round1_analyses[role].get("used_vision", False),
+                    "used_vision_round3": used_vision_round3,
                     "agent_type": type(agent).__name__
                 }
                 
